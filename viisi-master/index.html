@@ -485,10 +485,11 @@ const ADMIN_PASSWORD = 'gosaki';
 const DEFAULT_DATA = {
   champion: { name: "こ〜すけ", x_handle: "@kou1109_kei823", since: "2026-02-07", defenses: 0 },
   gatekeepers: [
-    { name: "川上", x_handle: "@4hoc9qrebm70371" },
-    { name: "まつ", x_handle: "@8iwedehwyg35lvp" },
+    { name: "こ〜すけ", x_handle: "@kou1109_kei823" },
+    { name: "サノ", x_handle: "@sasesisusomen" },
     { name: "お〜はし", x_handle: "@ketupuri_molkky" },
-    { name: "サノ", x_handle: "@sasesisusomen" }
+    { name: "まつ", x_handle: "@8iwedehwyg35lvp" },
+    { name: "川上", x_handle: "@4hoc9qrebm70371" }
   ],
   players: {
     "こ〜すけ": { x: "@kou1109_kei823", role: "champion" },
@@ -596,13 +597,13 @@ function loadData() {
         D.players[name].x = dp.x;
       }
     });
-    // gatekeepers のハンドルも同期
-    if (D.gatekeepers) {
-      D.gatekeepers.forEach(gk => {
-        const dp = DEFAULT_DATA.players[gk.name];
-        if (dp && dp.x && !gk.x_handle) gk.x_handle = dp.x;
-      });
-    }
+    // gatekeepers を DEFAULT_DATA から常に同期（メンバー構成・順序を最新に）
+    D.gatekeepers = structuredClone(DEFAULT_DATA.gatekeepers);
+    // ハンドル情報はplayersから同期
+    D.gatekeepers.forEach(gk => {
+      const dp = D.players[gk.name];
+      if (dp && dp.x) gk.x_handle = dp.x;
+    });
     saveData();
   }
 }
@@ -1369,9 +1370,33 @@ function renderMatchItem(m, num, matchIdx) {
 // 設定
 // ============================================================
 function renderSettings() {
-  const html = Object.entries(D.players).map(([name, p]) => {
+  const gkNames = D.gatekeepers.map(g => g.name);
+
+  // 表示順: 王者 → 門番(王者/元王者兼任含む) → 元王者 → 挑戦者
+  const entries = Object.entries(D.players);
+  entries.sort((a, b) => {
+    const orderOf = ([n, p]) => {
+      if (p.role === 'champion') return 0;
+      if (gkNames.includes(n) && p.role !== 'champion') return 1;
+      if (p.role === 'former_champion') return 2;
+      return 3;
+    };
+    return orderOf(a) - orderOf(b);
+  });
+
+  const html = entries.map(([name, p]) => {
     const roleMap = { champion: '👑王者', gatekeeper: '🛡️門番', former_champion: '⭐元王者', challenger: '⚔️挑戦者' };
-    const role = roleMap[p.role] || '⚔️挑戦者';
+    const isGk = gkNames.includes(name);
+    // タグを構築（複数タグ対応）
+    let tags = '';
+    const mainRole = roleMap[p.role] || '⚔️挑戦者';
+    const mainClass = p.role === 'champion' ? 'role-champion' : p.role === 'gatekeeper' ? 'role-gatekeeper' : 'role-challenger';
+    tags += `<span class="role-tag ${mainClass}">${mainRole}</span>`;
+    // 王者または元王者で門番も兼ねている場合、門番タグを追加
+    if (isGk && p.role !== 'gatekeeper') {
+      tags += ` <span class="role-tag role-gatekeeper">🛡️門番</span>`;
+    }
+
     const handle = p.x || '—';
     const escapedName = name.replace(/'/g, "\\'");
     return `
@@ -1380,7 +1405,7 @@ function renderSettings() {
           <div class="name">${name}</div>
           <div class="handle">${handle}</div>
         </div>
-        <span class="role-tag ${p.role === 'champion' ? 'role-champion' : p.role === 'gatekeeper' ? 'role-gatekeeper' : 'role-challenger'}">${role}</span>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;">${tags}</div>
       </div>
     `;
   }).join('');
