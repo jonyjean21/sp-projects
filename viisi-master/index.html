@@ -68,6 +68,7 @@
   .role-champion { background: #fbbf2422; color: #fbbf24; border: 1px solid #fbbf2444; }
   .role-gatekeeper { background: #3b82f622; color: #60a5fa; border: 1px solid #3b82f644; }
   .role-challenger { background: #64748b22; color: #94a3b8; border: 1px solid #64748b44; }
+  .role-qualified { background: #f59e0b22; color: #fbbf24; border: 1px solid #f59e0b44; }
 
   /* スコア入力 */
   .score-input {
@@ -830,7 +831,7 @@ function updatePlayerInfo(entryId, field, name) {
   const p = D.players[name];
   const roleMap = { champion: ['チャンピオン', 'role-champion'], gatekeeper: ['門番', 'role-gatekeeper'], former_champion: ['元王者', 'role-challenger'] };
   const [roleLabel, roleClass] = roleMap[p.role] || ['挑戦者', 'role-challenger'];
-  const handle = p.x ? `<span class="handle">${p.x}</span>` : '';
+  const handle = p.x ? `<span class="handle">${normalizeHandle(p.x)}</span>` : '';
   infoEl.innerHTML = `
     <span class="role-tag ${roleClass}">${roleLabel}</span>
     <span class="name">${name}</span>
@@ -896,10 +897,20 @@ function resetAndGoBack() {
   goTo('record');
 }
 
+function normalizeHandle(x) {
+  if (!x) return '';
+  // https://x.com/xxx や https://twitter.com/xxx → @xxx
+  const m = x.match(/(?:https?:\/\/)?(?:x\.com|twitter\.com)\/([^\/\?\s]+)/i);
+  if (m) return '@' + m[1];
+  // 既に @xxx 形式ならそのまま
+  if (x.startsWith('@')) return x;
+  return '@' + x;
+}
+
 function withHandle(name) {
   const p = D.players[name];
   if (!p || !p.x) return name;
-  return `${name}(${p.x})`;
+  return `${name}(${normalizeHandle(p.x)})`;
 }
 
 function generateOutputs() {
@@ -1137,7 +1148,7 @@ function renderStats() {
 
   // 現チャンピオン
   const c = D.champion;
-  const cx = c.x_handle ? `<span style="font-size:12px;color:#60a5fa">${c.x_handle}</span>` : '';
+  const cx = c.x_handle ? `<span style="font-size:12px;color:#60a5fa">${normalizeHandle(c.x_handle)}</span>` : '';
   document.getElementById('champ-card').innerHTML = `
     <div class="gk-card">
       <div class="icon">👑</div>
@@ -1159,7 +1170,7 @@ function renderStats() {
     const l = allMs.filter(m => m.winner && m.winner !== gk.name).length;
     const total = w + l;
     const rate = total > 0 ? Math.round(w / total * 100) : 0;
-    const hx = gk.x_handle ? `<span class="handle">${gk.x_handle}</span>` : '';
+    const hx = gk.x_handle ? `<span class="handle">${normalizeHandle(gk.x_handle)}</span>` : '';
 
     let matchHistory = '';
     if (allMs.length > 0) {
@@ -1203,7 +1214,7 @@ function renderTitleQueue() {
   }
 
   el.innerHTML = qualified.map((q, i) => {
-    const handleStr = D.players[q.name] && D.players[q.name].x ? `<span style="color:#60a5fa;font-size:11px;">${D.players[q.name].x}</span>` : '';
+    const handleStr = D.players[q.name] && D.players[q.name].x ? `<span style="color:#60a5fa;font-size:11px;">${normalizeHandle(D.players[q.name].x)}</span>` : '';
     return `
       <div class="queue-item">
         <div class="queue-rank">${i + 1}</div>
@@ -1371,6 +1382,7 @@ function renderMatchItem(m, num, matchIdx) {
 // ============================================================
 function renderSettings() {
   const gkNames = D.gatekeepers.map(g => g.name);
+  const qualifiedNames = getQualifiedChallengers().map(q => q.name);
 
   // 表示順: 王者 → 門番(王者/元王者兼任含む) → 元王者 → 挑戦者
   const entries = Object.entries(D.players);
@@ -1387,17 +1399,22 @@ function renderSettings() {
   const html = entries.map(([name, p]) => {
     const roleMap = { champion: '👑王者', gatekeeper: '🛡️門番', former_champion: '⭐元王者', challenger: '⚔️挑戦者' };
     const isGk = gkNames.includes(name);
+    const isQualified = qualifiedNames.includes(name);
     // タグを構築（複数タグ対応）
     let tags = '';
-    const mainRole = roleMap[p.role] || '⚔️挑戦者';
-    const mainClass = p.role === 'champion' ? 'role-champion' : p.role === 'gatekeeper' ? 'role-gatekeeper' : 'role-challenger';
-    tags += `<span class="role-tag ${mainClass}">${mainRole}</span>`;
+    if (p.role === 'challenger' && isQualified) {
+      tags += `<span class="role-tag role-qualified">🔥挑戦権あり</span>`;
+    } else {
+      const mainRole = roleMap[p.role] || '⚔️挑戦者';
+      const mainClass = p.role === 'champion' ? 'role-champion' : p.role === 'gatekeeper' ? 'role-gatekeeper' : 'role-challenger';
+      tags += `<span class="role-tag ${mainClass}">${mainRole}</span>`;
+    }
     // 王者または元王者で門番も兼ねている場合、門番タグを追加
     if (isGk && p.role !== 'gatekeeper') {
       tags += ` <span class="role-tag role-gatekeeper">🛡️門番</span>`;
     }
 
-    const handle = p.x || '—';
+    const handle = p.x ? normalizeHandle(p.x) : '—';
     const escapedName = name.replace(/'/g, "\\'");
     return `
       <div class="gk-card" style="cursor:pointer;" onclick="requireAuth(function(){ openEditPlayer('${escapedName}'); })">
@@ -1417,7 +1434,8 @@ function hideModal(id) { document.getElementById(id).classList.remove('show'); }
 
 function addNewPlayer() {
   const name = document.getElementById('new-player-name').value.trim();
-  const handle = document.getElementById('new-player-handle').value.trim() || null;
+  const rawHandle = document.getElementById('new-player-handle').value.trim();
+  const handle = rawHandle ? normalizeHandle(rawHandle) : null;
   if (!name) return;
   D.players[name] = { x: handle, role: 'challenger' };
   saveData();
@@ -1441,7 +1459,8 @@ function openEditPlayer(name) {
 function saveEditPlayer() {
   const origName = document.getElementById('edit-player-original-name').value;
   const newName = document.getElementById('edit-player-name').value.trim();
-  const newHandle = document.getElementById('edit-player-handle').value.trim() || null;
+  const rawHandle = document.getElementById('edit-player-handle').value.trim();
+  const newHandle = rawHandle ? normalizeHandle(rawHandle) : null;
   const newRole = document.getElementById('edit-player-role').value;
   if (!newName) return;
 
