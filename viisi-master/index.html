@@ -414,7 +414,7 @@
 // ============================================================
 const STORAGE_KEY = 'viisi-master-data';
 const DEFAULT_DATA = {
-  champion: { name: "こ〜すけ", x_handle: "@kou1109_kei823", since: "2026-02-10", defenses: 0 },
+  champion: { name: "こ〜すけ", x_handle: "@kou1109_kei823", since: "2026-02-07", defenses: 0 },
   gatekeepers: [
     { name: "川上", x_handle: null },
     { name: "まつ", x_handle: "@8iwedehwyg35lvp" },
@@ -423,34 +423,87 @@ const DEFAULT_DATA = {
   ],
   players: {
     "こ〜すけ": { x: "@kou1109_kei823", role: "champion" },
+    "サノ": { x: "@sasesisusomen", role: "gatekeeper" },
     "とめ": { x: "@dayumachika1220", role: "former_champion" },
+    "ケニー": { x: null, role: "former_champion" },
     "川上": { x: null, role: "gatekeeper" },
     "まつ": { x: "@8iwedehwyg35lvp", role: "gatekeeper" },
     "お〜はし": { x: "@ketupuri_molkky", role: "gatekeeper" },
-    "サノ": { x: "@sasesisusomen", role: "gatekeeper" },
     "サキ": { x: "@saki_1221_0121", role: "challenger" },
     "フトシ": { x: "@tairafutoshi42", role: "challenger" },
     "ヒジ": { x: null, role: "challenger" },
     "テラ": { x: "@jhite250", role: "challenger" },
     "ししょー": { x: "@morikawashisho0", role: "challenger" },
-    "キタ": { x: null, role: "challenger" }
+    "キタ": { x: null, role: "challenger" },
+    "ご当地やん": { x: null, role: "challenger" },
+    "ムロ": { x: null, role: "challenger" },
+    "alus": { x: null, role: "challenger" },
+    "シン": { x: null, role: "challenger" },
+    "歩": { x: null, role: "challenger" },
+    "トオル": { x: null, role: "challenger" },
+    "かお": { x: null, role: "challenger" },
+    "ノブ": { x: null, role: "challenger" },
+    "ミツハタ": { x: null, role: "challenger" },
+    "あつかん": { x: null, role: "challenger" }
   },
   matches: [
-    // --- 2025-12-22 ---
-    { date: "2025-12-22", challenger: "サキ", defender: "お〜はし", role: "gatekeeper", sc: null, sd: null, winner: "お〜はし" },
-    { date: "2025-12-22", challenger: "サキ", defender: "まつ", role: "gatekeeper", sc: null, sd: null, winner: "サキ" },
-    // --- 2025-12-31 タイトルマッチ ---
-    { date: "2025-12-31", challenger: "サキ", defender: "とめ", role: "champion", sc: null, sd: null, winner: "とめ" },
+    // --- 2025-11-14 ---
+    { date: "2025-11-14", challenger: "ご当地やん", defender: "こ〜すけ", role: "gatekeeper", sc: 2, sd: 5, winner: "こ〜すけ" },
+    // --- 2025-11-15 ---
+    { date: "2025-11-15", challenger: "ケニー", defender: "まつ", role: "gatekeeper", sc: 8, sd: 6, winner: "ケニー" },
+    // --- 2025-11-16 ---
+    { date: "2025-11-16", challenger: "ムロ", defender: "お〜はし", role: "gatekeeper", sc: 2, sd: 5, winner: "お〜はし" },
+    { date: "2025-11-16", challenger: "ししょー", defender: "川上", role: "gatekeeper", sc: 1, sd: 5, winner: "川上" },
+    // --- 2025-11-17 ---
+    { date: "2025-11-17", challenger: "alus", defender: "こ〜すけ", role: "gatekeeper", sc: 1, sd: 5, winner: "こ〜すけ" },
+    // --- 2025-11-18 ---
+    { date: "2025-11-18", challenger: "シン", defender: "まつ", role: "gatekeeper", sc: 0, sd: 5, winner: "まつ" },
+    // --- 2025-11-23 ---
+    { date: "2025-11-23", challenger: "歩", defender: "川上", role: "gatekeeper", sc: 2, sd: 5, winner: "川上" },
+    // --- 2025-11-24 ---
+    { date: "2025-11-24", challenger: "トオル", defender: "まつ", role: "gatekeeper", sc: 2, sd: 5, winner: "まつ" },
+    // --- 2025-11-29 ---
+    { date: "2025-11-29", challenger: "とめ", defender: "お〜はし", role: "gatekeeper", sc: 5, sd: 3, winner: "とめ" },
+    // --- 2025-11-30 ---
+    { date: "2025-11-30", challenger: "かお", defender: "川上", role: "gatekeeper", sc: 2, sd: 5, winner: "川上" },
+    // --- 2025-12-09 ---
+    { date: "2025-12-09", challenger: "サキ", defender: "お〜はし", role: "gatekeeper", sc: 4, sd: 6, winner: "お〜はし" },
+    // --- 2025-12-10 タイトルマッチ ---
+    { date: "2025-12-10", challenger: "ケニー", defender: "サノ", role: "champion", sc: 6, sd: 4, winner: "ケニー" },
+    // --- 2025-12-20 タイトルマッチ ---
+    { date: "2025-12-20", challenger: "とめ", defender: "ケニー", role: "champion", sc: 5, sd: 0, winner: "とめ" },
+    // --- 2025-12-21 ---
+    { date: "2025-12-21", challenger: "ノブ", defender: "まつ", role: "gatekeeper", sc: 5, sd: 3, winner: "ノブ" },
+    { date: "2025-12-21", challenger: "alus", defender: "お〜はし", role: "gatekeeper", sc: 0, sd: 5, winner: "お〜はし" },
+    { date: "2025-12-21", challenger: "サキ", defender: "まつ", role: "gatekeeper", sc: 5, sd: 2, winner: "サキ" },
+    // --- 2025-12-30 タイトルマッチ ---
+    { date: "2025-12-30", challenger: "サキ", defender: "とめ", role: "champion", sc: 1, sd: 5, winner: "とめ" },
+    { date: "2025-12-30", challenger: "トオル", defender: "こ〜すけ", role: "gatekeeper", sc: 1, sd: 5, winner: "こ〜すけ" },
+    // --- 2026-01-11 ---
+    { date: "2026-01-11", challenger: "ミツハタ", defender: "お〜はし", role: "gatekeeper", sc: 2, sd: 5, winner: "お〜はし" },
+    // --- 2026-01-17 ---
+    { date: "2026-01-17", challenger: "あつかん", defender: "お〜はし", role: "gatekeeper", sc: 3, sd: 5, winner: "お〜はし" },
+    // --- 2026-01-18 ---
+    { date: "2026-01-18", challenger: "サキ", defender: "お〜はし", role: "gatekeeper", sc: 5, sd: 3, winner: "サキ" },
+    // --- 2026-01-25 ---
+    { date: "2026-01-25", challenger: "ヒジ", defender: "お〜はし", role: "gatekeeper", sc: 5, sd: 7, winner: "お〜はし" },
+    // --- 2026-01-30 ---
+    { date: "2026-01-30", challenger: "フトシ", defender: "サノ", role: "gatekeeper", sc: 5, sd: 1, winner: "フトシ" },
+    { date: "2026-01-30", challenger: "フトシ", defender: "お〜はし", role: "gatekeeper", sc: 3, sd: 5, winner: "お〜はし" },
     // --- 2026-02-01 ---
-    { date: "2026-02-01", challenger: "フトシ", defender: "サノ", role: "gatekeeper", sc: null, sd: null, winner: "フトシ" },
-    { date: "2026-02-01", challenger: "フトシ", defender: "お〜はし", role: "gatekeeper", sc: null, sd: null, winner: "お〜はし" },
-    { date: "2026-02-01", challenger: "ヒジ", defender: "お〜はし", role: "gatekeeper", sc: null, sd: null, winner: "お〜はし" },
-    // --- 2026-02-10 タイトルマッチ ---
-    { date: "2026-02-10", challenger: "こ〜すけ", defender: "とめ", role: "champion", sc: null, sd: null, winner: "こ〜すけ" },
-    // --- 2026-02-20 ---
-    { date: "2026-02-20", challenger: "キタ", defender: "まつ", role: "gatekeeper", sc: 6, sd: 4, winner: "キタ" },
-    { date: "2026-02-20", challenger: "ヒジ", defender: "川上", role: "gatekeeper", sc: 2, sd: 5, winner: "川上" },
-    { date: "2026-02-20", challenger: "とめ", defender: "まつ", role: "gatekeeper", sc: 3, sd: 5, winner: "まつ" }
+    { date: "2026-02-01", challenger: "ししょー", defender: "こ〜すけ", role: "gatekeeper", sc: 0, sd: 5, winner: "こ〜すけ" },
+    { date: "2026-02-01", challenger: "テラ", defender: "お〜はし", role: "gatekeeper", sc: 4, sd: 6, winner: "お〜はし" },
+    { date: "2026-02-01", challenger: "テラ", defender: "こ〜すけ", role: "gatekeeper", sc: 1, sd: 5, winner: "こ〜すけ" },
+    // --- 2026-02-07 ---
+    { date: "2026-02-07", challenger: "ヒジ", defender: "サノ", role: "gatekeeper", sc: 3, sd: 5, winner: "サノ" },
+    // --- 2026-02-07 タイトルマッチ ---
+    { date: "2026-02-07", challenger: "こ〜すけ", defender: "とめ", role: "champion", sc: 5, sd: 1, winner: "こ〜すけ" },
+    // --- 2026-02-11 ---
+    { date: "2026-02-11", challenger: "キタ", defender: "まつ", role: "gatekeeper", sc: 6, sd: 4, winner: "キタ" },
+    // --- 2026-02-15 ---
+    { date: "2026-02-15", challenger: "ヒジ", defender: "川上", role: "gatekeeper", sc: 2, sd: 5, winner: "川上" },
+    // --- 2026-02-17 ---
+    { date: "2026-02-17", challenger: "とめ", defender: "まつ", role: "gatekeeper", sc: 3, sd: 5, winner: "まつ" }
   ]
 };
 
