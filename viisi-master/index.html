@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>5先王 — 結果記録 & 投稿ツール</title>
+<title>5先王 -- 結果記録 & 投稿ツール</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0f172a">
 <style>
@@ -151,12 +151,14 @@
 
   /* 試合リスト */
   .match-item {
-    padding: 12px 0; border-bottom: 1px solid #1e293b;
-    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid #1e293b;
+    display: flex; align-items: center; gap: 8px;
   }
   .match-item:last-child { border-bottom: none; }
-  .match-item .date { font-size: 11px; color: #64748b; min-width: 70px; }
-  .match-item .detail { flex: 1; font-size: 13px; }
+  .match-item .match-num { font-size: 10px; color: #475569; font-weight: 700; min-width: 22px; }
+  .match-item .detail { flex: 1; font-size: 13px; line-height: 1.4; }
+  .match-item .detail .match-players { font-weight: 600; color: #f1f5f9; }
+  .match-item .detail .match-meta { font-size: 11px; color: #64748b; margin-top: 1px; }
   .match-item .score { font-size: 14px; font-weight: 700; min-width: 45px; text-align: center; }
   .match-item .result-tag {
     font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 8px;
@@ -164,6 +166,14 @@
   .tag-defense { background: #3b82f622; color: #60a5fa; }
   .tag-break { background: #f59e0b22; color: #fbbf24; }
   .tag-newchamp { background: #fbbf2422; color: #fbbf24; }
+
+  /* 日付グループヘッダー */
+  .date-group-header {
+    font-size: 12px; font-weight: 700; color: #94a3b8;
+    padding: 10px 0 6px; border-bottom: 1px solid #334155;
+    margin-top: 4px;
+  }
+  .date-group-header:first-child { margin-top: 0; }
 
   /* 門番カード */
   .gk-card { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #1e293b; }
@@ -174,12 +184,38 @@
   .gk-card .handle { font-size: 11px; color: #60a5fa; }
   .gk-card .record { font-size: 13px; color: #94a3b8; }
   .gk-card .record b { color: #f1f5f9; }
+  .gk-card .win-rate {
+    font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 8px;
+    background: #10b98122; color: #34d399; border: 1px solid #10b98144;
+  }
+
+  /* 門番対戦履歴 */
+  .gk-match-list { margin-top: 6px; padding-left: 36px; }
+  .gk-match-item { font-size: 12px; color: #94a3b8; padding: 2px 0; }
+  .gk-match-item .win-mark { color: #34d399; font-weight: 700; }
+  .gk-match-item .lose-mark { color: #f87171; font-weight: 700; }
 
   /* サマリーグリッド */
   .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .stat-box { background: #0f172a; border-radius: 10px; padding: 12px; text-align: center; }
   .stat-box .num { font-size: 28px; font-weight: 800; line-height: 1; }
   .stat-box .lbl { font-size: 11px; color: #64748b; margin-top: 4px; }
+
+  /* 挑戦者戦績 */
+  .challenger-card { padding: 8px 0; border-bottom: 1px solid #1e293b; }
+  .challenger-card:last-child { border-bottom: none; }
+  .challenger-header { display: flex; align-items: center; justify-content: space-between; }
+  .challenger-name { font-size: 14px; font-weight: 700; color: #f1f5f9; }
+  .challenger-record { font-size: 12px; color: #94a3b8; }
+  .challenger-record b { color: #f1f5f9; }
+  .challenger-progress { display: flex; gap: 4px; margin-top: 6px; }
+  .gk-pip {
+    font-size: 10px; padding: 2px 6px; border-radius: 6px;
+    font-weight: 600;
+  }
+  .gk-pip.beaten { background: #fbbf2422; color: #fbbf24; border: 1px solid #fbbf2444; }
+  .gk-pip.lost { background: #ef444422; color: #f87171; border: 1px solid #ef444444; }
+  .gk-pip.unplayed { background: #33415522; color: #475569; border: 1px solid #33415544; }
 
   /* 追加試合セクション */
   .match-entry { background: #0f172a; border-radius: 10px; padding: 12px; margin-bottom: 8px; }
@@ -224,6 +260,19 @@
     opacity: 0; transition: opacity 0.3s; pointer-events: none;
   }
   .toast.show { opacity: 1; }
+
+  /* フィルタータブ */
+  .filter-tabs {
+    display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  }
+  .filter-tabs::-webkit-scrollbar { display: none; }
+  .filter-tab {
+    padding: 6px 12px; border-radius: 16px; border: 1px solid #334155;
+    background: #0f172a; color: #94a3b8; font-size: 11px; font-weight: 600;
+    white-space: nowrap; cursor: pointer; transition: all 0.2s;
+  }
+  .filter-tab.active { background: #fbbf2422; color: #fbbf24; border-color: #fbbf2444; }
 </style>
 </head>
 <body>
@@ -294,6 +343,9 @@
   <div class="section-label" style="margin-top: 4px;">門番</div>
   <div class="card" id="gk-list"></div>
 
+  <div class="section-label" style="margin-top: 4px;">挑戦者の進捗</div>
+  <div class="card" id="challenger-progress"></div>
+
   <div class="section-label" style="margin-top: 4px;">直近の試合</div>
   <div class="card" id="recent-list"></div>
 </div>
@@ -301,6 +353,7 @@
 <!-- ===== ページ4: 全試合 ===== -->
 <div id="page-history" class="page">
   <div class="section-label">全試合結果</div>
+  <div class="filter-tabs" id="history-filters"></div>
   <div class="card" id="all-matches"></div>
 </div>
 
@@ -383,13 +436,18 @@ const DEFAULT_DATA = {
     "キタ": { x: null, role: "challenger" }
   },
   matches: [
+    // --- 2025-12-22 ---
     { date: "2025-12-22", challenger: "サキ", defender: "お〜はし", role: "gatekeeper", sc: null, sd: null, winner: "お〜はし" },
     { date: "2025-12-22", challenger: "サキ", defender: "まつ", role: "gatekeeper", sc: null, sd: null, winner: "サキ" },
+    // --- 2025-12-31 タイトルマッチ ---
     { date: "2025-12-31", challenger: "サキ", defender: "とめ", role: "champion", sc: null, sd: null, winner: "とめ" },
+    // --- 2026-02-01 ---
     { date: "2026-02-01", challenger: "フトシ", defender: "サノ", role: "gatekeeper", sc: null, sd: null, winner: "フトシ" },
     { date: "2026-02-01", challenger: "フトシ", defender: "お〜はし", role: "gatekeeper", sc: null, sd: null, winner: "お〜はし" },
     { date: "2026-02-01", challenger: "ヒジ", defender: "お〜はし", role: "gatekeeper", sc: null, sd: null, winner: "お〜はし" },
+    // --- 2026-02-10 タイトルマッチ ---
     { date: "2026-02-10", challenger: "こ〜すけ", defender: "とめ", role: "champion", sc: null, sd: null, winner: "こ〜すけ" },
+    // --- 2026-02-20 ---
     { date: "2026-02-20", challenger: "キタ", defender: "まつ", role: "gatekeeper", sc: 6, sd: 4, winner: "キタ" },
     { date: "2026-02-20", challenger: "ヒジ", defender: "川上", role: "gatekeeper", sc: 2, sd: 5, winner: "川上" },
     { date: "2026-02-20", challenger: "とめ", defender: "まつ", role: "gatekeeper", sc: 3, sd: 5, winner: "まつ" }
@@ -908,16 +966,20 @@ function copyText(elementId, btn) {
 // ============================================================
 function renderStats() {
   const ms = D.matches;
-  const breaks = ms.filter(m => m.role === 'gatekeeper' && m.winner === m.challenger).length;
-  const champChanges = ms.filter(m => m.role === 'champion' && m.winner === m.challenger).length;
+  const gkMatches = ms.filter(m => m.role === 'gatekeeper');
+  const champMatches = ms.filter(m => m.role === 'champion');
+  const breaks = gkMatches.filter(m => m.winner === m.challenger).length;
+  const defenses = gkMatches.filter(m => m.winner === m.defender).length;
+  const champChanges = champMatches.filter(m => m.winner === m.challenger).length;
 
   document.getElementById('stat-grid').innerHTML = `
     <div class="stat-box"><div class="num" style="color:#f1f5f9">${ms.length}</div><div class="lbl">総試合数</div></div>
-    <div class="stat-box"><div class="num" style="color:#60a5fa">${D.gatekeepers.length}</div><div class="lbl">現役門番</div></div>
+    <div class="stat-box"><div class="num" style="color:#60a5fa">${champMatches.length}</div><div class="lbl">タイトルマッチ</div></div>
+    <div class="stat-box"><div class="num" style="color:#34d399">${defenses}</div><div class="lbl">門番防衛</div></div>
     <div class="stat-box"><div class="num" style="color:#fbbf24">${breaks}</div><div class="lbl">門番撃破</div></div>
-    <div class="stat-box"><div class="num" style="color:#f59e0b">${champChanges + 1}</div><div class="lbl">歴代王者</div></div>
   `;
 
+  // 現チャンピオン
   const c = D.champion;
   const cx = c.x_handle ? `<span style="font-size:12px;color:#60a5fa">${c.x_handle}</span>` : '';
   document.getElementById('champ-card').innerHTML = `
@@ -931,33 +993,169 @@ function renderStats() {
     </div>
   `;
 
+  // 門番（対戦履歴付き）
   document.getElementById('gk-list').innerHTML = D.gatekeepers.map(gk => {
     const allMs = D.matches.filter(m => m.defender === gk.name && m.role === 'gatekeeper');
     const w = allMs.filter(m => m.winner === gk.name).length;
     const l = allMs.filter(m => m.winner && m.winner !== gk.name).length;
+    const total = w + l;
+    const rate = total > 0 ? Math.round(w / total * 100) : 0;
     const hx = gk.x_handle ? `<span class="handle">${gk.x_handle}</span>` : '';
+
+    let matchHistory = '';
+    if (allMs.length > 0) {
+      matchHistory = '<div class="gk-match-list">' + allMs.map(m => {
+        const won = m.winner === gk.name;
+        const mark = won ? '<span class="win-mark">W</span>' : '<span class="lose-mark">L</span>';
+        const scoreStr = (m.sc != null && m.sd != null) ? ` ${m.sd}-${m.sc}` : '';
+        return `<div class="gk-match-item">${mark} vs ${m.challenger}${scoreStr}</div>`;
+      }).join('') + '</div>';
+    }
+
     return `
       <div class="gk-card">
         <div class="icon">🛡️</div>
         <div class="info">
-          <div class="name">${gk.name}</div>
+          <div class="name">${gk.name} <span class="win-rate">${rate}%</span></div>
           ${hx}
-          <div class="record">防衛: <b>${w}</b> / 敗北: <b>${l}</b></div>
+          <div class="record"><b>${w}勝</b>${l}敗</div>
+          ${matchHistory}
         </div>
       </div>
     `;
   }).join('');
 
+  // 挑戦者の進捗（門番撃破状況）
+  renderChallengerProgress();
+
+  // 直近の試合
   const sorted = [...ms].sort((a, b) => b.date.localeCompare(a.date));
-  document.getElementById('recent-list').innerHTML = sorted.slice(0, 5).map(renderMatchItem).join('');
+  document.getElementById('recent-list').innerHTML = sorted.slice(0, 5).map((m, i) => renderMatchItem(m, ms.length - i)).join('');
+}
+
+// 挑戦者の門番撃破進捗
+function renderChallengerProgress() {
+  const gkNames = D.gatekeepers.map(g => g.name);
+  // 全挑戦者（門番戦に参加した人）
+  const challengers = [...new Set(D.matches.filter(m => m.role === 'gatekeeper').map(m => m.challenger))];
+
+  const progressEl = document.getElementById('challenger-progress');
+  if (challengers.length === 0) {
+    progressEl.innerHTML = '<div style="color:#64748b;font-size:13px;">まだ挑戦者がいません</div>';
+    return;
+  }
+
+  progressEl.innerHTML = challengers.map(c => {
+    const cMatches = D.matches.filter(m => m.role === 'gatekeeper' && m.challenger === c);
+    const wins = cMatches.filter(m => m.winner === c).length;
+    const losses = cMatches.filter(m => m.winner !== c).length;
+
+    // 各門番との結果
+    const pips = gkNames.map(gk => {
+      const vs = cMatches.filter(m => m.defender === gk);
+      if (vs.length === 0) return `<span class="gk-pip unplayed">${gk}</span>`;
+      const beat = vs.some(m => m.winner === c);
+      if (beat) return `<span class="gk-pip beaten">${gk}</span>`;
+      return `<span class="gk-pip lost">${gk}</span>`;
+    }).join('');
+
+    const allBeaten = gkNames.every(gk => cMatches.some(m => m.defender === gk && m.winner === c));
+    const qualifiedTag = allBeaten ? ' <span style="color:#fbbf24;font-size:10px;">-- 王者挑戦権獲得!</span>' : '';
+
+    return `
+      <div class="challenger-card">
+        <div class="challenger-header">
+          <span class="challenger-name">${c}${qualifiedTag}</span>
+          <span class="challenger-record"><b>${wins}勝</b>${losses}敗</span>
+        </div>
+        <div class="challenger-progress">${pips}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ============================================================
+// 全試合履歴（フィルター + 日付グルーピング）
+// ============================================================
+let historyFilter = 'all';
+
+function renderHistoryFilters() {
+  const filters = [
+    { key: 'all', label: '全て' },
+    { key: 'gatekeeper', label: '門番戦' },
+    { key: 'champion', label: 'タイトルマッチ' }
+  ];
+  // 挑戦者フィルター
+  const challengers = [...new Set(D.matches.map(m => m.challenger))];
+
+  const el = document.getElementById('history-filters');
+  el.innerHTML = '';
+
+  filters.forEach(f => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-tab' + (historyFilter === f.key ? ' active' : '');
+    btn.textContent = f.label;
+    btn.onclick = () => { historyFilter = f.key; renderHistory(); };
+    el.appendChild(btn);
+  });
+
+  challengers.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-tab' + (historyFilter === 'player:' + c ? ' active' : '');
+    btn.textContent = c;
+    btn.onclick = () => { historyFilter = 'player:' + c; renderHistory(); };
+    el.appendChild(btn);
+  });
 }
 
 function renderHistory() {
-  const sorted = [...D.matches].sort((a, b) => b.date.localeCompare(a.date));
-  document.getElementById('all-matches').innerHTML = sorted.map(renderMatchItem).join('');
+  renderHistoryFilters();
+
+  let filtered = [...D.matches];
+  if (historyFilter === 'gatekeeper') {
+    filtered = filtered.filter(m => m.role === 'gatekeeper');
+  } else if (historyFilter === 'champion') {
+    filtered = filtered.filter(m => m.role === 'champion');
+  } else if (historyFilter.startsWith('player:')) {
+    const name = historyFilter.slice(7);
+    filtered = filtered.filter(m => m.challenger === name || m.defender === name);
+  }
+
+  // 日付降順ソート
+  const sorted = filtered.sort((a, b) => b.date.localeCompare(a.date) || D.matches.indexOf(b) - D.matches.indexOf(a));
+
+  // 通し番号マッピング（全試合中の位置）
+  const numMap = new Map();
+  D.matches.forEach((m, i) => numMap.set(m, i + 1));
+
+  // 日付グルーピング
+  let html = '';
+  let currentDate = '';
+  sorted.forEach(m => {
+    if (m.date !== currentDate) {
+      currentDate = m.date;
+      const dateLabel = formatDateLabel(m.date);
+      html += `<div class="date-group-header">${dateLabel}</div>`;
+    }
+    html += renderMatchItem(m, numMap.get(m));
+  });
+
+  if (html === '') html = '<div style="color:#64748b;font-size:13px;padding:8px 0;">該当する試合がありません</div>';
+
+  document.getElementById('all-matches').innerHTML = html;
 }
 
-function renderMatchItem(m) {
+function formatDateLabel(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const y = d.getFullYear();
+  const mo = d.getMonth() + 1;
+  const day = d.getDate();
+  const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+  const dow = weekdays[d.getDay()];
+  return `${y}/${mo}/${day} (${dow})`;
+}
+
+function renderMatchItem(m, num) {
   const won = m.winner === m.challenger;
   const isChamp = m.role === 'champion';
   let tagClass, tagText;
@@ -965,11 +1163,14 @@ function renderMatchItem(m) {
   else if (won) { tagClass = 'tag-break'; tagText = '撃破'; }
   else { tagClass = 'tag-defense'; tagText = '防衛'; }
   const prefix = isChamp ? '👑' : '🛡️';
-  const score = (m.sc != null && m.sd != null) ? `${m.sc}-${m.sd}` : '—';
+  const score = (m.sc != null && m.sd != null) ? `${m.sc}-${m.sd}` : '--';
+  const numLabel = num ? `#${num}` : '';
   return `
     <div class="match-item">
-      <div class="date">${m.date}</div>
-      <div class="detail">${m.challenger} vs ${prefix}${m.defender}</div>
+      <div class="match-num">${numLabel}</div>
+      <div class="detail">
+        <div class="match-players">${m.challenger} vs ${prefix}${m.defender}</div>
+      </div>
       <div class="score">${score}</div>
       <span class="result-tag ${tagClass}">${tagText}</span>
     </div>
