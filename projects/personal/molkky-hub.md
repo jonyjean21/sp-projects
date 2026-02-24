@@ -12,7 +12,7 @@
 |------|------|
 | URL | https://molkky-hub.com |
 | ステータス | 運用中 |
-| 運営 | 個人（管理人：孔雀） |
+| 運営 | 個人（管理人：SP） |
 | 技術スタック | WordPress + SWELL テーマ |
 | サーバー | ConoHa |
 | 分析ツール | Google Analytics / Search Console 導入済み |
@@ -177,6 +177,6 @@
 
 ## メモ
 
-- NICE MOLKKY JAPAN は提携団体（孔雀とは別組織）
+- NICE MOLKKY JAPAN は提携団体（SPとは別組織）
 - WordPress + SWELL で構築済み
 - モルック情報の一元化が主要ミッション

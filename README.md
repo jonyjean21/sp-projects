@@ -1,6 +1,6 @@
 # sp-projects
 
-孔雀のプロジェクト司令塔。方針・進捗・タスク・ナレッジをここに集約する。
+SPのプロジェクト司令塔。方針・進捗・タスク・ナレッジをここに集約する。
 
 ## まず見るところ
 
@@ -29,9 +29,9 @@
 ### マルタ村共同プロジェクト（`projects/molkky-dome/`）
 
 - マルタ村（兵庫県川西市）のコミュニティ経済圏構想
-- 中さん + ししょー + 孔雀の3人体制、週2回チャプチェ会
+- 中さん + ししょー + SPの3人体制、週2回チャプチェ会
 - 中さんがManusでアプリ開発 → GitHub org: [marutamura](https://github.com/marutamura)
-- 孔雀はClaude Codeでコードレビュー & 全体設計を担当
+- SPはClaude Codeでコードレビュー & 全体設計を担当
 - アプリ10個以上（GitHub連携済5個 + Manusのみ5個+）
 - [コードレビュー・ワークフロー](docs/marutamura-review-workflow.md)
 
