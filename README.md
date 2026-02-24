@@ -34,7 +34,7 @@
 
 ## 構成
 
-```
+```text
 sp-projects/
 ├── README.md                    ← いま見ているファイル
 ├── tasks/                       # タスク管理（PCを開いたらまずここ）
