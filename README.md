@@ -10,6 +10,7 @@
 | **MOLKKY HUB の状況** | [`projects/personal/molkky-hub.md`](projects/personal/molkky-hub.md) |
 | **マルタ村 PJ の状況** | [`projects/molkky-dome/README.md`](projects/molkky-dome/README.md) |
 | **完了タスクの記録** | [`tasks/done.md`](tasks/done.md) |
+| **セットアップ手順書** | [`docs/setup-guides/`](docs/setup-guides/README.md) |
 | **設計メモ・ナレッジ** | [`docs/`](docs/README.md) |
 
 ## プロジェクト領域
@@ -43,8 +44,11 @@ sp-projects/
 │   │   └── molkky-hub.md
 │   └── molkky-dome/             # マルタ村共同プロジェクト
 │       └── README.md
+├── scripts/                     # コピペで使えるスクリプト
+│   └── ga4-monthly-export.gs    # GA4月次エクスポートGAS
 └── docs/                        # 意思決定ログ・設計メモ・ナレッジ
-    └── README.md
+    ├── README.md
+    └── setup-guides/             # セットアップ手順書（順番に実行するだけ）
 ```
 
 ## 運営方針

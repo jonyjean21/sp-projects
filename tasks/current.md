@@ -4,27 +4,30 @@
 
 PC を開いたらまずここを見る。上から優先度が高い順。
 
+**手順書が全部揃ってる → 順番にやるだけ:** [docs/setup-guides/](../docs/setup-guides/README.md)
+
 ---
 
-## すぐやる（各15〜30分）
+## すぐやる（手順書あり → 順番にやるだけ）
 
-### GA4 自動エクスポート設定
-- [ ] GA4 のプロパティIDを確認（GA管理画面 → プロパティ設定）
-- [ ] スプレッドシートにGASスクリプトを設定
-- [ ] 毎月1日のトリガーを設定
+### ① GA4 自動エクスポート設定（30分）
+- [ ] 手順書に従って設定: [01-ga4-export-setup.md](../docs/setup-guides/01-ga4-export-setup.md)
+- [ ] GASスクリプト: [scripts/ga4-monthly-export.gs](../scripts/ga4-monthly-export.gs)（コピペするだけ）
 - これが動けばチャットで「先月どうだった？」と聞くだけで分析できる
-- 詳細: [docs/ga-auto-export-design.md](../docs/ga-auto-export-design.md)
 
-### 大会情報収集の自動化（Phase 1）
-- [ ] Google Alerts を設定（「モルック 大会」「モルック 参加者募集」「モルック 開催」）
-- [ ] スプレッドシートに IMPORTFEED 関数を追加
-- 詳細: [docs/tournament-collection-design.md](../docs/tournament-collection-design.md)
+### ② Google Alerts 設定（10分）
+- [ ] 手順書に従って設定: [02-google-alerts-setup.md](../docs/setup-guides/02-google-alerts-setup.md)
+- ウェブ上の大会情報が自動でスプシに入る
 
-### SEO クイックウィン
-- [ ] Search Console で「表示回数多い × CTR低い」クエリを確認
-- [ ] 該当ページのタイトル・meta description を改善
-- SEO SIMPLE PACK 導入済みを確認 ✓
-- 詳細: [docs/seo-improvement-plan.md](../docs/seo-improvement-plan.md)
+### ③ IFTTT Pro 設定（30分）
+- [ ] 手順書に従って設定: [03-ifttt-setup.md](../docs/setup-guides/03-ifttt-setup.md)
+- X上のモルック投稿が5分ごとにスプシに自動記録される
+- 費用: $2.99/月（承認済み）
+
+### ④ SEO クイックウィン（30〜40分）
+- [ ] 手順書に従って実施: [04-seo-quickwin-guide.md](../docs/setup-guides/04-seo-quickwin-guide.md)
+- Search Consoleで「表示多い × CTR低い」キーワード → タイトル改善
+- SEO SIMPLE PACK 導入済み ✓
 
 ---
 
