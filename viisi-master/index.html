@@ -270,6 +270,14 @@
 
   /* パスワードエラー */
   .pw-error { color: #f87171; font-size: 12px; margin-top: -6px; margin-bottom: 8px; display: none; }
+
+  /* 編集ボタン */
+  .edit-btn {
+    background: none; border: none; color: #475569; font-size: 16px;
+    cursor: pointer; padding: 4px 6px; border-radius: 6px;
+    transition: all 0.2s; flex-shrink: 0;
+  }
+  .edit-btn:active { color: #fbbf24; background: #fbbf2422; }
 </style>
 </head>
 <body>
@@ -382,6 +390,49 @@
   </div>
 </div>
 
+<!-- ===== 試合編集モーダル ===== -->
+<div class="modal-overlay" id="edit-match-modal">
+  <div class="modal">
+    <h3>試合を編集</h3>
+    <div style="margin-bottom: 8px;">
+      <div class="section-label" style="margin-bottom: 4px;">日付</div>
+      <input type="date" class="input-field" id="edit-date">
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+      <div>
+        <div class="section-label" style="margin-bottom: 4px;">挑戦者</div>
+        <select class="big-select" id="edit-challenger"></select>
+      </div>
+      <div>
+        <div class="section-label" style="margin-bottom: 4px;">防衛側</div>
+        <select class="big-select" id="edit-defender"></select>
+      </div>
+    </div>
+    <div style="margin-bottom: 8px;">
+      <div class="section-label" style="margin-bottom: 4px;">試合タイプ</div>
+      <select class="big-select" id="edit-role" style="font-size: 14px;">
+        <option value="gatekeeper">⚔️ 門番戦</option>
+        <option value="champion">👑 チャンピオン戦</option>
+      </select>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+      <div>
+        <div class="section-label" style="margin-bottom: 4px;">挑戦者スコア</div>
+        <select class="big-select" id="edit-sc" style="font-size: 20px; font-weight: 800; text-align: center;"></select>
+      </div>
+      <div>
+        <div class="section-label" style="margin-bottom: 4px;">防衛側スコア</div>
+        <select class="big-select" id="edit-sd" style="font-size: 20px; font-weight: 800; text-align: center;"></select>
+      </div>
+    </div>
+    <div style="display: flex; gap: 8px; margin-top: 12px;">
+      <button class="btn-full btn-danger" onclick="deleteEditMatch()" style="flex:1;">削除</button>
+      <button class="btn-full btn-secondary" onclick="hideModal('edit-match-modal')" style="flex:1;">キャンセル</button>
+      <button class="btn-full btn-primary" onclick="saveEditMatch()" style="flex:1;">保存</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== ボトムナビ ===== -->
 <div class="bottom-nav">
   <button class="nav-btn active" onclick="goTo('record')">
@@ -406,7 +457,7 @@
 // データ管理
 // ============================================================
 const STORAGE_KEY = 'viisi-master-data';
-const ADMIN_PASSWORD = '5senoh';
+const ADMIN_PASSWORD = 'gosaki';
 const DEFAULT_DATA = {
   champion: { name: "こ〜すけ", x_handle: "@kou1109_kei823", since: "2026-02-07", defenses: 0 },
   gatekeepers: [
@@ -816,7 +867,10 @@ function generateOutputs() {
     '💥 試合速報': genMatchDay(ms),
     '💪 防衛報告': genDefense(ms),
     '🎉 新王誕生': genNewChamp(ms),
-    '✏️ カスタム': genCustom(ms)
+    '✏️ カスタム': genCustom(ms),
+    '📋 全試合結果': genNoteResults(ms),
+    '🛡️ 門番戦歴': genNoteGatekeeperHistory(),
+    '👑 タイトルマッチ': genNoteTitleMatch()
   };
 
   const tabsEl = document.getElementById('template-tabs');
@@ -915,6 +969,54 @@ function genCustom(ms) {
 }
 
 // ============================================================
+// 追加テンプレート（詳細テキスト）
+// ============================================================
+function genNoteResults(ms) {
+  let t = '【5先王 試合結果】\n';
+  t += `${ms[0].date}\n\n`;
+  ms.forEach(m => {
+    const prefix = m.role === 'champion' ? '👑王者戦' : '⚔️門番戦';
+    const result = m.winner === m.challenger ? '挑戦者勝利' : '防衛成功';
+    t += `${prefix}: ${m.challenger} vs ${m.defender}\n`;
+    t += `スコア: ${m.sc}-${m.sd}（${result}）\n\n`;
+  });
+  t += '#5先王 #モルック';
+  return t;
+}
+
+function genNoteGatekeeperHistory() {
+  let t = '【5先王 門番戦歴】\n\n';
+  D.gatekeepers.forEach(gk => {
+    const allMs = D.matches.filter(m => m.defender === gk.name && m.role === 'gatekeeper');
+    const w = allMs.filter(m => m.winner === gk.name).length;
+    const l = allMs.filter(m => m.winner !== gk.name).length;
+    const total = w + l;
+    const rate = total > 0 ? Math.round(w / total * 100) : 0;
+    t += `🛡️${gk.name}: ${w}勝${l}敗（勝率${rate}%）\n`;
+    allMs.forEach(m => {
+      const mark = m.winner === gk.name ? '○' : '●';
+      t += `  ${mark} vs ${m.challenger} ${m.sd}-${m.sc}\n`;
+    });
+    t += '\n';
+  });
+  t += '#5先王 #モルック';
+  return t;
+}
+
+function genNoteTitleMatch() {
+  const champMs = D.matches.filter(m => m.role === 'champion');
+  if (champMs.length === 0) return '（タイトルマッチの記録なし）\n\n#5先王 #モルック';
+  let t = '【5先王 タイトルマッチ歴】\n\n';
+  champMs.forEach(m => {
+    const result = m.winner === m.challenger ? '→ 新王誕生!' : '→ 王者防衛';
+    t += `${m.date}: ${m.challenger} vs 👑${m.defender}\n`;
+    t += `スコア: ${m.sc}-${m.sd} ${result}\n\n`;
+  });
+  t += '#5先王 #モルック';
+  return t;
+}
+
+// ============================================================
 // コピー
 // ============================================================
 function copyText(elementId, btn) {
@@ -934,32 +1036,28 @@ function copyText(elementId, btn) {
 // タイトルマッチ控え算出
 // ============================================================
 function getQualifiedChallengers() {
-  const gkNames = D.gatekeepers.map(g => g.name);
+  // 1人でも門番を倒せば控えに入れる
+  // ただし控え中に門番に負けたらリセット（直近の門番戦が勝利であること）
   const challengers = [...new Set(D.matches.filter(m => m.role === 'gatekeeper').map(m => m.challenger))];
   const qualified = [];
 
   challengers.forEach(c => {
-    let allBeaten = true;
-    let latestQualifyDate = '';
+    const gkMatches = D.matches.filter(m => m.role === 'gatekeeper' && m.challenger === c);
+    if (gkMatches.length === 0) return;
 
-    for (const gk of gkNames) {
-      // この門番との全試合（時系列順）
-      const vsGk = D.matches.filter(m => m.role === 'gatekeeper' && m.challenger === c && m.defender === gk);
-      if (vsGk.length === 0) { allBeaten = false; break; }
+    // 門番に1勝以上していること
+    const hasWin = gkMatches.some(m => m.winner === c);
+    if (!hasWin) return;
 
-      // 最新の試合結果で判定（控え中に負けたらリセット）
-      const latest = vsGk[vsGk.length - 1];
-      if (latest.winner !== c) { allBeaten = false; break; }
+    // 直近の門番戦が勝利であること（負けたら控え脱落）
+    const latest = gkMatches[gkMatches.length - 1];
+    if (latest.winner !== c) return;
 
-      if (latest.date > latestQualifyDate) latestQualifyDate = latest.date;
-    }
-
-    if (allBeaten) {
-      qualified.push({ name: c, date: latestQualifyDate });
-    }
+    // 資格取得日 = 直近の門番勝利日
+    qualified.push({ name: c, date: latest.date });
   });
 
-  // 資格取得日が早い順
+  // 資格取得日が早い順（先に倒した人が優先）
   qualified.sort((a, b) => a.date.localeCompare(b.date));
   return qualified;
 }
@@ -1035,7 +1133,7 @@ function renderStats() {
 
   // 直近の試合
   const sorted = [...ms].sort((a, b) => b.date.localeCompare(a.date));
-  document.getElementById('recent-list').innerHTML = sorted.slice(0, 5).map((m, i) => renderMatchItem(m, ms.length - i)).join('');
+  document.getElementById('recent-list').innerHTML = sorted.slice(0, 5).map((m, i) => renderMatchItem(m, ms.length - i, -1)).join('');
 }
 
 // タイトルマッチ控え表示
@@ -1044,7 +1142,7 @@ function renderTitleQueue() {
   const el = document.getElementById('title-queue');
 
   if (qualified.length === 0) {
-    el.innerHTML = '<div style="color:#64748b;font-size:13px;padding:4px 0;">現在、全門番撃破者なし</div>';
+    el.innerHTML = '<div style="color:#64748b;font-size:13px;padding:4px 0;">現在、挑戦権獲得者なし</div>';
     return;
   }
 
@@ -1170,7 +1268,7 @@ function renderHistory() {
       const dateLabel = formatDateLabel(m.date);
       html += `<div class="date-group-header">${dateLabel}</div>`;
     }
-    html += renderMatchItem(m, numMap.get(m));
+    html += renderMatchItem(m, numMap.get(m), D.matches.indexOf(m));
   });
 
   if (html === '') html = '<div style="color:#64748b;font-size:13px;padding:8px 0;">該当する試合がありません</div>';
@@ -1188,7 +1286,7 @@ function formatDateLabel(dateStr) {
   return `${y}/${mo}/${day} (${dow})`;
 }
 
-function renderMatchItem(m, num) {
+function renderMatchItem(m, num, matchIdx) {
   const won = m.winner === m.challenger;
   const isChamp = m.role === 'champion';
   let tagClass, tagText;
@@ -1198,6 +1296,7 @@ function renderMatchItem(m, num) {
   const prefix = isChamp ? '👑' : '🛡️';
   const score = (m.sc != null && m.sd != null) ? `${m.sc}-${m.sd}` : '--';
   const numLabel = num ? `#${num}` : '';
+  const editBtn = matchIdx >= 0 ? `<button class="edit-btn" onclick="startEditMatch(${matchIdx})">✎</button>` : '';
   return `
     <div class="match-item">
       <div class="match-num">${numLabel}</div>
@@ -1206,6 +1305,7 @@ function renderMatchItem(m, num) {
       </div>
       <div class="score">${score}</div>
       <span class="result-tag ${tagClass}">${tagText}</span>
+      ${editBtn}
     </div>
   `;
 }
@@ -1252,6 +1352,70 @@ function refreshAllSelects() {
     const val = sel.value;
     sel.innerHTML = playerOptions(val);
   });
+}
+
+// ============================================================
+// 試合編集
+// ============================================================
+let editingMatchIdx = -1;
+
+function startEditMatch(idx) {
+  requireAuth(function() { openEditMatch(idx); });
+}
+
+function editPlayerOptions(selected) {
+  const names = Object.keys(D.players).sort((a, b) => {
+    const order = { champion: 0, gatekeeper: 1, former_champion: 2, challenger: 3 };
+    return (order[D.players[a].role] || 9) - (order[D.players[b].role] || 9);
+  });
+  let html = '';
+  names.forEach(n => {
+    const sel = n === selected ? ' selected' : '';
+    html += `<option value="${n}"${sel}>${n}</option>`;
+  });
+  return html;
+}
+
+function openEditMatch(idx) {
+  editingMatchIdx = idx;
+  const m = D.matches[idx];
+  if (!m) return;
+
+  document.getElementById('edit-date').value = m.date;
+  document.getElementById('edit-challenger').innerHTML = editPlayerOptions(m.challenger);
+  document.getElementById('edit-defender').innerHTML = editPlayerOptions(m.defender);
+  document.getElementById('edit-role').value = m.role;
+  document.getElementById('edit-sc').innerHTML = scoreOptions(m.sc);
+  document.getElementById('edit-sd').innerHTML = scoreOptions(m.sd);
+
+  document.getElementById('edit-match-modal').classList.add('show');
+}
+
+function saveEditMatch() {
+  if (editingMatchIdx < 0) return;
+  const m = D.matches[editingMatchIdx];
+  m.date = document.getElementById('edit-date').value;
+  m.challenger = document.getElementById('edit-challenger').value;
+  m.defender = document.getElementById('edit-defender').value;
+  m.role = document.getElementById('edit-role').value;
+  m.sc = parseInt(document.getElementById('edit-sc').value);
+  m.sd = parseInt(document.getElementById('edit-sd').value);
+  m.winner = m.sc > m.sd ? m.challenger : m.defender;
+
+  saveData();
+  hideModal('edit-match-modal');
+  showToast('試合を更新しました');
+  renderHistory();
+}
+
+function deleteEditMatch() {
+  if (editingMatchIdx < 0) return;
+  if (!confirm('この試合記録を削除しますか？')) return;
+  D.matches.splice(editingMatchIdx, 1);
+  saveData();
+  hideModal('edit-match-modal');
+  showToast('試合を削除しました');
+  renderHistory();
 }
 
 // ============================================================
