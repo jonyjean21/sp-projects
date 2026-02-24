@@ -25,10 +25,12 @@
 
 ### マルタ村共同プロジェクト（`projects/molkky-dome/`）
 
-- マルタ村（兵庫県川西市）の中さんとの共同プロジェクト
-- アプリ開発（Manus活用）など複数PJが進行中
-- 孔雀は全体管理・企画推進を担当
-- モルハブとの連携を深めていく予定
+- マルタ村（兵庫県川西市）のコミュニティ経済圏構想
+- 中さん + ししょー + 孔雀の3人体制、週2回チャプチェ会
+- 中さんがManusでアプリ開発 → GitHub org: [marutamura](https://github.com/marutamura)
+- 孔雀はClaude Codeでコードレビュー & 全体設計を担当
+- アプリ10個以上（GitHub連携済5個 + Manusのみ5個+）
+- [コードレビュー・ワークフロー](docs/marutamura-review-workflow.md)
 
 ## 構成
 

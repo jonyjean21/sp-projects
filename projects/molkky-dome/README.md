@@ -1,19 +1,86 @@
 # マルタ村共同プロジェクト
 
-マルタ村（兵庫県川西市）の中さんとの共同プロジェクト。
-マルタ村内にモルックドームがある。
+マルタ村（兵庫県川西市）を拠点としたコミュニティ経済圏構想。
+モルックドーム運営 + アプリ開発 + 文化づくりを同時並行で進めている。
 
 ## メンバーと役割
 
 | メンバー | 役割 |
 |---------|------|
-| 孔雀 | 全体管理・企画推進・モルハブとの連携 |
-| 中さん | モルックドーム運営・アプリ開発主導 |
+| 孔雀 | 全体管理・企画推進・コードレビュー・モルハブとの連携 |
+| 中さん | モルックドーム運営・アプリ開発主導（Manus活用） |
+| ししょー | （チャプチェ会メンバー） |
+
+## 定例ミーティング
+
+- **チャプチェ会** — 週2回、孔雀・中さん・ししょーの3人で進捗確認
+- ベースはNotionで管理
 
 ## 管理ツール
 
-- **Notion** — プロジェクト一覧・進捗管理（メインの管理場所）
-- **スプレッドシート** — 一部のデータ管理
+| ツール | 用途 |
+|-------|------|
+| **Notion** | プロジェクト一覧・進捗管理（メインの管理場所） |
+| **GitHub** | ソースコード管理（org: [marutamura](https://github.com/marutamura)） |
+| **Manus** | アプリ開発・プロトタイピング |
+| **Vercel** | アプリのデプロイ先 |
+| **LINE Bot** | marutamura-bot（AI→Notion管理 & GitHub Issue自動作成） |
+| **sp-projects** | 孔雀のプロジェクト司令塔（このリポジトリ） |
+
+---
+
+## アプリ一覧 & ステータス（2026-02-24時点）
+
+### GitHub連携済み（コードレビュー可能）
+
+| アプリ名 | リポジトリ | URL | 技術 | DB | 認証 | ステータス |
+|---------|-----------|-----|------|-----|------|----------|
+| **目標達成部** | [mokuhyo-tassei-bu](https://github.com/marutamura/mokuhyo-tassei-bu) | [manus](https://5174-icusdcnczkhi5e0ewd04e-590d85ac.sg1.manus.computer/) | React19+Express+tRPC | MySQL+Drizzle | OAuth | **開発完了・レビュー待ち** |
+| **推し活** | [oshi-katsu](https://github.com/marutamura/oshi-katsu) | [manus](https://oshikatsu.manus.space) | React19+Express+tRPC | MySQL+Drizzle | JWT+SSO | **開発完了・レビュー待ち** |
+| **満願寺スタンプ** | [manganji-stamp](https://github.com/marutamura/manganji-stamp) | [vercel](https://manganji-stamp.vercel.app) | React19+Express | なし | OAuth | **デザイン確定・実装中** |
+| **marutamura-bot** | [marutamura-bot](https://github.com/marutamura/marutamura-bot) | [vercel](https://marutamura-bot.vercel.app) | Node+Claude AI | なし | LINE署名検証 | **稼働中** |
+| **プチスポンサー** | [marutamura](https://github.com/marutamura/marutamura) (petit-sponsor/) | - | React19+Express | なし | なし | **企画段階** |
+
+### Manusのみ（GitHub未連携 → 要移行）
+
+| アプリ名 | URL | 内容 | ステータス |
+|---------|-----|------|----------|
+| **マルタギルド** | [manus](https://maruta-guild.manus.space) | （要確認） | 要中身確認 |
+| **モノハブ** | [manus](https://monohub.manus.space) | （要確認） | 要中身確認 |
+| **満願寺どっち？** | [manus](https://manganji-docchi.manus.space) | （要確認） | 要中身確認 |
+| **あちらさまからです** | [manus](https://achirasama.manus.space) | （要確認） | 要中身確認 |
+| **ハッピー鑑定士** | [manus](https://happykantei.manus.space) | （要確認） | 要中身確認 |
+
+### 共通技術スタック
+
+全アプリ共通: **React 19 + TypeScript + Vite + Express + Radix UI + Tailwind CSS + pnpm**
+
+### 共通基盤（発見済み）
+
+- セッション管理: `COOKIE_NAME: "app_session_id"` を複数アプリで共有
+- SSO: oshi-katsuにSSO対応実装済み → アプリ間ユーザー連携の基礎
+- Bot連携: LINE→Claude AI→Notion/GitHub Issue自動作成が稼働中
+
+---
+
+## コードレビュー・ワークフロー
+
+```
+中さん（Manus）→ GitHub push → 孔雀（Claude）レビュー → Issue/コメント → 中さん修正 → 再デプロイ
+```
+
+### レビュー対象（優先順）
+
+1. **oshi-katsu** — SSO+認証があるのでセキュリティレビュー重要
+2. **mokuhyo-tassei-bu** — フルスタック完成済み
+3. **manganji-stamp** — フロントエンド中心
+
+### レビュー観点
+
+- セキュリティ（認証・入力検証・SQLインジェクション等）
+- パフォーマンス（不要なre-render、N+1クエリ等）
+- コード品質（型安全性、エラーハンドリング）
+- UX（レスポンシブ、アクセシビリティ）
 
 ---
 
