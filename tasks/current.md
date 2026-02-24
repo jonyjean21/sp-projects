@@ -8,7 +8,16 @@ PC を開いたらまずここを見る。上から優先度が高い順。
 
 ---
 
-## すぐやる（手順書あり → 順番にやるだけ）
+## すぐやる（PC開いたらこれ）
+
+### ⓪ GitHub Pages を有効にする（1分）
+- [ ] https://github.com/jonyjean21/sp-projects にアクセス → Settings → Pages
+- [ ] Branch を選択（mainにマージ後なら main）→ Save
+- [ ] ダッシュボードURL確認: https://jonyjean21.github.io/sp-projects/docs/chapche-dashboard.html
+
+---
+
+## セットアップ系（手順書あり → 順番にやるだけ）
 
 ### ① GA4 自動エクスポート設定（30分）
 - [ ] 手順書に従って設定: [01-ga4-export-setup.md](../docs/setup-guides/01-ga4-export-setup.md)
