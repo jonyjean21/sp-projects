@@ -77,25 +77,22 @@
   .score-side { text-align: center; flex: 1; }
   .score-side .label { font-size: 12px; color: #94a3b8; margin-bottom: 6px; }
   .score-side .player-label { font-size: 14px; font-weight: 700; color: #f1f5f9; margin-bottom: 8px; }
-  .score-num {
-    font-size: 48px; font-weight: 800; color: #f8fafc; line-height: 1;
-    min-width: 60px; display: inline-block;
+  .score-select {
+    width: 100%; padding: 12px 8px; border-radius: 10px;
+    border: 1px solid #334155; background: #0f172a; color: #f8fafc;
+    font-size: 32px; font-weight: 800; text-align: center;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 8px center;
   }
-  .score-btn {
-    width: 48px; height: 48px; border-radius: 50%;
-    border: 1px solid #334155; background: #0f172a; color: #e2e8f0;
-    font-size: 22px; font-weight: 700; cursor: pointer;
-    display: inline-flex; align-items: center; justify-content: center;
-    transition: all 0.15s; user-select: none;
-  }
-  .score-btn:active { background: #334155; transform: scale(0.95); }
+  .score-select:focus { outline: none; border-color: #fbbf24; }
   .score-vs {
     font-size: 20px; font-weight: 800; color: #475569;
     padding: 0 4px; align-self: center; margin-top: 30px;
   }
 
   /* 勝者ハイライト */
-  .score-side.winner .score-num { color: #fbbf24; }
+  .score-side.winner .score-select { color: #fbbf24; border-color: #fbbf24; }
   .score-side.winner .player-label { color: #fbbf24; }
 
   /* ボタン */
@@ -135,19 +132,6 @@
     white-space: nowrap; cursor: pointer; transition: all 0.2s;
   }
   .template-tab.active { background: #fbbf2422; color: #fbbf24; border-color: #fbbf2444; }
-
-  /* ノート出力タブ */
-  .note-tabs {
-    display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px;
-    -webkit-overflow-scrolling: touch; scrollbar-width: none;
-  }
-  .note-tabs::-webkit-scrollbar { display: none; }
-  .note-tab {
-    padding: 8px 14px; border-radius: 20px; border: 1px solid #334155;
-    background: #0f172a; color: #94a3b8; font-size: 12px; font-weight: 600;
-    white-space: nowrap; cursor: pointer; transition: all 0.2s;
-  }
-  .note-tab.active { background: #3b82f622; color: #60a5fa; border-color: #3b82f644; }
 
   /* 試合リスト */
   .match-item {
@@ -249,9 +233,6 @@
   .input-field:focus { outline: none; border-color: #fbbf24; }
   .input-field::placeholder { color: #475569; }
 
-  /* ノート出力 */
-  .note-output { font-family: monospace; font-size: 12px; }
-
   /* トースト */
   .toast {
     position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
@@ -273,6 +254,22 @@
     white-space: nowrap; cursor: pointer; transition: all 0.2s;
   }
   .filter-tab.active { background: #fbbf2422; color: #fbbf24; border-color: #fbbf2444; }
+
+  /* タイトルマッチ控え */
+  .queue-item {
+    display: flex; align-items: center; gap: 12px; padding: 10px 0;
+    border-bottom: 1px solid #1e293b;
+  }
+  .queue-item:last-child { border-bottom: none; }
+  .queue-rank {
+    font-size: 18px; font-weight: 800; color: #fbbf24; min-width: 28px; text-align: center;
+  }
+  .queue-info { flex: 1; }
+  .queue-name { font-size: 15px; font-weight: 700; color: #f1f5f9; }
+  .queue-date { font-size: 11px; color: #64748b; }
+
+  /* パスワードエラー */
+  .pw-error { color: #f87171; font-size: 12px; margin-top: -6px; margin-bottom: 8px; display: none; }
 </style>
 </head>
 <body>
@@ -304,7 +301,7 @@
   </button>
 </div>
 
-<!-- ===== ページ2: 出力（X投稿 & ノート） ===== -->
+<!-- ===== ページ2: 出力（X投稿） ===== -->
 <div id="page-output" class="page">
 
   <!-- X投稿セクション -->
@@ -315,16 +312,6 @@
     <div class="char-count" id="x-char-count">0 / 280</div>
     <button class="btn-full btn-copy" onclick="copyText('x-output', this)" style="margin-top: 8px;">
       X投稿をコピー
-    </button>
-  </div>
-
-  <!-- ノート用セクション -->
-  <div class="section-label" style="margin-top: 20px;">ノート用テキスト</div>
-  <div class="note-tabs" id="note-tabs"></div>
-  <div class="card">
-    <div class="output-box note-output" id="note-output"></div>
-    <button class="btn-full btn-copy" onclick="copyText('note-output', this)" style="margin-top: 8px;">
-      ノート用をコピー
     </button>
   </div>
 
@@ -339,6 +326,9 @@
 
   <div class="section-label" style="margin-top: 16px;">現チャンピオン</div>
   <div class="card" id="champ-card"></div>
+
+  <div class="section-label" style="margin-top: 4px;">タイトルマッチ控え</div>
+  <div class="card" id="title-queue"></div>
 
   <div class="section-label" style="margin-top: 4px;">門番</div>
   <div class="card" id="gk-list"></div>
@@ -361,19 +351,9 @@
 <div id="page-settings" class="page">
   <div class="section-label">選手管理</div>
   <div class="card" id="player-list"></div>
-  <button class="btn-full btn-secondary" onclick="showAddPlayerModal()" style="margin-top: 8px;">
+  <button class="btn-full btn-secondary" onclick="requireAuth(function(){ showAddPlayerModal(); })" style="margin-top: 8px;">
     + 新しい選手を追加
   </button>
-
-  <div class="section-label" style="margin-top: 20px;">データ管理</div>
-  <div class="card">
-    <button class="btn-full btn-secondary" onclick="exportData()" style="margin-bottom: 8px;">
-      JSONエクスポート
-    </button>
-    <button class="btn-full btn-danger" onclick="confirmReset()">
-      データをリセット
-    </button>
-  </div>
 </div>
 
 <!-- ===== 新規選手モーダル ===== -->
@@ -385,6 +365,19 @@
     <div style="display: flex; gap: 8px; margin-top: 8px;">
       <button class="btn-full btn-secondary" onclick="hideModal('add-player-modal')" style="flex:1;">キャンセル</button>
       <button class="btn-full btn-primary" onclick="addNewPlayer()" style="flex:1;">追加</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== パスワードモーダル ===== -->
+<div class="modal-overlay" id="pw-modal">
+  <div class="modal">
+    <h3>パスワードを入力</h3>
+    <input class="input-field" id="pw-input" type="password" placeholder="パスワード" autocomplete="off">
+    <div class="pw-error" id="pw-error">パスワードが違います</div>
+    <div style="display: flex; gap: 8px; margin-top: 8px;">
+      <button class="btn-full btn-secondary" onclick="cancelAuth()" style="flex:1;">キャンセル</button>
+      <button class="btn-full btn-primary" onclick="submitAuth()" style="flex:1;">OK</button>
     </div>
   </div>
 </div>
@@ -413,6 +406,7 @@
 // データ管理
 // ============================================================
 const STORAGE_KEY = 'viisi-master-data';
+const ADMIN_PASSWORD = '5senoh';
 const DEFAULT_DATA = {
   champion: { name: "こ〜すけ", x_handle: "@kou1109_kei823", since: "2026-02-07", defenses: 0 },
   gatekeepers: [
@@ -527,9 +521,60 @@ function showToast(msg) {
 }
 
 // ============================================================
+// パスワード認証
+// ============================================================
+let isAuthenticated = false;
+let pendingAuthCallback = null;
+
+function requireAuth(callback) {
+  if (isAuthenticated) { callback(); return; }
+  pendingAuthCallback = callback;
+  document.getElementById('pw-input').value = '';
+  document.getElementById('pw-error').style.display = 'none';
+  document.getElementById('pw-modal').classList.add('show');
+  setTimeout(() => document.getElementById('pw-input').focus(), 100);
+}
+
+function submitAuth() {
+  const pw = document.getElementById('pw-input').value;
+  if (pw === ADMIN_PASSWORD) {
+    isAuthenticated = true;
+    hideModal('pw-modal');
+    if (pendingAuthCallback) { pendingAuthCallback(); pendingAuthCallback = null; }
+  } else {
+    document.getElementById('pw-error').style.display = 'block';
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
+  }
+}
+
+function cancelAuth() {
+  hideModal('pw-modal');
+  pendingAuthCallback = null;
+  // 認証キャンセル時は戦績ページに戻す
+  goTo('stats');
+}
+
+// Enterキーでパスワード送信
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && document.getElementById('pw-modal').classList.contains('show')) {
+    submitAuth();
+  }
+});
+
+// ============================================================
 // ナビゲーション
 // ============================================================
 function goTo(page) {
+  // 記録と投稿はパスワード保護
+  if ((page === 'record' || page === 'output') && !isAuthenticated) {
+    requireAuth(function() { goToInternal(page); });
+    return;
+  }
+  goToInternal(page);
+}
+
+function goToInternal(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
@@ -547,6 +592,15 @@ function goTo(page) {
 // ============================================================
 let entryCount = 0;
 let entries = [];
+
+function scoreOptions(selected) {
+  let html = '';
+  for (let i = 0; i <= 15; i++) {
+    const sel = i === selected ? ' selected' : '';
+    html += `<option value="${i}"${sel}>${i}</option>`;
+  }
+  return html;
+}
 
 function playerOptions(selected) {
   // 王者→門番→元王者→挑戦者の順
@@ -603,17 +657,13 @@ function addEntry() {
       <div class="score-side" id="entry-${id}-sc-side">
         <div class="label">挑戦者</div>
         <div class="player-label" id="entry-${id}-sc-name">—</div>
-        <button class="score-btn" onclick="changeScore(${id},'sc',-1)">−</button>
-        <span class="score-num" id="entry-${id}-sc">0</span>
-        <button class="score-btn" onclick="changeScore(${id},'sc',1)">+</button>
+        <select class="score-select" id="entry-${id}-sc" onchange="onScoreChange(${id})">${scoreOptions(0)}</select>
       </div>
       <div class="score-vs">VS</div>
       <div class="score-side" id="entry-${id}-sd-side">
         <div class="label">防衛側</div>
         <div class="player-label" id="entry-${id}-sd-name">—</div>
-        <button class="score-btn" onclick="changeScore(${id},'sd',-1)">−</button>
-        <span class="score-num" id="entry-${id}-sd">0</span>
-        <button class="score-btn" onclick="changeScore(${id},'sd',1)">+</button>
+        <select class="score-select" id="entry-${id}-sd" onchange="onScoreChange(${id})">${scoreOptions(0)}</select>
       </div>
     </div>
   `;
@@ -693,11 +743,11 @@ function updatePlayerInfo(entryId, field, name) {
   if (nameEl) nameEl.textContent = name;
 }
 
-function changeScore(entryId, field, delta) {
+function onScoreChange(entryId) {
   const entry = entries.find(e => e.id === entryId);
   if (!entry) return;
-  entry[field] = Math.max(0, Math.min(99, entry[field] + delta));
-  document.getElementById(`entry-${entryId}-${field}`).textContent = entry[field];
+  entry.sc = parseInt(document.getElementById(`entry-${entryId}-sc`).value) || 0;
+  entry.sd = parseInt(document.getElementById(`entry-${entryId}-sd`).value) || 0;
   const scSide = document.getElementById(`entry-${entryId}-sc-side`);
   const sdSide = document.getElementById(`entry-${entryId}-sd-side`);
   scSide.classList.toggle('winner', entry.sc > entry.sd);
@@ -789,32 +839,6 @@ function generateOutputs() {
     }
     first = false;
   }
-
-  // === ノート用テキスト ===
-  const notes = {
-    '📋 試合結果': genNoteResults(ms),
-    '🛡️ 門番戦歴': genNoteGatekeeperHistory(),
-    '👑 タイトルマッチ': genNoteTitleMatch()
-  };
-
-  const noteTabsEl = document.getElementById('note-tabs');
-  noteTabsEl.innerHTML = '';
-  first = true;
-  for (const [label, text] of Object.entries(notes)) {
-    const btn = document.createElement('button');
-    btn.className = 'note-tab' + (first ? ' active' : '');
-    btn.textContent = label;
-    btn.onclick = () => {
-      noteTabsEl.querySelectorAll('.note-tab').forEach(t => t.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('note-output').textContent = text;
-    };
-    noteTabsEl.appendChild(btn);
-    if (first) {
-      document.getElementById('note-output').textContent = text;
-    }
-    first = false;
-  }
 }
 
 function updateCharCount(text) {
@@ -891,114 +915,6 @@ function genCustom(ms) {
 }
 
 // ============================================================
-// ノート用テキスト生成
-// ============================================================
-
-// 【試合結果】ノート — 今回入力した試合の結果一覧
-function genNoteResults(ms) {
-  // 既存データから通し番号を算出
-  const startNum = D.matches.length - ms.length + 1;
-  let t = '【試合結果】\n\n';
-
-  ms.forEach((m, i) => {
-    const num = startNum + i;
-    const dateShort = m.date.replace(/^\d{4}-/, '').replace('-', '/');
-    const isChamp = m.role === 'champion';
-    const won = m.winner === m.challenger;
-
-    // 門番/王者のプレフィックス
-    const defLabel = isChamp ? '王者' : '門番';
-
-    // スコア表示
-    const score = (m.sd != null && m.sc != null) ? `${m.sd}-${m.sc}` : '';
-
-    // 結果
-    let result;
-    if (isChamp && won) result = '新王誕生👑';
-    else if (won) result = '撃破💥';
-    else result = '防衛⚠️';
-
-    t += `${num}.${dateShort}\n`;
-    t += `${defLabel}${m.defender} vs ${m.challenger} ${score} ${result}\n\n`;
-  });
-
-  return t;
-}
-
-// 【門番戦歴】ノート — 各門番の全戦績一覧
-function genNoteGatekeeperHistory() {
-  let t = '【門番戦歴】\n\n';
-
-  D.gatekeepers.forEach(gk => {
-    // この門番の全試合（防衛側として）
-    const gkMatches = D.matches.filter(m => m.defender === gk.name && m.role === 'gatekeeper');
-    const wins = gkMatches.filter(m => m.winner === gk.name).length;
-    const losses = gkMatches.filter(m => m.winner && m.winner !== gk.name).length;
-    const handleStr = gk.x_handle ? ` (${gk.x_handle})` : '';
-
-    t += `🛡️${gk.name}${handleStr} (${wins}勝${losses}敗)\n`;
-
-    gkMatches.forEach(m => {
-      const won = m.winner === gk.name;
-      const mark = won ? '◯' : '×';
-      const scoreStr = (m.sc != null && m.sd != null) ? ` ${m.sd}-${m.sc}` : '';
-      t += `  vs ${m.challenger}${scoreStr} ${mark}\n`;
-    });
-    t += '\n';
-  });
-
-  return t;
-}
-
-// 【タイトルマッチ控え順】ノート — チャンピオン戦の履歴と控え
-function genNoteTitleMatch() {
-  let t = '【タイトルマッチ】\n\n';
-
-  // 現チャンピオン
-  t += `現チャンピオン: 👑${D.champion.name}`;
-  if (D.champion.x_handle) t += ` (${D.champion.x_handle})`;
-  t += `\n就任: ${D.champion.since}\n防衛: ${D.champion.defenses}回\n\n`;
-
-  // チャンピオン戦の履歴
-  const champMatches = D.matches.filter(m => m.role === 'champion');
-  if (champMatches.length > 0) {
-    t += '--- 過去のタイトルマッチ ---\n';
-    champMatches.forEach(m => {
-      const won = m.winner === m.challenger;
-      const result = won ? '→ 新王誕生👑' : '→ 防衛成功🛡️';
-      const scoreStr = (m.sc != null && m.sd != null) ? ` ${m.sd}-${m.sc}` : '';
-      t += `${m.date} ${m.challenger} vs 王者${m.defender}${scoreStr} ${result}\n`;
-    });
-    t += '\n';
-  }
-
-  // 門番全撃破した挑戦者（チャンピオン戦控え）
-  // 全門番を倒した挑戦者を検出
-  const gkNames = D.gatekeepers.map(g => g.name);
-  const challengers = [...new Set(D.matches.filter(m => m.role === 'gatekeeper').map(m => m.challenger))];
-  const qualified = [];
-  challengers.forEach(c => {
-    const beaten = new Set(
-      D.matches.filter(m => m.role === 'gatekeeper' && m.challenger === c && m.winner === c).map(m => m.defender)
-    );
-    const allBeaten = gkNames.every(gk => beaten.has(gk));
-    if (allBeaten) qualified.push(c);
-  });
-
-  if (qualified.length > 0) {
-    t += '--- チャンピオン戦控え ---\n';
-    qualified.forEach((c, i) => {
-      t += `${i + 1}. ${c}\n`;
-    });
-  } else {
-    t += '--- チャンピオン戦控え ---\n';
-    t += '（現在、全門番撃破者なし）\n';
-  }
-
-  return t;
-}
-
-// ============================================================
 // コピー
 // ============================================================
 function copyText(elementId, btn) {
@@ -1015,6 +931,40 @@ function copyText(elementId, btn) {
 }
 
 // ============================================================
+// タイトルマッチ控え算出
+// ============================================================
+function getQualifiedChallengers() {
+  const gkNames = D.gatekeepers.map(g => g.name);
+  const challengers = [...new Set(D.matches.filter(m => m.role === 'gatekeeper').map(m => m.challenger))];
+  const qualified = [];
+
+  challengers.forEach(c => {
+    let allBeaten = true;
+    let latestQualifyDate = '';
+
+    for (const gk of gkNames) {
+      // この門番との全試合（時系列順）
+      const vsGk = D.matches.filter(m => m.role === 'gatekeeper' && m.challenger === c && m.defender === gk);
+      if (vsGk.length === 0) { allBeaten = false; break; }
+
+      // 最新の試合結果で判定（控え中に負けたらリセット）
+      const latest = vsGk[vsGk.length - 1];
+      if (latest.winner !== c) { allBeaten = false; break; }
+
+      if (latest.date > latestQualifyDate) latestQualifyDate = latest.date;
+    }
+
+    if (allBeaten) {
+      qualified.push({ name: c, date: latestQualifyDate });
+    }
+  });
+
+  // 資格取得日が早い順
+  qualified.sort((a, b) => a.date.localeCompare(b.date));
+  return qualified;
+}
+
+// ============================================================
 // 戦績表示
 // ============================================================
 function renderStats() {
@@ -1023,7 +973,6 @@ function renderStats() {
   const champMatches = ms.filter(m => m.role === 'champion');
   const breaks = gkMatches.filter(m => m.winner === m.challenger).length;
   const defenses = gkMatches.filter(m => m.winner === m.defender).length;
-  const champChanges = champMatches.filter(m => m.winner === m.challenger).length;
 
   document.getElementById('stat-grid').innerHTML = `
     <div class="stat-box"><div class="num" style="color:#f1f5f9">${ms.length}</div><div class="lbl">総試合数</div></div>
@@ -1045,6 +994,9 @@ function renderStats() {
       </div>
     </div>
   `;
+
+  // タイトルマッチ控え
+  renderTitleQueue();
 
   // 門番（対戦履歴付き）
   document.getElementById('gk-list').innerHTML = D.gatekeepers.map(gk => {
@@ -1086,6 +1038,31 @@ function renderStats() {
   document.getElementById('recent-list').innerHTML = sorted.slice(0, 5).map((m, i) => renderMatchItem(m, ms.length - i)).join('');
 }
 
+// タイトルマッチ控え表示
+function renderTitleQueue() {
+  const qualified = getQualifiedChallengers();
+  const el = document.getElementById('title-queue');
+
+  if (qualified.length === 0) {
+    el.innerHTML = '<div style="color:#64748b;font-size:13px;padding:4px 0;">現在、全門番撃破者なし</div>';
+    return;
+  }
+
+  el.innerHTML = qualified.map((q, i) => {
+    const handleStr = D.players[q.name] && D.players[q.name].x ? `<span style="color:#60a5fa;font-size:11px;">${D.players[q.name].x}</span>` : '';
+    return `
+      <div class="queue-item">
+        <div class="queue-rank">${i + 1}</div>
+        <div class="queue-info">
+          <div class="queue-name">${q.name}</div>
+          ${handleStr}
+          <div class="queue-date">資格取得: ${q.date}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
 // 挑戦者の門番撃破進捗
 function renderChallengerProgress() {
   const gkNames = D.gatekeepers.map(g => g.name);
@@ -1098,22 +1075,25 @@ function renderChallengerProgress() {
     return;
   }
 
+  // 控え資格者リスト
+  const qualifiedNames = new Set(getQualifiedChallengers().map(q => q.name));
+
   progressEl.innerHTML = challengers.map(c => {
     const cMatches = D.matches.filter(m => m.role === 'gatekeeper' && m.challenger === c);
     const wins = cMatches.filter(m => m.winner === c).length;
     const losses = cMatches.filter(m => m.winner !== c).length;
 
-    // 各門番との結果
+    // 各門番との結果（最新試合ベース）
     const pips = gkNames.map(gk => {
       const vs = cMatches.filter(m => m.defender === gk);
       if (vs.length === 0) return `<span class="gk-pip unplayed">${gk}</span>`;
-      const beat = vs.some(m => m.winner === c);
-      if (beat) return `<span class="gk-pip beaten">${gk}</span>`;
+      // 最新試合の結果で判定
+      const latest = vs[vs.length - 1];
+      if (latest.winner === c) return `<span class="gk-pip beaten">${gk}</span>`;
       return `<span class="gk-pip lost">${gk}</span>`;
     }).join('');
 
-    const allBeaten = gkNames.every(gk => cMatches.some(m => m.defender === gk && m.winner === c));
-    const qualifiedTag = allBeaten ? ' <span style="color:#fbbf24;font-size:10px;">-- 王者挑戦権獲得!</span>' : '';
+    const qualifiedTag = qualifiedNames.has(c) ? ' <span style="color:#fbbf24;font-size:10px;">-- 王者挑戦権獲得!</span>' : '';
 
     return `
       <div class="challenger-card">
@@ -1274,28 +1254,13 @@ function refreshAllSelects() {
   });
 }
 
-function exportData() {
-  const blob = new Blob([JSON.stringify(D, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = `viisi-master-${new Date().toISOString().slice(0,10)}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast('JSONをダウンロードしました');
-}
-
-function confirmReset() {
-  if (confirm('本当にデータをリセットしますか？\n全ての試合記録が消えます。')) {
-    localStorage.removeItem(STORAGE_KEY);
-    location.reload();
-  }
-}
-
 // ============================================================
-// 初期化
+// 初期化（起動時は戦績ページを表示）
 // ============================================================
 loadData();
 addEntry();
+// 初回は戦績ページを表示（みんなが見れるページ）
+goToInternal('stats');
 </script>
 
 </body>
