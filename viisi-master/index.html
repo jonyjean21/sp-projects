@@ -331,6 +331,8 @@
 
 <!-- ===== ページ3: 戦績 ===== -->
 <div id="page-stats" class="page">
+  <div id="stats-links" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;"></div>
+
   <div class="stat-grid" id="stat-grid"></div>
 
   <div class="section-label" style="margin-top: 16px;">現チャンピオン</div>
@@ -338,6 +340,9 @@
 
   <div class="section-label" style="margin-top: 4px;">タイトルマッチ控え</div>
   <div class="card" id="title-queue"></div>
+
+  <div class="section-label" style="margin-top: 4px;">タイトルマッチ履歴</div>
+  <div class="card" id="title-history"></div>
 
   <div class="section-label" style="margin-top: 4px;">門番</div>
   <div class="card" id="gk-list"></div>
@@ -484,6 +489,10 @@
 const STORAGE_KEY = 'viisi-master-data';
 const ADMIN_PASSWORD = 'gosaki';
 const DEFAULT_DATA = {
+  links: {
+    x_account: "https://x.com/viisimaster5",
+    rules_url: "https://nutritious-cesium-455.notion.site/5-2a8d31a2c3eb80c486fafbbef4592477"
+  },
   champion: { name: "こ〜すけ", x_handle: "@kou1109_kei823", since: "2026-02-07", defenses: 0 },
   gatekeepers: [
     { name: "こ〜すけ", x_handle: "@kou1109_kei823" },
@@ -587,6 +596,8 @@ function loadData() {
   } else {
     D = structuredClone(DEFAULT_DATA);
   }
+  // リンク情報をマージ
+  if (!D.links) D.links = structuredClone(DEFAULT_DATA.links);
   // DEFAULT_DATAの最新情報をマージ（新規選手追加・ハンドル更新など）
   if (D && DEFAULT_DATA.players) {
     Object.entries(DEFAULT_DATA.players).forEach(([name, dp]) => {
@@ -720,6 +731,19 @@ function playerOptions(selected) {
 function addEntry() {
   const id = entryCount++;
   const today = new Date().toISOString().slice(0, 10);
+
+  // 前の試合の選択値を引き継ぐ
+  let prevChallenger = '', prevDefender = '', prevDate = today;
+  if (entries.length > 0) {
+    const lastEntry = entries[entries.length - 1];
+    const lastEl = document.getElementById(`entry-${lastEntry.id}`);
+    if (lastEl) {
+      prevChallenger = lastEl.querySelector('[data-field="challenger"]').value || '';
+      prevDefender = lastEl.querySelector('[data-field="defender"]').value || '';
+      prevDate = lastEl.querySelector('[data-field="date"]').value || today;
+    }
+  }
+
   const div = document.createElement('div');
   div.className = 'match-entry';
   div.id = `entry-${id}`;
@@ -730,17 +754,17 @@ function addEntry() {
     </div>
     <div style="margin-bottom: 8px;">
       <div class="section-label" style="margin-bottom: 4px;">日付</div>
-      <input type="date" class="big-select" value="${today}" data-field="date" style="font-size: 14px;">
+      <input type="date" class="big-select" value="${prevDate}" data-field="date" style="font-size: 14px;">
     </div>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
       <div>
         <div class="section-label" style="margin-bottom: 4px;">挑戦者</div>
-        <select class="big-select" data-field="challenger" onchange="onPlayerSelect(this, ${id})">${playerOptions('')}</select>
+        <select class="big-select" data-field="challenger" onchange="onPlayerSelect(this, ${id})">${playerOptions(prevChallenger)}</select>
         <div class="player-display" id="entry-${id}-challenger-info"></div>
       </div>
       <div>
         <div class="section-label" style="margin-bottom: 4px;">防衛側</div>
-        <select class="big-select" data-field="defender" onchange="onDefenderSelect(this, ${id})">${playerOptions('')}</select>
+        <select class="big-select" data-field="defender" onchange="onDefenderSelect(this, ${id})">${playerOptions(prevDefender)}</select>
         <div class="player-display" id="entry-${id}-defender-info"></div>
       </div>
     </div>
@@ -767,6 +791,12 @@ function addEntry() {
   `;
   document.getElementById('match-entries').appendChild(div);
   entries.push({ id, sc: 0, sd: 0 });
+  // 引き継いだ選手の情報を表示
+  if (prevChallenger) updatePlayerInfo(id, 'challenger', prevChallenger);
+  if (prevDefender) {
+    updatePlayerInfo(id, 'defender', prevDefender);
+    autoDetectMatchType(id, prevDefender);
+  }
   checkSaveReady();
 }
 
@@ -887,6 +917,11 @@ function saveAndGenerate() {
   saveData();
   showToast(`${lastSavedMatches.length}試合を記録しました`);
   generateOutputs();
+  // 記録フォームをクリア
+  entries = [];
+  entryCount = 0;
+  document.getElementById('match-entries').innerHTML = '';
+  addEntry();
   goTo('output');
 }
 
@@ -1140,6 +1175,13 @@ function renderStats() {
   const breaks = gkMatches.filter(m => m.winner === m.challenger).length;
   const defenses = gkMatches.filter(m => m.winner === m.defender).length;
 
+  // リンク表示
+  const links = D.links || {};
+  let linksHtml = '';
+  if (links.x_account) linksHtml += `<a href="${links.x_account}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;background:#1e293b;border:1px solid #334155;border-radius:8px;color:#60a5fa;text-decoration:none;font-size:13px;">𝕏 5先王 公式</a>`;
+  if (links.rules_url) linksHtml += `<a href="${links.rules_url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;background:#1e293b;border:1px solid #334155;border-radius:8px;color:#34d399;text-decoration:none;font-size:13px;">📋 ルール</a>`;
+  document.getElementById('stats-links').innerHTML = linksHtml;
+
   document.getElementById('stat-grid').innerHTML = `
     <div class="stat-box"><div class="num" style="color:#f1f5f9">${ms.length}</div><div class="lbl">総試合数</div></div>
     <div class="stat-box"><div class="num" style="color:#60a5fa">${champMatches.length}</div><div class="lbl">タイトルマッチ</div></div>
@@ -1163,6 +1205,9 @@ function renderStats() {
 
   // タイトルマッチ控え
   renderTitleQueue();
+
+  // タイトルマッチ履歴
+  renderTitleHistory();
 
   // 門番（対戦履歴付き）
   document.getElementById('gk-list').innerHTML = D.gatekeepers.map(gk => {
@@ -1224,6 +1269,34 @@ function renderTitleQueue() {
           ${handleStr}
           <div class="queue-date">資格取得: ${q.date}</div>
         </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// タイトルマッチ履歴
+function renderTitleHistory() {
+  const champMs = D.matches.filter(m => m.role === 'champion');
+  const el = document.getElementById('title-history');
+  if (champMs.length === 0) {
+    el.innerHTML = '<div style="color:#64748b;font-size:13px;padding:4px 0;">タイトルマッチの記録なし</div>';
+    return;
+  }
+  // 新しい順に表示
+  const sorted = [...champMs].reverse();
+  el.innerHTML = sorted.map(m => {
+    const won = m.winner === m.challenger;
+    const score = (m.sc != null && m.sd != null) ? `${m.sc}-${m.sd}` : '--';
+    const resultText = won ? '王座交代' : '防衛成功';
+    const resultClass = won ? 'tag-newchamp' : 'tag-defense';
+    return `
+      <div class="match-item" style="border-left:3px solid #60a5fa;">
+        <div class="match-num" style="font-size:11px;color:#64748b;">${m.date}</div>
+        <div class="detail">
+          <div class="match-players">👑 ${m.challenger} vs ${m.defender}</div>
+        </div>
+        <div class="score">${score}</div>
+        <span class="result-tag ${resultClass}">${resultText}</span>
       </div>
     `;
   }).join('');
