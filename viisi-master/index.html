@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5先王（ヴィーシマスター）決定戦 — 戦績管理</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 24px 32px;
+    min-height: 100vh;
+  }
+
+  /* ヘッダー */
+  .header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 28px; border-bottom: 2px solid #334155; padding-bottom: 16px;
+  }
+  .header h1 { font-size: 26px; font-weight: 700; color: #f8fafc; }
+  .header h1 .crown { color: #fbbf24; }
+  .header .sub { font-size: 14px; color: #94a3b8; }
+
+  /* タブ */
+  .tabs {
+    display: flex; gap: 4px; margin-bottom: 24px;
+    border-bottom: 1px solid #334155; padding-bottom: 0;
+  }
+  .tab {
+    padding: 10px 20px; cursor: pointer; border: none; background: none;
+    color: #64748b; font-size: 14px; font-weight: 600;
+    border-bottom: 2px solid transparent; transition: all 0.2s;
+  }
+  .tab:hover { color: #94a3b8; }
+  .tab.active { color: #fbbf24; border-bottom-color: #fbbf24; }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* セクション */
+  .section { margin-bottom: 28px; }
+  .section-title {
+    font-size: 16px; font-weight: 600; color: #94a3b8;
+    letter-spacing: 1px; margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+
+  /* グリッド */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
+
+  /* カード */
+  .card {
+    background: #1e293b; border-radius: 12px;
+    padding: 18px 20px; border: 1px solid #334155;
+  }
+  .card-champion {
+    border: 1px solid #fbbf2444;
+    background: linear-gradient(135deg, #1e293b 0%, #2d1f0d 100%);
+  }
+  .card-gatekeeper { border: 1px solid #3b82f644; }
+
+  /* バッジ */
+  .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 20px;
+    font-size: 12px; font-weight: 600;
+  }
+  .badge-champion { background: #fbbf2422; color: #fbbf24; border: 1px solid #fbbf2444; }
+  .badge-gatekeeper { background: #3b82f622; color: #60a5fa; border: 1px solid #3b82f644; }
+  .badge-challenger { background: #64748b22; color: #94a3b8; border: 1px solid #64748b44; }
+  .badge-win { background: #10b98122; color: #34d399; border: 1px solid #10b98144; }
+  .badge-lose { background: #ef444422; color: #f87171; border: 1px solid #ef444444; }
+  .badge-breakthrough { background: #f59e0b22; color: #fbbf24; border: 1px solid #f59e0b44; }
+
+  /* プレイヤー */
+  .player-name { font-size: 18px; font-weight: 700; color: #f1f5f9; }
+  .player-handle { font-size: 13px; color: #64748b; }
+  .player-role { margin-top: 4px; }
+  .player-stats { margin-top: 8px; font-size: 13px; color: #94a3b8; }
+  .stat-num { font-size: 20px; font-weight: 700; color: #f1f5f9; }
+
+  /* 試合リスト */
+  .match-row {
+    background: #1e293b; border-radius: 10px;
+    padding: 14px 18px; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 16px;
+    border-left: 4px solid #334155;
+  }
+  .match-row.win-challenger { border-left-color: #f59e0b; }
+  .match-row.win-defender { border-left-color: #3b82f6; }
+  .match-row.new-champion { border-left-color: #fbbf24; }
+  .match-date { font-size: 12px; color: #64748b; min-width: 80px; }
+  .match-type {
+    font-size: 11px; font-weight: 600; padding: 2px 8px;
+    border-radius: 4px; white-space: nowrap;
+  }
+  .type-gk { background: #3b82f633; color: #60a5fa; }
+  .type-champ { background: #fbbf2433; color: #fbbf24; }
+  .match-detail { flex: 1; font-size: 14px; }
+  .match-detail .vs { color: #64748b; margin: 0 4px; }
+  .match-score {
+    font-size: 16px; font-weight: 700; min-width: 60px; text-align: center;
+  }
+  .match-result { font-size: 12px; min-width: 60px; text-align: right; }
+
+  /* X投稿生成 */
+  .form-group { margin-bottom: 16px; }
+  .form-group label {
+    display: block; font-size: 13px; font-weight: 600;
+    color: #94a3b8; margin-bottom: 6px;
+  }
+  .form-group select, .form-group input {
+    width: 100%; padding: 10px 14px; border-radius: 8px;
+    border: 1px solid #334155; background: #1e293b; color: #e2e8f0;
+    font-size: 14px;
+  }
+  .form-group select:focus, .form-group input:focus {
+    outline: none; border-color: #fbbf24;
+  }
+  .btn {
+    padding: 10px 24px; border-radius: 8px; border: none;
+    font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-primary { background: #fbbf24; color: #0f172a; }
+  .btn-primary:hover { background: #f59e0b; }
+  .btn-secondary { background: #334155; color: #e2e8f0; }
+  .btn-secondary:hover { background: #475569; }
+  .btn-add { background: #10b98133; color: #34d399; border: 1px solid #10b98144; }
+  .btn-add:hover { background: #10b98155; }
+  .btn-danger { background: #ef444433; color: #f87171; border: 1px solid #ef444444; }
+  .btn-danger:hover { background: #ef444455; }
+
+  .preview-box {
+    background: #0f172a; border: 1px solid #334155; border-radius: 10px;
+    padding: 18px; white-space: pre-wrap; font-size: 14px;
+    line-height: 1.8; min-height: 120px; position: relative;
+  }
+  .copy-btn {
+    position: absolute; top: 8px; right: 8px;
+    padding: 4px 12px; border-radius: 6px; border: 1px solid #334155;
+    background: #1e293b; color: #94a3b8; font-size: 12px; cursor: pointer;
+  }
+  .copy-btn:hover { background: #334155; color: #e2e8f0; }
+  .copy-btn.copied { background: #10b981; color: #fff; border-color: #10b981; }
+
+  /* 試合入力行 */
+  .match-input-row {
+    display: grid; grid-template-columns: 1fr 80px 1fr 60px 60px 40px;
+    gap: 8px; align-items: center; margin-bottom: 8px;
+  }
+  .match-input-row input, .match-input-row select {
+    padding: 8px 10px; border-radius: 6px;
+    border: 1px solid #334155; background: #1e293b; color: #e2e8f0;
+    font-size: 13px;
+  }
+  .match-input-row .remove-btn {
+    background: none; border: none; color: #ef4444; cursor: pointer;
+    font-size: 18px; padding: 4px;
+  }
+  .match-input-row .remove-btn:hover { color: #f87171; }
+
+  /* サマリー */
+  .summary-number { font-size: 32px; font-weight: 700; line-height: 1; }
+  .summary-label { font-size: 12px; color: #64748b; margin-top: 4px; }
+
+  /* レスポンシブ */
+  @media (max-width: 768px) {
+    body { padding: 16px; }
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .match-row { flex-wrap: wrap; }
+    .match-input-row { grid-template-columns: 1fr 1fr; }
+    .tabs { overflow-x: auto; }
+  }
+
+  /* フッター */
+  .footer {
+    margin-top: 32px; padding-top: 16px;
+    border-top: 1px solid #334155;
+    font-size: 12px; color: #475569; text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1><span class="crown">👑</span> 5先王（ヴィーシマスター）決定戦</h1>
+  <div class="sub">戦績管理 & X投稿ツール</div>
+</div>
+
+<!-- タブ -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('overview')">概要</button>
+  <button class="tab" onclick="switchTab('matches')">全試合結果</button>
+  <button class="tab" onclick="switchTab('players')">選手一覧</button>
+  <button class="tab" onclick="switchTab('post-generator')">X投稿生成</button>
+</div>
+
+<!-- ===== 概要タブ ===== -->
+<div id="tab-overview" class="tab-content active">
+  <!-- サマリー -->
+  <div class="section">
+    <div class="grid-4" id="summary-cards"></div>
+  </div>
+
+  <!-- チャンピオン & 門番 -->
+  <div class="section">
+    <div class="section-title">現チャンピオン</div>
+    <div id="champion-card"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">門番</div>
+    <div class="grid-4" id="gatekeeper-cards"></div>
+  </div>
+
+  <!-- 最近の試合 -->
+  <div class="section">
+    <div class="section-title">直近の試合</div>
+    <div id="recent-matches"></div>
+  </div>
+</div>
+
+<!-- ===== 全試合タブ ===== -->
+<div id="tab-matches" class="tab-content">
+  <div class="section">
+    <div class="section-title">全試合結果</div>
+    <div id="all-matches"></div>
+  </div>
+</div>
+
+<!-- ===== 選手一覧タブ ===== -->
+<div id="tab-players" class="tab-content">
+  <div class="section">
+    <div class="section-title">選手一覧</div>
+    <div class="grid-3" id="player-cards"></div>
+  </div>
+</div>
+
+<!-- ===== X投稿生成タブ ===== -->
+<div id="tab-post-generator" class="tab-content">
+  <div class="grid-2">
+    <!-- 入力フォーム -->
+    <div>
+      <div class="section">
+        <div class="section-title">投稿タイプ選択</div>
+        <div class="card">
+          <div class="form-group">
+            <label>投稿タイプ</label>
+            <select id="post-type" onchange="updatePostPreview()">
+              <option value="results">🏆 結果報告（週まとめ）</option>
+              <option value="match_day">💥 試合速報（当日）</option>
+              <option value="new_champion">🎉 新チャンピオン誕生</option>
+              <option value="defense_report">💪 門番防衛報告</option>
+              <option value="custom">✏️ カスタム</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">試合データ入力</div>
+        <div class="card">
+          <div id="match-inputs"></div>
+          <button class="btn btn-add" onclick="addMatchInput()" style="margin-top: 8px; width: 100%;">
+            + 試合を追加
+          </button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="card">
+          <div class="form-group">
+            <label>追加コメント（任意）</label>
+            <input type="text" id="post-comment" placeholder="今週末も5先開催予定🎯挑戦者募集中！！" oninput="updatePostPreview()">
+          </div>
+          <button class="btn btn-primary" onclick="updatePostPreview()" style="width: 100%;">
+            プレビュー更新
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- プレビュー -->
+    <div>
+      <div class="section">
+        <div class="section-title">投稿プレビュー</div>
+        <div class="card">
+          <div class="preview-box" id="post-preview">
+            ← 左のフォームに試合データを入力すると、投稿テンプレートが自動生成されます
+          </div>
+          <button class="copy-btn" onclick="copyPost()" id="copy-btn">コピー</button>
+          <div style="margin-top: 12px; font-size: 12px; color: #64748b;">
+            文字数: <span id="char-count">0</span> / 280
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  5先王（ヴィーシマスター）決定戦 — 戦績管理ツール<br>
+  <a href="../index.html" style="color: #64748b;">← ダッシュボードに戻る</a>
+</div>
+
+<script>
+// ===== データ =====
+let DATA = null;
+
+async function loadData() {
+  try {
+    const res = await fetch('../data/viisi-master.json');
+    DATA = await res.json();
+  } catch (e) {
+    // フォールバック: インラインデータ
+    DATA = getInlineData();
+  }
+  renderAll();
+}
+
+function getInlineData() {
+  return {
+    meta: { title: "5先王（ヴィーシマスター）決定戦", hashtags: ["#5先王", "#モルック"] },
+    champion: { current: "こ〜すけ", x_handle: "@kou1109_kei823", since: "2026-02-10", defenses: 0 },
+    gatekeepers: [
+      { name: "川上", x_handle: null, status: "active" },
+      { name: "まつ", x_handle: "@8iwedehwyg35lvp", status: "active" },
+      { name: "お〜はし", x_handle: "@ketupuri_molkky", status: "active" },
+      { name: "サノ", x_handle: "@sasesisusomen", status: "active" }
+    ],
+    matches: [
+      { id: 1, date: "2025-12-22", type: "gatekeeper_challenge", challenger: "サキ", defender: "お〜はし", defender_role: "gatekeeper", winner: "お〜はし", result_type: "defense" },
+      { id: 2, date: "2025-12-22", type: "gatekeeper_challenge", challenger: "サキ", defender: "まつ", defender_role: "gatekeeper", winner: "サキ", result_type: "breakthrough" },
+      { id: 3, date: "2025-12-31", type: "champion_defense", challenger: "サキ", defender: "とめ", defender_role: "champion", winner: "とめ", result_type: "defense" },
+      { id: 4, date: "2026-02-01", type: "gatekeeper_challenge", challenger: "フトシ", defender: "サノ", defender_role: "gatekeeper", winner: "フトシ", result_type: "breakthrough" },
+      { id: 5, date: "2026-02-01", type: "gatekeeper_challenge", challenger: "フトシ", defender: "お〜はし", defender_role: "gatekeeper", winner: "お〜はし", result_type: "defense" },
+      { id: 6, date: "2026-02-01", type: "gatekeeper_challenge", challenger: "ヒジ", defender: "お〜はし", defender_role: "gatekeeper", winner: "お〜はし", result_type: "defense" },
+      { id: 10, date: "2026-02-10", type: "champion_challenge", challenger: "こ〜すけ", defender: "とめ", defender_role: "champion", winner: "こ〜すけ", result_type: "new_champion" },
+      { id: 11, date: "2026-02-20", type: "gatekeeper_challenge", challenger: "キタ", defender: "まつ", defender_role: "gatekeeper", score_challenger: 6, score_defender: 4, winner: "キタ", result_type: "breakthrough" },
+      { id: 12, date: "2026-02-20", type: "gatekeeper_challenge", challenger: "ヒジ", defender: "川上", defender_role: "gatekeeper", score_challenger: 2, score_defender: 5, winner: "川上", result_type: "defense" },
+      { id: 13, date: "2026-02-20", type: "gatekeeper_challenge", challenger: "とめ", defender: "まつ", defender_role: "gatekeeper", score_challenger: 3, score_defender: 5, winner: "まつ", result_type: "defense" }
+    ],
+    player_registry: {
+      "こ〜すけ": { x_handle: "@kou1109_kei823", role: "champion" },
+      "とめ": { x_handle: "@dayumachika1220", role: "former_champion" },
+      "川上": { x_handle: null, role: "gatekeeper" },
+      "まつ": { x_handle: "@8iwedehwyg35lvp", role: "gatekeeper" },
+      "お〜はし": { x_handle: "@ketupuri_molkky", role: "gatekeeper" },
+      "サノ": { x_handle: "@sasesisusomen", role: "gatekeeper" },
+      "サキ": { x_handle: "@saki_1221_0121", role: "challenger" },
+      "フトシ": { x_handle: "@tairafutoshi42", role: "challenger" },
+      "ヒジ": { x_handle: null, role: "challenger" },
+      "テラ": { x_handle: "@jhite250", role: "challenger" },
+      "ししょー": { x_handle: "@morikawashisho0", role: "challenger" },
+      "キタ": { x_handle: null, role: "challenger" }
+    }
+  };
+}
+
+// ===== レンダリング =====
+function renderAll() {
+  renderSummary();
+  renderChampion();
+  renderGatekeepers();
+  renderRecentMatches();
+  renderAllMatches();
+  renderPlayers();
+  addMatchInput();
+}
+
+function renderSummary() {
+  const matches = DATA.matches;
+  const totalMatches = matches.length;
+  const gatekeepers = DATA.gatekeepers.filter(g => g.status === 'active').length;
+  const breakthroughs = matches.filter(m => m.result_type === 'breakthrough').length;
+  const championChanges = matches.filter(m => m.result_type === 'new_champion').length;
+
+  document.getElementById('summary-cards').innerHTML = `
+    <div class="card" style="text-align:center">
+      <div class="summary-number" style="color:#f1f5f9">${totalMatches}</div>
+      <div class="summary-label">総試合数</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="summary-number" style="color:#60a5fa">${gatekeepers}</div>
+      <div class="summary-label">現役門番</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="summary-number" style="color:#fbbf24">${breakthroughs}</div>
+      <div class="summary-label">門番撃破</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="summary-number" style="color:#f59e0b">${championChanges + 1}</div>
+      <div class="summary-label">歴代チャンピオン</div>
+    </div>
+  `;
+}
+
+function renderChampion() {
+  const c = DATA.champion;
+  const handle = c.x_handle ? `<span class="player-handle">${c.x_handle}</span>` : '';
+  document.getElementById('champion-card').innerHTML = `
+    <div class="card card-champion" style="max-width: 400px;">
+      <div style="display:flex; justify-content:space-between; align-items:center">
+        <div>
+          <div class="player-name">👑 ${c.current}</div>
+          ${handle}
+        </div>
+        <span class="badge badge-champion">チャンピオン</span>
+      </div>
+      <div class="player-stats">
+        就任: ${c.since} ／ 防衛: ${c.defenses}回
+      </div>
+    </div>
+  `;
+}
+
+function renderGatekeepers() {
+  const html = DATA.gatekeepers.filter(g => g.status === 'active').map(g => {
+    const wins = DATA.matches.filter(m => m.defender === g.name && m.winner === g.name).length;
+    const losses = DATA.matches.filter(m => m.defender === g.name && m.winner !== g.name && m.winner).length;
+    const handle = g.x_handle ? `<div class="player-handle">${g.x_handle}</div>` : '';
+    return `
+      <div class="card card-gatekeeper">
+        <div style="display:flex; justify-content:space-between; align-items:center">
+          <div>
+            <div class="player-name">🛡️ ${g.name}</div>
+            ${handle}
+          </div>
+          <span class="badge badge-gatekeeper">門番</span>
+        </div>
+        <div class="player-stats">
+          防衛: <span class="stat-num">${wins}</span> ／
+          敗北: <span class="stat-num">${losses}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('gatekeeper-cards').innerHTML = html;
+}
+
+function renderMatchRow(m) {
+  const dateStr = m.date;
+  const isGK = m.defender_role === 'gatekeeper';
+  const typeClass = isGK ? 'type-gk' : 'type-champ';
+  const typeLabel = isGK ? '門番戦' : 'チャンピオン戦';
+
+  let rowClass = '';
+  if (m.result_type === 'new_champion') rowClass = 'new-champion';
+  else if (m.result_type === 'breakthrough') rowClass = 'win-challenger';
+  else rowClass = 'win-defender';
+
+  const score = (m.score_challenger != null && m.score_defender != null)
+    ? `${m.score_challenger}-${m.score_defender}`
+    : '—';
+
+  let resultBadge = '';
+  if (m.result_type === 'new_champion') resultBadge = '<span class="badge badge-champion">新王誕生</span>';
+  else if (m.result_type === 'breakthrough') resultBadge = '<span class="badge badge-breakthrough">撃破</span>';
+  else resultBadge = '<span class="badge badge-gatekeeper">防衛</span>';
+
+  const defenderPrefix = isGK ? '【門番】' : '【王者】';
+
+  return `
+    <div class="match-row ${rowClass}">
+      <div class="match-date">${dateStr}</div>
+      <span class="match-type ${typeClass}">${typeLabel}</span>
+      <div class="match-detail">
+        ${m.challenger} <span class="vs">vs</span> ${defenderPrefix}${m.defender || '—'}
+      </div>
+      <div class="match-score">${score}</div>
+      <div class="match-result">${resultBadge}</div>
+    </div>
+  `;
+}
+
+function renderRecentMatches() {
+  const sorted = [...DATA.matches].sort((a, b) => b.date.localeCompare(a.date));
+  const recent = sorted.slice(0, 5);
+  document.getElementById('recent-matches').innerHTML = recent.map(renderMatchRow).join('');
+}
+
+function renderAllMatches() {
+  const sorted = [...DATA.matches].sort((a, b) => b.date.localeCompare(a.date));
+  document.getElementById('all-matches').innerHTML = sorted.map(renderMatchRow).join('');
+}
+
+function renderPlayers() {
+  const reg = DATA.player_registry;
+  const html = Object.entries(reg).map(([name, info]) => {
+    const roleMap = {
+      champion: { label: 'チャンピオン', badge: 'badge-champion', icon: '👑' },
+      former_champion: { label: '元チャンピオン', badge: 'badge-challenger', icon: '⭐' },
+      gatekeeper: { label: '門番', badge: 'badge-gatekeeper', icon: '🛡️' },
+      challenger: { label: '挑戦者', badge: 'badge-challenger', icon: '⚔️' }
+    };
+    const r = roleMap[info.role] || roleMap.challenger;
+    const handle = info.x_handle ? `<div class="player-handle">${info.x_handle}</div>` : '';
+
+    // 戦績
+    const asChallenger = DATA.matches.filter(m => m.challenger === name);
+    const wins = asChallenger.filter(m => m.winner === name).length;
+    const losses = asChallenger.filter(m => m.winner && m.winner !== name).length;
+    const asDefender = DATA.matches.filter(m => m.defender === name);
+    const defWins = asDefender.filter(m => m.winner === name).length;
+    const defLosses = asDefender.filter(m => m.winner && m.winner !== name).length;
+
+    return `
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
+          <div>
+            <div class="player-name">${r.icon} ${name}</div>
+            ${handle}
+          </div>
+          <span class="badge ${r.badge}">${r.label}</span>
+        </div>
+        <div class="player-stats">
+          挑戦: ${wins}勝${losses}敗 ／ 防衛: ${defWins}勝${defLosses}敗
+        </div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('player-cards').innerHTML = html;
+}
+
+// ===== タブ切り替え =====
+function switchTab(tabId) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tabId).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ===== X投稿生成 =====
+let matchInputCount = 0;
+
+function addMatchInput() {
+  const container = document.getElementById('match-inputs');
+  const id = matchInputCount++;
+  const row = document.createElement('div');
+  row.className = 'match-input-row';
+  row.id = `match-row-${id}`;
+
+  // 既知の選手リスト
+  const players = DATA ? Object.keys(DATA.player_registry) : [];
+  const playerOptions = players.map(p => `<option value="${p}">${p}</option>`).join('');
+
+  row.innerHTML = `
+    <select onchange="updatePostPreview()">
+      <option value="">挑戦者</option>
+      ${playerOptions}
+    </select>
+    <select onchange="updatePostPreview()">
+      <option value="gatekeeper">門番戦</option>
+      <option value="champion">王者戦</option>
+    </select>
+    <select onchange="updatePostPreview()">
+      <option value="">防衛側</option>
+      ${playerOptions}
+    </select>
+    <input type="number" min="0" max="5" placeholder="挑" oninput="updatePostPreview()">
+    <input type="number" min="0" max="5" placeholder="防" oninput="updatePostPreview()">
+    <button class="remove-btn" onclick="removeMatchInput(${id})">×</button>
+  `;
+  container.appendChild(row);
+}
+
+function removeMatchInput(id) {
+  const row = document.getElementById(`match-row-${id}`);
+  if (row) row.remove();
+  updatePostPreview();
+}
+
+function getPlayerHandle(name) {
+  if (!DATA || !DATA.player_registry[name]) return name;
+  const handle = DATA.player_registry[name].x_handle;
+  return handle ? `${name}(${handle})` : name;
+}
+
+function updatePostPreview() {
+  const type = document.getElementById('post-type').value;
+  const comment = document.getElementById('post-comment').value;
+  const rows = document.querySelectorAll('.match-input-row');
+
+  const matches = [];
+  rows.forEach(row => {
+    const selects = row.querySelectorAll('select');
+    const inputs = row.querySelectorAll('input[type="number"]');
+    const challenger = selects[0]?.value;
+    const matchType = selects[1]?.value;
+    const defender = selects[2]?.value;
+    const scoreC = inputs[0]?.value;
+    const scoreD = inputs[1]?.value;
+    if (challenger && defender) {
+      matches.push({ challenger, matchType, defender, scoreC: parseInt(scoreC) || 0, scoreD: parseInt(scoreD) || 0 });
+    }
+  });
+
+  let post = '';
+
+  switch (type) {
+    case 'results':
+      post = generateResultsPost(matches, comment);
+      break;
+    case 'match_day':
+      post = generateMatchDayPost(matches, comment);
+      break;
+    case 'new_champion':
+      post = generateNewChampionPost(matches, comment);
+      break;
+    case 'defense_report':
+      post = generateDefensePost(matches, comment);
+      break;
+    case 'custom':
+      post = generateCustomPost(matches, comment);
+      break;
+  }
+
+  const preview = document.getElementById('post-preview');
+  preview.textContent = post;
+  document.getElementById('char-count').textContent = post.length;
+  document.getElementById('char-count').style.color = post.length > 280 ? '#f87171' : '#64748b';
+}
+
+function generateResultsPost(matches, comment) {
+  let post = '🏆 #5先王 結果報告🏆\n\n';
+  matches.forEach(m => {
+    const prefix = m.matchType === 'champion' ? '【王者】' : '【門番】';
+    const winner = m.scoreC > m.scoreD ? m.challenger : m.defender;
+    const resultText = winner === m.defender
+      ? `${m.defender}が門番を死守！`
+      : (m.matchType === 'champion' ? `${m.challenger}が王者を撃破！` : `${m.challenger}が門番を撃破！`);
+    post += `⚔️ ${prefix}${getPlayerHandle(m.defender)} vs ${getPlayerHandle(m.challenger)}\n`;
+    post += `→ ${m.scoreD}-${m.scoreC}で${resultText}\n\n`;
+  });
+  if (comment) post += `${comment}\n\n`;
+  post += '#5先王 #モルック';
+  return post;
+}
+
+function generateMatchDayPost(matches, comment) {
+  let post = '';
+  matches.forEach((m, i) => {
+    const prefix = m.matchType === 'champion' ? '【王者】' : '【門番】';
+    const winner = m.scoreC > m.scoreD ? m.challenger : m.defender;
+    if (winner === m.challenger) {
+      post += `${getPlayerHandle(m.challenger)}が${prefix}${getPlayerHandle(m.defender)}を撃破💥`;
+    } else {
+      post += `${prefix}${getPlayerHandle(m.defender)}が${getPlayerHandle(m.challenger)}を返り討ち⚠️`;
+    }
+    if (i < matches.length - 1) post += ' ';
+  });
+  post += '\n\n';
+  if (comment) post += `${comment}\n\n`;
+  post += `チャンピオン・${getPlayerHandle(DATA.champion.current)}へ挑むのは誰だ！？\n\n`;
+  post += '#5先王 #モルック';
+  return post;
+}
+
+function generateNewChampionPost(matches, comment) {
+  const m = matches[0];
+  if (!m) return '（試合データを入力してください）';
+  let post = `ついに新チャンピオン誕生!🎉\n\n`;
+  post += `👑その名も${getPlayerHandle(m.challenger)}!⚡\n`;
+  post += `チャンピオン・${getPlayerHandle(m.defender)}を退け新たなチャンピオンに!🔥\n\n`;
+  if (comment) post += `${comment}\n\n`;
+  post += '#5先王 #モルック';
+  return post;
+}
+
+function generateDefensePost(matches, comment) {
+  const challengers = matches.map(m => `⭐${getPlayerHandle(m.challenger)}`);
+  let post = `この1週間も多くの挑戦者が門番にチャレンジ🔥\n`;
+  post += `結果は門番の全勝で防衛が続く!💪✨\n\n`;
+  post += `ご挑戦ありがとうございました🙇\n`;
+  post += challengers.join('\n') + '\n\n';
+  if (comment) post += `${comment}\n\n`;
+  post += `引き続きの挑戦をお待ちしております!👊\n`;
+  post += `チャンピオンへ挑むのは誰だ!?👑\n\n`;
+  post += '#5先王 #モルック';
+  return post;
+}
+
+function generateCustomPost(matches, comment) {
+  let post = '';
+  if (comment) post += comment + '\n\n';
+  matches.forEach(m => {
+    const prefix = m.matchType === 'champion' ? '【王者】' : '【門番】';
+    post += `${prefix}${m.defender} vs ${m.challenger}: ${m.scoreD}-${m.scoreC}\n`;
+  });
+  if (matches.length > 0) post += '\n';
+  post += '#5先王 #モルック';
+  return post;
+}
+
+function copyPost() {
+  const text = document.getElementById('post-preview').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'コピー完了!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'コピー';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+// ===== 初期化 =====
+loadData();
+</script>
+
+</body>
+</html>
