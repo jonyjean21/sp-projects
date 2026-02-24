@@ -18,126 +18,114 @@ jobs:
         with:
           ref: claude/organize-match-results-E85YA
 
-      - name: Fetch tweets via curl
+      - name: Setup Python and Playwright
         run: |
-          set +e
+          pip install playwright 2>&1 | tail -3
+          playwright install chromium 2>&1 | tail -3
+          playwright install-deps 2>&1 | tail -3
+
+      - name: Fetch tweets with Playwright
+        run: |
           mkdir -p tweet-data
-
-          echo "=== 1. FxTwitter API ==="
-          curl -sL --max-time 30 "https://api.fxtwitter.com/viisimaster5" -o tweet-data/fxtwitter-profile.json
-          echo "Size: $(wc -c < tweet-data/fxtwitter-profile.json) bytes"
-          cat tweet-data/fxtwitter-profile.json
-
-          echo ""
-          echo "=== 2. VXTwitter API ==="
-          curl -sL --max-time 30 "https://api.vxtwitter.com/viisimaster5" -o tweet-data/vxtwitter-profile.json
-          echo "Size: $(wc -c < tweet-data/vxtwitter-profile.json) bytes"
-          cat tweet-data/vxtwitter-profile.json
-
-          echo ""
-          echo "=== 3. Nitter (xcancel.com) ==="
-          curl -sL --max-time 30 "https://xcancel.com/viisimaster5" \
-            -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" \
-            -o tweet-data/nitter-xcancel.html
-          echo "Size: $(wc -c < tweet-data/nitter-xcancel.html) bytes"
-
-          echo ""
-          echo "=== 4. Nitter (nitter.poast.org) ==="
-          curl -sL --max-time 30 "https://nitter.poast.org/viisimaster5" \
-            -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" \
-            -o tweet-data/nitter-poast.html
-          echo "Size: $(wc -c < tweet-data/nitter-poast.html) bytes"
-
-          echo ""
-          echo "=== 5. Twitter oEmbed ==="
-          curl -sL --max-time 30 "https://publish.twitter.com/oembed?url=https://twitter.com/viisimaster5" \
-            -o tweet-data/oembed.json
-          echo "Size: $(wc -c < tweet-data/oembed.json) bytes"
-          cat tweet-data/oembed.json
-
-          echo ""
-          echo "=== 6. Syndication API ==="
-          curl -sL --max-time 30 "https://syndication.twitter.com/srv/timeline-profile/screen-name/viisimaster5" \
-            -o tweet-data/syndication.html
-          echo "Size: $(wc -c < tweet-data/syndication.html) bytes"
-
-          echo "=== All fetches done ==="
-
-      - name: Parse results
-        if: always()
-        run: |
-          set +e
           python3 << 'PYEOF'
-          import json, re, os, glob
+          import asyncio
+          import json
+          import re
+          from playwright.async_api import async_playwright
 
-          print("=" * 60)
-          print("PARSING ALL FETCHED DATA")
-          print("=" * 60)
+          async def fetch_tweets():
+              results = {"profile": {}, "tweets": []}
 
-          # Parse JSON files
-          for jf in glob.glob('tweet-data/*.json'):
-              print(f"\n--- {os.path.basename(jf)} ---")
-              try:
-                  with open(jf) as f:
-                      content = f.read()
-                  if content.strip():
-                      data = json.loads(content)
-                      print(json.dumps(data, indent=2, ensure_ascii=False)[:3000])
-                  else:
-                      print("(empty file)")
-              except Exception as e:
-                  print(f"Not JSON: {e}")
-                  print(content[:500] if content else "(empty)")
+              async with async_playwright() as p:
+                  browser = await p.chromium.launch(headless=True)
+                  context = await browser.new_context(
+                      user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                      viewport={"width": 1280, "height": 900},
+                      locale="ja-JP"
+                  )
+                  page = await context.new_page()
 
-          # Parse HTML files - extract tweet text
-          for hf in glob.glob('tweet-data/*.html'):
-              print(f"\n--- {os.path.basename(hf)} ---")
-              try:
-                  with open(hf) as f:
-                      html = f.read()
-                  if not html.strip():
-                      print("(empty file)")
-                      continue
+                  print("Navigating to X profile...")
+                  try:
+                      await page.goto("https://x.com/viisimaster5", wait_until="networkidle", timeout=30000)
+                  except Exception as e:
+                      print(f"Navigation timeout (expected): {e}")
+                      # Even on timeout, page may have loaded partially
 
-                  print(f"HTML size: {len(html)} chars")
+                  # Wait for tweets to load
+                  print("Waiting for content...")
+                  await asyncio.sleep(8)
 
-                  # Try multiple patterns
-                  patterns = [
-                      (r'class="tweet-content[^"]*"[^>]*>(.*?)</div>', 'tweet-content div'),
-                      (r'<p[^>]*class="[^"]*tweet[^"]*"[^>]*>(.*?)</p>', 'tweet p tags'),
-                      (r'data-testid="tweetText"[^>]*>(.*?)</div>', 'tweetText div'),
-                      (r'"full_text"\s*:\s*"((?:[^"\\]|\\.)*)"', 'full_text JSON'),
-                      (r'"text"\s*:\s*"((?:[^"\\]|\\.)*)"', 'text JSON'),
-                  ]
+                  # Take a screenshot for debugging
+                  await page.screenshot(path="tweet-data/screenshot.png", full_page=False)
+                  print("Screenshot saved")
 
-                  for pattern, name in patterns:
-                      matches = re.findall(pattern, html, re.DOTALL)
-                      if matches:
-                          clean = [re.sub(r'<[^>]+>', '', m).strip() for m in matches]
-                          clean = [c for c in clean if len(c) > 5]
-                          if clean:
-                              print(f"Pattern '{name}': {len(clean)} matches")
-                              for i, c in enumerate(clean[:20]):
-                                  decoded = c.encode().decode('unicode_escape', errors='replace') if '\\u' in c else c
-                                  print(f"  [{i}] {decoded[:200]}")
+                  # Get page content
+                  html = await page.content()
+                  with open("tweet-data/page-source.html", "w") as f:
+                      f.write(html)
+                  print(f"Page HTML saved ({len(html)} chars)")
 
-                  # If nothing found, show a preview
-                  if not any(re.findall(p, html, re.DOTALL) for p, _ in patterns):
-                      # Show title and meta tags
-                      title = re.findall(r'<title[^>]*>(.*?)</title>', html, re.DOTALL)
-                      if title:
-                          print(f"Page title: {title[0][:200]}")
-                      # Show first 1000 chars of visible text
-                      text_only = re.sub(r'<script[^>]*>.*?</script>', '', html, flags=re.DOTALL)
-                      text_only = re.sub(r'<style[^>]*>.*?</style>', '', text_only, flags=re.DOTALL)
-                      text_only = re.sub(r'<[^>]+>', ' ', text_only)
-                      text_only = re.sub(r'\s+', ' ', text_only).strip()
-                      if text_only:
-                          print(f"Visible text preview: {text_only[:1000]}")
+                  # Try to extract tweets from the DOM
+                  try:
+                      tweet_elements = await page.query_selector_all('[data-testid="tweetText"]')
+                      print(f"Found {len(tweet_elements)} tweet elements")
+                      for i, el in enumerate(tweet_elements):
+                          text = await el.inner_text()
+                          print(f"Tweet [{i}]: {text[:200]}")
+                          results["tweets"].append({"index": i, "text": text})
+                  except Exception as e:
+                      print(f"Error extracting tweets: {e}")
 
-              except Exception as e:
-                  print(f"Error: {e}")
+                  # Try alternate selectors
+                  try:
+                      articles = await page.query_selector_all('article[data-testid="tweet"]')
+                      print(f"Found {len(articles)} article elements")
+                      for i, article in enumerate(articles):
+                          text = await article.inner_text()
+                          results["tweets"].append({"index": f"article_{i}", "text": text[:500]})
+                          print(f"Article [{i}]: {text[:200]}")
+                  except Exception as e:
+                      print(f"Error with articles: {e}")
 
+                  # Extract from page source using regex
+                  texts = re.findall(r'"full_text":"((?:[^"\\]|\\.)*)"', html)
+                  if texts:
+                      print(f"\nFound {len(texts)} full_text in source")
+                      for i, t in enumerate(texts[:30]):
+                          decoded = t.encode().decode('unicode_escape', errors='replace')
+                          print(f"  [{i}] {decoded[:200]}")
+                          results["tweets"].append({"index": f"source_{i}", "text": decoded})
+
+                  # Also check for __NEXT_DATA__ or similar
+                  scripts = await page.query_selector_all('script')
+                  for script in scripts:
+                      content = await script.inner_text()
+                      if 'tweetText' in content or 'full_text' in content or 'viisimaster' in content:
+                          print(f"\nRelevant script found ({len(content)} chars)")
+                          print(content[:2000])
+
+                  # Try scrolling to load more
+                  print("\nScrolling to load more tweets...")
+                  for scroll in range(3):
+                      await page.evaluate("window.scrollBy(0, 1000)")
+                      await asyncio.sleep(3)
+                      new_tweets = await page.query_selector_all('[data-testid="tweetText"]')
+                      print(f"After scroll {scroll+1}: {len(new_tweets)} tweets visible")
+                      for el in new_tweets:
+                          text = await el.inner_text()
+                          if text not in [t.get("text","") for t in results["tweets"]]:
+                              results["tweets"].append({"index": f"scroll_{scroll}_{len(results['tweets'])}", "text": text})
+                              print(f"  New: {text[:200]}")
+
+                  await browser.close()
+
+              # Save results
+              with open("tweet-data/playwright-tweets.json", "w") as f:
+                  json.dump(results, f, ensure_ascii=False, indent=2)
+              print(f"\nTotal tweets extracted: {len(results['tweets'])}")
+
+          asyncio.run(fetch_tweets())
           PYEOF
 
       - name: Commit results
@@ -146,5 +134,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add tweet-data/ || true
-          git commit -m "Auto-fetched tweet data from @viisimaster5 [skip ci]" || echo "No changes to commit"
+          git commit -m "Auto-fetched tweet data via Playwright [skip ci]" || echo "No changes to commit"
           git push origin claude/organize-match-results-E85YA || echo "Push failed"
