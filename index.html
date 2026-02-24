@@ -22,15 +22,24 @@
     margin-bottom: 28px;
     border-bottom: 2px solid #334155;
     padding-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 8px;
   }
   .header h1 {
     font-size: 28px;
     font-weight: 700;
     color: #f8fafc;
   }
+  .header-right {
+    text-align: right;
+  }
   .header .date {
     font-size: 16px;
     color: #94a3b8;
+  }
+  .header .updated {
+    font-size: 11px;
+    color: #475569;
   }
 
   /* セクション */
@@ -49,6 +58,7 @@
   /* グリッド */
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
 
   /* カード */
   .card {
@@ -71,6 +81,8 @@
   .badge-running { background: #10b98122; color: #34d399; border: 1px solid #10b98144; }
   .badge-check { background: #8b5cf622; color: #a78bfa; border: 1px solid #8b5cf644; }
   .badge-plan { background: #64748b22; color: #94a3b8; border: 1px solid #64748b44; }
+  .badge-blocked { background: #ef444422; color: #f87171; border: 1px solid #ef444444; }
+  .badge-active { background: #10b98122; color: #34d399; border: 1px solid #10b98144; }
 
   /* アプリカード */
   .app-name {
@@ -106,22 +118,46 @@
   }
 
   /* アジェンダ */
+  .agenda-section {
+    margin-bottom: 20px;
+  }
+  .agenda-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    background: #1e293b;
+    border-radius: 8px 8px 0 0;
+    border: 1px solid #334155;
+    border-bottom: none;
+    cursor: pointer;
+  }
+  .agenda-section-header:hover {
+    background: #253347;
+  }
+  .agenda-section-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #f1f5f9;
+  }
+  .agenda-section-meta {
+    font-size: 12px;
+    color: #64748b;
+  }
+  .agenda-section-items {
+    border: 1px solid #334155;
+    border-radius: 0 0 8px 8px;
+    overflow: hidden;
+  }
   .agenda-item {
     background: #1e293b;
-    border-radius: 10px;
-    padding: 14px 18px;
-    margin-bottom: 10px;
-    border-left: 4px solid #3b82f6;
+    padding: 12px 18px;
+    border-bottom: 1px solid #0f172a;
     display: flex;
     align-items: center;
     gap: 12px;
   }
-  .agenda-item.decision {
-    border-left-color: #f59e0b;
-  }
-  .agenda-item.info {
-    border-left-color: #10b981;
-  }
+  .agenda-item:last-child { border-bottom: none; }
   .agenda-tag {
     font-size: 11px;
     font-weight: 600;
@@ -132,16 +168,55 @@
   .tag-decision { background: #f59e0b33; color: #fbbf24; }
   .tag-discuss { background: #3b82f633; color: #60a5fa; }
   .tag-info { background: #10b98133; color: #34d399; }
+  .tag-action { background: #8b5cf633; color: #a78bfa; }
+  .tag-urgent { background: #ef444433; color: #f87171; }
   .agenda-text {
-    font-size: 15px;
+    font-size: 14px;
     color: #e2e8f0;
+    flex: 1;
+  }
+  .agenda-assignee {
+    font-size: 11px;
+    color: #64748b;
+    white-space: nowrap;
+  }
+
+  /* プロジェクトカード */
+  .project-card {
+    background: #1e293b;
+    border-radius: 10px;
+    padding: 14px 16px;
+    border: 1px solid #334155;
+  }
+  .project-card.blocked {
+    border-color: #ef444444;
+  }
+  .project-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #f1f5f9;
+    margin-bottom: 4px;
+  }
+  .project-owner {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 6px;
+  }
+  .project-next {
+    font-size: 12px;
+    color: #94a3b8;
+  }
+  .project-blocker {
+    font-size: 11px;
+    color: #f87171;
+    margin-top: 4px;
   }
 
   /* アクションアイテム */
   .action-list { list-style: none; }
   .action-list li {
     padding: 10px 0;
-    border-bottom: 1px solid #1e293b;
+    border-bottom: 1px solid #0f172a;
     display: flex;
     gap: 10px;
     font-size: 14px;
@@ -158,6 +233,33 @@
     height: fit-content;
   }
 
+  /* 検討ボックス */
+  .discussion-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #0f172a;
+    font-size: 13px;
+  }
+  .discussion-item:last-child { border-bottom: none; }
+
+  /* 日程 */
+  .date-item {
+    display: flex;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid #0f172a;
+    font-size: 13px;
+  }
+  .date-item:last-child { border-bottom: none; }
+  .date-label {
+    color: #fbbf24;
+    font-weight: 600;
+    white-space: nowrap;
+    min-width: 100px;
+  }
+
   /* フッター */
   .footer {
     margin-top: 32px;
@@ -167,172 +269,333 @@
     color: #475569;
     text-align: center;
   }
+
+  /* ローディング */
+  .loading {
+    text-align: center;
+    padding: 60px 0;
+    color: #64748b;
+    font-size: 16px;
+  }
+
+  /* レスポンシブ */
+  @media (max-width: 768px) {
+    body { padding: 16px; }
+    .header h1 { font-size: 22px; }
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .summary-number { font-size: 28px; }
+  }
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .grid-3 { grid-template-columns: 1fr 1fr; }
+    .grid-4 { grid-template-columns: 1fr 1fr; }
+  }
 </style>
 </head>
 <body>
 
-<!-- ===== ここから下を会議ごとに更新 ===== -->
-
-<div class="header">
-  <h1>チャプチェ会 ダッシュボード</h1>
-  <div class="date">2026年2月24日（月）</div>
+<div id="app">
+  <div class="loading">読み込み中...</div>
 </div>
 
-<!-- サマリー -->
-<div class="section">
-  <div class="grid-3">
-    <div class="card" style="text-align:center">
-      <div class="summary-number" style="color:#fbbf24">2</div>
-      <div class="summary-label">レビュー待ち</div>
-    </div>
-    <div class="card" style="text-align:center">
-      <div class="summary-number" style="color:#60a5fa">1</div>
-      <div class="summary-label">開発中</div>
-    </div>
-    <div class="card" style="text-align:center">
-      <div class="summary-number" style="color:#a78bfa">5</div>
-      <div class="summary-label">要確認（Manusのみ）</div>
-    </div>
-  </div>
-</div>
+<script>
+const TAG_MAP = {
+  '要判断': 'tag-decision',
+  '要確認': 'tag-decision',
+  '相談': 'tag-discuss',
+  '共有': 'tag-info',
+  '進捗': 'tag-info',
+  '確認': 'tag-info',
+  '作業': 'tag-action',
+  '至急': 'tag-urgent'
+};
 
-<!-- 今日のアジェンダ -->
-<div class="section">
-  <div class="section-title">今日のアジェンダ</div>
+const BADGE_MAP = {
+  'review': 'badge-review',
+  'dev': 'badge-dev',
+  'running': 'badge-running',
+  'check': 'badge-check',
+  'plan': 'badge-plan',
+  'active': 'badge-active',
+  'blocked': 'badge-blocked'
+};
 
-  <div class="agenda-item decision">
-    <span class="agenda-tag tag-decision">要判断</span>
-    <span class="agenda-text">Manusのみ5アプリ、GitHub移行する？しない？</span>
-  </div>
-  <div class="agenda-item decision">
-    <span class="agenda-tag tag-decision">要判断</span>
-    <span class="agenda-text">ポータルアプリ、いつ着手する？</span>
-  </div>
-  <div class="agenda-item">
-    <span class="agenda-tag tag-discuss">相談</span>
-    <span class="agenda-text">コードレビューの進め方（oshi-katsu → mokuhyo-tassei-bu の順でOK？）</span>
-  </div>
-  <div class="agenda-item info">
-    <span class="agenda-tag tag-info">共有</span>
-    <span class="agenda-text">GitHubにアプリ管理の仕組みを作った（AIが状況を即答できるようになった）</span>
-  </div>
-</div>
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
-<!-- アプリ状況 -->
-<div class="section">
-  <div class="section-title">アプリ状況</div>
-  <div class="grid-3">
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+  } catch { return dateStr; }
+}
 
-    <div class="card">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
-        <div class="app-name">推し活</div>
-        <span class="badge badge-review">レビュー待ち</span>
+async function loadJSON(path) {
+  try {
+    const res = await fetch(path);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch { return null; }
+}
+
+function renderSummary(summary) {
+  return `
+    <div class="section">
+      <div class="grid-4">
+        <div class="card" style="text-align:center">
+          <div class="summary-number" style="color:#34d399">${summary.projectsActive}</div>
+          <div class="summary-label">進行中PJ</div>
+        </div>
+        <div class="card" style="text-align:center">
+          <div class="summary-number" style="color:#fbbf24">${summary.tasksOverdue}</div>
+          <div class="summary-label">優先タスク</div>
+        </div>
+        <div class="card" style="text-align:center">
+          <div class="summary-number" style="color:#60a5fa">${summary.discussionBoxPending}</div>
+          <div class="summary-label">検討ボックス</div>
+        </div>
+        <div class="card" style="text-align:center">
+          <div class="summary-number" style="color:#f87171">${summary.urgentItems}</div>
+          <div class="summary-label">至急アイテム</div>
+        </div>
       </div>
-      <div class="app-meta">oshi-katsu / JWT+SSO / MySQL</div>
-      <div class="app-action">次: <strong>SP</strong>がセキュリティレビュー</div>
-    </div>
+    </div>`;
+}
 
-    <div class="card">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
-        <div class="app-name">目標達成部</div>
-        <span class="badge badge-review">レビュー待ち</span>
+function renderAgendaSection(section) {
+  if (!section.items || section.items.length === 0) {
+    return `
+      <div class="agenda-section">
+        <div class="agenda-section-header">
+          <span class="agenda-section-title">${escapeHtml(section.section)}</span>
+          <span class="agenda-section-meta">${section.duration ? section.duration + '分' : '随時'} / 0件</span>
+        </div>
+      </div>`;
+  }
+  const items = section.items.map(item => {
+    const tagClass = TAG_MAP[item.tag] || 'tag-discuss';
+    return `
+      <div class="agenda-item">
+        <span class="agenda-tag ${tagClass}">${escapeHtml(item.tag)}</span>
+        <span class="agenda-text">${escapeHtml(item.text)}</span>
+        ${item.assignee ? `<span class="agenda-assignee">${escapeHtml(item.assignee)}</span>` : ''}
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="agenda-section">
+      <div class="agenda-section-header">
+        <span class="agenda-section-title">${escapeHtml(section.section)}</span>
+        <span class="agenda-section-meta">${section.duration ? section.duration + '分' : '随時'} / ${section.items.length}件</span>
       </div>
-      <div class="app-meta">mokuhyo-tassei-bu / OAuth / MySQL</div>
-      <div class="app-action">次: <strong>SP</strong>がコードレビュー</div>
-    </div>
+      <div class="agenda-section-items">${items}</div>
+    </div>`;
+}
 
-    <div class="card">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
-        <div class="app-name">満願寺スタンプ</div>
-        <span class="badge badge-dev">実装中</span>
+function renderAgenda(meeting) {
+  if (!meeting || !meeting.agenda) return '';
+  const totalDuration = meeting.agenda.reduce((sum, s) => sum + (s.duration || 0), 0);
+  const totalItems = meeting.agenda.reduce((sum, s) => sum + (s.items ? s.items.length : 0), 0);
+  const sections = meeting.agenda.map(renderAgendaSection).join('');
+
+  return `
+    <div class="section">
+      <div class="section-title">次回アジェンダ (${escapeHtml(meeting.date)}) — ${totalItems}件 / 約${totalDuration}分</div>
+      ${sections}
+    </div>`;
+}
+
+function renderProjects(projects) {
+  if (!projects || projects.length === 0) return '';
+  const cards = projects.map(p => {
+    const isBlocked = p.status === 'blocked';
+    const badgeClass = BADGE_MAP[p.status] || 'badge-active';
+    const statusLabel = isBlocked ? 'ブロック中' : '進行中';
+    return `
+      <div class="project-card ${isBlocked ? 'blocked' : ''}">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
+          <div class="project-name">${escapeHtml(p.name)}</div>
+          <span class="badge ${badgeClass}">${statusLabel}</span>
+        </div>
+        <div class="project-owner">${escapeHtml(p.owner)} / ${escapeHtml(p.category)}</div>
+        <div class="project-next">${escapeHtml(p.nextAction)}</div>
+        ${p.blockers && p.blockers.length > 0 ? `<div class="project-blocker">${escapeHtml(p.blockers[0])}</div>` : ''}
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="section">
+      <div class="section-title">プロジェクト健康状態 (${projects.length}件)</div>
+      <div class="grid-3">${cards}</div>
+    </div>`;
+}
+
+function renderApps(apps) {
+  if (!apps || apps.length === 0) return '';
+  const cards = apps.map(app => {
+    const badgeClass = BADGE_MAP[app.status] || 'badge-plan';
+    const isDashed = app.status === 'check';
+    return `
+      <div class="card" ${isDashed ? 'style="border: 1px dashed #8b5cf644;"' : ''}>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
+          <div class="app-name">${escapeHtml(app.name)}</div>
+          <span class="badge ${badgeClass}">${escapeHtml(app.statusLabel)}</span>
+        </div>
+        <div class="app-meta">${escapeHtml(app.tech)}</div>
+        <div class="app-action">${escapeHtml(app.nextAction)}</div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="section">
+      <div class="section-title">アプリ状況</div>
+      <div class="grid-3">${cards}</div>
+    </div>`;
+}
+
+function renderChangesAndActions(meeting, dashboard) {
+  const changes = meeting && meeting.changesSinceLastMeeting
+    ? meeting.changesSinceLastMeeting
+    : [];
+  const actions = dashboard && dashboard.tasks && dashboard.tasks.inProgress
+    ? dashboard.tasks.inProgress
+    : [];
+
+  const changesHtml = changes.length > 0
+    ? changes.map(c => `
+        <li>
+          <span class="action-owner">${escapeHtml(c.owner)}</span>
+          <span>${escapeHtml(c.change)}</span>
+        </li>`).join('')
+    : '<li style="color:#475569">前回からの変化はまだ記録されていません</li>';
+
+  const actionsHtml = actions.length > 0
+    ? actions.map(a => `
+        <li>
+          <span class="action-owner">${escapeHtml(a.assignee)}</span>
+          <span>${escapeHtml(a.title)}${a.deadline ? ` (${escapeHtml(a.deadline)})` : ''}</span>
+        </li>`).join('')
+    : '<li style="color:#475569">アクションアイテムはまだ記録されていません</li>';
+
+  return `
+    <div class="grid-2">
+      <div class="section">
+        <div class="section-title">前回からの変化</div>
+        <div class="card"><ul class="action-list">${changesHtml}</ul></div>
       </div>
-      <div class="app-meta">manganji-stamp / Vercel / DB無し</div>
-      <div class="app-action">次: <strong>中さん</strong>が実装完了</div>
-    </div>
-
-    <div class="card">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
-        <div class="app-name">marutamura-bot</div>
-        <span class="badge badge-running">稼働中</span>
+      <div class="section">
+        <div class="section-title">進行中アクション</div>
+        <div class="card"><ul class="action-list">${actionsHtml}</ul></div>
       </div>
-      <div class="app-meta">LINE Bot + Claude AI / Vercel</div>
-      <div class="app-action">Notion連携断念 → ポータル待ち</div>
-    </div>
+    </div>`;
+}
 
-    <div class="card">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
-        <div class="app-name">プチスポンサー</div>
-        <span class="badge badge-plan">企画段階</span>
+function renderDiscussionBox(items) {
+  if (!items || items.length === 0) return '';
+  const pending = items.filter(d => d.status === '検討中');
+  if (pending.length === 0) return '';
+
+  const html = pending.slice(0, 10).map(d => {
+    const isUrgent = d.urgent;
+    return `
+      <div class="discussion-item">
+        <span class="agenda-tag ${isUrgent ? 'tag-urgent' : 'tag-discuss'}">${isUrgent ? '至急' : '検討中'}</span>
+        <span style="flex:1; color:#e2e8f0">${escapeHtml(d.content)}</span>
+        ${d.submitter ? `<span style="color:#475569; font-size:11px">${escapeHtml(d.submitter)}</span>` : ''}
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="section">
+      <div class="section-title">検討ボックス (未処理 ${pending.length}件)</div>
+      <div class="card">${html}</div>
+    </div>`;
+}
+
+function renderKeyDates(dates) {
+  if (!dates || dates.length === 0) return '';
+  const html = dates.map(d => `
+    <div class="date-item">
+      <span class="date-label">${escapeHtml(d.date)}</span>
+      <span style="flex:1; color:#e2e8f0">${escapeHtml(d.event)}</span>
+      <span style="color:#64748b; font-size:12px">${escapeHtml(d.status)}</span>
+    </div>`).join('');
+
+  return `
+    <div class="section">
+      <div class="section-title">今後の予定</div>
+      <div class="card">${html}</div>
+    </div>`;
+}
+
+function renderRecentDecisions(decisions) {
+  if (!decisions || decisions.length === 0) return '';
+  const html = decisions.map(d => `
+    <li>
+      <span class="action-owner">${escapeHtml(d.date)}</span>
+      <span>${escapeHtml(d.decision)}</span>
+    </li>`).join('');
+
+  return `
+    <div class="section">
+      <div class="section-title">最近の決定事項</div>
+      <div class="card"><ul class="action-list">${html}</ul></div>
+    </div>`;
+}
+
+async function init() {
+  const dashboard = await loadJSON('data/chapche/dashboard.json');
+  if (!dashboard) {
+    document.getElementById('app').innerHTML = `
+      <div class="header"><h1>チャプチェ会 ダッシュボード</h1></div>
+      <div class="card" style="text-align:center; padding:40px">
+        <p style="color:#f87171; font-size:16px">データの読み込みに失敗しました</p>
+        <p style="color:#64748b; margin-top:8px">data/chapche/dashboard.json が見つかりません</p>
+      </div>`;
+    return;
+  }
+
+  let meeting = null;
+  if (dashboard.meta && dashboard.meta.nextMeeting) {
+    meeting = await loadJSON(`data/chapche/meetings/${dashboard.meta.nextMeeting}.json`);
+  }
+
+  const updatedAt = dashboard.meta ? dashboard.meta.lastUpdated : '';
+  const nextMeeting = dashboard.meta ? dashboard.meta.nextMeeting : '';
+  const updatedLabel = updatedAt ? new Date(updatedAt).toLocaleString('ja-JP') : '';
+
+  let html = `
+    <div class="header">
+      <h1>チャプチェ会 ダッシュボード</h1>
+      <div class="header-right">
+        <div class="date">次回: ${escapeHtml(nextMeeting)}</div>
+        <div class="updated">更新: ${escapeHtml(updatedLabel)}</div>
       </div>
-      <div class="app-meta">marutamura/marutamura 内</div>
-      <div class="app-action">次: 仕様の具体化</div>
-    </div>
+    </div>`;
 
-    <div class="card" style="border: 1px dashed #8b5cf644;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
-        <div class="app-name">Manusのみ 5アプリ</div>
-        <span class="badge badge-check">要確認</span>
-      </div>
-      <div class="app-meta">ギルド / モノハブ / どっち？/ あちらさま / ハッピー</div>
-      <div class="app-action">次: 中身確認 → GitHub移行判断</div>
-    </div>
+  html += renderSummary(dashboard.summary);
+  html += renderAgenda(meeting);
+  html += renderProjects(dashboard.projects);
+  html += renderApps(dashboard.apps);
+  html += renderChangesAndActions(meeting, dashboard);
+  html += renderDiscussionBox(dashboard.discussionBox);
+  html += renderKeyDates(dashboard.keyDates);
+  html += renderRecentDecisions(dashboard.recentDecisions);
 
-  </div>
-</div>
+  html += `
+    <div class="footer">
+      マルタ村 運営ダッシュボード — sp-projects<br>
+      Claude Code に「チャプチェ会の準備して」と伝えると議題が自動生成されます
+    </div>`;
 
-<!-- 前回からの変化 & アクションアイテム -->
-<div class="grid-2">
-  <div class="section">
-    <div class="section-title">前回からの変化</div>
-    <div class="card">
-      <ul class="action-list">
-        <li>
-          <span class="action-owner">SP</span>
-          <span>GitHubにアプリステータス管理の仕組みを構築</span>
-        </li>
-        <li>
-          <span class="action-owner">SP</span>
-          <span>チャプチェ会ダッシュボード（このページ）を作成</span>
-        </li>
-        <li>
-          <span class="action-owner">中さん</span>
-          <span>（ここに中さんの進捗を書く）</span>
-        </li>
-      </ul>
-    </div>
-  </div>
+  document.getElementById('app').innerHTML = html;
+}
 
-  <div class="section">
-    <div class="section-title">次のアクション</div>
-    <div class="card">
-      <ul class="action-list">
-        <li>
-          <span class="action-owner">SP</span>
-          <span>oshi-katsu セキュリティレビュー実施</span>
-        </li>
-        <li>
-          <span class="action-owner">SP</span>
-          <span>Manusのみ5アプリの中身を確認</span>
-        </li>
-        <li>
-          <span class="action-owner">中さん</span>
-          <span>満願寺スタンプの実装を進める</span>
-        </li>
-        <li>
-          <span class="action-owner">全員</span>
-          <span>ポータルアプリの着手時期を決定</span>
-        </li>
-      </ul>
-    </div>
-  </div>
-</div>
-
-<!-- ===== ここから上を会議ごとに更新 ===== -->
-
-<div class="footer">
-  マルタ村 運営ダッシュボード — sp-projects<br>
-  会議前にAIへ「ダッシュボード更新して」と伝えると自動で内容が更新されます
-</div>
+init();
+</script>
 
 </body>
 </html>

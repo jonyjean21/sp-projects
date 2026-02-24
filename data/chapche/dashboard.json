@@ -1,0 +1,262 @@
+{
+  "meta": {
+    "lastUpdated": "2026-02-24T15:00:00+09:00",
+    "updatedBy": "Claude Code",
+    "nextMeeting": "2026-02-27",
+    "dataSource": "Notion エクスポート (2026-02-24)"
+  },
+  "summary": {
+    "projectsActive": 15,
+    "tasksOverdue": 30,
+    "discussionBoxPending": 43,
+    "urgentItems": 9,
+    "appsInReview": 2
+  },
+  "projectLeaders": {
+    "period": "第3回 2/12〜2/19（1週間運用）",
+    "assignments": {
+      "ししょー": ["目標達成部", "マルタ代行サービス", "モノハブ", "お祝い文化", "歯プロジェクト", "パワモル"],
+      "サノ": ["グッズ制作(メタルID)", "ヒトハブ", "新人チーム戦"],
+      "中": ["ミステリーギフト", "ライブ配信環境整備PJ", "告知部"]
+    }
+  },
+  "projects": [
+    {
+      "id": "mokuhyo-tassei",
+      "name": "目標達成部",
+      "category": "文化系",
+      "status": "active",
+      "owner": "ししょー",
+      "nextAction": "規約ポップ作成、オプチャ作成済み",
+      "blockers": []
+    },
+    {
+      "id": "maruta-daikou",
+      "name": "マルタ代行サービス",
+      "category": "マルタ村系",
+      "status": "blocked",
+      "owner": "ししょー",
+      "nextAction": "料金目安を先に置く（買い物代行3マルタ）",
+      "blockers": ["依頼者・実行者のモチベ不足で停滞"]
+    },
+    {
+      "id": "monohub",
+      "name": "モノハブ",
+      "category": "ドーム系",
+      "status": "active",
+      "owner": "ししょー",
+      "nextAction": "ケルヒャー移動、テプラ貼付済み",
+      "blockers": []
+    },
+    {
+      "id": "oiwai-bunka",
+      "name": "お祝い文化",
+      "category": "文化系",
+      "status": "active",
+      "owner": "ししょー",
+      "nextAction": "塗り絵アイデア、プロジェクトキャラクター構想",
+      "blockers": []
+    },
+    {
+      "id": "ha-project",
+      "name": "歯プロジェクト",
+      "category": "ドーム系",
+      "status": "active",
+      "owner": "ししょー",
+      "nextAction": "歯磨き大使の肩書き付与→エリナさんへ共有",
+      "blockers": []
+    },
+    {
+      "id": "powamol",
+      "name": "パワモル",
+      "category": "文化系",
+      "status": "active",
+      "owner": "ししょー",
+      "nextAction": "門番+チャプメンバー分完成、7人分印刷・ラミネート→配布",
+      "blockers": []
+    },
+    {
+      "id": "metal-id",
+      "name": "グッズ制作（メタルID）",
+      "category": "ドーム系",
+      "status": "active",
+      "owner": "サノ",
+      "nextAction": "メタルIDサンプル制作、QRコード付き名刺試作",
+      "blockers": []
+    },
+    {
+      "id": "hitohub",
+      "name": "ヒトハブ",
+      "category": "文化系",
+      "status": "blocked",
+      "owner": "サノ",
+      "nextAction": "着手する",
+      "blockers": ["進捗なし"]
+    },
+    {
+      "id": "shinjin-team",
+      "name": "新人チーム戦",
+      "category": "大会系",
+      "status": "active",
+      "owner": "サノ",
+      "nextAction": "4月以降年間予定に組み込む",
+      "blockers": []
+    },
+    {
+      "id": "mystery-gift",
+      "name": "ミステリーギフト",
+      "category": "文化系",
+      "status": "active",
+      "owner": "中",
+      "nextAction": "見える化完了、運用定着へ",
+      "blockers": []
+    },
+    {
+      "id": "live-streaming",
+      "name": "ライブ配信環境整備PJ",
+      "category": "ドーム系",
+      "status": "blocked",
+      "owner": "中",
+      "nextAction": "Phase1: 誰でも1台で配信できる体制",
+      "blockers": ["未着手"]
+    },
+    {
+      "id": "kokuchi",
+      "name": "告知部",
+      "category": "ドーム系",
+      "status": "active",
+      "owner": "中",
+      "nextAction": "記事化が次の課題、15秒CM撮影",
+      "blockers": []
+    },
+    {
+      "id": "baby-dome",
+      "name": "ベビードーム充実化",
+      "category": "ドーム系",
+      "status": "active",
+      "owner": "中",
+      "nextAction": "なっちゃん主体で進行中、棚完成",
+      "blockers": []
+    },
+    {
+      "id": "oshi-bunka",
+      "name": "推し文化",
+      "category": "文化系",
+      "status": "active",
+      "owner": "中",
+      "nextAction": "柱にA3掲示、ジャンル分け試行",
+      "blockers": []
+    },
+    {
+      "id": "ai-day",
+      "name": "AIデー",
+      "category": "ドーム系",
+      "status": "active",
+      "owner": "チーム全体",
+      "nextAction": "平日午後に定期開催で合意、実施開始",
+      "blockers": []
+    }
+  ],
+  "apps": [
+    {
+      "name": "推し活",
+      "status": "review",
+      "statusLabel": "レビュー待ち",
+      "tech": "React 19 / JWT / MySQL",
+      "nextAction": "SPがセキュリティレビュー",
+      "owner": "SP"
+    },
+    {
+      "name": "目標達成部",
+      "status": "review",
+      "statusLabel": "レビュー待ち",
+      "tech": "OAuth / MySQL",
+      "nextAction": "SPがコードレビュー",
+      "owner": "SP"
+    },
+    {
+      "name": "満願寺スタンプ",
+      "status": "dev",
+      "statusLabel": "実装中",
+      "tech": "Vercel / DB無し",
+      "nextAction": "中さんが実装完了",
+      "owner": "中"
+    },
+    {
+      "name": "marutamura-bot",
+      "status": "running",
+      "statusLabel": "稼働中",
+      "tech": "LINE Bot + Claude AI / Vercel",
+      "nextAction": "Notion連携断念→ポータル待ち",
+      "owner": "チーム"
+    },
+    {
+      "name": "プチスポンサー",
+      "status": "plan",
+      "statusLabel": "企画段階",
+      "tech": "marutamura内",
+      "nextAction": "仕様の具体化",
+      "owner": "チーム"
+    },
+    {
+      "name": "Manusのみ 5アプリ",
+      "status": "check",
+      "statusLabel": "要確認",
+      "tech": "ギルド / モノハブ / どっち？/ あちらさま / ハッピー",
+      "nextAction": "中身確認→GitHub移行判断",
+      "owner": "チーム"
+    }
+  ],
+  "tasks": {
+    "overdue": [
+      { "title": "小部屋にエアコン設置", "priority": 1, "assignee": "工務店", "category": "設備" },
+      { "title": "エアコン マルタ小屋に追加", "priority": 1, "assignee": "工務店", "category": "設備" },
+      { "title": "ユニフォームチーム名調査・一覧作成", "priority": 1, "assignee": "中", "category": "実働" },
+      { "title": "一般団体向け大会パッケージ形態化", "priority": 1, "assignee": "未定", "category": "実働" },
+      { "title": "ディスプレイPV更新（テレビ映像追加）", "priority": 1, "assignee": "中", "category": "実働" },
+      { "title": "贈り箱の宣伝動画お試し作成", "priority": 1, "assignee": "サノ, 中", "category": "実働" },
+      { "title": "HP ボードゲーム一覧ページ作成", "priority": 1, "assignee": "ゆい, 中", "category": "WEB" },
+      { "title": "モルック レジンテーブル作成", "priority": 1, "assignee": "工務店", "category": "製作" }
+    ],
+    "inProgress": [
+      { "title": "師匠杯エントリーフォーム準備", "assignee": "チーム", "deadline": "3月中旬" },
+      { "title": "パワモルカード印刷・ラミネート（7人分）", "assignee": "ししょー", "deadline": "近日中" },
+      { "title": "メタルIDサンプル制作", "assignee": "サノ", "deadline": "進行中" },
+      { "title": "AI活用自動化（議事録・コンテンツ）", "assignee": "サノ", "deadline": "次の1週間" }
+    ],
+    "recentlyCompleted": [
+      { "title": "挑戦の盾の刻印完了", "date": "2026-02-17" },
+      { "title": "横断幕作成完了", "date": "2026-02-17" },
+      { "title": "公式LINE一式修正完了", "date": "2026-02-17" },
+      { "title": "蒼太杯 開催完了", "date": "2026-02-20" },
+      { "title": "早朝カップ新人戦 開催完了（22名参加）", "date": "2026-02-21" }
+    ]
+  },
+  "discussionBox": [
+    { "content": "ラブモル28人参加で今後のキャパ懸念", "status": "検討中", "submitter": "不明", "date": "2026-02-24", "urgent": true },
+    { "content": "3月川モル関連お知らせ整理", "status": "検討中", "submitter": "不明", "date": "2026-02-24", "urgent": false },
+    { "content": "会社対抗戦の要望", "status": "検討中", "submitter": "不明", "date": "2026-02-24", "urgent": false },
+    { "content": "推し活のトイレ音楽、土日プランが欲しい", "status": "検討中", "submitter": "優", "date": "2026-02-06", "urgent": true },
+    { "content": "モノハブ/マルタ代行の問い合わせフォーム: 公式LINE or オプチャ？", "status": "検討中", "submitter": "ししょー", "date": "2026-02-09", "urgent": false },
+    { "content": "モルック素材（写真・イラスト）の著作権フリー素材集", "status": "検討中", "submitter": "ししょー", "date": "2026-02-09", "urgent": false },
+    { "content": "HP定期大会エントリーフォームへのリンクページ", "status": "タスク化", "submitter": "ししょー", "date": "2026-02-09", "urgent": false },
+    { "content": "2階手すり設置", "status": "検討中", "submitter": "不明", "date": "2026-02", "urgent": true },
+    { "content": "2L水在庫ゼロ", "status": "検討中", "submitter": "不明", "date": "2026-02", "urgent": true }
+  ],
+  "keyDates": [
+    { "date": "2026-02-27", "event": "次回チャプチェ会", "status": "予定" },
+    { "date": "2026-02月下旬", "event": "老子杯", "status": "レギュレーション確定" },
+    { "date": "2026-03月中旬", "event": "師匠杯（来場予想50-60人）", "status": "準備開始必要" },
+    { "date": "2026-03-28", "event": "三ツ矢の日", "status": "協賛検討中" },
+    { "date": "2026-04月以降", "event": "4月大会", "status": "エントリー動向次第" },
+    { "date": "2026-07〜10月", "event": "満願寺予選", "status": "企画中" },
+    { "date": "2026年", "event": "世界大会ツアー（フィンランド）", "status": "企画段階" }
+  ],
+  "recentDecisions": [
+    { "date": "2026-02-19", "decision": "AIの活用範囲拡大→タスク管理・コンテンツ生成・議事録自動化を射程に" },
+    { "date": "2026-02-17", "decision": "Discord導入決定（PJ管理一元化・AI出力保管目的）" },
+    { "date": "2026-02-17", "decision": "AIデー（平日午後定期開催）で合意" },
+    { "date": "2026-02-17", "decision": "平日1日オーナー制度：60マルタで平日貸切権" },
+    { "date": "2026-02-12", "decision": "プロジェクト運用を1週間区切り＆分業制で試行" }
+  ]
+}

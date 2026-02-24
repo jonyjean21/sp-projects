@@ -1,0 +1,39 @@
+{
+  "meetings": [
+    {
+      "date": "2026-02-19",
+      "status": "completed",
+      "decisionsCount": 7,
+      "actionsCount": 5,
+      "highlights": "蒼太杯・新人戦準備完了、メタルID試作、AI活用拡大決定"
+    },
+    {
+      "date": "2026-02-17",
+      "status": "completed",
+      "decisionsCount": 5,
+      "actionsCount": 4,
+      "highlights": "Discord導入決定、AIデー定期開催合意、平日オーナー制度"
+    },
+    {
+      "date": "2026-02-12",
+      "status": "completed",
+      "decisionsCount": 3,
+      "actionsCount": 1,
+      "highlights": "1週間区切りPJ分業制を試行開始"
+    },
+    {
+      "date": "2026-02-09",
+      "status": "completed",
+      "decisionsCount": 3,
+      "actionsCount": 3,
+      "highlights": "マルタ代行料金方針、HP大会ページ集約合意"
+    },
+    {
+      "date": "2026-02-04",
+      "status": "completed",
+      "decisionsCount": 3,
+      "actionsCount": 2,
+      "highlights": "平日サブスク形式決定、モルック協会筋通し完了"
+    }
+  ]
+}
