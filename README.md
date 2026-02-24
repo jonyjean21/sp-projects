@@ -9,6 +9,7 @@
 | **次やることを確認** | [`tasks/current.md`](tasks/current.md) |
 | **アプリの状況を確認** | [`projects/molkky-dome/app-status.md`](projects/molkky-dome/app-status.md) |
 | **チャプチェ会の準備** | [`docs/chapche-status-template.md`](docs/chapche-status-template.md) |
+| **会議用ダッシュボード** | [`docs/chapche-dashboard.html`](docs/chapche-dashboard.html)（ブラウザで開いて画面共有） |
 | **MOLKKY HUB の状況** | [`projects/personal/molkky-hub.md`](projects/personal/molkky-hub.md) |
 | **マルタ村 PJ の状況** | [`projects/molkky-dome/README.md`](projects/molkky-dome/README.md) |
 | **完了タスクの記録** | [`tasks/done.md`](tasks/done.md) |
@@ -54,6 +55,7 @@ sp-projects/
 └── docs/                        # 意思決定ログ・設計メモ・ナレッジ
     ├── README.md
     ├── chapche-status-template.md # チャプチェ会レポートテンプレート
+    ├── chapche-dashboard.html   # 会議投影用ダッシュボード（ブラウザで開く）
     └── setup-guides/             # セットアップ手順書（順番に実行するだけ）
 ```
 
