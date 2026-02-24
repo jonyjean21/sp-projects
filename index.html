@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>チャプチェ会 ダッシュボード</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 24px 32px;
+    min-height: 100vh;
+  }
+
+  /* ヘッダー */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 28px;
+    border-bottom: 2px solid #334155;
+    padding-bottom: 16px;
+  }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #f8fafc;
+  }
+  .header .date {
+    font-size: 16px;
+    color: #94a3b8;
+  }
+
+  /* セクション */
+  .section {
+    margin-bottom: 28px;
+  }
+  .section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+
+  /* グリッド */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  /* カード */
+  .card {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 18px 20px;
+    border: 1px solid #334155;
+  }
+
+  /* ステータスバッジ */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge-review { background: #f59e0b22; color: #fbbf24; border: 1px solid #f59e0b44; }
+  .badge-dev { background: #3b82f622; color: #60a5fa; border: 1px solid #3b82f644; }
+  .badge-running { background: #10b98122; color: #34d399; border: 1px solid #10b98144; }
+  .badge-check { background: #8b5cf622; color: #a78bfa; border: 1px solid #8b5cf644; }
+  .badge-plan { background: #64748b22; color: #94a3b8; border: 1px solid #64748b44; }
+
+  /* アプリカード */
+  .app-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #f1f5f9;
+    margin-bottom: 6px;
+  }
+  .app-meta {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 8px;
+  }
+  .app-action {
+    font-size: 13px;
+    color: #94a3b8;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #334155;
+  }
+  .app-action strong { color: #e2e8f0; }
+
+  /* サマリーカード */
+  .summary-number {
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .summary-label {
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 4px;
+  }
+
+  /* アジェンダ */
+  .agenda-item {
+    background: #1e293b;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    border-left: 4px solid #3b82f6;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .agenda-item.decision {
+    border-left-color: #f59e0b;
+  }
+  .agenda-item.info {
+    border-left-color: #10b981;
+  }
+  .agenda-tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .tag-decision { background: #f59e0b33; color: #fbbf24; }
+  .tag-discuss { background: #3b82f633; color: #60a5fa; }
+  .tag-info { background: #10b98133; color: #34d399; }
+  .agenda-text {
+    font-size: 15px;
+    color: #e2e8f0;
+  }
+
+  /* アクションアイテム */
+  .action-list { list-style: none; }
+  .action-list li {
+    padding: 10px 0;
+    border-bottom: 1px solid #1e293b;
+    display: flex;
+    gap: 10px;
+    font-size: 14px;
+  }
+  .action-list li:last-child { border-bottom: none; }
+  .action-owner {
+    background: #334155;
+    color: #e2e8f0;
+    padding: 1px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    height: fit-content;
+  }
+
+  /* フッター */
+  .footer {
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 1px solid #334155;
+    font-size: 12px;
+    color: #475569;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== ここから下を会議ごとに更新 ===== -->
+
+<div class="header">
+  <h1>チャプチェ会 ダッシュボード</h1>
+  <div class="date">2026年2月24日（月）</div>
+</div>
+
+<!-- サマリー -->
+<div class="section">
+  <div class="grid-3">
+    <div class="card" style="text-align:center">
+      <div class="summary-number" style="color:#fbbf24">2</div>
+      <div class="summary-label">レビュー待ち</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="summary-number" style="color:#60a5fa">1</div>
+      <div class="summary-label">開発中</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="summary-number" style="color:#a78bfa">5</div>
+      <div class="summary-label">要確認（Manusのみ）</div>
+    </div>
+  </div>
+</div>
+
+<!-- 今日のアジェンダ -->
+<div class="section">
+  <div class="section-title">今日のアジェンダ</div>
+
+  <div class="agenda-item decision">
+    <span class="agenda-tag tag-decision">要判断</span>
+    <span class="agenda-text">Manusのみ5アプリ、GitHub移行する？しない？</span>
+  </div>
+  <div class="agenda-item decision">
+    <span class="agenda-tag tag-decision">要判断</span>
+    <span class="agenda-text">ポータルアプリ、いつ着手する？</span>
+  </div>
+  <div class="agenda-item">
+    <span class="agenda-tag tag-discuss">相談</span>
+    <span class="agenda-text">コードレビューの進め方（oshi-katsu → mokuhyo-tassei-bu の順でOK？）</span>
+  </div>
+  <div class="agenda-item info">
+    <span class="agenda-tag tag-info">共有</span>
+    <span class="agenda-text">GitHubにアプリ管理の仕組みを作った（AIが状況を即答できるようになった）</span>
+  </div>
+</div>
+
+<!-- アプリ状況 -->
+<div class="section">
+  <div class="section-title">アプリ状況</div>
+  <div class="grid-3">
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
+        <div class="app-name">推し活</div>
+        <span class="badge badge-review">レビュー待ち</span>
+      </div>
+      <div class="app-meta">oshi-katsu / JWT+SSO / MySQL</div>
+      <div class="app-action">次: <strong>SP</strong>がセキュリティレビュー</div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
+        <div class="app-name">目標達成部</div>
+        <span class="badge badge-review">レビュー待ち</span>
+      </div>
+      <div class="app-meta">mokuhyo-tassei-bu / OAuth / MySQL</div>
+      <div class="app-action">次: <strong>SP</strong>がコードレビュー</div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
+        <div class="app-name">満願寺スタンプ</div>
+        <span class="badge badge-dev">実装中</span>
+      </div>
+      <div class="app-meta">manganji-stamp / Vercel / DB無し</div>
+      <div class="app-action">次: <strong>中さん</strong>が実装完了</div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
+        <div class="app-name">marutamura-bot</div>
+        <span class="badge badge-running">稼働中</span>
+      </div>
+      <div class="app-meta">LINE Bot + Claude AI / Vercel</div>
+      <div class="app-action">Notion連携断念 → ポータル待ち</div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
+        <div class="app-name">プチスポンサー</div>
+        <span class="badge badge-plan">企画段階</span>
+      </div>
+      <div class="app-meta">marutamura/marutamura 内</div>
+      <div class="app-action">次: 仕様の具体化</div>
+    </div>
+
+    <div class="card" style="border: 1px dashed #8b5cf644;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
+        <div class="app-name">Manusのみ 5アプリ</div>
+        <span class="badge badge-check">要確認</span>
+      </div>
+      <div class="app-meta">ギルド / モノハブ / どっち？/ あちらさま / ハッピー</div>
+      <div class="app-action">次: 中身確認 → GitHub移行判断</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 前回からの変化 & アクションアイテム -->
+<div class="grid-2">
+  <div class="section">
+    <div class="section-title">前回からの変化</div>
+    <div class="card">
+      <ul class="action-list">
+        <li>
+          <span class="action-owner">SP</span>
+          <span>GitHubにアプリステータス管理の仕組みを構築</span>
+        </li>
+        <li>
+          <span class="action-owner">SP</span>
+          <span>チャプチェ会ダッシュボード（このページ）を作成</span>
+        </li>
+        <li>
+          <span class="action-owner">中さん</span>
+          <span>（ここに中さんの進捗を書く）</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">次のアクション</div>
+    <div class="card">
+      <ul class="action-list">
+        <li>
+          <span class="action-owner">SP</span>
+          <span>oshi-katsu セキュリティレビュー実施</span>
+        </li>
+        <li>
+          <span class="action-owner">SP</span>
+          <span>Manusのみ5アプリの中身を確認</span>
+        </li>
+        <li>
+          <span class="action-owner">中さん</span>
+          <span>満願寺スタンプの実装を進める</span>
+        </li>
+        <li>
+          <span class="action-owner">全員</span>
+          <span>ポータルアプリの着手時期を決定</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ここから上を会議ごとに更新 ===== -->
+
+<div class="footer">
+  マルタ村 運営ダッシュボード — sp-projects<br>
+  会議前にAIへ「ダッシュボード更新して」と伝えると自動で内容が更新されます
+</div>
+
+</body>
+</html>
