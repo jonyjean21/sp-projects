@@ -1,0 +1,90 @@
+name: Fetch Tweets
+
+on:
+  push:
+    branches:
+      - 'claude/organize-match-results-E85YA'
+    paths:
+      - '.github/workflows/fetch-tweets.yml'
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch tweets via FxTwitter API
+        run: |
+          echo "=== Fetching user profile ==="
+          curl -sL "https://api.fxtwitter.com/viisimaster5" -o fxtwitter-profile.json
+          cat fxtwitter-profile.json | python3 -m json.tool 2>/dev/null || cat fxtwitter-profile.json
+          echo ""
+
+          echo "=== Fetching user timeline via syndication ==="
+          curl -sL "https://syndication.twitter.com/srv/timeline-profile/screen-name/viisimaster5" -o syndication-timeline.html
+          python3 -c "
+          import re
+          with open('syndication-timeline.html', 'r') as f:
+              html = f.read()
+          # Extract tweet texts
+          tweets = re.findall(r'data-tweet-id=\"(\d+)\"', html)
+          texts = re.findall(r'<p[^>]*>(.*?)</p>', html, re.DOTALL)
+          print(f'Found {len(tweets)} tweet IDs, {len(texts)} text blocks')
+          for i, t in enumerate(texts[:30]):
+              clean = re.sub(r'<[^>]+>', '', t).strip()
+              if clean:
+                  print(f'[{i}] {clean}')
+          " 2>/dev/null || echo "Syndication parse failed, raw head:"
+          head -100 syndication-timeline.html
+
+          echo ""
+          echo "=== Fetching via Nitter ==="
+          for instance in "nitter.poast.org" "nitter.privacydev.net" "nitter.net"; do
+            echo "--- Trying $instance ---"
+            curl -sL --max-time 15 "https://$instance/viisimaster5" -o "nitter-${instance}.html" 2>&1
+            python3 -c "
+          import re
+          with open('nitter-${instance}.html', 'r') as f:
+              html = f.read()
+          texts = re.findall(r'class=\"tweet-content[^\"]*\"[^>]*>(.*?)</div>', html, re.DOTALL)
+          print(f'Found {len(texts)} tweets from ${instance}')
+          for i, t in enumerate(texts[:20]):
+              clean = re.sub(r'<[^>]+>', '', t).strip()
+              if clean:
+                  print(f'[{i}] {clean}')
+          " 2>/dev/null || echo "Parse failed for $instance"
+          done
+
+          echo ""
+          echo "=== Direct X page fetch ==="
+          curl -sL --max-time 15 "https://x.com/viisimaster5" \
+            -H "User-Agent: Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" \
+            -o x-direct.html
+          python3 -c "
+          import re, json
+          with open('x-direct.html', 'r') as f:
+              html = f.read()
+          # Try to find embedded tweet data in script tags
+          matches = re.findall(r'\"full_text\":\"(.*?)\"', html)
+          if matches:
+              print(f'Found {len(matches)} tweet texts in page data')
+              for m in matches[:20]:
+                  print(m)
+          else:
+              # Try alternate pattern
+              matches2 = re.findall(r'\"text\":\"(.*?)\"', html)
+              print(f'Found {len(matches2)} text fields')
+              for m in matches2[:20]:
+                  decoded = m.encode().decode('unicode_escape', errors='ignore')
+                  if len(decoded) > 10:
+                      print(decoded)
+          " 2>/dev/null || echo "X direct parse failed"
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: tweet-data
+          path: |
+            fxtwitter-profile.json
+            syndication-timeline.html
+            nitter-*.html
+            x-direct.html
+          retention-days: 1
