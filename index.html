@@ -12,9 +12,10 @@
     color: #e2e8f0;
     padding: 24px 32px;
     min-height: 100vh;
+    max-width: 960px;
+    margin: 0 auto;
   }
 
-  /* ヘッダー */
   .header {
     display: flex;
     justify-content: space-between;
@@ -25,42 +26,21 @@
     flex-wrap: wrap;
     gap: 8px;
   }
-  .header h1 {
-    font-size: 28px;
-    font-weight: 700;
-    color: #f8fafc;
-  }
-  .header-right {
-    text-align: right;
-  }
-  .header .date {
-    font-size: 16px;
-    color: #94a3b8;
-  }
-  .header .updated {
-    font-size: 11px;
-    color: #475569;
-  }
+  .header h1 { font-size: 26px; font-weight: 700; color: #f8fafc; }
+  .header-right { text-align: right; }
+  .header .date { font-size: 15px; color: #94a3b8; }
+  .header .updated { font-size: 11px; color: #475569; margin-top: 2px; }
 
-  /* セクション */
-  .section {
-    margin-bottom: 28px;
-  }
+  .section { margin-bottom: 32px; }
   .section-title {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 600;
-    color: #94a3b8;
+    color: #64748b;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
     margin-bottom: 12px;
   }
 
-  /* グリッド */
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
-
-  /* カード */
   .card {
     background: #1e293b;
     border-radius: 12px;
@@ -68,173 +48,46 @@
     border: 1px solid #334155;
   }
 
-  /* ステータスバッジ */
-  .badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
+  /* サマリー */
+  .summary-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 28px;
   }
-  .badge-review { background: #f59e0b22; color: #fbbf24; border: 1px solid #f59e0b44; }
-  .badge-dev { background: #3b82f622; color: #60a5fa; border: 1px solid #3b82f644; }
-  .badge-running { background: #10b98122; color: #34d399; border: 1px solid #10b98144; }
-  .badge-check { background: #8b5cf622; color: #a78bfa; border: 1px solid #8b5cf644; }
-  .badge-plan { background: #64748b22; color: #94a3b8; border: 1px solid #64748b44; }
-  .badge-blocked { background: #ef444422; color: #f87171; border: 1px solid #ef444444; }
-  .badge-active { background: #10b98122; color: #34d399; border: 1px solid #10b98144; }
-
-  /* アプリカード */
-  .app-name {
-    font-size: 16px;
-    font-weight: 600;
-    color: #f1f5f9;
-    margin-bottom: 6px;
+  .summary-chip {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 10px 16px;
+    text-align: center;
+    flex: 1;
   }
-  .app-meta {
-    font-size: 13px;
-    color: #64748b;
-    margin-bottom: 8px;
-  }
-  .app-action {
-    font-size: 13px;
-    color: #94a3b8;
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid #334155;
-  }
-  .app-action strong { color: #e2e8f0; }
-
-  /* サマリーカード */
-  .summary-number {
-    font-size: 36px;
-    font-weight: 700;
-    line-height: 1;
-  }
-  .summary-label {
-    font-size: 13px;
-    color: #64748b;
-    margin-top: 4px;
-  }
+  .summary-chip .num { font-size: 28px; font-weight: 700; line-height: 1; }
+  .summary-chip .label { font-size: 11px; color: #64748b; margin-top: 4px; }
 
   /* アジェンダ */
-  .agenda-section {
-    margin-bottom: 20px;
-  }
-  .agenda-section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 16px;
-    background: #1e293b;
-    border-radius: 8px 8px 0 0;
-    border: 1px solid #334155;
-    border-bottom: none;
-    cursor: pointer;
-  }
-  .agenda-section-header:hover {
-    background: #253347;
-  }
-  .agenda-section-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: #f1f5f9;
-  }
-  .agenda-section-meta {
-    font-size: 12px;
-    color: #64748b;
-  }
-  .agenda-section-items {
-    border: 1px solid #334155;
-    border-radius: 0 0 8px 8px;
-    overflow: hidden;
-  }
   .agenda-item {
-    background: #1e293b;
-    padding: 12px 18px;
-    border-bottom: 1px solid #0f172a;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #0f172a;
+    font-size: 14px;
   }
   .agenda-item:last-child { border-bottom: none; }
-  .agenda-tag {
+  .tag {
     font-size: 11px;
     font-weight: 600;
     padding: 2px 8px;
     border-radius: 4px;
     white-space: nowrap;
   }
-  .tag-decision { background: #f59e0b33; color: #fbbf24; }
-  .tag-discuss { background: #3b82f633; color: #60a5fa; }
-  .tag-info { background: #10b98133; color: #34d399; }
-  .tag-action { background: #8b5cf633; color: #a78bfa; }
-  .tag-urgent { background: #ef444433; color: #f87171; }
-  .agenda-text {
-    font-size: 14px;
-    color: #e2e8f0;
-    flex: 1;
-  }
-  .agenda-assignee {
-    font-size: 11px;
-    color: #64748b;
-    white-space: nowrap;
-  }
-
-  /* プロジェクトカード */
-  .project-card {
-    background: #1e293b;
-    border-radius: 10px;
-    padding: 14px 16px;
-    border: 1px solid #334155;
-  }
-  .project-card.blocked {
-    border-color: #ef444444;
-  }
-  .project-name {
-    font-size: 14px;
-    font-weight: 600;
-    color: #f1f5f9;
-    margin-bottom: 4px;
-  }
-  .project-owner {
-    font-size: 12px;
-    color: #64748b;
-    margin-bottom: 6px;
-  }
-  .project-next {
-    font-size: 12px;
-    color: #94a3b8;
-  }
-  .project-blocker {
-    font-size: 11px;
-    color: #f87171;
-    margin-top: 4px;
-  }
+  .tag-要判断, .tag-要確認 { background: #f59e0b33; color: #fbbf24; }
+  .tag-相談 { background: #3b82f633; color: #60a5fa; }
+  .tag-進捗, .tag-確認, .tag-共有 { background: #10b98133; color: #34d399; }
 
   /* アクションアイテム */
-  .action-list { list-style: none; }
-  .action-list li {
-    padding: 10px 0;
-    border-bottom: 1px solid #0f172a;
-    display: flex;
-    gap: 10px;
-    font-size: 14px;
-  }
-  .action-list li:last-child { border-bottom: none; }
-  .action-owner {
-    background: #334155;
-    color: #e2e8f0;
-    padding: 1px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 600;
-    white-space: nowrap;
-    height: fit-content;
-  }
-
-  /* 検討ボックス */
-  .discussion-item {
+  .action-item {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -242,353 +95,191 @@
     border-bottom: 1px solid #0f172a;
     font-size: 13px;
   }
-  .discussion-item:last-child { border-bottom: none; }
+  .action-item:last-child { border-bottom: none; }
+  .owner {
+    background: #334155;
+    color: #e2e8f0;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .action-text { flex: 1; color: #e2e8f0; }
+  .action-date { font-size: 11px; color: #475569; white-space: nowrap; }
+  .action-status {
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .status-未完了 { background: #f59e0b22; color: #fbbf24; }
+  .status-進行中 { background: #3b82f622; color: #60a5fa; }
+  .status-完了 { background: #10b98122; color: #34d399; }
 
-  /* 日程 */
-  .date-item {
+  /* 決定事項 */
+  .decision-item {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     padding: 8px 0;
     border-bottom: 1px solid #0f172a;
     font-size: 13px;
   }
-  .date-item:last-child { border-bottom: none; }
-  .date-label {
+  .decision-item:last-child { border-bottom: none; }
+  .decision-date {
     color: #fbbf24;
     font-weight: 600;
+    font-size: 12px;
     white-space: nowrap;
-    min-width: 100px;
+    min-width: 56px;
   }
 
-  /* フッター */
+  /* 会議履歴 */
+  .meeting-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #0f172a;
+    font-size: 13px;
+  }
+  .meeting-item:last-child { border-bottom: none; }
+  .meeting-date {
+    color: #94a3b8;
+    font-weight: 600;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .meeting-summary { color: #e2e8f0; flex: 1; }
+  .meeting-link {
+    color: #60a5fa;
+    text-decoration: none;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .meeting-link:hover { text-decoration: underline; }
+
   .footer {
-    margin-top: 32px;
+    margin-top: 40px;
     padding-top: 16px;
     border-top: 1px solid #334155;
     font-size: 12px;
     color: #475569;
     text-align: center;
+    line-height: 1.8;
   }
 
-  /* ローディング */
-  .loading {
-    text-align: center;
-    padding: 60px 0;
-    color: #64748b;
-    font-size: 16px;
-  }
+  .loading { text-align: center; padding: 60px 0; color: #64748b; }
 
-  /* レスポンシブ */
-  @media (max-width: 768px) {
+  @media (max-width: 640px) {
     body { padding: 16px; }
-    .header h1 { font-size: 22px; }
-    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
-    .summary-number { font-size: 28px; }
-  }
-  @media (min-width: 769px) and (max-width: 1024px) {
-    .grid-3 { grid-template-columns: 1fr 1fr; }
-    .grid-4 { grid-template-columns: 1fr 1fr; }
+    .header h1 { font-size: 20px; }
+    .summary-row { flex-wrap: wrap; }
+    .summary-chip { min-width: calc(50% - 8px); }
+    .summary-chip .num { font-size: 22px; }
   }
 </style>
 </head>
 <body>
 
-<div id="app">
-  <div class="loading">読み込み中...</div>
-</div>
+<div id="app"><div class="loading">読み込み中...</div></div>
 
 <script>
-const TAG_MAP = {
-  '要判断': 'tag-decision',
-  '要確認': 'tag-decision',
-  '相談': 'tag-discuss',
-  '共有': 'tag-info',
-  '進捗': 'tag-info',
-  '確認': 'tag-info',
-  '作業': 'tag-action',
-  '至急': 'tag-urgent'
-};
-
-const BADGE_MAP = {
-  'review': 'badge-review',
-  'dev': 'badge-dev',
-  'running': 'badge-running',
-  'check': 'badge-check',
-  'plan': 'badge-plan',
-  'active': 'badge-active',
-  'blocked': 'badge-blocked'
-};
-
-function escapeHtml(str) {
-  if (!str) return '';
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function formatDate(dateStr) {
-  if (!dateStr) return '';
-  try {
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
-    return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
-  } catch { return dateStr; }
-}
-
-async function loadJSON(path) {
-  try {
-    const res = await fetch(path);
-    if (!res.ok) return null;
-    return await res.json();
-  } catch { return null; }
-}
-
-function renderSummary(summary) {
-  return `
-    <div class="section">
-      <div class="grid-4">
-        <div class="card" style="text-align:center">
-          <div class="summary-number" style="color:#34d399">${summary.projectsActive}</div>
-          <div class="summary-label">進行中PJ</div>
-        </div>
-        <div class="card" style="text-align:center">
-          <div class="summary-number" style="color:#fbbf24">${summary.tasksOverdue}</div>
-          <div class="summary-label">優先タスク</div>
-        </div>
-        <div class="card" style="text-align:center">
-          <div class="summary-number" style="color:#60a5fa">${summary.discussionBoxPending}</div>
-          <div class="summary-label">検討ボックス</div>
-        </div>
-        <div class="card" style="text-align:center">
-          <div class="summary-number" style="color:#f87171">${summary.urgentItems}</div>
-          <div class="summary-label">至急アイテム</div>
-        </div>
-      </div>
-    </div>`;
-}
-
-function renderAgendaSection(section) {
-  if (!section.items || section.items.length === 0) {
-    return `
-      <div class="agenda-section">
-        <div class="agenda-section-header">
-          <span class="agenda-section-title">${escapeHtml(section.section)}</span>
-          <span class="agenda-section-meta">${section.duration ? section.duration + '分' : '随時'} / 0件</span>
-        </div>
-      </div>`;
-  }
-  const items = section.items.map(item => {
-    const tagClass = TAG_MAP[item.tag] || 'tag-discuss';
-    return `
-      <div class="agenda-item">
-        <span class="agenda-tag ${tagClass}">${escapeHtml(item.tag)}</span>
-        <span class="agenda-text">${escapeHtml(item.text)}</span>
-        ${item.assignee ? `<span class="agenda-assignee">${escapeHtml(item.assignee)}</span>` : ''}
-      </div>`;
-  }).join('');
-
-  return `
-    <div class="agenda-section">
-      <div class="agenda-section-header">
-        <span class="agenda-section-title">${escapeHtml(section.section)}</span>
-        <span class="agenda-section-meta">${section.duration ? section.duration + '分' : '随時'} / ${section.items.length}件</span>
-      </div>
-      <div class="agenda-section-items">${items}</div>
-    </div>`;
-}
-
-function renderAgenda(meeting) {
-  if (!meeting || !meeting.agenda) return '';
-  const totalDuration = meeting.agenda.reduce((sum, s) => sum + (s.duration || 0), 0);
-  const totalItems = meeting.agenda.reduce((sum, s) => sum + (s.items ? s.items.length : 0), 0);
-  const sections = meeting.agenda.map(renderAgendaSection).join('');
-
-  return `
-    <div class="section">
-      <div class="section-title">次回アジェンダ (${escapeHtml(meeting.date)}) — ${totalItems}件 / 約${totalDuration}分</div>
-      ${sections}
-    </div>`;
-}
-
-function renderProjects(projects) {
-  if (!projects || projects.length === 0) return '';
-  const cards = projects.map(p => {
-    const isBlocked = p.status === 'blocked';
-    const badgeClass = BADGE_MAP[p.status] || 'badge-active';
-    const statusLabel = isBlocked ? 'ブロック中' : '進行中';
-    return `
-      <div class="project-card ${isBlocked ? 'blocked' : ''}">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
-          <div class="project-name">${escapeHtml(p.name)}</div>
-          <span class="badge ${badgeClass}">${statusLabel}</span>
-        </div>
-        <div class="project-owner">${escapeHtml(p.owner)} / ${escapeHtml(p.category)}</div>
-        <div class="project-next">${escapeHtml(p.nextAction)}</div>
-        ${p.blockers && p.blockers.length > 0 ? `<div class="project-blocker">${escapeHtml(p.blockers[0])}</div>` : ''}
-      </div>`;
-  }).join('');
-
-  return `
-    <div class="section">
-      <div class="section-title">プロジェクト健康状態 (${projects.length}件)</div>
-      <div class="grid-3">${cards}</div>
-    </div>`;
-}
-
-function renderApps(apps) {
-  if (!apps || apps.length === 0) return '';
-  const cards = apps.map(app => {
-    const badgeClass = BADGE_MAP[app.status] || 'badge-plan';
-    const isDashed = app.status === 'check';
-    return `
-      <div class="card" ${isDashed ? 'style="border: 1px dashed #8b5cf644;"' : ''}>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
-          <div class="app-name">${escapeHtml(app.name)}</div>
-          <span class="badge ${badgeClass}">${escapeHtml(app.statusLabel)}</span>
-        </div>
-        <div class="app-meta">${escapeHtml(app.tech)}</div>
-        <div class="app-action">${escapeHtml(app.nextAction)}</div>
-      </div>`;
-  }).join('');
-
-  return `
-    <div class="section">
-      <div class="section-title">アプリ状況</div>
-      <div class="grid-3">${cards}</div>
-    </div>`;
-}
-
-function renderChangesAndActions(meeting, dashboard) {
-  const changes = meeting && meeting.changesSinceLastMeeting
-    ? meeting.changesSinceLastMeeting
-    : [];
-  const actions = dashboard && dashboard.tasks && dashboard.tasks.inProgress
-    ? dashboard.tasks.inProgress
-    : [];
-
-  const changesHtml = changes.length > 0
-    ? changes.map(c => `
-        <li>
-          <span class="action-owner">${escapeHtml(c.owner)}</span>
-          <span>${escapeHtml(c.change)}</span>
-        </li>`).join('')
-    : '<li style="color:#475569">前回からの変化はまだ記録されていません</li>';
-
-  const actionsHtml = actions.length > 0
-    ? actions.map(a => `
-        <li>
-          <span class="action-owner">${escapeHtml(a.assignee)}</span>
-          <span>${escapeHtml(a.title)}${a.deadline ? ` (${escapeHtml(a.deadline)})` : ''}</span>
-        </li>`).join('')
-    : '<li style="color:#475569">アクションアイテムはまだ記録されていません</li>';
-
-  return `
-    <div class="grid-2">
-      <div class="section">
-        <div class="section-title">前回からの変化</div>
-        <div class="card"><ul class="action-list">${changesHtml}</ul></div>
-      </div>
-      <div class="section">
-        <div class="section-title">進行中アクション</div>
-        <div class="card"><ul class="action-list">${actionsHtml}</ul></div>
-      </div>
-    </div>`;
-}
-
-function renderDiscussionBox(items) {
-  if (!items || items.length === 0) return '';
-  const pending = items.filter(d => d.status === '検討中');
-  if (pending.length === 0) return '';
-
-  const html = pending.slice(0, 10).map(d => {
-    const isUrgent = d.urgent;
-    return `
-      <div class="discussion-item">
-        <span class="agenda-tag ${isUrgent ? 'tag-urgent' : 'tag-discuss'}">${isUrgent ? '至急' : '検討中'}</span>
-        <span style="flex:1; color:#e2e8f0">${escapeHtml(d.content)}</span>
-        ${d.submitter ? `<span style="color:#475569; font-size:11px">${escapeHtml(d.submitter)}</span>` : ''}
-      </div>`;
-  }).join('');
-
-  return `
-    <div class="section">
-      <div class="section-title">検討ボックス (未処理 ${pending.length}件)</div>
-      <div class="card">${html}</div>
-    </div>`;
-}
-
-function renderKeyDates(dates) {
-  if (!dates || dates.length === 0) return '';
-  const html = dates.map(d => `
-    <div class="date-item">
-      <span class="date-label">${escapeHtml(d.date)}</span>
-      <span style="flex:1; color:#e2e8f0">${escapeHtml(d.event)}</span>
-      <span style="color:#64748b; font-size:12px">${escapeHtml(d.status)}</span>
-    </div>`).join('');
-
-  return `
-    <div class="section">
-      <div class="section-title">今後の予定</div>
-      <div class="card">${html}</div>
-    </div>`;
-}
-
-function renderRecentDecisions(decisions) {
-  if (!decisions || decisions.length === 0) return '';
-  const html = decisions.map(d => `
-    <li>
-      <span class="action-owner">${escapeHtml(d.date)}</span>
-      <span>${escapeHtml(d.decision)}</span>
-    </li>`).join('');
-
-  return `
-    <div class="section">
-      <div class="section-title">最近の決定事項</div>
-      <div class="card"><ul class="action-list">${html}</ul></div>
-    </div>`;
-}
+function e(s) { return s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
 
 async function init() {
-  const dashboard = await loadJSON('data/chapche/dashboard.json');
-  if (!dashboard) {
-    document.getElementById('app').innerHTML = `
-      <div class="header"><h1>チャプチェ会 ダッシュボード</h1></div>
-      <div class="card" style="text-align:center; padding:40px">
-        <p style="color:#f87171; font-size:16px">データの読み込みに失敗しました</p>
-        <p style="color:#64748b; margin-top:8px">data/chapche/dashboard.json が見つかりません</p>
-      </div>`;
+  let d;
+  try {
+    const res = await fetch('data/chapche/dashboard.json');
+    d = await res.json();
+  } catch {
+    document.getElementById('app').innerHTML = '<div class="card" style="text-align:center;padding:40px"><p style="color:#f87171">データの読み込みに失敗しました</p></div>';
     return;
   }
 
-  let meeting = null;
-  if (dashboard.meta && dashboard.meta.nextMeeting) {
-    meeting = await loadJSON(`data/chapche/meetings/${dashboard.meta.nextMeeting}.json`);
-  }
-
-  const updatedAt = dashboard.meta ? dashboard.meta.lastUpdated : '';
-  const nextMeeting = dashboard.meta ? dashboard.meta.nextMeeting : '';
-  const updatedLabel = updatedAt ? new Date(updatedAt).toLocaleString('ja-JP') : '';
+  const updated = d.meta.lastUpdated ? new Date(d.meta.lastUpdated).toLocaleString('ja-JP') : '';
+  const openActions = d.openActionItems || [];
+  const pendingCount = openActions.filter(a => a.status !== '完了').length;
+  const decisions = d.recentDecisions || [];
+  const meetings = d.meetingHistory || [];
+  const agenda = d.nextAgenda ? d.nextAgenda.items || [] : [];
 
   let html = `
     <div class="header">
-      <h1>チャプチェ会 ダッシュボード</h1>
+      <h1>チャプチェ会</h1>
       <div class="header-right">
-        <div class="date">次回: ${escapeHtml(nextMeeting)}</div>
-        <div class="updated">更新: ${escapeHtml(updatedLabel)}</div>
+        <div class="date">次回: ${e(d.meta.nextMeeting)}</div>
+        <div class="updated">更新: ${e(updated)}</div>
+      </div>
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-chip">
+        <div class="num" style="color:#fbbf24">${pendingCount}</div>
+        <div class="label">未完了アクション</div>
+      </div>
+      <div class="summary-chip">
+        <div class="num" style="color:#60a5fa">${agenda.length}</div>
+        <div class="label">次回の議題</div>
+      </div>
+      <div class="summary-chip">
+        <div class="num" style="color:#34d399">${meetings.length}</div>
+        <div class="label">会議記録</div>
       </div>
     </div>`;
 
-  html += renderSummary(dashboard.summary);
-  html += renderAgenda(meeting);
-  html += renderProjects(dashboard.projects);
-  html += renderApps(dashboard.apps);
-  html += renderChangesAndActions(meeting, dashboard);
-  html += renderDiscussionBox(dashboard.discussionBox);
-  html += renderKeyDates(dashboard.keyDates);
-  html += renderRecentDecisions(dashboard.recentDecisions);
+  // 次回アジェンダ
+  if (agenda.length > 0) {
+    const agendaHtml = agenda.map(item =>
+      `<div class="agenda-item">
+        <span class="tag tag-${e(item.tag)}">${e(item.tag)}</span>
+        <span style="flex:1">${e(item.text)}</span>
+      </div>`
+    ).join('');
+    html += `<div class="section"><div class="section-title">次回アジェンダ (${e(d.nextAgenda.date)})</div><div class="card">${agendaHtml}</div></div>`;
+  }
+
+  // 未完了アクション
+  if (openActions.length > 0) {
+    const actionsHtml = openActions.map(a =>
+      `<div class="action-item">
+        <span class="owner">${e(a.owner)}</span>
+        <span class="action-text">${e(a.action)}</span>
+        <span class="action-date">${e(a.from)}</span>
+        <span class="action-status status-${e(a.status)}">${e(a.status)}</span>
+      </div>`
+    ).join('');
+    html += `<div class="section"><div class="section-title">未完了アクション</div><div class="card">${actionsHtml}</div></div>`;
+  }
+
+  // 最近の決定事項
+  if (decisions.length > 0) {
+    const decisionsHtml = decisions.map(d =>
+      `<div class="decision-item">
+        <span class="decision-date">${e(d.date).slice(5)}</span>
+        <span style="flex:1">${e(d.decision)}</span>
+      </div>`
+    ).join('');
+    html += `<div class="section"><div class="section-title">最近の決定事項</div><div class="card">${decisionsHtml}</div></div>`;
+  }
+
+  // 会議履歴
+  if (meetings.length > 0) {
+    const meetingsHtml = meetings.map(m =>
+      `<div class="meeting-item">
+        <span class="meeting-date">${e(m.date)}</span>
+        <span class="meeting-summary">${e(m.summary)}</span>
+        ${m.file ? `<a href="meetings/${e(m.file)}" class="meeting-link" target="_blank">議事録</a>` : ''}
+      </div>`
+    ).join('');
+    html += `<div class="section"><div class="section-title">会議履歴</div><div class="card">${meetingsHtml}</div></div>`;
+  }
 
   html += `
     <div class="footer">
-      マルタ村 運営ダッシュボード — sp-projects<br>
-      Claude Code に「チャプチェ会の準備して」と伝えると議題が自動生成されます
+      マルタ村 チャプチェ会 — 会議記録ダッシュボード<br>
+      タスク管理・検討ボックスは Notion / 会議記録・決定事項は GitHub<br>
+      Claude Code に「チャプチェ会の準備して」で議題自動生成
     </div>`;
 
   document.getElementById('app').innerHTML = html;
@@ -596,6 +287,5 @@ async function init() {
 
 init();
 </script>
-
 </body>
 </html>
