@@ -1037,12 +1037,23 @@ function copyText(elementId, btn) {
 // ============================================================
 function getQualifiedChallengers() {
   // 1人でも門番を倒せば控えに入れる
-  // ただし控え中に門番に負けたらリセット（直近の門番戦が勝利であること）
+  // ただし:
+  //   - 控え中に門番に負けたらリセット（直近の門番戦が勝利であること）
+  //   - タイトルマッチに挑戦済みなら、それ以前の門番勝利は無効（リセット）
   const challengers = [...new Set(D.matches.filter(m => m.role === 'gatekeeper').map(m => m.challenger))];
   const qualified = [];
 
   challengers.forEach(c => {
-    const gkMatches = D.matches.filter(m => m.role === 'gatekeeper' && m.challenger === c);
+    // この挑戦者の最後のタイトルマッチ（挑戦者として）
+    const titleMatches = D.matches.filter(m => m.role === 'champion' && m.challenger === c);
+    const lastTitle = titleMatches.length > 0 ? titleMatches[titleMatches.length - 1] : null;
+
+    // タイトルマッチ後の門番戦のみカウント
+    let gkMatches = D.matches.filter(m => m.role === 'gatekeeper' && m.challenger === c);
+    if (lastTitle) {
+      const lastTitleIdx = D.matches.indexOf(lastTitle);
+      gkMatches = gkMatches.filter(m => D.matches.indexOf(m) > lastTitleIdx);
+    }
     if (gkMatches.length === 0) return;
 
     // 門番に1勝以上していること
