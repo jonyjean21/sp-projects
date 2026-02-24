@@ -585,6 +585,26 @@ function loadData() {
   } else {
     D = structuredClone(DEFAULT_DATA);
   }
+  // DEFAULT_DATAの最新情報をマージ（新規選手追加・ハンドル更新など）
+  if (D && DEFAULT_DATA.players) {
+    Object.entries(DEFAULT_DATA.players).forEach(([name, dp]) => {
+      if (!D.players[name]) {
+        // 新規選手をマージ
+        D.players[name] = structuredClone(dp);
+      } else if (dp.x && !D.players[name].x) {
+        // DEFAULT側にハンドルがあり、保存データにない場合は反映
+        D.players[name].x = dp.x;
+      }
+    });
+    // gatekeepers のハンドルも同期
+    if (D.gatekeepers) {
+      D.gatekeepers.forEach(gk => {
+        const dp = DEFAULT_DATA.players[gk.name];
+        if (dp && dp.x && !gk.x_handle) gk.x_handle = dp.x;
+      });
+    }
+    saveData();
+  }
 }
 function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(D)); }
 
