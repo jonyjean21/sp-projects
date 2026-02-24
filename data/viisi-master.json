@@ -485,11 +485,11 @@
       "defender": "川上",
       "defender_x": null,
       "defender_role": "gatekeeper",
-      "score_challenger": 5,
-      "score_defender": 2,
-      "winner": "ヒジ",
-      "result_type": "breakthrough",
-      "note": "ヒジが門番川上を撃破"
+      "score_challenger": 2,
+      "score_defender": 5,
+      "winner": "川上",
+      "result_type": "defense",
+      "note": "川上が門番防衛"
     },
     {
       "id": 32,
