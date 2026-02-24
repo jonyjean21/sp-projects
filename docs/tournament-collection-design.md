@@ -24,9 +24,10 @@
 
 | サイト | URL | 内容 |
 |--------|-----|------|
-| 日本モルック協会 | https://molkky.jp/tournament/ | 公式大会スケジュール |
-| 全国モルックカレンダー | https://www.jajapatatas.com/ | 全国の大会・イベント情報を網羅 |
-| 全国モルックカレンダーニュース | https://blog.jajapatatas.com/ | 大会結果レポート等 |
+| 日本モルック協会 | https://molkky.jp/tournament/ | 公式大会スケジュール。WPサイトなので `/feed/` でRSS取得可能性あり |
+| 全国モルックカレンダー | https://www.jajapatatas.com/ | 全国の大会・イベント情報を網羅。ポイントランキングも運営 |
+| 全国モルックカレンダーニュース | https://blog.jajapatatas.com/ | 大会結果レポート等。はてなブログのため `blog.jajapatatas.com/rss` でRSS取得可能 |
+| モルック情報ナビ | https://www.molkky-navi.com/ | 誰でも投稿・検索できる大会情報サイト |
 
 ## 自動収集方法の比較
 
@@ -41,11 +42,12 @@
 
 **結論: X API直接利用はコスパが悪すぎるため不採用**
 
-### IFTTT（Pro $2.50/月）
+### IFTTT（Pro $2.99/月）
 
 | 項目 | 内容 |
 |------|------|
-| 費用 | **$2.50/月**（Pro）、$5/月（Pro+） |
+| 費用 | **$2.99/月**（Pro、約450円）、$8.99/月（Pro+） |
+| X API別途契約 | **不要**（IFTTTが自社でAPI契約を維持） |
 | X連携 | 利用可能（有料ユーザーのみ） |
 | トリガー | 新しいメンション、キーワード検索、特定ユーザーの投稿 |
 | ポーリング | 5分ごと（Pro） |
@@ -64,8 +66,9 @@
 | トリガー | New Mention, New Post from Query, New Post from User |
 | アクション | Google Sheets行追加、WordPress投稿等 |
 
-**メリット:** X連携が復活、8,000アプリと連携可能
-**デメリット:** X Developer App取得が必要（手間）、有料になりやすい
+**メリット:** X連携が復活（2026年2月16日）、8,000アプリと連携可能
+**デメリット:** X Developer App取得が必要 = **X API Basic $200/月が別途必要**。IFTTTに比べて圧倒的に割高
+**結論: 不採用**
 
 ### Google Alerts（無料）
 
@@ -106,7 +109,7 @@
 │  ├─ RSS配信 → Google スプレッドシートに蓄積    │
 │  └─ ウェブ上の告知記事を自動キャッチ          │
 │                                             │
-│  Layer 2: IFTTT Pro（$2.50/月・自動）        │
+│  Layer 2: IFTTT Pro（$2.99/月・自動）         │
 │  ├─ X検索トリガー: #モルック + 大会キーワード  │
 │  ├─ 特定アカウント監視: @Molkky_Japan 等      │
 │  └─ → Google スプレッドシートに自動追記       │
@@ -136,15 +139,20 @@
 
 **これだけでウェブ上の新着情報が自動的にスプシに入る。**
 
-### Phase 2（翌週・$2.50/月）— IFTTT Pro でX監視
+### Phase 2（翌週・$2.99/月）— IFTTT Pro でX監視
 
-1. IFTTT Pro に登録（$2.50/月）
-2. Appletを作成:
-   - Trigger: X → 「New tweet from search」→ キーワード「#モルック 大会」
-   - Action: Google Sheets → 「Add row to spreadsheet」
-3. もう1つ: 特定アカウント（@Molkky_Japan）の新ツイートをトリガー
+1. IFTTT Pro に登録（$2.99/月、約450円）
+2. Appletを作成（Pro は最大20個まで）:
+   - Applet 1: `#モルック` 検索 → Google Sheets
+   - Applet 2: `@Molkky_Japan` のツイート → Google Sheets
+   - Applet 3: `@molkkycalendar` のツイート → Google Sheets
+   - Applet 4: `モルック 大会` 検索 → Google Sheets
+   - Applet 5: 全国モルックカレンダーのRSS → Google Sheets
+   - Applet 6: Google Alerts RSS → Google Sheets
 
 **X上の大会情報が5分ごとに自動でスプシに流れ込む。**
+
+> 参考Applet: https://ifttt.com/applets/hHiMAk5C （ハッシュタグ→スプシ）
 
 ### Phase 3（余裕があれば）— RSS + GAS で公式サイト監視
 
@@ -157,8 +165,14 @@
 | 項目 | 月額 |
 |------|------|
 | Google Alerts | 無料 |
-| IFTTT Pro | $2.50（約380円） |
-| **合計** | **約380円/月** |
+| IFTTT Pro | $2.99（約450円） |
+| **合計** | **約450円/月** |
+
+## 運用上の注意
+
+- **Google Sheetsの2,000行制限**: IFTTTはシートが2,000行に達すると新規シートを自動作成。GASとの連携でシート名を考慮する
+- **重複排除**: 複数Appletが同じツイートを拾う可能性あり → GAS側でURL等で重複チェック
+- **ノイズ除去**: 「モルック 大会」は関係ない投稿も入る → GASでフィルタリングロジックを追加
 
 ## 次のアクション
 
