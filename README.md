@@ -7,6 +7,8 @@
 | やりたいこと | 見る場所 |
 |-------------|---------|
 | **次やることを確認** | [`tasks/current.md`](tasks/current.md) |
+| **アプリの状況を確認** | [`projects/molkky-dome/app-status.md`](projects/molkky-dome/app-status.md) |
+| **チャプチェ会の準備** | [`docs/chapche-status-template.md`](docs/chapche-status-template.md) |
 | **MOLKKY HUB の状況** | [`projects/personal/molkky-hub.md`](projects/personal/molkky-hub.md) |
 | **マルタ村 PJ の状況** | [`projects/molkky-dome/README.md`](projects/molkky-dome/README.md) |
 | **完了タスクの記録** | [`tasks/done.md`](tasks/done.md) |
@@ -45,11 +47,13 @@ sp-projects/
 │   ├── personal/                # 個人プロジェクト
 │   │   └── molkky-hub.md
 │   └── molkky-dome/             # マルタ村共同プロジェクト
-│       └── README.md
+│       ├── README.md
+│       └── app-status.md        # アプリ別ステータス管理（AIが参照）
 ├── scripts/                     # コピペで使えるスクリプト
 │   └── ga4-monthly-export.gs    # GA4月次エクスポートGAS
 └── docs/                        # 意思決定ログ・設計メモ・ナレッジ
     ├── README.md
+    ├── chapche-status-template.md # チャプチェ会レポートテンプレート
     └── setup-guides/             # セットアップ手順書（順番に実行するだけ）
 ```
 
