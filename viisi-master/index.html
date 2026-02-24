@@ -377,6 +377,30 @@
   </div>
 </div>
 
+<!-- ===== 選手編集モーダル ===== -->
+<div class="modal-overlay" id="edit-player-modal">
+  <div class="modal">
+    <h3>選手を編集</h3>
+    <input type="hidden" id="edit-player-original-name">
+    <div class="section-label" style="margin-bottom:4px;font-size:11px;">名前</div>
+    <input class="input-field" id="edit-player-name" placeholder="名前">
+    <div class="section-label" style="margin-bottom:4px;font-size:11px;">Xアカウント</div>
+    <input class="input-field" id="edit-player-handle" placeholder="@xxx">
+    <div class="section-label" style="margin-bottom:4px;font-size:11px;">役割</div>
+    <select class="input-field" id="edit-player-role">
+      <option value="champion">👑 王者</option>
+      <option value="gatekeeper">🛡️ 門番</option>
+      <option value="former_champion">⭐ 元王者</option>
+      <option value="challenger">⚔️ 挑戦者</option>
+    </select>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button class="btn-full btn-danger" onclick="deletePlayer()" style="flex:1;">削除</button>
+      <button class="btn-full btn-secondary" onclick="hideModal('edit-player-modal')" style="flex:1;">キャンセル</button>
+      <button class="btn-full btn-primary" onclick="saveEditPlayer()" style="flex:1;">保存</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== パスワードモーダル ===== -->
 <div class="modal-overlay" id="pw-modal">
   <div class="modal">
@@ -1329,8 +1353,9 @@ function renderSettings() {
     const roleMap = { champion: '👑王者', gatekeeper: '🛡️門番', former_champion: '⭐元王者', challenger: '⚔️挑戦者' };
     const role = roleMap[p.role] || '⚔️挑戦者';
     const handle = p.x || '—';
+    const escapedName = name.replace(/'/g, "\\'");
     return `
-      <div class="gk-card">
+      <div class="gk-card" style="cursor:pointer;" onclick="requireAuth(function(){ openEditPlayer('${escapedName}'); })">
         <div class="info">
           <div class="name">${name}</div>
           <div class="handle">${handle}</div>
@@ -1356,6 +1381,74 @@ function addNewPlayer() {
   document.getElementById('new-player-handle').value = '';
   refreshAllSelects();
   showToast(`${name}を追加しました`);
+}
+
+function openEditPlayer(name) {
+  const p = D.players[name];
+  if (!p) return;
+  document.getElementById('edit-player-original-name').value = name;
+  document.getElementById('edit-player-name').value = name;
+  document.getElementById('edit-player-handle').value = p.x || '';
+  document.getElementById('edit-player-role').value = p.role || 'challenger';
+  document.getElementById('edit-player-modal').classList.add('show');
+}
+
+function saveEditPlayer() {
+  const origName = document.getElementById('edit-player-original-name').value;
+  const newName = document.getElementById('edit-player-name').value.trim();
+  const newHandle = document.getElementById('edit-player-handle').value.trim() || null;
+  const newRole = document.getElementById('edit-player-role').value;
+  if (!newName) return;
+
+  if (newName !== origName) {
+    // 名前変更: 試合データ内の参照も更新
+    D.matches.forEach(m => {
+      if (m.challenger === origName) m.challenger = newName;
+      if (m.defender === origName) m.defender = newName;
+      if (m.winner === origName) m.winner = newName;
+    });
+    // champion情報も更新
+    if (D.champion && D.champion.name === origName) D.champion.name = newName;
+    // gatekeepers情報も更新
+    D.gatekeepers.forEach(gk => {
+      if (gk.name === origName) gk.name = newName;
+    });
+    // playersオブジェクトのキー変更
+    D.players[newName] = D.players[origName];
+    delete D.players[origName];
+  }
+
+  D.players[newName].x = newHandle;
+  D.players[newName].role = newRole;
+
+  // champion/gatekeeper のハンドルも同期
+  if (D.champion && D.champion.name === newName) D.champion.x_handle = newHandle;
+  D.gatekeepers.forEach(gk => {
+    if (gk.name === newName) gk.x_handle = newHandle;
+  });
+
+  saveData();
+  hideModal('edit-player-modal');
+  refreshAllSelects();
+  renderSettings();
+  showToast(`${newName}を更新しました`);
+}
+
+function deletePlayer() {
+  const origName = document.getElementById('edit-player-original-name').value;
+  // 試合データに使われているか確認
+  const used = D.matches.some(m => m.challenger === origName || m.defender === origName);
+  if (used) {
+    if (!confirm(`${origName}は試合記録に含まれています。削除すると試合データと整合性が取れなくなる可能性があります。本当に削除しますか？`)) return;
+  } else {
+    if (!confirm(`${origName}を削除しますか？`)) return;
+  }
+  delete D.players[origName];
+  saveData();
+  hideModal('edit-player-modal');
+  refreshAllSelects();
+  renderSettings();
+  showToast(`${origName}を削除しました`);
 }
 
 function refreshAllSelects() {
