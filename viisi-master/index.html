@@ -681,6 +681,7 @@ function goToInternal(page) {
   if (page === 'stats') renderStats();
   if (page === 'history') renderHistory();
   if (page === 'settings') renderSettings();
+  sessionStorage.setItem('viisi-current-page', page);
   window.scrollTo(0, 0);
 }
 
@@ -1382,36 +1383,59 @@ function renderMatchItem(m, num, matchIdx) {
 // ============================================================
 function renderSettings() {
   const gkNames = D.gatekeepers.map(g => g.name);
-  const qualifiedNames = getQualifiedChallengers().map(q => q.name);
+  const qualified = getQualifiedChallengers();
+  const qualifiedNames = qualified.map(q => q.name);
+  // 元王者判定: チャンピオン戦で防衛者として負けた人 = 元王者
+  const formerChampNames = [...new Set(
+    D.matches.filter(m => m.role === 'champion' && m.winner === m.challenger).map(m => m.defender)
+  )];
 
-  // 表示順: 王者 → 門番(王者/元王者兼任含む) → 元王者 → 挑戦者
+  // 表示順: 王者 → 門番 → 元王者 → 挑戦権あり(控え順) → 挑戦者
   const entries = Object.entries(D.players);
   entries.sort((a, b) => {
     const orderOf = ([n, p]) => {
       if (p.role === 'champion') return 0;
       if (gkNames.includes(n) && p.role !== 'champion') return 1;
-      if (p.role === 'former_champion') return 2;
-      return 3;
+      if (p.role === 'former_champion' && !gkNames.includes(n)) return 2;
+      if (qualifiedNames.includes(n)) return 3;
+      return 4;
     };
-    return orderOf(a) - orderOf(b);
+    const diff = orderOf(a) - orderOf(b);
+    if (diff !== 0) return diff;
+    // 挑戦権あり同士は控え順
+    const ai = qualifiedNames.indexOf(a[0]);
+    const bi = qualifiedNames.indexOf(b[0]);
+    if (ai >= 0 && bi >= 0) return ai - bi;
+    return 0;
   });
 
   const html = entries.map(([name, p]) => {
-    const roleMap = { champion: '👑王者', gatekeeper: '🛡️門番', former_champion: '⭐元王者', challenger: '⚔️挑戦者' };
     const isGk = gkNames.includes(name);
     const isQualified = qualifiedNames.includes(name);
+    const isFormerChamp = p.role === 'former_champion' || formerChampNames.includes(name);
+
     // タグを構築（複数タグ対応）
     let tags = '';
-    if (p.role === 'challenger' && isQualified) {
-      tags += `<span class="role-tag role-qualified">🔥挑戦権あり</span>`;
+    // メインタグ
+    if (p.role === 'champion') {
+      tags += `<span class="role-tag role-champion">👑王者</span>`;
+    } else if (isQualified && !isGk) {
+      const qIdx = qualifiedNames.indexOf(name) + 1;
+      tags += `<span class="role-tag role-qualified">🔥挑戦権あり #${qIdx}</span>`;
+    } else if (p.role === 'former_champion' && !isGk) {
+      tags += `<span class="role-tag role-challenger">⭐元王者</span>`;
+    } else if (isGk) {
+      tags += `<span class="role-tag role-gatekeeper">🛡️門番</span>`;
     } else {
-      const mainRole = roleMap[p.role] || '⚔️挑戦者';
-      const mainClass = p.role === 'champion' ? 'role-champion' : p.role === 'gatekeeper' ? 'role-gatekeeper' : 'role-challenger';
-      tags += `<span class="role-tag ${mainClass}">${mainRole}</span>`;
+      tags += `<span class="role-tag role-challenger">⚔️挑戦者</span>`;
     }
-    // 王者または元王者で門番も兼ねている場合、門番タグを追加
-    if (isGk && p.role !== 'gatekeeper') {
+    // 王者で門番も兼ねている場合
+    if (isGk && p.role === 'champion') {
       tags += ` <span class="role-tag role-gatekeeper">🛡️門番</span>`;
+    }
+    // 門番で元王者の場合
+    if (isGk && isFormerChamp && p.role !== 'champion') {
+      tags += ` <span class="role-tag role-challenger">⭐元王者</span>`;
     }
 
     const handle = p.x ? normalizeHandle(p.x) : '—';
@@ -1591,8 +1615,9 @@ function deleteEditMatch() {
 // ============================================================
 loadData();
 addEntry();
-// 初回は戦績ページを表示（みんなが見れるページ）
-goToInternal('stats');
+// 前回のページを復元（なければ戦績ページ）
+const savedPage = sessionStorage.getItem('viisi-current-page') || 'stats';
+goToInternal(savedPage);
 </script>
 
 </body>
