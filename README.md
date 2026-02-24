@@ -1,42 +1,54 @@
 # sp-projects
 
-すべてのプロジェクトを統括する中央ハブリポジトリ。
+孔雀のプロジェクト司令塔。方針・進捗・タスク・ナレッジをここに集約する。
 
-## 目的
+## まず見るところ
 
-- プロジェクト全体の方向性・意思決定を管理する
-- 各プロジェクトの状態を一元的に把握する
-- 技術的な設計判断や学びを記録・蓄積する
-- 共同プロジェクトの情報を関係者と共有する
+| やりたいこと | 見る場所 |
+|-------------|---------|
+| **次やることを確認** | [`tasks/current.md`](tasks/current.md) |
+| **MOLKKY HUB の状況** | [`projects/personal/molkky-hub.md`](projects/personal/molkky-hub.md) |
+| **マルタ村 PJ の状況** | [`projects/molkky-dome/README.md`](projects/molkky-dome/README.md) |
+| **完了タスクの記録** | [`tasks/done.md`](tasks/done.md) |
+| **設計メモ・ナレッジ** | [`docs/`](docs/README.md) |
 
 ## プロジェクト領域
 
-### 個人プロジェクト (`projects/personal/`)
-個人で運営・開発しているプロジェクト。
+### 個人プロジェクト（`projects/personal/`）
 
-- [MOLKKY HUB](projects/personal/molkky-hub.md) — モルック情報サイトの運営
+- **[MOLKKY HUB](projects/personal/molkky-hub.md)** — モルック総合情報メディア（WordPress + SWELL @ ConoHa）
+  - 月間 約3,000セッション / 6,000PV（2025年2月時点）
+  - X（SNS）が最大の集客チャネル
+  - 大会情報のスプシ→GAS→WP自動投稿が稼働中
+  - 寄稿プロジェクト（レギュラー3名）で週2〜3回更新
 
-### マルタ村共同プロジェクト (`projects/molkky-dome/`)
-マルタ村（兵庫県川西市）の中さんとの共同プロジェクト。マルタ村内にモルックドームがある。
+### マルタ村共同プロジェクト（`projects/molkky-dome/`）
 
-- *(今後追加)*
+- マルタ村（兵庫県川西市）の中さんとの共同プロジェクト
+- アプリ開発（Manus活用）など複数PJが進行中
+- 孔雀は全体管理・企画推進を担当
+- モルハブとの連携を深めていく予定
 
 ## 構成
 
 ```
 sp-projects/
-├── README.md
+├── README.md                    ← いま見ているファイル
+├── tasks/                       # タスク管理（PCを開いたらまずここ）
+│   ├── README.md
+│   ├── current.md               # 今やること・次やること
+│   └── done.md                  # 完了済みタスクのログ
 ├── projects/
-│   ├── personal/              # 個人プロジェクト
+│   ├── personal/                # 個人プロジェクト
 │   │   └── molkky-hub.md
-│   └── molkky-dome/           # モルックドーム共同プロジェクト
+│   └── molkky-dome/             # マルタ村共同プロジェクト
 │       └── README.md
-└── docs/                      # 意思決定ログ・設計メモ・ナレッジ
+└── docs/                        # 意思決定ログ・設計メモ・ナレッジ
     └── README.md
 ```
 
-## 使い方
+## 運営方針
 
-- **新しいプロジェクトを始めるとき** → 該当カテゴリの `projects/` にプロジェクト概要を追加
-- **設計判断や方針を記録するとき** → `docs/` にドキュメントを追加
-- **全体の状況を確認するとき** → このREADMEを参照
+- **PC時間が限られている** → 効率化を最優先で設計する
+- **タスクはここに集約** → Notion・todoアプリ・脳内に散らばっているものをここに持ってくる
+- **設計判断や学びは docs/ に蓄積** → 次に同じ判断をするとき迷わないように
