@@ -4,7 +4,7 @@
 
 PC を開いたらまずここを見る。上から優先度が高い順。
 
-**手順書が全部揃ってる → 順番にやるだけ:** [docs/setup-guides/](../docs/setup-guides/README.md)
+手順書が全部揃ってる → 順番にやるだけ: [docs/setup-guides/](../docs/setup-guides/README.md)
 
 ---
 
@@ -76,7 +76,7 @@ PC を開いたらまずここを見る。上から優先度が高い順。
 
 設計書: [docs/portal-app-design.md](../docs/portal-app-design.md)
 
-**Phase 1: 運営ポータル MVP**
+Phase 1: 運営ポータル MVP
 - [ ] marutamura org に `marutamura-portal` リポジトリ作成
 - [ ] プロジェクトの初期セットアップ（React 19 + Express + tRPC + Drizzle）
 - [ ] 認証（3人限定の簡易認証）
@@ -85,22 +85,22 @@ PC を開いたらまずここを見る。上から優先度が高い順。
 - [ ] Notionの既存データを初期データとしてDB投入
 - [ ] チャプチェ会でお披露目
 
-**Phase 2: プロジェクト管理 + アプリ管理**
+Phase 2: プロジェクト管理 + アプリ管理
 - [ ] プロジェクト一覧（全カテゴリ）
 - [ ] アプリステータス一覧
 - [ ] GitHub API連携
 
-**Phase 3: チャプチェ会 + ドーム運営**
+Phase 3: チャプチェ会 + ドーム運営
 - [ ] 議事録管理
 - [ ] 検討ボックス
 - [ ] ドーム運営タスク管理
 
-**Phase 4: ユーザーポータル**
+Phase 4: ユーザーポータル
 - [ ] マルタ村トップページ
 - [ ] サービスハブ（全アプリ導線）
 - [ ] モルックドーム情報ページ
 
-**Phase 5: LINE Bot 連携復活**
+Phase 5: LINE Bot 連携復活
 - [ ] ポータルAPI → LINE Botからタスク追加
 - [ ] Notion連携は不要（ポータルが代替）
 

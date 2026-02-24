@@ -6,21 +6,21 @@ SPのプロジェクト司令塔。方針・進捗・タスク・ナレッジを
 
 | やりたいこと | 見る場所 |
 |-------------|---------|
-| **次やることを確認** | [`tasks/current.md`](tasks/current.md) |
-| **アプリの状況を確認** | [`projects/molkky-dome/app-status.md`](projects/molkky-dome/app-status.md) |
-| **チャプチェ会の準備** | [`docs/chapche-status-template.md`](docs/chapche-status-template.md) |
-| **会議用ダッシュボード** | [`docs/chapche-dashboard.html`](docs/chapche-dashboard.html)（ブラウザで開いて画面共有） |
-| **MOLKKY HUB の状況** | [`projects/personal/molkky-hub.md`](projects/personal/molkky-hub.md) |
-| **マルタ村 PJ の状況** | [`projects/molkky-dome/README.md`](projects/molkky-dome/README.md) |
-| **完了タスクの記録** | [`tasks/done.md`](tasks/done.md) |
-| **セットアップ手順書** | [`docs/setup-guides/`](docs/setup-guides/README.md) |
-| **設計メモ・ナレッジ** | [`docs/`](docs/README.md) |
+| 次やることを確認 | [tasks/current.md](tasks/current.md) |
+| アプリの状況を確認 | [projects/molkky-dome/app-status.md](projects/molkky-dome/app-status.md) |
+| チャプチェ会の準備 | [docs/chapche-status-template.md](docs/chapche-status-template.md) |
+| 会議用ダッシュボード | [docs/chapche-dashboard.html](docs/chapche-dashboard.html)（ブラウザで開いて画面共有） |
+| MOLKKY HUB の状況 | [projects/personal/molkky-hub.md](projects/personal/molkky-hub.md) |
+| マルタ村 PJ の状況 | [projects/molkky-dome/README.md](projects/molkky-dome/README.md) |
+| 完了タスクの記録 | [tasks/done.md](tasks/done.md) |
+| セットアップ手順書 | [docs/setup-guides/](docs/setup-guides/README.md) |
+| 設計メモ・ナレッジ | [docs/](docs/README.md) |
 
 ## プロジェクト領域
 
 ### 個人プロジェクト（`projects/personal/`）
 
-- **[MOLKKY HUB](projects/personal/molkky-hub.md)** — モルック総合情報メディア（WordPress + SWELL @ ConoHa）
+- [MOLKKY HUB](projects/personal/molkky-hub.md) — モルック総合情報メディア（WordPress + SWELL @ ConoHa）
   - 月間 約3,000セッション / 6,000PV（2025年2月時点）
   - X（SNS）が最大の集客チャネル
   - 大会情報のスプシ→GAS→WP自動投稿が稼働中
@@ -61,6 +61,6 @@ sp-projects/
 
 ## 運営方針
 
-- **PC時間が限られている** → 効率化を最優先で設計する
-- **タスクはここに集約** → Notion・todoアプリ・脳内に散らばっているものをここに持ってくる
-- **設計判断や学びは docs/ に蓄積** → 次に同じ判断をするとき迷わないように
+- PC時間が限られている → 効率化を最優先で設計する
+- タスクはここに集約 → Notion・todoアプリ・脳内に散らばっているものをここに持ってくる
+- 設計判断や学びは docs/ に蓄積 → 次に同じ判断をするとき迷わないように

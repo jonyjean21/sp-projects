@@ -97,6 +97,6 @@ GitHub Issueに直接起票できない場合は、
 
 ## 今後の発展
 
-1. **Phase 1（今）**: Claude Codeで手動レビュー → Issue起票 or mdに記録
-2. **Phase 2**: marutamura-botにレビュー通知機能を追加（push時にLINE通知）
-3. **Phase 3**: CI/CDにlint・テスト自動実行を組み込む（GitHub Actions）
+1. Phase 1（今）: Claude Codeで手動レビュー → Issue起票 or mdに記録
+2. Phase 2: marutamura-botにレビュー通知機能を追加（push時にLINE通知）
+3. Phase 3: CI/CDにlint・テスト自動実行を組み込む（GitHub Actions）

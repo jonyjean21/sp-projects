@@ -152,11 +152,11 @@ Search Console APIも併用する場合:
 2. `Webmasters.Searchanalytics.query()` でクエリデータを取得
 3. 同じスプレッドシートの別シートに出力
 
-**→ まずはGA4データだけで始めて、必要に応じてSC連携を追加する方が現実的。**
+→ まずはGA4データだけで始めて、必要に応じてSC連携を追加する方が現実的。
 
 ## コスト
 
-**無料**（GA4 Data API、GAS、Google スプレッドシートすべて無料）
+無料（GA4 Data API、GAS、Google スプレッドシートすべて無料）
 
 ## 次のアクション
 
