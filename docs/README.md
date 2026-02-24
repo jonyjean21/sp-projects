@@ -10,6 +10,7 @@
 | [大会情報収集の自動化](tournament-collection-design.md) | Google Alerts + IFTTT + 手動の3層パイプライン設計 | 2026-02-24 |
 | [記事半自動化](article-automation-design.md) | 定型/半定型/非定型の記事タイプ別フロー設計 | 2026-02-24 |
 | [SEO改善プラン](seo-improvement-plan.md) | SWELL最適化・優先施策TOP3・月次ルーチン | 2026-02-24 |
+| [GA自動エクスポート](ga-auto-export-design.md) | GA4データをGASで月次自動エクスポートする設計 | 2026-02-24 |
 
 ## 意思決定ログ
 

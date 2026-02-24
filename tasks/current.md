@@ -8,12 +8,14 @@ PC を開いたらまずここを見る。上から優先度が高い順。
 
 ## すぐやる（各15〜30分）
 
-### 寄稿フロー統一
-- [ ] Googleフォームを作成（項目: 寄稿者名、タイトル、カテゴリ、本文、画像、掲載希望日）
-- [ ] 全寄稿者にフォームURLを共有
-- 詳細: [docs/contribution-flow-design.md](../docs/contribution-flow-design.md)
+### GA4 自動エクスポート設定
+- [ ] GA4 のプロパティIDを確認（GA管理画面 → プロパティ設定）
+- [ ] スプレッドシートにGASスクリプトを設定
+- [ ] 毎月1日のトリガーを設定
+- これが動けばチャットで「先月どうだった？」と聞くだけで分析できる
+- 詳細: [docs/ga-auto-export-design.md](../docs/ga-auto-export-design.md)
 
-### 大会情報収集の自動化
+### 大会情報収集の自動化（Phase 1）
 - [ ] Google Alerts を設定（「モルック 大会」「モルック 参加者募集」「モルック 開催」）
 - [ ] スプレッドシートに IMPORTFEED 関数を追加
 - 詳細: [docs/tournament-collection-design.md](../docs/tournament-collection-design.md)
@@ -21,18 +23,15 @@ PC を開いたらまずここを見る。上から優先度が高い順。
 ### SEO クイックウィン
 - [ ] Search Console で「表示回数多い × CTR低い」クエリを確認
 - [ ] 該当ページのタイトル・meta description を改善
+- SEO SIMPLE PACK 導入済みを確認 ✓
 - 詳細: [docs/seo-improvement-plan.md](../docs/seo-improvement-plan.md)
 
 ---
 
 ## 今月中にやる（各2〜4時間）
 
-### 寄稿 GAS 連携（Phase 2）
-- [ ] GAS → WP REST API で寄稿の下書き自動作成
-- [ ] LINE Notify で通知設定
-
 ### 大会情報収集の自動化（Phase 2）
-- [ ] IFTTT Pro 登録（$2.50/月）
+- [ ] IFTTT Pro 登録（$2.99/月≒450円）← 承認済み
 - [ ] X検索「#モルック 大会」→ スプシ連携のApplet作成
 - [ ] @Molkky_Japan 監視のApplet作成
 
@@ -44,19 +43,31 @@ PC を開いたらまずここを見る。上から優先度が高い順。
 ### SEO 追加施策
 - [ ] 主要ページ TOP10 の meta description 最適化
 - [ ] 内部リンクの強化（PV多いページ → 他記事へのリンク追加）
-- [ ] SEO SIMPLE PACK の設定確認
+- [ ] SWELL設定 > 構造化データに運営組織情報を登録
+- [ ] SWELL設定 > 高速化タブの全項目をONにする
+
+---
+
+## 寄稿フロー（急がない → 寄稿者増えたら着手）
+
+- [ ] Google Docs の寄稿テンプレートを作成
+- [ ] 共有フォルダの構成を決める
+- [ ] GAS → WP REST API の連携スクリプト開発
+- 現状（LINE/DM）で回っているので急がない
+- 詳細: [docs/contribution-flow-design.md](../docs/contribution-flow-design.md)
 
 ---
 
 ## マルタ村共同プロジェクト
 
-- [ ] Notion のプロジェクト一覧をこのリポジトリに反映する
+- [ ] Notion のプロジェクト一覧をさらに詳細化（各PJの状況・優先度を整理）
 - [ ] 中さんとの役割分担・進捗共有フローを整備する
-- [ ] モルハブとの具体的な連携施策を検討する
+- [ ] 「モルハブ × モルックドーム」連携の具体施策を検討
+- Notionから全PJ一覧を取得済み → [projects/molkky-dome/README.md](../projects/molkky-dome/README.md)
 
 ---
 
-## 月次ルーチン（毎月初・30分）
+## 月次ルーチン（毎月初・30分 → GAS設定後は自動化）
 
 - [ ] GA のチャネル別セッション数を確認・記録
 - [ ] Search Console のクエリTOP20 を確認
