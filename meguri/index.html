@@ -90,7 +90,8 @@ body {
   flex: 1; background: var(--bg-card); border-radius: var(--radius);
   padding: 14px; box-shadow: var(--shadow); text-align: center;
 }
-.summary-card .num { font-size: 26px; font-weight: 700; }
+.summary-card .num { font-size: 24px; font-weight: 700; }
+.summary-card .num-suffix { font-size: 13px; font-weight: 600; }
 .summary-card .label { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
 .summary-card.money .num { color: var(--accent); }
 .summary-card.favor .num { color: var(--green); }
@@ -119,7 +120,7 @@ body {
 .entry-icon.promise { background: var(--blue-light); }
 .entry-body { flex: 1; min-width: 0; }
 .entry-title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.entry-meta { font-size: 12px; color: var(--text-sub); margin-top: 2px; display: flex; gap: 8px; align-items: center; }
+.entry-meta { font-size: 12px; color: var(--text-sub); margin-top: 2px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .entry-amount { font-size: 14px; font-weight: 700; color: var(--accent); flex-shrink: 0; }
 .entry-badge {
   display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px;
@@ -143,31 +144,40 @@ body {
 }
 .person-body { flex: 1; min-width: 0; }
 .person-name { font-size: 15px; font-weight: 600; }
-.person-note { font-size: 12px; color: var(--text-sub); margin-top: 1px; }
+.person-summary { font-size: 12px; color: var(--text-sub); margin-top: 2px; display: flex; gap: 6px; flex-wrap: wrap; }
+.person-summary-item {
+  display: inline-flex; align-items: center; gap: 2px;
+}
 .person-pending {
   font-size: 12px; font-weight: 600; color: var(--accent);
   background: var(--accent-light); padding: 3px 10px; border-radius: 20px; flex-shrink: 0;
 }
+.person-arrow { color: var(--text-light); font-size: 16px; flex-shrink: 0; }
 
-/* ===== Person Detail Header ===== */
-.detail-header {
-  text-align: center; padding: 20px 0 16px;
-}
+/* ===== Detail Page ===== */
+.detail-header { text-align: center; padding: 12px 0 16px; }
 .detail-avatar {
   width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 10px;
   display: flex; align-items: center; justify-content: center;
   font-size: 28px; font-weight: 700; color: #fff;
 }
 .detail-name { font-size: 20px; font-weight: 700; }
-.detail-note { font-size: 13px; color: var(--text-sub); margin-top: 2px; }
 .detail-stats { display: flex; gap: 8px; justify-content: center; margin-top: 12px; }
 .detail-stat {
   font-size: 11px; padding: 4px 12px; border-radius: 20px;
   background: var(--bg-warm); color: var(--text-sub);
 }
+.detail-top {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 4px 0;
+}
 .back-btn {
   background: none; border: none; cursor: pointer; font-size: 14px;
   color: var(--accent); font-weight: 600; padding: 8px 0; display: flex; align-items: center; gap: 4px;
+}
+.detail-add-btn {
+  background: var(--accent); color: #fff; border: none; border-radius: 20px;
+  padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer;
 }
 
 /* ===== FAB ===== */
@@ -239,6 +249,20 @@ body {
   cursor: pointer; margin-top: 8px;
 }
 
+/* ===== Resolve / Unresolve ===== */
+.resolve-btn {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 3px 10px; border: 1px solid var(--green); border-radius: 20px;
+  background: var(--green-light); color: var(--green); font-size: 10px; font-weight: 600;
+  cursor: pointer; flex-shrink: 0;
+}
+.unresolve-btn {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 3px 10px; border: 1px solid var(--text-light); border-radius: 20px;
+  background: var(--bg); color: var(--text-sub); font-size: 10px; font-weight: 600;
+  cursor: pointer; flex-shrink: 0;
+}
+
 /* ===== Empty State ===== */
 .empty { text-align: center; padding: 40px 20px; color: var(--text-light); }
 .empty-icon { font-size: 48px; margin-bottom: 12px; }
@@ -248,6 +272,10 @@ body {
 .hidden { display: none !important; }
 .page { display: none; }
 .page.active { display: block; }
+
+/* ===== Page transition ===== */
+.page { animation: fadeIn 0.15s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
 /* ===== Logout menu ===== */
 .user-menu {
@@ -262,22 +290,6 @@ body {
   color: var(--text);
 }
 .user-menu-item:active { background: var(--bg); }
-
-/* ===== Resolve button ===== */
-.resolve-btn {
-  display: inline-flex; align-items: center; gap: 3px;
-  padding: 3px 10px; border: 1px solid var(--green); border-radius: 20px;
-  background: var(--green-light); color: var(--green); font-size: 10px; font-weight: 600;
-  cursor: pointer; flex-shrink: 0;
-}
-
-/* ===== Unresolve button ===== */
-.unresolve-btn {
-  display: inline-flex; align-items: center; gap: 3px;
-  padding: 3px 10px; border: 1px solid var(--text-light); border-radius: 20px;
-  background: var(--bg); color: var(--text-sub); font-size: 10px; font-weight: 600;
-  cursor: pointer; flex-shrink: 0;
-}
 </style>
 </head>
 <body>
@@ -312,15 +324,15 @@ body {
   <div id="pageHome" class="page active">
     <div class="summary-row">
       <div class="summary-card money">
-        <div class="num" id="summaryMoney">0</div>
-        <div class="label">お金のやりとり</div>
+        <div class="num" id="summaryMoney">0<span class="num-suffix">件</span></div>
+        <div class="label">お金</div>
       </div>
       <div class="summary-card favor">
-        <div class="num" id="summaryFavor">0</div>
+        <div class="num" id="summaryFavor">0<span class="num-suffix">件</span></div>
         <div class="label">恩・好意</div>
       </div>
       <div class="summary-card promise">
-        <div class="num" id="summaryPromise">0</div>
+        <div class="num" id="summaryPromise">0<span class="num-suffix">件</span></div>
         <div class="label">約束</div>
       </div>
     </div>
@@ -345,7 +357,10 @@ body {
 
   <!-- ===== Person Detail Page ===== -->
   <div id="pageDetail" class="page">
-    <button class="back-btn" onclick="goBackFromDetail()">← もどる</button>
+    <div class="detail-top">
+      <button class="back-btn" onclick="goBackFromDetail()">← もどる</button>
+      <button class="detail-add-btn" onclick="openAddModal()">+ 記録</button>
+    </div>
     <div id="detailHeader" class="detail-header"></div>
     <div class="section-title">めぐりの記録</div>
     <div id="detailEntries"></div>
@@ -362,7 +377,7 @@ body {
   </div>
 
   <!-- FAB -->
-  <button class="fab" onclick="openAddModal()">+</button>
+  <button class="fab" id="fabBtn" onclick="openAddModal()">+</button>
 
   <!-- Bottom Nav -->
   <div class="bottom-nav">
@@ -418,6 +433,11 @@ body {
     </div>
 
     <div class="form-group">
+      <label class="form-label">日付（任意）</label>
+      <input id="formDate" class="form-input" type="date">
+    </div>
+
+    <div class="form-group">
       <label class="form-label">メモ（任意）</label>
       <textarea id="formDetail" class="form-textarea" placeholder="補足があれば"></textarea>
     </div>
@@ -450,6 +470,7 @@ let uid = null;
 let peopleData = {};
 let entriesData = {};
 let currentPage = 'home';
+let previousPage = 'home';
 let editingEntryId = null;
 let currentDetailPerson = null;
 
@@ -458,7 +479,6 @@ const provider = new firebase.auth.GoogleAuthProvider();
 
 function signIn() {
   auth.signInWithPopup(provider).catch(e => {
-    // Fallback to redirect for mobile
     auth.signInWithRedirect(provider);
   });
 }
@@ -472,7 +492,6 @@ function toggleUserMenu() {
   document.getElementById('userMenu').classList.toggle('open');
 }
 
-// Close menu on outside click
 document.addEventListener('click', (e) => {
   const menu = document.getElementById('userMenu');
   const avatar = document.getElementById('userAvatar');
@@ -522,12 +541,11 @@ function renderHome() {
   const entries = Object.entries(entriesData);
   const pending = entries.filter(([,e]) => e.status === 'pending');
 
-  // Summary counts
   const counts = { money: 0, favor: 0, promise: 0 };
   pending.forEach(([,e]) => { counts[e.type] = (counts[e.type] || 0) + 1; });
-  document.getElementById('summaryMoney').textContent = counts.money;
-  document.getElementById('summaryFavor').textContent = counts.favor;
-  document.getElementById('summaryPromise').textContent = counts.promise;
+  document.getElementById('summaryMoney').innerHTML = counts.money + '<span class="num-suffix">件</span>';
+  document.getElementById('summaryFavor').innerHTML = counts.favor + '<span class="num-suffix">件</span>';
+  document.getElementById('summaryPromise').innerHTML = counts.promise + '<span class="num-suffix">件</span>';
 
   const list = document.getElementById('pendingList');
   const empty = document.getElementById('emptyHome');
@@ -539,7 +557,6 @@ function renderHome() {
   }
   empty.classList.add('hidden');
 
-  // Sort by date desc
   pending.sort((a, b) => (b[1].createdAt || 0) - (a[1].createdAt || 0));
   list.innerHTML = pending.map(([id, e]) => entryCardHTML(id, e)).join('');
 }
@@ -556,32 +573,46 @@ function renderPeople() {
   }
   empty.classList.add('hidden');
 
-  // Count pending per person
-  const pendingCount = {};
+  // Count per person by type
+  const personStats = {};
   Object.values(entriesData).forEach(e => {
     if (e.status === 'pending') {
-      pendingCount[e.personName] = (pendingCount[e.personName] || 0) + 1;
+      if (!personStats[e.personName]) personStats[e.personName] = { money: 0, favor: 0, promise: 0, total: 0 };
+      personStats[e.personName][e.type] = (personStats[e.personName][e.type] || 0) + 1;
+      personStats[e.personName].total++;
     }
   });
 
-  // Sort: people with pending first
-  ppl.sort((a, b) => (pendingCount[b[1].name] || 0) - (pendingCount[a[1].name] || 0));
+  ppl.sort((a, b) => ((personStats[b[1].name] || {}).total || 0) - ((personStats[a[1].name] || {}).total || 0));
 
   list.innerHTML = ppl.map(([id, p]) => {
-    const count = pendingCount[p.name] || 0;
+    const stats = personStats[p.name] || { money: 0, favor: 0, promise: 0, total: 0 };
     const color = nameColor(p.name);
     const initial = p.name.charAt(0);
+    const summaryParts = [];
+    if (stats.money) summaryParts.push('<span class="person-summary-item">💰' + stats.money + '</span>');
+    if (stats.favor) summaryParts.push('<span class="person-summary-item">🤝' + stats.favor + '</span>');
+    if (stats.promise) summaryParts.push('<span class="person-summary-item">🤙' + stats.promise + '</span>');
+    const summaryHTML = summaryParts.length > 0
+      ? '<div class="person-summary">' + summaryParts.join('') + '</div>'
+      : '<div class="person-summary" style="color:var(--text-light)">未解決なし</div>';
     return `
-      <div class="person-card" onclick="showPersonDetail(${JSON.stringify(p.name)})">
+      <div class="person-card" data-person="${esc(p.name)}" onclick="handlePersonClick(this)">
         <div class="person-avatar" style="background:${color}">${initial}</div>
         <div class="person-body">
           <div class="person-name">${esc(p.name)}</div>
-          <div class="person-note">${esc(p.note || '')}</div>
+          ${summaryHTML}
         </div>
-        ${count > 0 ? `<span class="person-pending">${count}件</span>` : ''}
+        ${stats.total > 0 ? `<span class="person-pending">${stats.total}件</span>` : ''}
+        <span class="person-arrow">›</span>
       </div>
     `;
   }).join('');
+}
+
+function handlePersonClick(el) {
+  const name = el.dataset.person;
+  if (name) showPersonDetail(name);
 }
 
 function renderHistory() {
@@ -606,38 +637,50 @@ function renderDetail(personName) {
   const header = document.getElementById('detailHeader');
   const entriesDiv = document.getElementById('detailEntries');
 
-  // Find person data
   const person = Object.values(peopleData).find(p => p.name === personName);
   const color = nameColor(personName);
   const initial = personName.charAt(0);
 
-  // Person's entries
   const personEntries = Object.entries(entriesData).filter(([,e]) => e.personName === personName);
   const pending = personEntries.filter(([,e]) => e.status === 'pending').length;
   const resolved = personEntries.filter(([,e]) => e.status === 'resolved').length;
 
+  // Calculate money totals
+  let moneyOwed = 0, moneyLent = 0;
+  personEntries.forEach(([,e]) => {
+    if (e.type === 'money' && e.status === 'pending' && e.amount) {
+      if (e.direction === 'received') moneyOwed += e.amount;
+      else moneyLent += e.amount;
+    }
+  });
+  const moneyStr = (moneyOwed || moneyLent)
+    ? `<div style="margin-top:6px;font-size:12px;color:var(--text-sub)">` +
+      (moneyOwed ? `<span style="color:var(--red)">借り ¥${moneyOwed.toLocaleString()}</span> ` : '') +
+      (moneyLent ? `<span style="color:var(--blue)">貸し ¥${moneyLent.toLocaleString()}</span>` : '') +
+      `</div>`
+    : '';
+
   header.innerHTML = `
     <div class="detail-avatar" style="background:${color}">${initial}</div>
     <div class="detail-name">${esc(personName)}</div>
-    <div class="detail-note">${esc(person?.note || '')}</div>
     <div class="detail-stats">
       <span class="detail-stat">未解決 ${pending}</span>
       <span class="detail-stat">解決済 ${resolved}</span>
     </div>
+    ${moneyStr}
   `;
 
   personEntries.sort((a, b) => {
-    // Pending first, then by date desc
     if (a[1].status !== b[1].status) return a[1].status === 'pending' ? -1 : 1;
     return (b[1].createdAt || 0) - (a[1].createdAt || 0);
   });
 
   entriesDiv.innerHTML = personEntries.length > 0
-    ? personEntries.map(([id, e]) => entryCardHTML(id, e, true)).join('')
+    ? personEntries.map(([id, e]) => entryCardHTML(id, e)).join('')
     : '<div class="empty"><div class="empty-text">この人との記録はまだありません</div></div>';
 }
 
-function entryCardHTML(id, e, showResolve = false) {
+function entryCardHTML(id, e) {
   const icons = { money: '💰', favor: '🤝', promise: '🤙' };
   const dirLabels = {
     money:   { received: '借りた', given: '貸した' },
@@ -647,7 +690,12 @@ function entryCardHTML(id, e, showResolve = false) {
   const dirLabel = (dirLabels[e.type] || dirLabels.favor)[e.direction] || 'もらった';
   const dirClass = e.status === 'resolved' ? 'badge-resolved' : (e.direction === 'received' ? 'badge-received' : 'badge-given');
   const statusLabel = e.status === 'resolved' ? '解決済' : dirLabel;
-  const dateStr = e.createdAt ? new Date(e.createdAt).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' }) : '';
+
+  // Date display: use eventDate if set, otherwise createdAt
+  const displayDate = e.eventDate
+    ? new Date(e.eventDate + 'T00:00:00').toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })
+    : (e.createdAt ? new Date(e.createdAt).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' }) : '');
+
   const amountStr = e.type === 'money' && e.amount ? `¥${Number(e.amount).toLocaleString()}` : '';
 
   const actionBtn = e.status === 'pending'
@@ -656,12 +704,12 @@ function entryCardHTML(id, e, showResolve = false) {
 
   return `
     <div class="entry-card" onclick="openEditModal('${esc(id)}')">
-      <div class="entry-icon ${e.type}">${icons[e.type] || '📝'}</div>
+      <div class="entry-icon ${e.type}">${icons[e.type] || ''}</div>
       <div class="entry-body">
         <div class="entry-title">${esc(e.title || '（無題）')}</div>
         <div class="entry-meta">
           <span>${esc(e.personName)}</span>
-          <span>${dateStr}</span>
+          <span>${displayDate}</span>
           <span class="entry-badge ${dirClass}">${statusLabel}</span>
         </div>
       </div>
@@ -679,17 +727,42 @@ function showPage(page) {
   document.querySelectorAll('.nav-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.page === page);
   });
+  // Show/hide FAB (hide on detail page since it has its own add button)
+  document.getElementById('fabBtn').classList.toggle('hidden', page === 'detail');
 }
 
 function showPersonDetail(name) {
   previousPage = currentPage;
   renderDetail(name);
   showPage('detail');
-  // Highlight people nav btn for detail
   document.querySelectorAll('.nav-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.page === 'people');
   });
+  // Scroll to top
+  window.scrollTo(0, 0);
 }
+
+function goBackFromDetail() {
+  showPage(previousPage);
+  currentDetailPerson = null;
+}
+
+// Swipe right to go back from detail
+let touchStartX = 0;
+let touchStartY = 0;
+document.addEventListener('touchstart', (e) => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+document.addEventListener('touchend', (e) => {
+  if (currentPage !== 'detail') return;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
+  // Swipe right: dx > 80px, mostly horizontal
+  if (dx > 80 && dy < 60) {
+    goBackFromDetail();
+  }
+}, { passive: true });
 
 // ===== Modal =====
 let selectedType = 'money';
@@ -701,7 +774,6 @@ function selectType(type) {
     b.classList.toggle('active', b.dataset.type === type);
   });
   document.getElementById('amountGroup').classList.toggle('hidden', type !== 'money');
-  // Update direction labels
   updateDirLabels();
 }
 
@@ -734,6 +806,7 @@ function openAddModal() {
   document.getElementById('formPerson').value = currentPage === 'detail' && currentDetailPerson ? currentDetailPerson : '';
   document.getElementById('formAmount').value = '';
   document.getElementById('formTitle').value = '';
+  document.getElementById('formDate').value = '';
   document.getElementById('formDetail').value = '';
   selectType('money');
   selectDir('received');
@@ -750,6 +823,7 @@ function openEditModal(entryId) {
   document.getElementById('formPerson').value = e.personName || '';
   document.getElementById('formAmount').value = e.amount || '';
   document.getElementById('formTitle').value = e.title || '';
+  document.getElementById('formDate').value = e.eventDate || '';
   document.getElementById('formDetail').value = e.detail || '';
   selectType(e.type || 'money');
   selectDir(e.direction || 'received');
@@ -773,11 +847,11 @@ function submitEntry() {
   const title = document.getElementById('formTitle').value.trim();
   const detail = document.getElementById('formDetail').value.trim();
   const amount = document.getElementById('formAmount').value.trim();
+  const eventDate = document.getElementById('formDate').value.trim();
 
   if (!personName) { alert('相手の名前を入力してください'); return; }
   if (!title) { alert('内容を入力してください'); return; }
 
-  // Ensure person exists
   const existingPerson = Object.entries(peopleData).find(([,p]) => p.name === personName);
   if (!existingPerson) {
     db.ref(`meguri/${uid}/people`).push({
@@ -794,13 +868,13 @@ function submitEntry() {
     title,
     detail,
     amount: selectedType === 'money' ? Number(amount) || 0 : null,
+    eventDate: eventDate || null,
     status: 'pending',
     createdAt: Date.now(),
     resolvedAt: null,
   };
 
   if (editingEntryId) {
-    // Preserve original createdAt and status
     const orig = entriesData[editingEntryId];
     entryData.createdAt = orig.createdAt;
     entryData.status = orig.status;
@@ -833,11 +907,6 @@ function unresolveEntry(id) {
     status: 'pending',
     resolvedAt: null
   });
-}
-
-let previousPage = 'home';
-function goBackFromDetail() {
-  showPage(previousPage);
 }
 
 // ===== Helpers =====
