@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>めぐり帳</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#faf6f0">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --bg: #faf6f0;
+  --bg-card: #ffffff;
+  --bg-warm: #fff8f0;
+  --text: #3d3225;
+  --text-sub: #8a7d6b;
+  --text-light: #b5a999;
+  --accent: #d4956a;
+  --accent-light: #f0d4bb;
+  --green: #7caa85;
+  --green-light: #e0f0e3;
+  --blue: #7a9cc6;
+  --blue-light: #dde8f4;
+  --red: #c67a7a;
+  --red-light: #f4dddd;
+  --purple: #9a85b0;
+  --purple-light: #e8dff0;
+  --border: #e8e0d6;
+  --shadow: 0 2px 8px rgba(60,50,30,0.06);
+  --radius: 14px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh; min-height: 100dvh;
+  max-width: 480px; margin: 0 auto;
+  padding: 0 16px 90px;
+}
+
+/* ===== Login ===== */
+.login-screen {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 100vh; min-height: 100dvh; text-align: center; padding: 32px 24px;
+}
+.login-logo { font-size: 48px; margin-bottom: 8px; }
+.login-title { font-size: 28px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.login-sub { font-size: 14px; color: var(--text-sub); margin-bottom: 40px; line-height: 1.6; }
+.login-btn {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 12px;
+  padding: 14px 28px; font-size: 15px; font-weight: 600; color: var(--text);
+  cursor: pointer; box-shadow: var(--shadow); transition: all 0.2s;
+}
+.login-btn:active { transform: scale(0.97); }
+.login-btn img { width: 20px; height: 20px; }
+
+/* ===== Header ===== */
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 0 12px; border-bottom: 1px solid var(--border); margin-bottom: 16px;
+}
+.header-left { display: flex; align-items: center; gap: 8px; }
+.header h1 { font-size: 20px; font-weight: 700; }
+.header-icon { font-size: 22px; }
+.header-user {
+  width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+  border: 2px solid var(--accent-light);
+}
+
+/* ===== Bottom Nav ===== */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--bg-card); border-top: 1px solid var(--border);
+  display: flex; justify-content: center; max-width: 480px; margin: 0 auto;
+  z-index: 100; padding-bottom: env(safe-area-inset-bottom);
+}
+.nav-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 10px 0 8px; background: none; border: none; cursor: pointer;
+  font-size: 10px; color: var(--text-sub); transition: color 0.2s;
+}
+.nav-btn.active { color: var(--accent); }
+.nav-btn .nav-icon { font-size: 20px; }
+
+/* ===== Summary Cards ===== */
+.summary-row { display: flex; gap: 10px; margin-bottom: 16px; }
+.summary-card {
+  flex: 1; background: var(--bg-card); border-radius: var(--radius);
+  padding: 14px; box-shadow: var(--shadow); text-align: center;
+}
+.summary-card .num { font-size: 26px; font-weight: 700; }
+.summary-card .label { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+.summary-card.money .num { color: var(--accent); }
+.summary-card.favor .num { color: var(--green); }
+.summary-card.promise .num { color: var(--blue); }
+
+/* ===== Section ===== */
+.section-title {
+  font-size: 13px; font-weight: 700; color: var(--text-sub);
+  margin: 20px 0 10px; padding-left: 2px;
+}
+
+/* ===== Entry Card ===== */
+.entry-card {
+  background: var(--bg-card); border-radius: var(--radius); padding: 14px 16px;
+  margin-bottom: 10px; box-shadow: var(--shadow); cursor: pointer;
+  display: flex; align-items: center; gap: 12px; transition: transform 0.15s;
+}
+.entry-card:active { transform: scale(0.98); }
+.entry-icon {
+  width: 40px; height: 40px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.entry-icon.money { background: var(--accent-light); }
+.entry-icon.favor { background: var(--green-light); }
+.entry-icon.promise { background: var(--blue-light); }
+.entry-body { flex: 1; min-width: 0; }
+.entry-title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.entry-meta { font-size: 12px; color: var(--text-sub); margin-top: 2px; display: flex; gap: 8px; align-items: center; }
+.entry-amount { font-size: 14px; font-weight: 700; color: var(--accent); flex-shrink: 0; }
+.entry-badge {
+  display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px;
+  border-radius: 20px; flex-shrink: 0;
+}
+.badge-received { background: var(--red-light); color: var(--red); }
+.badge-given { background: var(--blue-light); color: var(--blue); }
+.badge-resolved { background: var(--green-light); color: var(--green); }
+
+/* ===== Person Card ===== */
+.person-card {
+  background: var(--bg-card); border-radius: var(--radius); padding: 14px 16px;
+  margin-bottom: 10px; box-shadow: var(--shadow); cursor: pointer;
+  display: flex; align-items: center; gap: 12px; transition: transform 0.15s;
+}
+.person-card:active { transform: scale(0.98); }
+.person-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.person-body { flex: 1; min-width: 0; }
+.person-name { font-size: 15px; font-weight: 600; }
+.person-note { font-size: 12px; color: var(--text-sub); margin-top: 1px; }
+.person-pending {
+  font-size: 12px; font-weight: 600; color: var(--accent);
+  background: var(--accent-light); padding: 3px 10px; border-radius: 20px; flex-shrink: 0;
+}
+
+/* ===== Person Detail Header ===== */
+.detail-header {
+  text-align: center; padding: 20px 0 16px;
+}
+.detail-avatar {
+  width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; font-weight: 700; color: #fff;
+}
+.detail-name { font-size: 20px; font-weight: 700; }
+.detail-note { font-size: 13px; color: var(--text-sub); margin-top: 2px; }
+.detail-stats { display: flex; gap: 8px; justify-content: center; margin-top: 12px; }
+.detail-stat {
+  font-size: 11px; padding: 4px 12px; border-radius: 20px;
+  background: var(--bg-warm); color: var(--text-sub);
+}
+.back-btn {
+  background: none; border: none; cursor: pointer; font-size: 14px;
+  color: var(--accent); font-weight: 600; padding: 8px 0; display: flex; align-items: center; gap: 4px;
+}
+
+/* ===== FAB ===== */
+.fab {
+  position: fixed; bottom: 76px; right: calc(50% - 210px);
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--accent); color: #fff; border: none;
+  font-size: 28px; cursor: pointer; box-shadow: 0 4px 16px rgba(212,149,106,0.4);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.2s; z-index: 99;
+}
+.fab:active { transform: scale(0.9); }
+
+/* ===== Modal ===== */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.3);
+  display: none; align-items: flex-end; justify-content: center; z-index: 200;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg-card); border-radius: 20px 20px 0 0;
+  width: 100%; max-width: 480px; max-height: 85vh; overflow-y: auto;
+  padding: 20px 20px 32px; padding-bottom: calc(32px + env(safe-area-inset-bottom));
+}
+.modal-handle {
+  width: 36px; height: 4px; border-radius: 2px; background: var(--border);
+  margin: 0 auto 16px;
+}
+.modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 16px; text-align: center; }
+
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; display: block; }
+.form-input, .form-select, .form-textarea {
+  width: 100%; padding: 12px 14px; border: 1.5px solid var(--border);
+  border-radius: 10px; font-size: 15px; color: var(--text);
+  background: var(--bg); font-family: inherit; outline: none;
+  transition: border-color 0.2s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+.form-textarea { resize: none; min-height: 60px; }
+
+.type-selector { display: flex; gap: 8px; margin-bottom: 14px; }
+.type-btn {
+  flex: 1; padding: 10px 0; border: 1.5px solid var(--border); border-radius: 10px;
+  background: var(--bg-card); cursor: pointer; text-align: center;
+  font-size: 13px; font-weight: 600; color: var(--text-sub); transition: all 0.2s;
+}
+.type-btn.active { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+
+.dir-selector { display: flex; gap: 8px; margin-bottom: 14px; }
+.dir-btn {
+  flex: 1; padding: 10px 0; border: 1.5px solid var(--border); border-radius: 10px;
+  background: var(--bg-card); cursor: pointer; text-align: center;
+  font-size: 13px; font-weight: 600; color: var(--text-sub); transition: all 0.2s;
+}
+.dir-btn.active.received { border-color: var(--red); background: var(--red-light); color: var(--red); }
+.dir-btn.active.given { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
+
+.submit-btn {
+  width: 100%; padding: 14px; border: none; border-radius: 12px;
+  background: var(--accent); color: #fff; font-size: 16px; font-weight: 700;
+  cursor: pointer; margin-top: 8px; transition: opacity 0.2s;
+}
+.submit-btn:active { opacity: 0.8; }
+
+.delete-btn {
+  width: 100%; padding: 12px; border: 1.5px solid var(--red-light); border-radius: 12px;
+  background: none; color: var(--red); font-size: 14px; font-weight: 600;
+  cursor: pointer; margin-top: 8px;
+}
+
+/* ===== Empty State ===== */
+.empty { text-align: center; padding: 40px 20px; color: var(--text-light); }
+.empty-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-text { font-size: 14px; line-height: 1.6; }
+
+/* ===== Utility ===== */
+.hidden { display: none !important; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* ===== Logout menu ===== */
+.user-menu {
+  position: absolute; top: 56px; right: 16px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 4px; box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  z-index: 150; display: none;
+}
+.user-menu.open { display: block; }
+.user-menu-item {
+  padding: 10px 20px; font-size: 14px; cursor: pointer; border-radius: 8px;
+  color: var(--text);
+}
+.user-menu-item:active { background: var(--bg); }
+
+/* ===== Resolve button ===== */
+.resolve-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 6px 14px; border: 1.5px solid var(--green); border-radius: 20px;
+  background: var(--green-light); color: var(--green); font-size: 12px; font-weight: 600;
+  cursor: pointer; margin-top: 8px;
+}
+</style>
+</head>
+<body>
+
+<!-- ===== Login Screen ===== -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-logo">🍃</div>
+  <div class="login-title">めぐり帳</div>
+  <div class="login-sub">もらった恩、交わした約束、<br>大切なつながりを忘れないために。</div>
+  <button class="login-btn" onclick="signIn()">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="">
+    Googleでログイン
+  </button>
+</div>
+
+<!-- ===== App Shell ===== -->
+<div id="appShell" class="hidden">
+
+  <!-- Header -->
+  <div class="header" style="position:relative;">
+    <div class="header-left">
+      <span class="header-icon">🍃</span>
+      <h1>めぐり帳</h1>
+    </div>
+    <img id="userAvatar" class="header-user" src="" alt="" onclick="toggleUserMenu()">
+    <div id="userMenu" class="user-menu">
+      <div class="user-menu-item" onclick="signOut()">ログアウト</div>
+    </div>
+  </div>
+
+  <!-- ===== Home Page ===== -->
+  <div id="pageHome" class="page active">
+    <div class="summary-row">
+      <div class="summary-card money">
+        <div class="num" id="summaryMoney">0</div>
+        <div class="label">お金のやりとり</div>
+      </div>
+      <div class="summary-card favor">
+        <div class="num" id="summaryFavor">0</div>
+        <div class="label">恩・好意</div>
+      </div>
+      <div class="summary-card promise">
+        <div class="num" id="summaryPromise">0</div>
+        <div class="label">約束</div>
+      </div>
+    </div>
+
+    <div class="section-title">未解決のめぐり</div>
+    <div id="pendingList"></div>
+    <div id="emptyHome" class="empty hidden">
+      <div class="empty-icon">🌱</div>
+      <div class="empty-text">まだ記録がありません。<br>右下の＋ボタンから追加しましょう。</div>
+    </div>
+  </div>
+
+  <!-- ===== People Page ===== -->
+  <div id="pagePeople" class="page">
+    <div class="section-title">みんな</div>
+    <div id="peopleList"></div>
+    <div id="emptyPeople" class="empty hidden">
+      <div class="empty-icon">👥</div>
+      <div class="empty-text">まだ誰も登録されていません。<br>めぐりを記録すると自動で追加されます。</div>
+    </div>
+  </div>
+
+  <!-- ===== Person Detail Page ===== -->
+  <div id="pageDetail" class="page">
+    <button class="back-btn" onclick="showPage('people')">← もどる</button>
+    <div id="detailHeader" class="detail-header"></div>
+    <div class="section-title">めぐりの記録</div>
+    <div id="detailEntries"></div>
+  </div>
+
+  <!-- ===== History Page ===== -->
+  <div id="pageHistory" class="page">
+    <div class="section-title">すべての記録</div>
+    <div id="historyList"></div>
+    <div id="emptyHistory" class="empty hidden">
+      <div class="empty-icon">📖</div>
+      <div class="empty-text">解決済みの記録がここに並びます。</div>
+    </div>
+  </div>
+
+  <!-- FAB -->
+  <button class="fab" onclick="openAddModal()">+</button>
+
+  <!-- Bottom Nav -->
+  <div class="bottom-nav">
+    <button class="nav-btn active" data-page="home" onclick="showPage('home')">
+      <span class="nav-icon">🏠</span> ホーム
+    </button>
+    <button class="nav-btn" data-page="people" onclick="showPage('people')">
+      <span class="nav-icon">👥</span> みんな
+    </button>
+    <button class="nav-btn" data-page="history" onclick="showPage('history')">
+      <span class="nav-icon">📖</span> 記録
+    </button>
+  </div>
+</div>
+
+<!-- ===== Add Entry Modal ===== -->
+<div id="addModal" class="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 id="modalTitle">めぐりを記録</h2>
+
+    <div class="form-group">
+      <label class="form-label">種類</label>
+      <div class="type-selector">
+        <button class="type-btn active" data-type="money" onclick="selectType('money')">💰 お金</button>
+        <button class="type-btn" data-type="favor" onclick="selectType('favor')">🤝 恩・好意</button>
+        <button class="type-btn" data-type="promise" onclick="selectType('promise')">🤙 約束</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">方向</label>
+      <div class="dir-selector">
+        <button class="dir-btn received active" data-dir="received" onclick="selectDir('received')">もらった・借りた</button>
+        <button class="dir-btn given" data-dir="given" onclick="selectDir('given')">あげた・貸した</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">相手の名前</label>
+      <input id="formPerson" class="form-input" type="text" placeholder="例: 中さん" list="personSuggest" autocomplete="off">
+      <datalist id="personSuggest"></datalist>
+    </div>
+
+    <div class="form-group" id="amountGroup">
+      <label class="form-label">金額（円）</label>
+      <input id="formAmount" class="form-input" type="number" placeholder="例: 3000" inputmode="numeric">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">内容</label>
+      <input id="formTitle" class="form-input" type="text" placeholder="例: 飲み代を立て替えてもらった">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">メモ（任意）</label>
+      <textarea id="formDetail" class="form-textarea" placeholder="補足があれば"></textarea>
+    </div>
+
+    <button class="submit-btn" onclick="submitEntry()">記録する</button>
+    <button id="deleteEntryBtn" class="delete-btn hidden" onclick="deleteEntry()">この記録を削除</button>
+  </div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBusmxO-ZA6K6QDpMpWjShPiz02U9_v8lk",
+  authDomain: "meguri-cho.firebaseapp.com",
+  databaseURL: "https://meguri-cho-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "meguri-cho",
+  storageBucket: "meguri-cho.firebasestorage.app",
+  messagingSenderId: "13914145999",
+  appId: "1:13914145999:web:e62fe52ce56564b78de3ba"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+let uid = null;
+let peopleData = {};
+let entriesData = {};
+let currentPage = 'home';
+let editingEntryId = null;
+let currentDetailPerson = null;
+
+// ===== Auth =====
+const provider = new firebase.auth.GoogleAuthProvider();
+
+function signIn() {
+  auth.signInWithPopup(provider).catch(e => {
+    // Fallback to redirect for mobile
+    auth.signInWithRedirect(provider);
+  });
+}
+
+function signOut() {
+  auth.signOut();
+  toggleUserMenu();
+}
+
+function toggleUserMenu() {
+  document.getElementById('userMenu').classList.toggle('open');
+}
+
+// Close menu on outside click
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('userMenu');
+  const avatar = document.getElementById('userAvatar');
+  if (!menu.contains(e.target) && e.target !== avatar) {
+    menu.classList.remove('open');
+  }
+});
+
+auth.onAuthStateChanged(user => {
+  if (user) {
+    uid = user.uid;
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('appShell').classList.remove('hidden');
+    document.getElementById('userAvatar').src = user.photoURL || '';
+    startListening();
+  } else {
+    uid = null;
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('appShell').classList.add('hidden');
+  }
+});
+
+// ===== Data Listeners =====
+function startListening() {
+  db.ref(`meguri/${uid}/people`).on('value', snap => {
+    peopleData = snap.val() || {};
+    updatePersonSuggest();
+    renderAll();
+  });
+  db.ref(`meguri/${uid}/entries`).on('value', snap => {
+    entriesData = snap.val() || {};
+    renderAll();
+  });
+}
+
+// ===== Render =====
+function renderAll() {
+  renderHome();
+  renderPeople();
+  renderHistory();
+  if (currentPage === 'detail' && currentDetailPerson) {
+    renderDetail(currentDetailPerson);
+  }
+}
+
+function renderHome() {
+  const entries = Object.entries(entriesData);
+  const pending = entries.filter(([,e]) => e.status === 'pending');
+
+  // Summary counts
+  const counts = { money: 0, favor: 0, promise: 0 };
+  pending.forEach(([,e]) => { counts[e.type] = (counts[e.type] || 0) + 1; });
+  document.getElementById('summaryMoney').textContent = counts.money;
+  document.getElementById('summaryFavor').textContent = counts.favor;
+  document.getElementById('summaryPromise').textContent = counts.promise;
+
+  const list = document.getElementById('pendingList');
+  const empty = document.getElementById('emptyHome');
+
+  if (pending.length === 0) {
+    list.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  // Sort by date desc
+  pending.sort((a, b) => (b[1].createdAt || 0) - (a[1].createdAt || 0));
+  list.innerHTML = pending.map(([id, e]) => entryCardHTML(id, e)).join('');
+}
+
+function renderPeople() {
+  const list = document.getElementById('peopleList');
+  const empty = document.getElementById('emptyPeople');
+  const ppl = Object.entries(peopleData);
+
+  if (ppl.length === 0) {
+    list.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  // Count pending per person
+  const pendingCount = {};
+  Object.values(entriesData).forEach(e => {
+    if (e.status === 'pending') {
+      pendingCount[e.personName] = (pendingCount[e.personName] || 0) + 1;
+    }
+  });
+
+  // Sort: people with pending first
+  ppl.sort((a, b) => (pendingCount[b[1].name] || 0) - (pendingCount[a[1].name] || 0));
+
+  list.innerHTML = ppl.map(([id, p]) => {
+    const count = pendingCount[p.name] || 0;
+    const color = nameColor(p.name);
+    const initial = p.name.charAt(0);
+    return `
+      <div class="person-card" onclick="showPersonDetail('${p.name}')">
+        <div class="person-avatar" style="background:${color}">${initial}</div>
+        <div class="person-body">
+          <div class="person-name">${esc(p.name)}</div>
+          <div class="person-note">${esc(p.note || '')}</div>
+        </div>
+        ${count > 0 ? `<span class="person-pending">${count}件</span>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function renderHistory() {
+  const entries = Object.entries(entriesData);
+  const resolved = entries.filter(([,e]) => e.status === 'resolved');
+  const list = document.getElementById('historyList');
+  const empty = document.getElementById('emptyHistory');
+
+  if (resolved.length === 0) {
+    list.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  resolved.sort((a, b) => (b[1].resolvedAt || b[1].createdAt || 0) - (a[1].resolvedAt || a[1].createdAt || 0));
+  list.innerHTML = resolved.map(([id, e]) => entryCardHTML(id, e)).join('');
+}
+
+function renderDetail(personName) {
+  currentDetailPerson = personName;
+  const header = document.getElementById('detailHeader');
+  const entriesDiv = document.getElementById('detailEntries');
+
+  // Find person data
+  const person = Object.values(peopleData).find(p => p.name === personName);
+  const color = nameColor(personName);
+  const initial = personName.charAt(0);
+
+  // Person's entries
+  const personEntries = Object.entries(entriesData).filter(([,e]) => e.personName === personName);
+  const pending = personEntries.filter(([,e]) => e.status === 'pending').length;
+  const resolved = personEntries.filter(([,e]) => e.status === 'resolved').length;
+
+  header.innerHTML = `
+    <div class="detail-avatar" style="background:${color}">${initial}</div>
+    <div class="detail-name">${esc(personName)}</div>
+    <div class="detail-note">${esc(person?.note || '')}</div>
+    <div class="detail-stats">
+      <span class="detail-stat">未解決 ${pending}</span>
+      <span class="detail-stat">解決済 ${resolved}</span>
+    </div>
+  `;
+
+  personEntries.sort((a, b) => {
+    // Pending first, then by date desc
+    if (a[1].status !== b[1].status) return a[1].status === 'pending' ? -1 : 1;
+    return (b[1].createdAt || 0) - (a[1].createdAt || 0);
+  });
+
+  entriesDiv.innerHTML = personEntries.length > 0
+    ? personEntries.map(([id, e]) => entryCardHTML(id, e, true)).join('')
+    : '<div class="empty"><div class="empty-text">この人との記録はまだありません</div></div>';
+}
+
+function entryCardHTML(id, e, showResolve = false) {
+  const icons = { money: '💰', favor: '🤝', promise: '🤙' };
+  const dirLabel = e.direction === 'received' ? 'もらった' : 'あげた';
+  const dirClass = e.status === 'resolved' ? 'badge-resolved' : (e.direction === 'received' ? 'badge-received' : 'badge-given');
+  const statusLabel = e.status === 'resolved' ? '解決済' : dirLabel;
+  const dateStr = e.createdAt ? new Date(e.createdAt).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' }) : '';
+  const amountStr = e.type === 'money' && e.amount ? `¥${Number(e.amount).toLocaleString()}` : '';
+
+  return `
+    <div class="entry-card" onclick="openEditModal('${id}')">
+      <div class="entry-icon ${e.type}">${icons[e.type] || '📝'}</div>
+      <div class="entry-body">
+        <div class="entry-title">${esc(e.title || '（無題）')}</div>
+        <div class="entry-meta">
+          <span>${esc(e.personName)}</span>
+          <span>${dateStr}</span>
+          <span class="entry-badge ${dirClass}">${statusLabel}</span>
+        </div>
+      </div>
+      ${amountStr ? `<div class="entry-amount">${amountStr}</div>` : ''}
+    </div>
+    ${showResolve && e.status === 'pending' ? `<div style="text-align:right;margin-top:-4px;margin-bottom:8px;"><button class="resolve-btn" onclick="event.stopPropagation();resolveEntry('${id}')">✓ 解決済みにする</button></div>` : ''}
+  `;
+}
+
+// ===== Navigation =====
+function showPage(page) {
+  currentPage = page;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page' + capitalize(page)).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.page === page);
+  });
+}
+
+function showPersonDetail(name) {
+  renderDetail(name);
+  showPage('detail');
+  // Don't highlight any nav btn for detail
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+}
+
+// ===== Modal =====
+let selectedType = 'money';
+let selectedDir = 'received';
+
+function selectType(type) {
+  selectedType = type;
+  document.querySelectorAll('.type-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.type === type);
+  });
+  document.getElementById('amountGroup').classList.toggle('hidden', type !== 'money');
+  // Update direction labels
+  updateDirLabels();
+}
+
+function selectDir(dir) {
+  selectedDir = dir;
+  document.querySelectorAll('.dir-btn').forEach(b => {
+    b.classList.remove('active');
+    if (b.dataset.dir === dir) b.classList.add('active');
+  });
+}
+
+function updateDirLabels() {
+  const btns = document.querySelectorAll('.dir-btn');
+  if (selectedType === 'money') {
+    btns[0].textContent = '借りた';
+    btns[1].textContent = '貸した';
+  } else if (selectedType === 'favor') {
+    btns[0].textContent = 'してもらった';
+    btns[1].textContent = 'してあげた';
+  } else {
+    btns[0].textContent = 'してもらう約束';
+    btns[1].textContent = 'する約束';
+  }
+}
+
+function openAddModal() {
+  editingEntryId = null;
+  document.getElementById('modalTitle').textContent = 'めぐりを記録';
+  document.getElementById('deleteEntryBtn').classList.add('hidden');
+  document.getElementById('formPerson').value = currentPage === 'detail' && currentDetailPerson ? currentDetailPerson : '';
+  document.getElementById('formAmount').value = '';
+  document.getElementById('formTitle').value = '';
+  document.getElementById('formDetail').value = '';
+  selectType('money');
+  selectDir('received');
+  updateDirLabels();
+  document.getElementById('addModal').classList.add('open');
+}
+
+function openEditModal(entryId) {
+  const e = entriesData[entryId];
+  if (!e) return;
+  editingEntryId = entryId;
+  document.getElementById('modalTitle').textContent = 'めぐりを編集';
+  document.getElementById('deleteEntryBtn').classList.remove('hidden');
+  document.getElementById('formPerson').value = e.personName || '';
+  document.getElementById('formAmount').value = e.amount || '';
+  document.getElementById('formTitle').value = e.title || '';
+  document.getElementById('formDetail').value = e.detail || '';
+  selectType(e.type || 'money');
+  selectDir(e.direction || 'received');
+  updateDirLabels();
+  document.getElementById('addModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('addModal').classList.remove('open');
+}
+
+function updatePersonSuggest() {
+  const datalist = document.getElementById('personSuggest');
+  const names = [...new Set(Object.values(peopleData).map(p => p.name))];
+  datalist.innerHTML = names.map(n => `<option value="${esc(n)}">`).join('');
+}
+
+// ===== Submit =====
+function submitEntry() {
+  const personName = document.getElementById('formPerson').value.trim();
+  const title = document.getElementById('formTitle').value.trim();
+  const detail = document.getElementById('formDetail').value.trim();
+  const amount = document.getElementById('formAmount').value.trim();
+
+  if (!personName) { alert('相手の名前を入力してください'); return; }
+  if (!title) { alert('内容を入力してください'); return; }
+
+  // Ensure person exists
+  const existingPerson = Object.entries(peopleData).find(([,p]) => p.name === personName);
+  if (!existingPerson) {
+    db.ref(`meguri/${uid}/people`).push({
+      name: personName,
+      note: '',
+      createdAt: Date.now()
+    });
+  }
+
+  const entryData = {
+    personName,
+    type: selectedType,
+    direction: selectedDir,
+    title,
+    detail,
+    amount: selectedType === 'money' ? Number(amount) || 0 : null,
+    status: 'pending',
+    createdAt: Date.now(),
+    resolvedAt: null,
+  };
+
+  if (editingEntryId) {
+    // Preserve original createdAt and status
+    const orig = entriesData[editingEntryId];
+    entryData.createdAt = orig.createdAt;
+    entryData.status = orig.status;
+    entryData.resolvedAt = orig.resolvedAt;
+    db.ref(`meguri/${uid}/entries/${editingEntryId}`).set(entryData);
+  } else {
+    db.ref(`meguri/${uid}/entries`).push(entryData);
+  }
+
+  closeModal();
+}
+
+function deleteEntry() {
+  if (!editingEntryId) return;
+  if (!confirm('この記録を削除しますか？')) return;
+  db.ref(`meguri/${uid}/entries/${editingEntryId}`).remove();
+  closeModal();
+}
+
+function resolveEntry(id) {
+  db.ref(`meguri/${uid}/entries/${id}`).update({
+    status: 'resolved',
+    resolvedAt: Date.now()
+  });
+}
+
+// ===== Helpers =====
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+const COLORS = ['#d4956a','#7caa85','#7a9cc6','#9a85b0','#c67a7a','#b0a055','#6aafaf','#c68a9a'];
+function nameColor(name) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return COLORS[Math.abs(hash) % COLORS.length];
+}
+</script>
+</body>
+</html>
