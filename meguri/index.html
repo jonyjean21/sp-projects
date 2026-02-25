@@ -345,7 +345,7 @@ body {
 
   <!-- ===== History Page ===== -->
   <div id="pageHistory" class="page">
-    <div class="section-title">すべての記録</div>
+    <div class="section-title">解決済みの記録</div>
     <div id="historyList"></div>
     <div id="emptyHistory" class="empty hidden">
       <div class="empty-icon">📖</div>
@@ -564,7 +564,7 @@ function renderPeople() {
     const color = nameColor(p.name);
     const initial = p.name.charAt(0);
     return `
-      <div class="person-card" onclick="showPersonDetail('${p.name}')">
+      <div class="person-card" onclick="showPersonDetail(${JSON.stringify(p.name)})">
         <div class="person-avatar" style="background:${color}">${initial}</div>
         <div class="person-body">
           <div class="person-name">${esc(p.name)}</div>
@@ -631,14 +631,19 @@ function renderDetail(personName) {
 
 function entryCardHTML(id, e, showResolve = false) {
   const icons = { money: '💰', favor: '🤝', promise: '🤙' };
-  const dirLabel = e.direction === 'received' ? 'もらった' : 'あげた';
+  const dirLabels = {
+    money:   { received: '借りた', given: '貸した' },
+    favor:   { received: 'してもらった', given: 'してあげた' },
+    promise: { received: 'してもらう約束', given: 'する約束' },
+  };
+  const dirLabel = (dirLabels[e.type] || dirLabels.favor)[e.direction] || 'もらった';
   const dirClass = e.status === 'resolved' ? 'badge-resolved' : (e.direction === 'received' ? 'badge-received' : 'badge-given');
   const statusLabel = e.status === 'resolved' ? '解決済' : dirLabel;
   const dateStr = e.createdAt ? new Date(e.createdAt).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' }) : '';
   const amountStr = e.type === 'money' && e.amount ? `¥${Number(e.amount).toLocaleString()}` : '';
 
   return `
-    <div class="entry-card" onclick="openEditModal('${id}')">
+    <div class="entry-card" onclick="openEditModal('${esc(id)}')">
       <div class="entry-icon ${e.type}">${icons[e.type] || '📝'}</div>
       <div class="entry-body">
         <div class="entry-title">${esc(e.title || '（無題）')}</div>
@@ -650,7 +655,7 @@ function entryCardHTML(id, e, showResolve = false) {
       </div>
       ${amountStr ? `<div class="entry-amount">${amountStr}</div>` : ''}
     </div>
-    ${showResolve && e.status === 'pending' ? `<div style="text-align:right;margin-top:-4px;margin-bottom:8px;"><button class="resolve-btn" onclick="event.stopPropagation();resolveEntry('${id}')">✓ 解決済みにする</button></div>` : ''}
+    ${e.status === 'pending' ? `<div style="text-align:right;margin-top:-4px;margin-bottom:8px;"><button class="resolve-btn" onclick="event.stopPropagation();resolveEntry('${esc(id)}')">✓ 解決済みにする</button></div>` : ''}
   `;
 }
 
