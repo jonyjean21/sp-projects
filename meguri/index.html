@@ -202,11 +202,26 @@ body {
   width: 100%; max-width: 480px; max-height: 85vh; overflow-y: auto;
   padding: 20px 20px 32px; padding-bottom: calc(32px + env(safe-area-inset-bottom));
 }
+.modal-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
 .modal-handle {
   width: 36px; height: 4px; border-radius: 2px; background: var(--border);
-  margin: 0 auto 16px;
+  margin: 0 auto 8px; cursor: grab;
 }
-.modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 16px; text-align: center; }
+.modal h2 { font-size: 18px; font-weight: 700; flex: 1; text-align: center; margin: 0; }
+.modal-close {
+  background: var(--bg); border: none; width: 32px; height: 32px; border-radius: 50%;
+  font-size: 18px; color: var(--text-sub); cursor: pointer; display: flex;
+  align-items: center; justify-content: center; flex-shrink: 0;
+}
+.modal-close:active { background: var(--border); }
+.cancel-btn {
+  width: 100%; padding: 12px; border: 1.5px solid var(--border); border-radius: 12px;
+  background: none; color: var(--text-sub); font-size: 14px; font-weight: 600;
+  cursor: pointer; margin-top: 8px;
+}
 
 .form-group { margin-bottom: 14px; }
 .form-label { font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; display: block; }
@@ -396,8 +411,12 @@ body {
 <!-- ===== Add Entry Modal ===== -->
 <div id="addModal" class="modal-overlay" onclick="if(event.target===this)closeModal()">
   <div class="modal">
-    <div class="modal-handle"></div>
-    <h2 id="modalTitle">めぐりを記録</h2>
+    <div class="modal-handle" id="modalHandle"></div>
+    <div class="modal-top">
+      <div style="width:32px"></div>
+      <h2 id="modalTitle">めぐりを記録</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
 
     <div class="form-group">
       <label class="form-label">種類</label>
@@ -444,6 +463,7 @@ body {
 
     <button class="submit-btn" onclick="submitEntry()">記録する</button>
     <button id="deleteEntryBtn" class="delete-btn hidden" onclick="deleteEntry()">この記録を削除</button>
+    <button class="cancel-btn" onclick="closeModal()">閉じる</button>
   </div>
 </div>
 
@@ -832,8 +852,44 @@ function openEditModal(entryId) {
 }
 
 function closeModal() {
+  const modal = document.querySelector('#addModal .modal');
+  modal.style.transform = '';
   document.getElementById('addModal').classList.remove('open');
 }
+
+// Swipe down to close modal
+(function() {
+  let startY = 0, currentY = 0, dragging = false;
+  const overlay = document.getElementById('addModal');
+  const modal = overlay.querySelector('.modal');
+
+  modal.addEventListener('touchstart', (e) => {
+    if (modal.scrollTop > 0) return;
+    startY = e.touches[0].clientY;
+    dragging = true;
+  }, { passive: true });
+
+  modal.addEventListener('touchmove', (e) => {
+    if (!dragging) return;
+    currentY = e.touches[0].clientY;
+    const dy = currentY - startY;
+    if (dy > 0) {
+      modal.style.transform = `translateY(${dy}px)`;
+    }
+  }, { passive: true });
+
+  modal.addEventListener('touchend', () => {
+    if (!dragging) return;
+    dragging = false;
+    const dy = currentY - startY;
+    if (dy > 100) {
+      closeModal();
+    } else {
+      modal.style.transform = '';
+    }
+    currentY = 0;
+  });
+})();
 
 function updatePersonSuggest() {
   const datalist = document.getElementById('personSuggest');
