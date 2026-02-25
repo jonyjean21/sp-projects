@@ -630,6 +630,20 @@ function loadData() {
         D.players[name].x = dp.x;
       }
     });
+    // DEFAULT_DATAの試合をマージ（コード更新で追加された試合を反映）
+    if (DEFAULT_DATA.matches && D.matches) {
+      DEFAULT_DATA.matches.forEach(dm => {
+        const exists = D.matches.some(m =>
+          m.date === dm.date && m.challenger === dm.challenger &&
+          m.defender === dm.defender && m.role === dm.role
+        );
+        if (!exists) {
+          D.matches.push(structuredClone(dm));
+        }
+      });
+      // 日付順にソート
+      D.matches.sort((a, b) => a.date.localeCompare(b.date));
+    }
     // gatekeepers を DEFAULT_DATA から常に同期（メンバー構成・順序を最新に）
     D.gatekeepers = structuredClone(DEFAULT_DATA.gatekeepers);
     // ハンドル情報はplayersから同期
