@@ -879,8 +879,6 @@ function submitAuth() {
 function cancelAuth() {
   hideModal('pw-modal');
   pendingAuthCallback = null;
-  // 認証キャンセル時は戦績ページに戻す
-  goTo('stats');
 }
 
 // Enterキーでパスワード送信
@@ -1030,9 +1028,12 @@ function removeEntry(id) {
   checkSaveReady();
 }
 
+let pendingNewPlayerSelect = null; // 「+ 新しい選手」を押したドロップダウンを記憶
+
 function onPlayerSelect(sel, entryId) {
   if (sel.value === '__new__') {
     sel.value = '';
+    pendingNewPlayerSelect = { sel, entryId, field: 'challenger' };
     showAddPlayerModal();
     return;
   }
@@ -1043,6 +1044,7 @@ function onPlayerSelect(sel, entryId) {
 function onDefenderSelect(sel, entryId) {
   if (sel.value === '__new__') {
     sel.value = '';
+    pendingNewPlayerSelect = { sel, entryId, field: 'defender' };
     showAddPlayerModal();
     return;
   }
@@ -1849,6 +1851,15 @@ function addNewPlayer() {
   document.getElementById('new-player-name').value = '';
   document.getElementById('new-player-handle').value = '';
   refreshAllSelects();
+  // 追加した選手を元のドロップダウンで選択状態にする
+  if (pendingNewPlayerSelect) {
+    const { sel, entryId, field } = pendingNewPlayerSelect;
+    sel.value = name;
+    updatePlayerInfo(entryId, field, name);
+    if (field === 'defender') autoDetectMatchType(entryId, name);
+    checkSaveReady();
+    pendingNewPlayerSelect = null;
+  }
   showToast(`${name}を追加しました`);
 }
 
