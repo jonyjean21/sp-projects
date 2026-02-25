@@ -295,6 +295,9 @@
   .post-match-row:active { background: #1e293b; }
   .post-match-cb, .post-date-cb { width: 18px; height: 18px; accent-color: #fbbf24; flex-shrink: 0; }
 </style>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -305,6 +308,7 @@
 <div class="header">
   <h1>👑 5先王</h1>
   <div class="sub">結果記録 & X投稿ツール</div>
+  <div id="connection-status" style="font-size:10px;margin-top:4px;"></div>
 </div>
 
 <!-- ===== ページ1: 記録 ===== -->
@@ -505,9 +509,30 @@
 
 <script>
 // ============================================================
+// Firebase設定
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyALYXDVMecauxwozKtueJBc-6AJXv_CyQc",
+  authDomain: "viisi-master-app.firebaseapp.com",
+  databaseURL: "https://viisi-master-app-default-rtdb.firebaseio.com",
+  projectId: "viisi-master-app",
+  storageBucket: "viisi-master-app.firebasestorage.app",
+  messagingSenderId: "634488531014",
+  appId: "1:634488531014:web:e2f7d7360e5d8b1414c247"
+};
+
+firebase.initializeApp(firebaseConfig);
+const fbDb = firebase.database();
+const configRef = fbDb.ref('config');
+const matchesRef = fbDb.ref('matches');
+
+let firebaseConnected = false;
+
+// ============================================================
 // データ管理
 // ============================================================
 const STORAGE_KEY = 'viisi-master-data';
+const OFFLINE_QUEUE_KEY = 'viisi-offline-queue';
 const ADMIN_PASSWORD = 'gosaki';
 const DEFAULT_DATA = {
   links: {
@@ -609,52 +634,212 @@ const DEFAULT_DATA = {
 };
 
 let D = null;
+let initialLoadComplete = false;
 
 function loadData() {
+  // Step 1: ローカルキャッシュから即時読み込み（初期表示用）
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
     try { D = JSON.parse(saved); } catch(e) { D = structuredClone(DEFAULT_DATA); }
   } else {
     D = structuredClone(DEFAULT_DATA);
   }
-  // リンク情報をマージ
   if (!D.links) D.links = structuredClone(DEFAULT_DATA.links);
-  // DEFAULT_DATAの最新情報をマージ（新規選手追加・ハンドル更新など）
-  if (D && DEFAULT_DATA.players) {
-    Object.entries(DEFAULT_DATA.players).forEach(([name, dp]) => {
-      if (!D.players[name]) {
-        // 新規選手をマージ
-        D.players[name] = structuredClone(dp);
-      } else if (dp.x && !D.players[name].x) {
-        // DEFAULT側にハンドルがあり、保存データにない場合は反映
-        D.players[name].x = dp.x;
-      }
-    });
-    // DEFAULT_DATAの試合をマージ（コード更新で追加された試合を反映）
-    if (DEFAULT_DATA.matches && D.matches) {
-      DEFAULT_DATA.matches.forEach(dm => {
-        const exists = D.matches.some(m =>
-          m.date === dm.date && m.challenger === dm.challenger &&
-          m.defender === dm.defender && m.role === dm.role
-        );
-        if (!exists) {
-          D.matches.push(structuredClone(dm));
-        }
-      });
-      // 日付順にソート
-      D.matches.sort((a, b) => a.date.localeCompare(b.date));
+  if (!D.players) D.players = structuredClone(DEFAULT_DATA.players);
+  if (!D.matches) D.matches = structuredClone(DEFAULT_DATA.matches);
+
+  // Step 2: Firebase リアルタイムリスナーを設定
+  setupFirebaseListeners();
+}
+
+function setupFirebaseListeners() {
+  // 接続状態の監視
+  fbDb.ref('.info/connected').on('value', (snap) => {
+    const wasDisconnected = !firebaseConnected;
+    firebaseConnected = snap.val() === true;
+    updateConnectionIndicator();
+    if (firebaseConnected && wasDisconnected && initialLoadComplete) {
+      processOfflineQueue();
     }
-    // gatekeepers を DEFAULT_DATA から常に同期（メンバー構成・順序を最新に）
-    D.gatekeepers = structuredClone(DEFAULT_DATA.gatekeepers);
-    // ハンドル情報はplayersから同期
-    D.gatekeepers.forEach(gk => {
-      const dp = D.players[gk.name];
-      if (dp && dp.x) gk.x_handle = dp.x;
+  });
+
+  // /config リスナー
+  configRef.on('value', (snap) => {
+    const data = snap.val();
+    if (data) {
+      if (data.links) D.links = data.links;
+      if (data.champion) D.champion = data.champion;
+      if (data.gatekeepers) D.gatekeepers = data.gatekeepers;
+      if (data.players) D.players = data.players;
+      saveLocalCache();
+      if (initialLoadComplete) renderCurrentPage();
+    }
+  });
+
+  // /matches リスナー
+  matchesRef.orderByChild('_order').on('value', (snap) => {
+    const data = snap.val();
+    if (data) {
+      D.matches = firebaseMatchesToArray(data);
+    } else if (!initialLoadComplete) {
+      // Firebase にデータがない → 初回マイグレーション
+      migrateDefaultDataToFirebase();
+      return;
+    }
+    saveLocalCache();
+    if (!initialLoadComplete) {
+      initialLoadComplete = true;
+      // 初回読み込み完了 → ページ再描画
+      const savedPage = sessionStorage.getItem('viisi-current-page') || 'stats';
+      goToInternal(savedPage);
+    } else {
+      renderCurrentPage();
+    }
+  });
+}
+
+function firebaseMatchesToArray(fbMatches) {
+  if (!fbMatches) return [];
+  return Object.entries(fbMatches)
+    .map(([key, m]) => ({ ...m, _fbKey: key }))
+    .sort((a, b) => {
+      const orderDiff = (a._order || 0) - (b._order || 0);
+      if (orderDiff !== 0) return orderDiff;
+      return (a._fbKey || '').localeCompare(b._fbKey || '');
     });
-    saveData();
+}
+
+function saveLocalCache() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(D));
+}
+
+function renderCurrentPage() {
+  const page = sessionStorage.getItem('viisi-current-page') || 'stats';
+  if (page === 'stats') renderStats();
+  if (page === 'history') renderHistory();
+  if (page === 'output') renderPostSelector();
+  if (page === 'settings') renderSettings();
+}
+
+function updateConnectionIndicator() {
+  const el = document.getElementById('connection-status');
+  if (!el) return;
+  if (firebaseConnected) {
+    el.innerHTML = '<span style="color:#34d399;">● オンライン</span>';
+  } else {
+    el.innerHTML = '<span style="color:#f87171;">● オフライン</span>';
   }
 }
-function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(D)); }
+
+// ============================================================
+// Firebase データ書き込み
+// ============================================================
+function saveData() {
+  // ローカルキャッシュ
+  saveLocalCache();
+  // config を Firebase に書き込み
+  if (firebaseConnected) {
+    configRef.set({
+      links: D.links || {},
+      champion: D.champion || {},
+      gatekeepers: D.gatekeepers || [],
+      players: D.players || {}
+    });
+  }
+}
+
+// ============================================================
+// オフラインキュー
+// ============================================================
+function queueOfflineWrite(type, data) {
+  const queue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]');
+  queue.push({ type, data, timestamp: Date.now() });
+  localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
+}
+
+function processOfflineQueue() {
+  const queue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]');
+  if (queue.length === 0) return;
+  queue.forEach(item => {
+    switch (item.type) {
+      case 'match_add': {
+        const { _fbKey, ...matchData } = item.data;
+        matchesRef.push(matchData);
+        break;
+      }
+      case 'match_update': {
+        if (item.data._fbKey) {
+          const { _fbKey: key, ...updateData } = item.data;
+          matchesRef.child(key).update(updateData);
+        }
+        break;
+      }
+      case 'match_delete': {
+        if (item.data._fbKey) {
+          matchesRef.child(item.data._fbKey).remove();
+        }
+        break;
+      }
+      case 'config_update': {
+        configRef.set(item.data);
+        break;
+      }
+    }
+  });
+  localStorage.removeItem(OFFLINE_QUEUE_KEY);
+  showToast(`${queue.length}件のオフライン変更を同期しました`);
+}
+
+// ============================================================
+// 初回マイグレーション
+// ============================================================
+async function migrateDefaultDataToFirebase() {
+  console.log('Firebase にデータがありません。DEFAULT_DATA を移行中...');
+
+  // config をアップロード
+  await configRef.set({
+    links: DEFAULT_DATA.links,
+    champion: DEFAULT_DATA.champion,
+    gatekeepers: DEFAULT_DATA.gatekeepers,
+    players: DEFAULT_DATA.players
+  });
+
+  // matches をアップロード
+  const updates = {};
+  DEFAULT_DATA.matches.forEach((match, i) => {
+    const key = matchesRef.push().key;
+    updates[key] = { ...match, _order: i };
+  });
+  await matchesRef.update(updates);
+
+  // localStorage に追加データがあればマージ
+  const cached = localStorage.getItem(STORAGE_KEY);
+  if (cached) {
+    try {
+      const local = JSON.parse(cached);
+      if (local.matches && local.matches.length > DEFAULT_DATA.matches.length) {
+        const extraMatches = local.matches.filter(lm =>
+          !DEFAULT_DATA.matches.some(dm =>
+            dm.date === lm.date && dm.challenger === lm.challenger &&
+            dm.defender === lm.defender && dm.role === lm.role
+          )
+        );
+        if (extraMatches.length > 0) {
+          let nextOrder = DEFAULT_DATA.matches.length;
+          const extraUpdates = {};
+          extraMatches.forEach((match, i) => {
+            const key = matchesRef.push().key;
+            extraUpdates[key] = { ...match, _order: nextOrder + i };
+          });
+          await matchesRef.update(extraUpdates);
+          console.log(`追加 ${extraMatches.length} 件のローカルデータを移行`);
+        }
+      }
+    } catch(e) { /* ignore */ }
+  }
+
+  console.log('マイグレーション完了: ' + DEFAULT_DATA.matches.length + ' 試合');
+}
 
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -929,6 +1114,8 @@ function checkSaveReady() {
 
 function saveOnly() {
   let count = 0;
+  const matchesToSave = [];
+
   entries.forEach(e => {
     const el = document.getElementById(`entry-${e.id}`);
     if (!el) return;
@@ -937,13 +1124,29 @@ function saveOnly() {
     const defender = el.querySelector('[data-field="defender"]').value;
     const role = el.querySelector('[data-field="role"]').value;
     const winner = e.sc > e.sd ? challenger : defender;
-    const match = { date, challenger, defender, role, sc: e.sc, sd: e.sd, winner };
-    D.matches.push(match);
+    matchesToSave.push({ date, challenger, defender, role, sc: e.sc, sd: e.sd, winner });
     count++;
   });
-  saveData();
+
+  if (firebaseConnected) {
+    // Firebase に push（_order 付き）
+    matchesRef.orderByChild('_order').limitToLast(1).once('value', (snap) => {
+      let nextOrder = 0;
+      snap.forEach(child => { nextOrder = (child.val()._order || 0) + 1; });
+      matchesToSave.forEach((match, i) => {
+        matchesRef.push({ ...match, _order: nextOrder + i });
+      });
+    });
+  } else {
+    // オフライン: ローカル保存 + キュー
+    matchesToSave.forEach(match => {
+      D.matches.push(match);
+      queueOfflineWrite('match_add', match);
+    });
+    saveLocalCache();
+  }
+
   showToast(`${count}試合を記録しました`);
-  // 記録フォームをクリア
   entries = [];
   entryCount = 0;
   document.getElementById('match-entries').innerHTML = '';
@@ -1657,19 +1860,23 @@ function saveEditPlayer() {
   if (!newName) return;
 
   if (newName !== origName) {
-    // 名前変更: 試合データ内の参照も更新
+    // 名前変更: 試合データ内の参照も更新（Firebase上も）
     D.matches.forEach(m => {
+      const changed = m.challenger === origName || m.defender === origName || m.winner === origName;
       if (m.challenger === origName) m.challenger = newName;
       if (m.defender === origName) m.defender = newName;
       if (m.winner === origName) m.winner = newName;
+      // Firebase上の該当試合も更新
+      if (changed && m._fbKey && firebaseConnected) {
+        matchesRef.child(m._fbKey).update({
+          challenger: m.challenger, defender: m.defender, winner: m.winner
+        });
+      }
     });
-    // champion情報も更新
     if (D.champion && D.champion.name === origName) D.champion.name = newName;
-    // gatekeepers情報も更新
     D.gatekeepers.forEach(gk => {
       if (gk.name === origName) gk.name = newName;
     });
-    // playersオブジェクトのキー変更
     D.players[newName] = D.players[origName];
     delete D.players[origName];
   }
@@ -1677,7 +1884,6 @@ function saveEditPlayer() {
   D.players[newName].x = newHandle;
   D.players[newName].role = newRole;
 
-  // champion/gatekeeper のハンドルも同期
   if (D.champion && D.champion.name === newName) D.champion.x_handle = newHandle;
   D.gatekeepers.forEach(gk => {
     if (gk.name === newName) gk.x_handle = newHandle;
@@ -1754,15 +1960,26 @@ function openEditMatch(idx) {
 function saveEditMatch() {
   if (editingMatchIdx < 0) return;
   const m = D.matches[editingMatchIdx];
-  m.date = document.getElementById('edit-date').value;
-  m.challenger = document.getElementById('edit-challenger').value;
-  m.defender = document.getElementById('edit-defender').value;
-  m.role = document.getElementById('edit-role').value;
-  m.sc = parseInt(document.getElementById('edit-sc').value);
-  m.sd = parseInt(document.getElementById('edit-sd').value);
-  m.winner = m.sc > m.sd ? m.challenger : m.defender;
 
-  saveData();
+  const updated = {
+    date: document.getElementById('edit-date').value,
+    challenger: document.getElementById('edit-challenger').value,
+    defender: document.getElementById('edit-defender').value,
+    role: document.getElementById('edit-role').value,
+    sc: parseInt(document.getElementById('edit-sc').value),
+    sd: parseInt(document.getElementById('edit-sd').value),
+    _order: m._order
+  };
+  updated.winner = updated.sc > updated.sd ? updated.challenger : updated.defender;
+
+  if (m._fbKey && firebaseConnected) {
+    matchesRef.child(m._fbKey).update(updated);
+  } else {
+    Object.assign(m, updated);
+    saveLocalCache();
+    if (m._fbKey) queueOfflineWrite('match_update', { _fbKey: m._fbKey, ...updated });
+  }
+
   hideModal('edit-match-modal');
   showToast('試合を更新しました');
   renderHistory();
@@ -1771,8 +1988,16 @@ function saveEditMatch() {
 function deleteEditMatch() {
   if (editingMatchIdx < 0) return;
   if (!confirm('この試合記録を削除しますか？')) return;
-  D.matches.splice(editingMatchIdx, 1);
-  saveData();
+
+  const m = D.matches[editingMatchIdx];
+  if (m._fbKey && firebaseConnected) {
+    matchesRef.child(m._fbKey).remove();
+  } else {
+    D.matches.splice(editingMatchIdx, 1);
+    saveLocalCache();
+    if (m._fbKey) queueOfflineWrite('match_delete', { _fbKey: m._fbKey });
+  }
+
   hideModal('edit-match-modal');
   showToast('試合を削除しました');
   renderHistory();
@@ -1783,7 +2008,7 @@ function deleteEditMatch() {
 // ============================================================
 loadData();
 addEntry();
-// 前回のページを復元（なければ戦績ページ）
+// 初期表示はローカルキャッシュで行う（Firebase リスナーが発火したら再描画される）
 const savedPage = sessionStorage.getItem('viisi-current-page') || 'stats';
 goToInternal(savedPage);
 </script>

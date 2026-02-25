@@ -1,0 +1,14 @@
+# Firebase
+firebase-debug.log
+.firebase/
+*.log
+
+# Environment
+.env
+.env.*
+
+# Node
+node_modules/
+
+# OS
+.DS_Store

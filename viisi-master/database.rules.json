@@ -1,0 +1,13 @@
+{
+  "rules": {
+    "config": {
+      ".read": true,
+      ".write": true
+    },
+    "matches": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": ["_order"]
+    }
+  }
+}
