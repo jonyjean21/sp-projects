@@ -509,6 +509,33 @@
 // ============================================================
 const STORAGE_KEY = 'viisi-master-data';
 const ADMIN_PASSWORD = 'gosaki';
+// Google Sheets API URL（Apps Script デプロイURL）
+// 空文字の場合はlocalStorageのみで動作（オフラインモード）
+const SHEET_API_URL = '';
+
+// ============================================================
+// Sheets API ヘルパー
+// ============================================================
+async function fetchFromSheet() {
+  if (!SHEET_API_URL) return null;
+  try {
+    const res = await fetch(SHEET_API_URL);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return await res.json();
+  } catch(e) {
+    console.warn('Sheets読み込み失敗:', e);
+    return null;
+  }
+}
+
+function postToSheet(data) {
+  if (!SHEET_API_URL) return Promise.resolve();
+  return fetch(SHEET_API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify(data)
+  }).catch(e => console.warn('Sheets書き込み失敗:', e));
+}
 const DEFAULT_DATA = {
   links: {
     x_account: "https://x.com/viisimaster5",
@@ -610,43 +637,39 @@ const DEFAULT_DATA = {
 
 let D = null;
 
-function loadData() {
+async function loadData() {
+  // 1. まずlocalStorageから読み込み（即時表示用キャッシュ）
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
     try { D = JSON.parse(saved); } catch(e) { D = structuredClone(DEFAULT_DATA); }
   } else {
     D = structuredClone(DEFAULT_DATA);
   }
-  // リンク情報をマージ
+
+  // 2. Sheets APIからデータを取得（クラウドが正とする）
+  const cloud = await fetchFromSheet();
+  if (cloud && cloud.matches && cloud.matches.length > 0) {
+    D.matches = cloud.matches;
+    // クラウドの選手データをマージ
+    if (cloud.players) {
+      Object.entries(cloud.players).forEach(([name, p]) => {
+        D.players[name] = p;
+      });
+    }
+  }
+
+  // 3. DEFAULT_DATAの基本情報をマージ
   if (!D.links) D.links = structuredClone(DEFAULT_DATA.links);
-  // DEFAULT_DATAの最新情報をマージ（新規選手追加・ハンドル更新など）
   if (D && DEFAULT_DATA.players) {
     Object.entries(DEFAULT_DATA.players).forEach(([name, dp]) => {
       if (!D.players[name]) {
-        // 新規選手をマージ
         D.players[name] = structuredClone(dp);
       } else if (dp.x && !D.players[name].x) {
-        // DEFAULT側にハンドルがあり、保存データにない場合は反映
         D.players[name].x = dp.x;
       }
     });
-    // DEFAULT_DATAの試合をマージ（コード更新で追加された試合を反映）
-    if (DEFAULT_DATA.matches && D.matches) {
-      DEFAULT_DATA.matches.forEach(dm => {
-        const exists = D.matches.some(m =>
-          m.date === dm.date && m.challenger === dm.challenger &&
-          m.defender === dm.defender && m.role === dm.role
-        );
-        if (!exists) {
-          D.matches.push(structuredClone(dm));
-        }
-      });
-      // 日付順にソート
-      D.matches.sort((a, b) => a.date.localeCompare(b.date));
-    }
-    // gatekeepers を DEFAULT_DATA から常に同期（メンバー構成・順序を最新に）
+    // gatekeepers を DEFAULT_DATA から常に同期
     D.gatekeepers = structuredClone(DEFAULT_DATA.gatekeepers);
-    // ハンドル情報はplayersから同期
     D.gatekeepers.forEach(gk => {
       const dp = D.players[gk.name];
       if (dp && dp.x) gk.x_handle = dp.x;
@@ -929,6 +952,7 @@ function checkSaveReady() {
 
 function saveOnly() {
   let count = 0;
+  const newMatches = [];
   entries.forEach(e => {
     const el = document.getElementById(`entry-${e.id}`);
     if (!el) return;
@@ -939,9 +963,12 @@ function saveOnly() {
     const winner = e.sc > e.sd ? challenger : defender;
     const match = { date, challenger, defender, role, sc: e.sc, sd: e.sd, winner };
     D.matches.push(match);
+    newMatches.push(match);
     count++;
   });
   saveData();
+  // Sheetsにも保存
+  newMatches.forEach(m => postToSheet({ action: 'addMatch', match: m }));
   showToast(`${count}試合を記録しました`);
   // 記録フォームをクリア
   entries = [];
@@ -1631,6 +1658,7 @@ function addNewPlayer() {
   if (!name) return;
   D.players[name] = { x: handle, role: 'challenger' };
   saveData();
+  postToSheet({ action: 'addPlayer', player: { name, x: handle, role: 'challenger' } });
   hideModal('add-player-modal');
   document.getElementById('new-player-name').value = '';
   document.getElementById('new-player-handle').value = '';
@@ -1684,6 +1712,12 @@ function saveEditPlayer() {
   });
 
   saveData();
+  // Sheetsに同期（名前変更時は全データ同期）
+  if (newName !== origName) {
+    postToSheet({ action: 'syncAll', matches: D.matches, players: D.players });
+  } else {
+    postToSheet({ action: 'updatePlayer', originalName: origName, player: { name: newName, x: newHandle, role: newRole } });
+  }
   hideModal('edit-player-modal');
   refreshAllSelects();
   renderSettings();
@@ -1701,6 +1735,7 @@ function deletePlayer() {
   }
   delete D.players[origName];
   saveData();
+  postToSheet({ action: 'deletePlayer', name: origName });
   hideModal('edit-player-modal');
   refreshAllSelects();
   renderSettings();
@@ -1754,6 +1789,7 @@ function openEditMatch(idx) {
 function saveEditMatch() {
   if (editingMatchIdx < 0) return;
   const m = D.matches[editingMatchIdx];
+  const oldMatch = { date: m.date, challenger: m.challenger, defender: m.defender, role: m.role, sc: m.sc, sd: m.sd, winner: m.winner };
   m.date = document.getElementById('edit-date').value;
   m.challenger = document.getElementById('edit-challenger').value;
   m.defender = document.getElementById('edit-defender').value;
@@ -1763,6 +1799,7 @@ function saveEditMatch() {
   m.winner = m.sc > m.sd ? m.challenger : m.defender;
 
   saveData();
+  postToSheet({ action: 'updateMatch', oldMatch, match: { date: m.date, challenger: m.challenger, defender: m.defender, role: m.role, sc: m.sc, sd: m.sd, winner: m.winner } });
   hideModal('edit-match-modal');
   showToast('試合を更新しました');
   renderHistory();
@@ -1771,8 +1808,11 @@ function saveEditMatch() {
 function deleteEditMatch() {
   if (editingMatchIdx < 0) return;
   if (!confirm('この試合記録を削除しますか？')) return;
+  const m = D.matches[editingMatchIdx];
+  const delMatch = { date: m.date, challenger: m.challenger, defender: m.defender, role: m.role, sc: m.sc, sd: m.sd, winner: m.winner };
   D.matches.splice(editingMatchIdx, 1);
   saveData();
+  postToSheet({ action: 'deleteMatch', match: delMatch });
   hideModal('edit-match-modal');
   showToast('試合を削除しました');
   renderHistory();
@@ -1781,11 +1821,23 @@ function deleteEditMatch() {
 // ============================================================
 // 初期化（起動時は戦績ページを表示）
 // ============================================================
-loadData();
-addEntry();
-// 前回のページを復元（なければ戦績ページ）
-const savedPage = sessionStorage.getItem('viisi-current-page') || 'stats';
-goToInternal(savedPage);
+// 初期化（async）
+(async function init() {
+  await loadData();
+  addEntry();
+  // Sheetsが空の場合は初期データを投入
+  if (SHEET_API_URL) {
+    const cloud = await fetchFromSheet();
+    if (cloud && (!cloud.matches || cloud.matches.length === 0)) {
+      showToast('初期データを同期中...');
+      await postToSheet({ action: 'bulkImport', matches: D.matches, players: D.players });
+      showToast('初期データの同期完了');
+    }
+  }
+  // 前回のページを復元（なければ戦績ページ）
+  const savedPage = sessionStorage.getItem('viisi-current-page') || 'stats';
+  goToInternal(savedPage);
+})();
 </script>
 
 </body>
