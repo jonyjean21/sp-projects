@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>モルハブ パートナー循環ポータル</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<style>
+:root {
+  --green-dark: #2d5016;
+  --green-main: #4a7c2e;
+  --green-light: #7ab648;
+  --green-pale: #e8f5d8;
+  --cream: #faf8f0;
+  --brown: #8b6914;
+  --brown-light: #d4a843;
+  --text: #333;
+  --text-light: #666;
+  --white: #fff;
+  --shadow: 0 2px 8px rgba(0,0,0,0.08);
+  --radius: 12px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+/* Header */
+.header {
+  background: linear-gradient(135deg, var(--green-dark), var(--green-main));
+  color: var(--white);
+  padding: 24px 16px;
+  text-align: center;
+}
+.header h1 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.header p {
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+.header .leaf { font-size: 1.5rem; margin-bottom: 8px; }
+
+/* Navigation */
+.nav {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--white);
+  border-bottom: 1px solid #e0e0e0;
+  overflow-x: auto;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.nav-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  background: var(--green-pale);
+  color: var(--green-dark);
+  transition: all 0.2s;
+}
+.nav-btn.active {
+  background: var(--green-main);
+  color: var(--white);
+}
+
+/* Sections */
+.section { display: none; padding: 16px; max-width: 640px; margin: 0 auto; }
+.section.active { display: block; }
+.section h2 {
+  font-size: 1.1rem;
+  color: var(--green-dark);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--green-light);
+}
+
+/* Flow Diagram */
+.flow-diagram {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+  text-align: center;
+}
+.flow-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.flow-step.partner { background: #e3f2fd; color: #1565c0; }
+.flow-step.hub { background: var(--green-pale); color: var(--green-dark); }
+.flow-step.recipient { background: #fff3e0; color: #e65100; }
+.flow-arrow {
+  display: block;
+  font-size: 1.2rem;
+  color: var(--text-light);
+  margin: 8px 0;
+}
+
+/* Partner Card */
+.partner-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+  margin-bottom: 12px;
+  border-left: 4px solid var(--green-main);
+}
+.partner-card .name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--green-dark);
+}
+.partner-card .meta {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  margin-top: 4px;
+}
+.partner-card .badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: var(--green-pale);
+  color: var(--green-main);
+}
+.partner-card .badge.ended {
+  background: #f5f5f5;
+  color: #999;
+}
+
+/* Return Card */
+.return-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+  margin-bottom: 12px;
+  position: relative;
+}
+.return-card .date {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  margin-bottom: 6px;
+}
+.return-card .item-name {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.return-card .detail-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-light);
+  margin-top: 4px;
+}
+.return-card .detail-row .icon { font-size: 1rem; }
+.return-card .category-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+.category-badge.大会 { background: #e3f2fd; color: #1565c0; }
+.category-badge.学校 { background: #f3e5f5; color: #7b1fa2; }
+.category-badge.個人 { background: #fff3e0; color: #e65100; }
+.category-badge.自主提供 { background: #fce4ec; color: #c62828; }
+
+.return-card .status-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+.status-badge.completed { background: var(--green-pale); color: var(--green-main); }
+.status-badge.pending { background: #fff3e0; color: #e65100; }
+
+/* Flow Card (per return) */
+.flow-mini {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #f0f0f0;
+  font-size: 0.8rem;
+  flex-wrap: wrap;
+}
+.flow-mini .node {
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+.flow-mini .node.from { background: #e3f2fd; color: #1565c0; }
+.flow-mini .node.via { background: var(--green-pale); color: var(--green-dark); }
+.flow-mini .node.to { background: #fff3e0; color: #e65100; }
+.flow-mini .arrow { color: #ccc; }
+
+/* Stats */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.stat-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.stat-card .number {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--green-main);
+}
+.stat-card .label {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  margin-top: 2px;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 0.75rem;
+  color: var(--text-light);
+  margin-top: 24px;
+}
+.footer a { color: var(--green-main); text-decoration: none; }
+
+/* Loading */
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-light);
+}
+
+/* Admin link */
+.admin-link {
+  text-align: center;
+  margin-top: 16px;
+}
+.admin-link a {
+  color: var(--green-main);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="leaf">🌿</div>
+  <h1>モルハブ パートナー循環ポータル</h1>
+  <p>喜びと祝いが循環する仕組み</p>
+</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="showSection('overview')">循環の流れ</button>
+  <button class="nav-btn" onclick="showSection('partners')">パートナー</button>
+  <button class="nav-btn" onclick="showSection('returns')">提供実績</button>
+</div>
+
+<div id="overview" class="section active">
+  <div class="stats-grid" id="stats-grid">
+    <div class="stat-card">
+      <div class="number" id="stat-partners">-</div>
+      <div class="label">パートナー</div>
+    </div>
+    <div class="stat-card">
+      <div class="number" id="stat-returns">-</div>
+      <div class="label">提供実績</div>
+    </div>
+    <div class="stat-card">
+      <div class="number" id="stat-tournaments">-</div>
+      <div class="label">大会への提供</div>
+    </div>
+    <div class="stat-card">
+      <div class="number" id="stat-schools">-</div>
+      <div class="label">学校への提供</div>
+    </div>
+  </div>
+
+  <h2>循環の仕組み</h2>
+  <div class="flow-diagram">
+    <div class="flow-step partner">🤝 パートナー</div>
+    <div class="flow-arrow">↓ 応援・協賛</div>
+    <div class="flow-step hub">🌿 モルハブ</div>
+    <div class="flow-arrow">↓ 物品を手配・調整</div>
+    <div class="flow-step recipient">🎯 大会・学校・モルッカー</div>
+    <div class="flow-arrow" style="margin-top:16px">♻️</div>
+    <p style="font-size:0.85rem; color:var(--text-light); margin-top:8px;">
+      喜びと祝いが、人から人へ届く循環
+    </p>
+  </div>
+
+  <h2>最近の提供</h2>
+  <div id="recent-returns" class="loading">読み込み中...</div>
+</div>
+
+<div id="partners" class="section">
+  <h2>パートナー一覧</h2>
+  <div id="partner-list" class="loading">読み込み中...</div>
+</div>
+
+<div id="returns" class="section">
+  <h2>提供実績</h2>
+  <div id="return-list" class="loading">読み込み中...</div>
+</div>
+
+<div class="footer">
+  <a href="https://molkky-hub.com/?page_id=4635" target="_blank">パートナー制度について →</a>
+  <br>
+  © 2026 <a href="https://molkky-hub.com" target="_blank">MOLKKY HUB</a>
+</div>
+
+<script>
+// Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyALYXDVMecauxwozKtueJBc-6AJXv_CyQc",
+  authDomain: "viisi-master-app.firebaseapp.com",
+  databaseURL: "https://viisi-master-app-default-rtdb.firebaseio.com",
+  projectId: "viisi-master-app",
+  storageBucket: "viisi-master-app.firebasestorage.app",
+  messagingSenderId: "634488531014",
+  appId: "1:634488531014:web:e2f7d7360e5d8b1414c247"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let partnersData = {};
+let returnsData = [];
+
+// Navigation
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// Load data
+db.ref('partner/config/partners').on('value', snap => {
+  partnersData = snap.val() || {};
+  renderPartners();
+  renderStats();
+});
+
+db.ref('partner/returns').orderByChild('_order').on('value', snap => {
+  returnsData = [];
+  snap.forEach(child => {
+    returnsData.push({ ...child.val(), _key: child.key });
+  });
+  renderReturns();
+  renderRecentReturns();
+  renderStats();
+});
+
+function renderStats() {
+  const partnerCount = Object.keys(partnersData).length;
+  const returnCount = returnsData.length;
+  const tournamentCount = returnsData.filter(r => r.category === '大会').length;
+  const schoolCount = returnsData.filter(r => r.category === '学校').length;
+
+  document.getElementById('stat-partners').textContent = partnerCount;
+  document.getElementById('stat-returns').textContent = returnCount;
+  document.getElementById('stat-tournaments').textContent = tournamentCount;
+  document.getElementById('stat-schools').textContent = schoolCount;
+}
+
+function renderPartners() {
+  const container = document.getElementById('partner-list');
+  const entries = Object.entries(partnersData);
+  if (entries.length === 0) {
+    container.innerHTML = '<p style="color:#999;">パートナーはまだ登録されていません。</p>';
+    return;
+  }
+  container.innerHTML = entries.map(([id, p]) => `
+    <div class="partner-card">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span class="name">${esc(p.name)}</span>
+        <span class="badge ${p.status === 'active' ? '' : 'ended'}">${p.status === 'active' ? '掲載中' : '終了'}</span>
+      </div>
+      <div class="meta">
+        ${esc(p.type)} ・ ${esc(p.since)}〜
+        ${p.link ? `<br><a href="${esc(p.link)}" target="_blank" style="color:var(--green-main);">${esc(p.link)}</a>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderReturnCard(r) {
+  return `
+    <div class="return-card">
+      <span class="status-badge ${r.completed ? 'completed' : 'pending'}">
+        ${r.completed ? '完了' : '進行中'}
+      </span>
+      <div class="date">${esc(r.date)}</div>
+      <div class="item-name">
+        <span class="category-badge ${esc(r.category)}">${esc(r.category)}</span>
+        ${esc(r.item)}
+        ${r.condition !== '新品' ? `<span style="font-size:0.8rem; color:#999;">(${esc(r.condition)})</span>` : ''}
+      </div>
+      <div class="detail-row">
+        <span class="icon">📍</span>
+        <span>${esc(r.recipient)}</span>
+      </div>
+      <div class="detail-row">
+        <span class="icon">📦</span>
+        <span>${esc(r.handoff_method)}</span>
+        ${r.handoff_event ? ` — ${esc(r.handoff_event)}` : ''}
+      </div>
+      <div class="flow-mini">
+        <span class="node from">${esc(r.provider)}</span>
+        <span class="arrow">→</span>
+        <span class="node via">モルハブ</span>
+        <span class="arrow">→</span>
+        ${r.mediator ? `<span class="node via">${esc(r.mediator)}</span><span class="arrow">→</span>` : ''}
+        <span class="node to">${esc(r.recipient)}</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderReturns() {
+  const container = document.getElementById('return-list');
+  if (returnsData.length === 0) {
+    container.innerHTML = '<p style="color:#999;">提供実績はまだありません。</p>';
+    return;
+  }
+  const sorted = [...returnsData].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  container.innerHTML = sorted.map(renderReturnCard).join('');
+}
+
+function renderRecentReturns() {
+  const container = document.getElementById('recent-returns');
+  if (returnsData.length === 0) {
+    container.innerHTML = '<p style="color:#999;">提供実績はまだありません。</p>';
+    return;
+  }
+  const sorted = [...returnsData].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  const recent = sorted.slice(0, 3);
+  container.innerHTML = recent.map(renderReturnCard).join('');
+}
+
+function esc(s) {
+  if (!s) return '';
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+</script>
+</body>
+</html>

@@ -8,6 +8,13 @@
       ".read": true,
       ".write": true,
       ".indexOn": ["_order"]
+    },
+    "partner": {
+      ".read": true,
+      ".write": true,
+      "returns": {
+        ".indexOn": ["_order", "date"]
+      }
     }
   }
 }
