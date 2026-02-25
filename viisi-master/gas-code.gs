@@ -6,10 +6,33 @@
 // シート名: "試合" / "選手"
 // デプロイ: ウェブアプリ → 実行: 自分 / アクセス: 全員
 
+// --- 自動セットアップ: シートが無ければ作成＆ヘッダー追加 ---
+function _ensureSheets(ss) {
+  var mSheet = ss.getSheetByName('試合');
+  if (!mSheet) {
+    mSheet = ss.insertSheet('試合');
+    mSheet.getRange(1, 1, 1, 7).setValues([['date', 'challenger', 'defender', 'role', 'sc', 'sd', 'winner']]);
+    mSheet.getRange(1, 1, 1, 7).setFontWeight('bold');
+  }
+  var pSheet = ss.getSheetByName('選手');
+  if (!pSheet) {
+    pSheet = ss.insertSheet('選手');
+    pSheet.getRange(1, 1, 1, 3).setValues([['name', 'x', 'role']]);
+    pSheet.getRange(1, 1, 1, 3).setFontWeight('bold');
+  }
+  // デフォルトの「シート1」があれば削除
+  var defaultSheet = ss.getSheetByName('シート1');
+  if (defaultSheet && ss.getSheets().length > 1) {
+    ss.deleteSheet(defaultSheet);
+  }
+  return { matchesSheet: mSheet, playersSheet: pSheet };
+}
+
 function doGet(e) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var matchesSheet = ss.getSheetByName('試合');
-  var playersSheet = ss.getSheetByName('選手');
+  var sheets = _ensureSheets(ss);
+  var matchesSheet = sheets.matchesSheet;
+  var playersSheet = sheets.playersSheet;
 
   var matches = [];
   if (matchesSheet.getLastRow() > 1) {
@@ -57,6 +80,7 @@ function doPost(e) {
 
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
+    _ensureSheets(ss);
     var data = JSON.parse(e.postData.contents);
     var action = data.action;
 
