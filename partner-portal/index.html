@@ -32,9 +32,7 @@
   --radius: 16px;
   --radius-sm: 10px;
 }
-
 * { margin: 0; padding: 0; box-sizing: border-box; }
-
 body {
   font-family: 'Noto Sans JP', sans-serif;
   background: var(--cream);
@@ -61,25 +59,8 @@ body {
   background: rgba(255,255,255,0.06);
   border-radius: 50%;
 }
-.header::after {
-  content: '';
-  position: absolute;
-  bottom: -40px; left: -20px;
-  width: 150px; height: 150px;
-  background: rgba(255,255,255,0.04);
-  border-radius: 50%;
-}
-.header h1 {
-  font-size: 1.4rem;
-  font-weight: 900;
-  letter-spacing: 0.02em;
-  margin-bottom: 4px;
-}
-.header p {
-  font-size: 0.85rem;
-  opacity: 0.8;
-  font-weight: 400;
-}
+.header h1 { font-size: 1.4rem; font-weight: 900; letter-spacing: 0.02em; margin-bottom: 4px; }
+.header p { font-size: 0.85rem; opacity: 0.8; }
 .header .logo {
   width: 48px; height: 48px;
   margin: 0 auto 12px;
@@ -89,318 +70,161 @@ body {
   font-size: 1.6rem;
 }
 
-/* Navigation */
+/* Nav */
 .nav {
-  display: flex;
-  gap: 6px;
-  padding: 10px 16px;
+  display: flex; gap: 6px; padding: 10px 16px;
   background: var(--white);
   border-bottom: 1px solid rgba(0,0,0,0.06);
-  overflow-x: auto;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  -webkit-overflow-scrolling: touch;
+  overflow-x: auto; position: sticky; top: 0; z-index: 10;
 }
 .nav-btn {
-  padding: 8px 18px;
-  border: 2px solid transparent;
-  border-radius: 24px;
-  font-size: 0.82rem;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  white-space: nowrap;
-  background: var(--green-pale);
-  color: var(--green-dark);
-  transition: all 0.2s ease;
+  padding: 8px 18px; border: 2px solid transparent; border-radius: 24px;
+  font-size: 0.82rem; font-weight: 500; font-family: inherit;
+  cursor: pointer; white-space: nowrap;
+  background: var(--green-pale); color: var(--green-dark);
+  transition: all 0.2s;
 }
 .nav-btn:hover { background: #d4ecc0; }
-.nav-btn.active {
-  background: var(--green-main);
-  color: var(--white);
-  border-color: var(--green-dark);
-}
+.nav-btn.active { background: var(--green-main); color: var(--white); border-color: var(--green-dark); }
 
-/* Sections */
+/* Section */
 .section { display: none; padding: 16px; max-width: 640px; margin: 0 auto; }
 .section.active { display: block; }
 .section-title {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--green-dark);
+  font-size: 1rem; font-weight: 700; color: var(--green-dark);
   margin: 24px 0 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  display: flex; align-items: center; gap: 8px;
 }
-.section-title::after {
-  content: '';
-  flex: 1;
-  height: 2px;
-  background: linear-gradient(to right, var(--green-light), transparent);
-}
+.section-title::after { content: ''; flex: 1; height: 2px; background: linear-gradient(to right, var(--green-light), transparent); }
 
 /* Stats */
-.stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-.stat-card {
-  background: var(--white);
-  border-radius: var(--radius);
-  padding: 18px 12px;
-  text-align: center;
-  box-shadow: var(--shadow);
-  transition: transform 0.2s;
-}
-.stat-card .number {
-  font-size: 2rem;
-  font-weight: 900;
-  color: var(--green-main);
-  line-height: 1.2;
-}
-.stat-card .label {
-  font-size: 0.75rem;
-  color: var(--text-light);
-  margin-top: 2px;
-}
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
+.stat-card { background: var(--white); border-radius: var(--radius); padding: 18px 12px; text-align: center; box-shadow: var(--shadow); }
+.stat-card .number { font-size: 2rem; font-weight: 900; color: var(--green-main); line-height: 1.2; }
+.stat-card .label { font-size: 0.75rem; color: var(--text-light); margin-top: 2px; }
 
 /* Flow Diagram */
-.flow-diagram {
-  background: var(--white);
-  border-radius: var(--radius);
-  padding: 24px 20px;
-  box-shadow: var(--shadow);
-  margin-bottom: 8px;
-  text-align: center;
-}
-.flow-nodes {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-.flow-node {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 20px;
-  border-radius: var(--radius-sm);
-  font-size: 0.9rem;
-  font-weight: 600;
-  width: 100%;
-  max-width: 280px;
-}
-.flow-node .avatar-sm {
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
+.flow-diagram { background: var(--white); border-radius: var(--radius); padding: 24px 20px; box-shadow: var(--shadow); margin-bottom: 8px; text-align: center; }
+.flow-nodes { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.flow-node { display: flex; align-items: center; gap: 10px; padding: 12px 20px; border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 600; width: 100%; max-width: 280px; }
+.flow-node .avatar-sm { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; }
 .flow-node.partner { background: var(--blue-pale); color: var(--blue); }
 .flow-node.hub { background: var(--green-pale); color: var(--green-dark); }
 .flow-node.recipient { background: var(--orange-pale); color: var(--orange); }
-.flow-connector {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  padding: 2px 0;
-}
-.flow-caption {
-  font-size: 0.82rem;
-  color: var(--text-light);
-  margin-top: 14px;
-  line-height: 1.6;
-}
+.flow-connector { font-size: 0.75rem; color: var(--text-muted); padding: 2px 0; }
+.flow-caption { font-size: 0.82rem; color: var(--text-light); margin-top: 14px; line-height: 1.6; }
 
 /* Avatar */
-.avatar {
-  width: 48px; height: 48px;
-  border-radius: 50%;
-  background: #f0f0f0;
-  flex-shrink: 0;
-  object-fit: cover;
-}
-.avatar-sm { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; }
+.avatar { width: 48px; height: 48px; border-radius: 50%; background: #f0f0f0; flex-shrink: 0; object-fit: cover; }
 
 /* Partner Card */
-.partner-card {
-  background: var(--white);
-  border-radius: var(--radius);
-  padding: 18px;
-  box-shadow: var(--shadow);
-  margin-bottom: 12px;
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
-  transition: box-shadow 0.2s;
-}
+.partner-card { background: var(--white); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); margin-bottom: 12px; display: flex; gap: 14px; align-items: flex-start; transition: box-shadow 0.2s; }
 .partner-card:hover { box-shadow: var(--shadow-hover); }
 .partner-info { flex: 1; min-width: 0; }
-.partner-info .name {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--green-dark);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.partner-info .meta {
-  font-size: 0.8rem;
-  color: var(--text-light);
-  margin-top: 4px;
-}
-.partner-info .links {
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-}
-.partner-info .links a {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  text-decoration: none;
-  color: var(--text-light);
-  background: #f5f5f5;
-  transition: background 0.2s;
-}
+.partner-info .name { font-size: 1.05rem; font-weight: 700; color: var(--green-dark); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.partner-info .meta { font-size: 0.8rem; color: var(--text-light); margin-top: 4px; }
+.partner-info .links { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.partner-info .links a { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; text-decoration: none; color: var(--text-light); background: #f5f5f5; transition: background 0.2s; }
 .partner-info .links a:hover { background: #e8e8e8; }
 .x-icon { width: 14px; height: 14px; }
-.badge {
-  display: inline-block;
-  padding: 2px 10px;
-  border-radius: 12px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
+.badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; white-space: nowrap; }
 .badge.active { background: var(--green-pale); color: var(--green-main); }
 .badge.ended { background: #f5f5f5; color: var(--text-muted); }
 
 /* Return Card */
-.return-card {
-  background: var(--white);
-  border-radius: var(--radius);
-  padding: 18px;
-  box-shadow: var(--shadow);
-  margin-bottom: 12px;
-  position: relative;
-  transition: box-shadow 0.2s;
-}
+.return-card { background: var(--white); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); margin-bottom: 14px; transition: box-shadow 0.2s; }
 .return-card:hover { box-shadow: var(--shadow-hover); }
-.return-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 10px;
-}
-.return-header .date {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-.return-header .status {
-  padding: 2px 10px;
-  border-radius: 12px;
-  font-size: 0.7rem;
-  font-weight: 600;
-}
+.return-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.return-header .date { font-size: 0.75rem; color: var(--text-muted); }
+.status { padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; }
 .status.completed { background: var(--green-pale); color: var(--green-main); }
 .status.pending { background: var(--orange-pale); color: var(--orange); }
 
-.return-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
+/* Item photo */
+.item-photo {
+  width: 100%; border-radius: var(--radius-sm);
+  margin-bottom: 12px; max-height: 240px; object-fit: cover;
+  background: #f0f0f0;
 }
-.return-item .category {
-  padding: 3px 10px;
-  border-radius: 8px;
-  font-size: 0.72rem;
-  font-weight: 600;
-}
+
+.return-item { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.return-item .category { padding: 3px 10px; border-radius: 8px; font-size: 0.72rem; font-weight: 600; }
 .cat-大会 { background: var(--blue-pale); color: var(--blue); }
 .cat-学校 { background: var(--purple-pale); color: var(--purple); }
 .cat-個人 { background: var(--orange-pale); color: var(--orange); }
 .cat-自主提供 { background: #fce4ec; color: #c62828; }
-.return-item .item-text {
-  font-size: 1rem;
-  font-weight: 700;
-}
-.return-item .condition {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
+.return-item .item-text { font-size: 1rem; font-weight: 700; }
+.return-item .condition { font-size: 0.75rem; color: var(--text-muted); }
 
-.return-details {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 0.82rem;
-  color: var(--text-light);
-}
-.return-details .row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
+.return-details { display: flex; flex-direction: column; gap: 4px; font-size: 0.82rem; color: var(--text-light); }
+.return-details .row { display: flex; align-items: center; gap: 6px; }
 
-/* Flow visualization per card */
+/* Flow viz */
 .flow-viz {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid #f0f0f0;
-  flex-wrap: wrap;
+  margin-top: 14px; padding-top: 14px; border-top: 1px solid #f0f0f0;
 }
+.flow-viz-label { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
+.flow-chain { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 .flow-person {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 10px 4px 4px;
-  border-radius: 20px;
-  font-size: 0.78rem;
-  font-weight: 500;
+  display: flex; align-items: center; gap: 5px;
+  padding: 4px 10px 4px 4px; border-radius: 20px;
+  font-size: 0.78rem; font-weight: 500;
 }
-.flow-person img {
-  width: 24px; height: 24px;
-  border-radius: 50%;
-}
+.flow-person img { width: 24px; height: 24px; border-radius: 50%; }
 .flow-person.from { background: var(--blue-pale); color: var(--blue); }
 .flow-person.hub { background: var(--green-pale); color: var(--green-dark); }
 .flow-person.mediator { background: #f5f5f5; color: var(--text); }
 .flow-person.to { background: var(--orange-pale); color: var(--orange); }
-.flow-viz .arrow {
-  color: var(--text-muted);
-  font-size: 0.9rem;
+.flow-chain .arrow { color: var(--text-muted); font-size: 0.9rem; }
+.role-tag {
+  font-size: 0.6rem; padding: 1px 5px; border-radius: 4px;
+  margin-left: 2px; font-weight: 600; vertical-align: middle;
 }
+.role-tag.provider { background: var(--blue-pale); color: var(--blue); }
+.role-tag.hub-tag { background: var(--green-pale); color: var(--green-dark); }
+.role-tag.mediator-tag { background: #eee; color: var(--text-light); }
+.role-tag.recipient-tag { background: var(--orange-pale); color: var(--orange); }
+
+/* Recipient comment */
+.recipient-comment {
+  margin-top: 12px; padding: 12px 14px;
+  background: linear-gradient(135deg, #fffbe6, #fff9e0);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--green-light);
+  position: relative;
+}
+.recipient-comment .comment-header {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 4px;
+}
+.recipient-comment .comment-header img { width: 20px; height: 20px; border-radius: 50%; }
+.recipient-comment .comment-header .comment-name { font-size: 0.75rem; font-weight: 600; color: var(--text); }
+.recipient-comment .comment-text {
+  font-size: 0.82rem; color: var(--text); line-height: 1.6;
+  font-style: italic;
+}
+.recipient-comment::before {
+  content: '"'; position: absolute; top: 4px; left: 8px;
+  font-size: 1.5rem; color: var(--green-light); opacity: 0.4; font-family: serif;
+}
+
+/* Voices section */
+.voices-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; -webkit-overflow-scrolling: touch; }
+.voice-card {
+  flex-shrink: 0; width: 260px;
+  background: var(--white); border-radius: var(--radius);
+  padding: 16px; box-shadow: var(--shadow);
+}
+.voice-card .voice-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.voice-card .voice-header img { width: 32px; height: 32px; border-radius: 50%; }
+.voice-card .voice-header .voice-name { font-size: 0.85rem; font-weight: 600; }
+.voice-card .voice-header .voice-role { font-size: 0.7rem; color: var(--text-muted); }
+.voice-card .voice-text { font-size: 0.82rem; color: var(--text-light); line-height: 1.6; }
 
 /* Footer */
-.footer {
-  text-align: center;
-  padding: 24px 16px;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  margin-top: 16px;
-}
+.footer { text-align: center; padding: 24px 16px; font-size: 0.75rem; color: var(--text-muted); margin-top: 16px; }
 .footer a { color: var(--green-main); text-decoration: none; font-weight: 500; }
-.footer .powered {
-  margin-top: 6px;
-  font-size: 0.7rem;
-}
-
-.loading {
-  text-align: center;
-  padding: 40px;
-  color: var(--text-muted);
-  font-size: 0.85rem;
-}
+.footer .powered { margin-top: 6px; font-size: 0.7rem; }
+.loading { text-align: center; padding: 40px; color: var(--text-muted); font-size: 0.85rem; }
 </style>
 </head>
 <body>
@@ -415,11 +239,12 @@ body {
   <button class="nav-btn active" data-section="overview">循環の流れ</button>
   <button class="nav-btn" data-section="partners">パートナー</button>
   <button class="nav-btn" data-section="returns">提供実績</button>
+  <button class="nav-btn" data-section="voices">みんなの声</button>
 </div>
 
 <!-- Overview -->
 <div id="overview" class="section active">
-  <div class="stats-grid" id="stats-grid">
+  <div class="stats-grid">
     <div class="stat-card"><div class="number" id="stat-partners">-</div><div class="label">パートナー</div></div>
     <div class="stat-card"><div class="number" id="stat-returns">-</div><div class="label">提供実績</div></div>
     <div class="stat-card"><div class="number" id="stat-tournaments">-</div><div class="label">大会への提供</div></div>
@@ -431,17 +256,17 @@ body {
     <div class="flow-nodes">
       <div class="flow-node partner">
         <img class="avatar-sm" src="https://api.dicebear.com/7.x/shapes/svg?seed=partner&backgroundColor=b6e3f4" alt="">
-        <span>パートナー</span>
+        <div><span>パートナー</span><br><span style="font-size:0.7rem;font-weight:400;opacity:0.7">応援・協賛してくれる方</span></div>
       </div>
       <div class="flow-connector">▼ 応援・協賛</div>
       <div class="flow-node hub">
         <img class="avatar-sm" src="https://api.dicebear.com/7.x/shapes/svg?seed=molkkyhub&backgroundColor=d1d4f9" alt="">
-        <span>MOLKKY HUB</span>
+        <div><span>MOLKKY HUB</span><br><span style="font-size:0.7rem;font-weight:400;opacity:0.7">手配・調整を担当</span></div>
       </div>
-      <div class="flow-connector">▼ 物品を手配・調整</div>
+      <div class="flow-connector">▼ 仲介者が届ける</div>
       <div class="flow-node recipient">
         <img class="avatar-sm" src="https://api.dicebear.com/7.x/shapes/svg?seed=recipient&backgroundColor=ffd5dc" alt="">
-        <span>大会・学校・モルッカー</span>
+        <div><span>大会・学校・モルッカー</span><br><span style="font-size:0.7rem;font-weight:400;opacity:0.7">受け取って喜びを循環</span></div>
       </div>
     </div>
     <div class="flow-caption">
@@ -466,6 +291,15 @@ body {
   <div id="return-list" class="loading">読み込み中...</div>
 </div>
 
+<!-- Voices -->
+<div id="voices" class="section">
+  <div class="section-title">みんなの声</div>
+  <p style="font-size:0.85rem; color:var(--text-light); margin-bottom:16px;">
+    受け取った方からのコメントを紹介しています。
+  </p>
+  <div id="voices-list" class="loading">読み込み中...</div>
+</div>
+
 <div class="footer">
   <a href="https://molkky-hub.com/?page_id=4635" target="_blank">パートナー制度について詳しく見る →</a>
   <div class="powered">© 2026 <a href="https://molkky-hub.com" target="_blank">MOLKKY HUB</a></div>
@@ -488,22 +322,20 @@ let partnersData = {};
 let peopleData = {};
 let returnsData = [];
 
-// X icon SVG
 const xSvg = `<svg class="x-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`;
 
-// Avatar URL helper
+const IMG_BASE = 'https://jonyjean21.github.io/sp-projects/partner-portal/images/';
+
 function avatarUrl(name, style) {
-  style = style || 'adventurer';
-  return `https://api.dicebear.com/7.x/${style}/svg?seed=${encodeURIComponent(name)}`;
+  return `https://api.dicebear.com/7.x/${style || 'adventurer'}/svg?seed=${encodeURIComponent(name)}`;
 }
 
 // Navigation
 document.querySelectorAll('.nav-btn').forEach(btn => {
   btn.addEventListener('click', function() {
-    const id = this.dataset.section;
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
+    document.getElementById(this.dataset.section).classList.add('active');
     this.classList.add('active');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
@@ -527,39 +359,32 @@ db.ref('partner/returns').orderByChild('_order').on('value', snap => {
   });
   renderReturns();
   renderRecentReturns();
+  renderVoices();
   renderStats();
 });
 
 function renderStats() {
-  const partnerCount = Object.keys(partnersData).length;
-  const returnCount = returnsData.length;
-  const tournamentCount = returnsData.filter(r => r.category === '大会').length;
-  const schoolCount = returnsData.filter(r => r.category === '学校').length;
-  document.getElementById('stat-partners').textContent = partnerCount;
-  document.getElementById('stat-returns').textContent = returnCount;
-  document.getElementById('stat-tournaments').textContent = tournamentCount;
-  document.getElementById('stat-schools').textContent = schoolCount;
+  const pc = Object.keys(partnersData).length;
+  const rc = returnsData.length;
+  document.getElementById('stat-partners').textContent = pc;
+  document.getElementById('stat-returns').textContent = rc;
+  document.getElementById('stat-tournaments').textContent = returnsData.filter(r => r.category === '大会').length;
+  document.getElementById('stat-schools').textContent = returnsData.filter(r => r.category === '学校').length;
 }
 
 function renderPartners() {
-  const container = document.getElementById('partner-list');
+  const el = document.getElementById('partner-list');
   const entries = Object.entries(partnersData);
-  if (!entries.length) {
-    container.innerHTML = '<p class="loading">パートナーはまだ登録されていません。</p>';
-    return;
-  }
-  container.innerHTML = entries.map(([id, p]) => {
+  if (!entries.length) { el.innerHTML = '<p class="loading">パートナーはまだ登録されていません。</p>'; return; }
+  el.innerHTML = entries.map(([id, p]) => {
     const links = [];
     if (p.x_handle) links.push(`<a href="https://x.com/${esc(p.x_handle)}" target="_blank" rel="noopener">${xSvg} @${esc(p.x_handle)}</a>`);
     if (p.link) links.push(`<a href="${esc(p.link)}" target="_blank" rel="noopener">🔗 サイト</a>`);
     return `
       <div class="partner-card">
-        <img class="avatar" src="${avatarUrl(p.name, 'adventurer')}" alt="${esc(p.name)}">
+        <img class="avatar" src="${avatarUrl(p.name)}" alt="${esc(p.name)}">
         <div class="partner-info">
-          <div class="name">
-            ${esc(p.name)}
-            <span class="badge ${p.status === 'active' ? 'active' : 'ended'}">${p.status === 'active' ? '掲載中' : '終了'}</span>
-          </div>
+          <div class="name">${esc(p.name)} <span class="badge ${p.status === 'active' ? 'active' : 'ended'}">${p.status === 'active' ? '掲載中' : '終了'}</span></div>
           <div class="meta">${esc(p.type)} ・ ${esc(p.since)}〜</div>
           ${links.length ? `<div class="links">${links.join('')}</div>` : ''}
         </div>
@@ -569,12 +394,18 @@ function renderPartners() {
 
 function renderReturnCard(r) {
   const dateStr = r.date ? r.date.replace(/-/g, '.') : '';
+  const hasPhoto = r.image_url && r.image_url.length > 0;
+  const photoUrl = hasPhoto ? (r.image_url.startsWith('http') ? r.image_url : IMG_BASE + r.image_url) : '';
+  const hasComment = r.recipient_comment && r.recipient_comment.length > 0;
+  const recipientDisplay = r.recipient_name_display || r.recipient;
+
   return `
     <div class="return-card">
       <div class="return-header">
         <span class="date">${esc(dateStr)}</span>
         <span class="status ${r.completed ? 'completed' : 'pending'}">${r.completed ? '完了' : '進行中'}</span>
       </div>
+      ${hasPhoto ? `<img class="item-photo" src="${esc(photoUrl)}" alt="${esc(r.item)}" loading="lazy">` : ''}
       <div class="return-item">
         <span class="category cat-${esc(r.category)}">${esc(r.category)}</span>
         <span class="item-text">${esc(r.item)}</span>
@@ -585,52 +416,76 @@ function renderReturnCard(r) {
         <div class="row">📦 ${esc(r.handoff_method)}${r.handoff_event ? ` — ${esc(r.handoff_event)}` : ''}</div>
       </div>
       <div class="flow-viz">
-        <span class="flow-person from">
-          <img src="${avatarUrl(r.provider)}" alt="">
-          ${esc(r.provider)}
-        </span>
-        <span class="arrow">→</span>
-        <span class="flow-person hub">
-          <img src="${avatarUrl('MOLKKY HUB')}" alt="">
-          モルハブ
-        </span>
-        <span class="arrow">→</span>
-        ${r.mediator ? `
-          <span class="flow-person mediator">
-            <img src="${avatarUrl(r.mediator)}" alt="">
-            ${esc(r.mediator)}
+        <div class="flow-viz-label">届けた流れ</div>
+        <div class="flow-chain">
+          <span class="flow-person from">
+            <img src="${avatarUrl(r.provider)}" alt="">
+            ${esc(r.provider)} <span class="role-tag provider">提供元</span>
           </span>
           <span class="arrow">→</span>
-        ` : ''}
-        <span class="flow-person to">
-          <img src="${avatarUrl(r.recipient)}" alt="">
-          ${esc(r.recipient)}
-        </span>
+          <span class="flow-person hub">
+            <img src="${avatarUrl('MOLKKY HUB')}" alt="">
+            モルハブ <span class="role-tag hub-tag">手配</span>
+          </span>
+          <span class="arrow">→</span>
+          ${r.mediator ? `
+            <span class="flow-person mediator">
+              <img src="${avatarUrl(r.mediator)}" alt="">
+              ${esc(r.mediator)} <span class="role-tag mediator-tag">仲介</span>
+            </span>
+            <span class="arrow">→</span>
+          ` : ''}
+          <span class="flow-person to">
+            <img src="${avatarUrl(r.recipient)}" alt="">
+            ${esc(r.recipient)} <span class="role-tag recipient-tag">受取</span>
+          </span>
+        </div>
       </div>
+      ${hasComment ? `
+        <div class="recipient-comment">
+          <div class="comment-header">
+            <img src="${avatarUrl(r.recipient)}" alt="">
+            <span class="comment-name">${esc(recipientDisplay)}</span>
+          </div>
+          <div class="comment-text">${esc(r.recipient_comment)}</div>
+        </div>
+      ` : ''}
     </div>`;
 }
 
 function renderReturns() {
-  const container = document.getElementById('return-list');
-  if (!returnsData.length) {
-    container.innerHTML = '<p class="loading">提供実績はまだありません。</p>';
-    return;
-  }
-  container.innerHTML = [...returnsData]
-    .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
-    .map(renderReturnCard).join('');
+  const el = document.getElementById('return-list');
+  if (!returnsData.length) { el.innerHTML = '<p class="loading">提供実績はまだありません。</p>'; return; }
+  el.innerHTML = [...returnsData].sort((a, b) => (b.date || '').localeCompare(a.date || '')).map(renderReturnCard).join('');
 }
 
 function renderRecentReturns() {
-  const container = document.getElementById('recent-returns');
-  if (!returnsData.length) {
-    container.innerHTML = '<p class="loading">提供実績はまだありません。</p>';
+  const el = document.getElementById('recent-returns');
+  if (!returnsData.length) { el.innerHTML = '<p class="loading">提供実績はまだありません。</p>'; return; }
+  el.innerHTML = [...returnsData].sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 3).map(renderReturnCard).join('');
+}
+
+function renderVoices() {
+  const el = document.getElementById('voices-list');
+  const withComments = returnsData.filter(r => r.recipient_comment && r.recipient_comment.length > 0);
+  if (!withComments.length) {
+    el.innerHTML = '<p style="color:var(--text-muted); text-align:center; padding:20px;">まだコメントはありません。<br>受け取った方の声が届き次第、ここに掲載されます。</p>';
     return;
   }
-  container.innerHTML = [...returnsData]
-    .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
-    .slice(0, 3)
-    .map(renderReturnCard).join('');
+  el.innerHTML = withComments.map(r => {
+    const recipientDisplay = r.recipient_name_display || r.recipient;
+    return `
+      <div class="voice-card" style="width:100%; margin-bottom:12px;">
+        <div class="voice-header">
+          <img src="${avatarUrl(r.recipient)}" alt="">
+          <div>
+            <div class="voice-name">${esc(recipientDisplay)}</div>
+            <div class="voice-role">${esc(r.item)} を受け取り</div>
+          </div>
+        </div>
+        <div class="voice-text">${esc(r.recipient_comment)}</div>
+      </div>`;
+  }).join('');
 }
 
 function esc(s) {
