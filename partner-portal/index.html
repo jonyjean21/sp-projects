@@ -4,9 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>モルハブ パートナー循環ポータル</title>
+<meta name="description" content="MOLKKY HUBパートナー制度の循環ポータル。パートナーからの応援が、大会や学校へ届く流れを可視化します。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 <style>
@@ -16,13 +17,20 @@
   --green-light: #7ab648;
   --green-pale: #e8f5d8;
   --cream: #faf8f0;
-  --brown: #8b6914;
-  --brown-light: #d4a843;
   --text: #333;
   --text-light: #666;
+  --text-muted: #999;
   --white: #fff;
-  --shadow: 0 2px 8px rgba(0,0,0,0.08);
-  --radius: 12px;
+  --blue: #1565c0;
+  --blue-pale: #e3f2fd;
+  --purple: #7b1fa2;
+  --purple-pale: #f3e5f5;
+  --orange: #e65100;
+  --orange-pale: #fff3e0;
+  --shadow: 0 2px 12px rgba(0,0,0,0.06);
+  --shadow-hover: 0 4px 20px rgba(0,0,0,0.1);
+  --radius: 16px;
+  --radius-sm: 10px;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -33,323 +41,437 @@ body {
   color: var(--text);
   line-height: 1.7;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* Header */
 .header {
-  background: linear-gradient(135deg, var(--green-dark), var(--green-main));
+  background: linear-gradient(135deg, var(--green-dark) 0%, var(--green-main) 60%, var(--green-light) 100%);
   color: var(--white);
-  padding: 24px 16px;
+  padding: 32px 16px 28px;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.header::before {
+  content: '';
+  position: absolute;
+  top: -30px; right: -30px;
+  width: 120px; height: 120px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 50%;
+}
+.header::after {
+  content: '';
+  position: absolute;
+  bottom: -40px; left: -20px;
+  width: 150px; height: 150px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 50%;
 }
 .header h1 {
-  font-size: 1.3rem;
-  font-weight: 700;
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
   margin-bottom: 4px;
 }
 .header p {
   font-size: 0.85rem;
-  opacity: 0.85;
+  opacity: 0.8;
+  font-weight: 400;
 }
-.header .leaf { font-size: 1.5rem; margin-bottom: 8px; }
+.header .logo {
+  width: 48px; height: 48px;
+  margin: 0 auto 12px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem;
+}
 
 /* Navigation */
 .nav {
   display: flex;
-  gap: 8px;
-  padding: 12px 16px;
+  gap: 6px;
+  padding: 10px 16px;
   background: var(--white);
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
   overflow-x: auto;
   position: sticky;
   top: 0;
   z-index: 10;
+  -webkit-overflow-scrolling: touch;
 }
 .nav-btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 20px;
-  font-size: 0.85rem;
+  padding: 8px 18px;
+  border: 2px solid transparent;
+  border-radius: 24px;
+  font-size: 0.82rem;
+  font-weight: 500;
   font-family: inherit;
   cursor: pointer;
   white-space: nowrap;
   background: var(--green-pale);
   color: var(--green-dark);
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
+.nav-btn:hover { background: #d4ecc0; }
 .nav-btn.active {
   background: var(--green-main);
   color: var(--white);
+  border-color: var(--green-dark);
 }
 
 /* Sections */
 .section { display: none; padding: 16px; max-width: 640px; margin: 0 auto; }
 .section.active { display: block; }
-.section h2 {
-  font-size: 1.1rem;
+.section-title {
+  font-size: 1rem;
+  font-weight: 700;
   color: var(--green-dark);
-  margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid var(--green-light);
+  margin: 24px 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(to right, var(--green-light), transparent);
+}
+
+/* Stats */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.stat-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 18px 12px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s;
+}
+.stat-card .number {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--green-main);
+  line-height: 1.2;
+}
+.stat-card .label {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  margin-top: 2px;
 }
 
 /* Flow Diagram */
 .flow-diagram {
   background: var(--white);
   border-radius: var(--radius);
-  padding: 20px;
+  padding: 24px 20px;
   box-shadow: var(--shadow);
-  margin-bottom: 20px;
+  margin-bottom: 8px;
   text-align: center;
 }
-.flow-step {
-  display: inline-flex;
+.flow-nodes {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-radius: 8px;
+  gap: 4px;
+}
+.flow-node {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: var(--radius-sm);
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: 600;
+  width: 100%;
+  max-width: 280px;
 }
-.flow-step.partner { background: #e3f2fd; color: #1565c0; }
-.flow-step.hub { background: var(--green-pale); color: var(--green-dark); }
-.flow-step.recipient { background: #fff3e0; color: #e65100; }
-.flow-arrow {
-  display: block;
-  font-size: 1.2rem;
+.flow-node .avatar-sm {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.flow-node.partner { background: var(--blue-pale); color: var(--blue); }
+.flow-node.hub { background: var(--green-pale); color: var(--green-dark); }
+.flow-node.recipient { background: var(--orange-pale); color: var(--orange); }
+.flow-connector {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  padding: 2px 0;
+}
+.flow-caption {
+  font-size: 0.82rem;
   color: var(--text-light);
-  margin: 8px 0;
+  margin-top: 14px;
+  line-height: 1.6;
 }
+
+/* Avatar */
+.avatar {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: #f0f0f0;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+.avatar-sm { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; }
 
 /* Partner Card */
 .partner-card {
   background: var(--white);
   border-radius: var(--radius);
-  padding: 16px;
+  padding: 18px;
   box-shadow: var(--shadow);
   margin-bottom: 12px;
-  border-left: 4px solid var(--green-main);
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  transition: box-shadow 0.2s;
 }
-.partner-card .name {
-  font-size: 1rem;
+.partner-card:hover { box-shadow: var(--shadow-hover); }
+.partner-info { flex: 1; min-width: 0; }
+.partner-info .name {
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--green-dark);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
-.partner-card .meta {
+.partner-info .meta {
   font-size: 0.8rem;
   color: var(--text-light);
   margin-top: 4px;
 }
-.partner-card .badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 10px;
+.partner-info .links {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.partner-info .links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
   font-size: 0.75rem;
-  font-weight: 500;
-  background: var(--green-pale);
-  color: var(--green-main);
-}
-.partner-card .badge.ended {
+  text-decoration: none;
+  color: var(--text-light);
   background: #f5f5f5;
-  color: #999;
+  transition: background 0.2s;
 }
+.partner-info .links a:hover { background: #e8e8e8; }
+.x-icon { width: 14px; height: 14px; }
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badge.active { background: var(--green-pale); color: var(--green-main); }
+.badge.ended { background: #f5f5f5; color: var(--text-muted); }
 
 /* Return Card */
 .return-card {
   background: var(--white);
   border-radius: var(--radius);
-  padding: 16px;
+  padding: 18px;
   box-shadow: var(--shadow);
   margin-bottom: 12px;
   position: relative;
+  transition: box-shadow 0.2s;
 }
-.return-card .date {
+.return-card:hover { box-shadow: var(--shadow-hover); }
+.return-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+.return-header .date {
   font-size: 0.75rem;
-  color: var(--text-light);
-  margin-bottom: 6px;
+  color: var(--text-muted);
 }
-.return-card .item-name {
+.return-header .status {
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+.status.completed { background: var(--green-pale); color: var(--green-main); }
+.status.pending { background: var(--orange-pale); color: var(--orange); }
+
+.return-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.return-item .category {
+  padding: 3px 10px;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.cat-大会 { background: var(--blue-pale); color: var(--blue); }
+.cat-学校 { background: var(--purple-pale); color: var(--purple); }
+.cat-個人 { background: var(--orange-pale); color: var(--orange); }
+.cat-自主提供 { background: #fce4ec; color: #c62828; }
+.return-item .item-text {
   font-size: 1rem;
   font-weight: 700;
-  margin-bottom: 4px;
 }
-.return-card .detail-row {
+.return-item .condition {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.return-details {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.85rem;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.82rem;
   color: var(--text-light);
-  margin-top: 4px;
 }
-.return-card .detail-row .icon { font-size: 1rem; }
-.return-card .category-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 0.7rem;
-  font-weight: 500;
-}
-.category-badge.大会 { background: #e3f2fd; color: #1565c0; }
-.category-badge.学校 { background: #f3e5f5; color: #7b1fa2; }
-.category-badge.個人 { background: #fff3e0; color: #e65100; }
-.category-badge.自主提供 { background: #fce4ec; color: #c62828; }
-
-.return-card .status-badge {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 0.7rem;
-  font-weight: 500;
-}
-.status-badge.completed { background: var(--green-pale); color: var(--green-main); }
-.status-badge.pending { background: #fff3e0; color: #e65100; }
-
-/* Flow Card (per return) */
-.flow-mini {
+.return-details .row {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 10px;
-  padding-top: 10px;
+}
+
+/* Flow visualization per card */
+.flow-viz {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 14px;
+  padding-top: 14px;
   border-top: 1px solid #f0f0f0;
-  font-size: 0.8rem;
   flex-wrap: wrap;
 }
-.flow-mini .node {
-  padding: 3px 8px;
-  border-radius: 6px;
+.flow-person {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px 4px 4px;
+  border-radius: 20px;
+  font-size: 0.78rem;
   font-weight: 500;
 }
-.flow-mini .node.from { background: #e3f2fd; color: #1565c0; }
-.flow-mini .node.via { background: var(--green-pale); color: var(--green-dark); }
-.flow-mini .node.to { background: #fff3e0; color: #e65100; }
-.flow-mini .arrow { color: #ccc; }
-
-/* Stats */
-.stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 20px;
+.flow-person img {
+  width: 24px; height: 24px;
+  border-radius: 50%;
 }
-.stat-card {
-  background: var(--white);
-  border-radius: var(--radius);
-  padding: 16px;
-  text-align: center;
-  box-shadow: var(--shadow);
-}
-.stat-card .number {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: var(--green-main);
-}
-.stat-card .label {
-  font-size: 0.8rem;
-  color: var(--text-light);
-  margin-top: 2px;
+.flow-person.from { background: var(--blue-pale); color: var(--blue); }
+.flow-person.hub { background: var(--green-pale); color: var(--green-dark); }
+.flow-person.mediator { background: #f5f5f5; color: var(--text); }
+.flow-person.to { background: var(--orange-pale); color: var(--orange); }
+.flow-viz .arrow {
+  color: var(--text-muted);
+  font-size: 0.9rem;
 }
 
 /* Footer */
 .footer {
   text-align: center;
-  padding: 20px;
+  padding: 24px 16px;
   font-size: 0.75rem;
-  color: var(--text-light);
-  margin-top: 24px;
+  color: var(--text-muted);
+  margin-top: 16px;
 }
-.footer a { color: var(--green-main); text-decoration: none; }
+.footer a { color: var(--green-main); text-decoration: none; font-weight: 500; }
+.footer .powered {
+  margin-top: 6px;
+  font-size: 0.7rem;
+}
 
-/* Loading */
 .loading {
   text-align: center;
   padding: 40px;
-  color: var(--text-light);
-}
-
-/* Admin link */
-.admin-link {
-  text-align: center;
-  margin-top: 16px;
-}
-.admin-link a {
-  color: var(--green-main);
+  color: var(--text-muted);
   font-size: 0.85rem;
-  text-decoration: none;
 }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="leaf">🌿</div>
-  <h1>モルハブ パートナー循環ポータル</h1>
+  <div class="logo">🌿</div>
+  <h1>パートナー循環ポータル</h1>
   <p>喜びと祝いが循環する仕組み</p>
 </div>
 
 <div class="nav">
-  <button class="nav-btn active" onclick="showSection('overview')">循環の流れ</button>
-  <button class="nav-btn" onclick="showSection('partners')">パートナー</button>
-  <button class="nav-btn" onclick="showSection('returns')">提供実績</button>
+  <button class="nav-btn active" data-section="overview">循環の流れ</button>
+  <button class="nav-btn" data-section="partners">パートナー</button>
+  <button class="nav-btn" data-section="returns">提供実績</button>
 </div>
 
+<!-- Overview -->
 <div id="overview" class="section active">
   <div class="stats-grid" id="stats-grid">
-    <div class="stat-card">
-      <div class="number" id="stat-partners">-</div>
-      <div class="label">パートナー</div>
-    </div>
-    <div class="stat-card">
-      <div class="number" id="stat-returns">-</div>
-      <div class="label">提供実績</div>
-    </div>
-    <div class="stat-card">
-      <div class="number" id="stat-tournaments">-</div>
-      <div class="label">大会への提供</div>
-    </div>
-    <div class="stat-card">
-      <div class="number" id="stat-schools">-</div>
-      <div class="label">学校への提供</div>
-    </div>
+    <div class="stat-card"><div class="number" id="stat-partners">-</div><div class="label">パートナー</div></div>
+    <div class="stat-card"><div class="number" id="stat-returns">-</div><div class="label">提供実績</div></div>
+    <div class="stat-card"><div class="number" id="stat-tournaments">-</div><div class="label">大会への提供</div></div>
+    <div class="stat-card"><div class="number" id="stat-schools">-</div><div class="label">学校への提供</div></div>
   </div>
 
-  <h2>循環の仕組み</h2>
+  <div class="section-title">循環の仕組み</div>
   <div class="flow-diagram">
-    <div class="flow-step partner">🤝 パートナー</div>
-    <div class="flow-arrow">↓ 応援・協賛</div>
-    <div class="flow-step hub">🌿 モルハブ</div>
-    <div class="flow-arrow">↓ 物品を手配・調整</div>
-    <div class="flow-step recipient">🎯 大会・学校・モルッカー</div>
-    <div class="flow-arrow" style="margin-top:16px">♻️</div>
-    <p style="font-size:0.85rem; color:var(--text-light); margin-top:8px;">
-      喜びと祝いが、人から人へ届く循環
-    </p>
+    <div class="flow-nodes">
+      <div class="flow-node partner">
+        <img class="avatar-sm" src="https://api.dicebear.com/7.x/shapes/svg?seed=partner&backgroundColor=b6e3f4" alt="">
+        <span>パートナー</span>
+      </div>
+      <div class="flow-connector">▼ 応援・協賛</div>
+      <div class="flow-node hub">
+        <img class="avatar-sm" src="https://api.dicebear.com/7.x/shapes/svg?seed=molkkyhub&backgroundColor=d1d4f9" alt="">
+        <span>MOLKKY HUB</span>
+      </div>
+      <div class="flow-connector">▼ 物品を手配・調整</div>
+      <div class="flow-node recipient">
+        <img class="avatar-sm" src="https://api.dicebear.com/7.x/shapes/svg?seed=recipient&backgroundColor=ffd5dc" alt="">
+        <span>大会・学校・モルッカー</span>
+      </div>
+    </div>
+    <div class="flow-caption">
+      パートナーからの応援が、モルハブを通じて<br>
+      大会や学校へ届く。<strong>喜びと祝いの循環</strong>。
+    </div>
   </div>
 
-  <h2>最近の提供</h2>
+  <div class="section-title">最近の提供</div>
   <div id="recent-returns" class="loading">読み込み中...</div>
 </div>
 
+<!-- Partners -->
 <div id="partners" class="section">
-  <h2>パートナー一覧</h2>
+  <div class="section-title">パートナー一覧</div>
   <div id="partner-list" class="loading">読み込み中...</div>
 </div>
 
+<!-- Returns -->
 <div id="returns" class="section">
-  <h2>提供実績</h2>
+  <div class="section-title">提供実績</div>
   <div id="return-list" class="loading">読み込み中...</div>
 </div>
 
 <div class="footer">
-  <a href="https://molkky-hub.com/?page_id=4635" target="_blank">パートナー制度について →</a>
-  <br>
-  © 2026 <a href="https://molkky-hub.com" target="_blank">MOLKKY HUB</a>
+  <a href="https://molkky-hub.com/?page_id=4635" target="_blank">パートナー制度について詳しく見る →</a>
+  <div class="powered">© 2026 <a href="https://molkky-hub.com" target="_blank">MOLKKY HUB</a></div>
 </div>
 
 <script>
-// Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyALYXDVMecauxwozKtueJBc-6AJXv_CyQc",
   authDomain: "viisi-master-app.firebaseapp.com",
@@ -363,21 +485,39 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 let partnersData = {};
+let peopleData = {};
 let returnsData = [];
 
-// Navigation
-function showSection(id) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  event.target.classList.add('active');
+// X icon SVG
+const xSvg = `<svg class="x-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`;
+
+// Avatar URL helper
+function avatarUrl(name, style) {
+  style = style || 'adventurer';
+  return `https://api.dicebear.com/7.x/${style}/svg?seed=${encodeURIComponent(name)}`;
 }
+
+// Navigation
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const id = this.dataset.section;
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    this.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
 
 // Load data
 db.ref('partner/config/partners').on('value', snap => {
   partnersData = snap.val() || {};
   renderPartners();
   renderStats();
+});
+
+db.ref('partner/config/people').on('value', snap => {
+  peopleData = snap.val() || {};
 });
 
 db.ref('partner/returns').orderByChild('_order').on('value', snap => {
@@ -395,7 +535,6 @@ function renderStats() {
   const returnCount = returnsData.length;
   const tournamentCount = returnsData.filter(r => r.category === '大会').length;
   const schoolCount = returnsData.filter(r => r.category === '学校').length;
-
   document.getElementById('stat-partners').textContent = partnerCount;
   document.getElementById('stat-returns').textContent = returnCount;
   document.getElementById('stat-tournaments').textContent = tournamentCount;
@@ -405,76 +544,93 @@ function renderStats() {
 function renderPartners() {
   const container = document.getElementById('partner-list');
   const entries = Object.entries(partnersData);
-  if (entries.length === 0) {
-    container.innerHTML = '<p style="color:#999;">パートナーはまだ登録されていません。</p>';
+  if (!entries.length) {
+    container.innerHTML = '<p class="loading">パートナーはまだ登録されていません。</p>';
     return;
   }
-  container.innerHTML = entries.map(([id, p]) => `
-    <div class="partner-card">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span class="name">${esc(p.name)}</span>
-        <span class="badge ${p.status === 'active' ? '' : 'ended'}">${p.status === 'active' ? '掲載中' : '終了'}</span>
-      </div>
-      <div class="meta">
-        ${esc(p.type)} ・ ${esc(p.since)}〜
-        ${p.link ? `<br><a href="${esc(p.link)}" target="_blank" style="color:var(--green-main);">${esc(p.link)}</a>` : ''}
-      </div>
-    </div>
-  `).join('');
+  container.innerHTML = entries.map(([id, p]) => {
+    const links = [];
+    if (p.x_handle) links.push(`<a href="https://x.com/${esc(p.x_handle)}" target="_blank" rel="noopener">${xSvg} @${esc(p.x_handle)}</a>`);
+    if (p.link) links.push(`<a href="${esc(p.link)}" target="_blank" rel="noopener">🔗 サイト</a>`);
+    return `
+      <div class="partner-card">
+        <img class="avatar" src="${avatarUrl(p.name, 'adventurer')}" alt="${esc(p.name)}">
+        <div class="partner-info">
+          <div class="name">
+            ${esc(p.name)}
+            <span class="badge ${p.status === 'active' ? 'active' : 'ended'}">${p.status === 'active' ? '掲載中' : '終了'}</span>
+          </div>
+          <div class="meta">${esc(p.type)} ・ ${esc(p.since)}〜</div>
+          ${links.length ? `<div class="links">${links.join('')}</div>` : ''}
+        </div>
+      </div>`;
+  }).join('');
 }
 
 function renderReturnCard(r) {
+  const dateStr = r.date ? r.date.replace(/-/g, '.') : '';
   return `
     <div class="return-card">
-      <span class="status-badge ${r.completed ? 'completed' : 'pending'}">
-        ${r.completed ? '完了' : '進行中'}
-      </span>
-      <div class="date">${esc(r.date)}</div>
-      <div class="item-name">
-        <span class="category-badge ${esc(r.category)}">${esc(r.category)}</span>
-        ${esc(r.item)}
-        ${r.condition !== '新品' ? `<span style="font-size:0.8rem; color:#999;">(${esc(r.condition)})</span>` : ''}
+      <div class="return-header">
+        <span class="date">${esc(dateStr)}</span>
+        <span class="status ${r.completed ? 'completed' : 'pending'}">${r.completed ? '完了' : '進行中'}</span>
       </div>
-      <div class="detail-row">
-        <span class="icon">📍</span>
-        <span>${esc(r.recipient)}</span>
+      <div class="return-item">
+        <span class="category cat-${esc(r.category)}">${esc(r.category)}</span>
+        <span class="item-text">${esc(r.item)}</span>
+        ${r.condition && r.condition !== '新品' ? `<span class="condition">(${esc(r.condition)})</span>` : ''}
       </div>
-      <div class="detail-row">
-        <span class="icon">📦</span>
-        <span>${esc(r.handoff_method)}</span>
-        ${r.handoff_event ? ` — ${esc(r.handoff_event)}` : ''}
+      <div class="return-details">
+        <div class="row">📍 ${esc(r.recipient)}</div>
+        <div class="row">📦 ${esc(r.handoff_method)}${r.handoff_event ? ` — ${esc(r.handoff_event)}` : ''}</div>
       </div>
-      <div class="flow-mini">
-        <span class="node from">${esc(r.provider)}</span>
+      <div class="flow-viz">
+        <span class="flow-person from">
+          <img src="${avatarUrl(r.provider)}" alt="">
+          ${esc(r.provider)}
+        </span>
         <span class="arrow">→</span>
-        <span class="node via">モルハブ</span>
+        <span class="flow-person hub">
+          <img src="${avatarUrl('MOLKKY HUB')}" alt="">
+          モルハブ
+        </span>
         <span class="arrow">→</span>
-        ${r.mediator ? `<span class="node via">${esc(r.mediator)}</span><span class="arrow">→</span>` : ''}
-        <span class="node to">${esc(r.recipient)}</span>
+        ${r.mediator ? `
+          <span class="flow-person mediator">
+            <img src="${avatarUrl(r.mediator)}" alt="">
+            ${esc(r.mediator)}
+          </span>
+          <span class="arrow">→</span>
+        ` : ''}
+        <span class="flow-person to">
+          <img src="${avatarUrl(r.recipient)}" alt="">
+          ${esc(r.recipient)}
+        </span>
       </div>
-    </div>
-  `;
+    </div>`;
 }
 
 function renderReturns() {
   const container = document.getElementById('return-list');
-  if (returnsData.length === 0) {
-    container.innerHTML = '<p style="color:#999;">提供実績はまだありません。</p>';
+  if (!returnsData.length) {
+    container.innerHTML = '<p class="loading">提供実績はまだありません。</p>';
     return;
   }
-  const sorted = [...returnsData].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-  container.innerHTML = sorted.map(renderReturnCard).join('');
+  container.innerHTML = [...returnsData]
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+    .map(renderReturnCard).join('');
 }
 
 function renderRecentReturns() {
   const container = document.getElementById('recent-returns');
-  if (returnsData.length === 0) {
-    container.innerHTML = '<p style="color:#999;">提供実績はまだありません。</p>';
+  if (!returnsData.length) {
+    container.innerHTML = '<p class="loading">提供実績はまだありません。</p>';
     return;
   }
-  const sorted = [...returnsData].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-  const recent = sorted.slice(0, 3);
-  container.innerHTML = recent.map(renderReturnCard).join('');
+  container.innerHTML = [...returnsData]
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+    .slice(0, 3)
+    .map(renderReturnCard).join('');
 }
 
 function esc(s) {
