@@ -303,6 +303,7 @@ body {
 <div class="footer">
   <a href="https://molkky-hub.com/?page_id=4635" target="_blank">パートナー制度について詳しく見る →</a>
   <div class="powered">© 2026 <a href="https://molkky-hub.com" target="_blank">MOLKKY HUB</a></div>
+  <div style="margin-top:8px"><a href="admin.html" style="color:var(--text-muted);font-size:0.65rem;text-decoration:none;">管理</a></div>
 </div>
 
 <script>
@@ -321,6 +322,7 @@ const db = firebase.database();
 let partnersData = {};
 let peopleData = {};
 let returnsData = [];
+let imageCache = {};
 
 const xSvg = `<svg class="x-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`;
 
@@ -361,6 +363,7 @@ db.ref('partner/returns').orderByChild('_order').on('value', snap => {
   renderRecentReturns();
   renderVoices();
   renderStats();
+  loadFirebaseImages();
 });
 
 function renderStats() {
@@ -395,7 +398,6 @@ function renderPartners() {
 function renderReturnCard(r) {
   const dateStr = r.date ? r.date.replace(/-/g, '.') : '';
   const hasPhoto = r.image_url && r.image_url.length > 0;
-  const photoUrl = hasPhoto ? (r.image_url.startsWith('http') ? r.image_url : IMG_BASE + r.image_url) : '';
   const hasComment = r.recipient_comment && r.recipient_comment.length > 0;
   const recipientDisplay = r.recipient_name_display || r.recipient;
 
@@ -405,7 +407,7 @@ function renderReturnCard(r) {
         <span class="date">${esc(dateStr)}</span>
         <span class="status ${r.completed ? 'completed' : 'pending'}">${r.completed ? '完了' : '進行中'}</span>
       </div>
-      ${hasPhoto ? `<img class="item-photo" src="${esc(photoUrl)}" alt="${esc(r.item)}" loading="lazy">` : ''}
+      ${hasPhoto ? buildPhotoTag(r) : ''}
       <div class="return-item">
         <span class="category cat-${esc(r.category)}">${esc(r.category)}</span>
         <span class="item-text">${esc(r.item)}</span>
@@ -451,6 +453,38 @@ function renderReturnCard(r) {
         </div>
       ` : ''}
     </div>`;
+}
+
+function buildPhotoTag(r) {
+  if (r.image_url.startsWith('fb:')) {
+    const fbKey = r.image_url.slice(3);
+    const cached = imageCache[fbKey];
+    return cached
+      ? `<img class="item-photo" data-fb-key="${esc(fbKey)}" src="${cached}" alt="${esc(r.item)}" loading="lazy">`
+      : `<img class="item-photo" data-fb-key="${esc(fbKey)}" src="" alt="${esc(r.item)}" loading="lazy" style="display:none">`;
+  }
+  const photoUrl = r.image_url.startsWith('http') ? r.image_url : IMG_BASE + r.image_url;
+  return `<img class="item-photo" src="${esc(photoUrl)}" alt="${esc(r.item)}" loading="lazy">`;
+}
+
+function loadFirebaseImages() {
+  returnsData.forEach(r => {
+    if (r.image_url && r.image_url.startsWith('fb:')) {
+      const key = r.image_url.slice(3);
+      if (!imageCache[key]) {
+        db.ref(`partner/images/${key}`).once('value', snap => {
+          const data = snap.val();
+          if (data) {
+            imageCache[key] = data;
+            document.querySelectorAll(`img[data-fb-key="${key}"]`).forEach(img => {
+              img.src = data;
+              img.style.display = '';
+            });
+          }
+        });
+      }
+    }
+  });
 }
 
 function renderReturns() {

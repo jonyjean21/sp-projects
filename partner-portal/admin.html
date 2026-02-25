@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>管理 - パートナー循環ポータル</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<style>
+:root {
+  --green-dark: #2d5016; --green-main: #4a7c2e; --green-light: #7ab648;
+  --green-pale: #e8f5d8; --cream: #faf8f0; --text: #333; --text-light: #666;
+  --text-muted: #999; --white: #fff; --blue: #1565c0; --blue-pale: #e3f2fd;
+  --orange: #e65100; --orange-pale: #fff3e0; --red: #c62828; --red-pale: #fce4ec;
+  --shadow: 0 2px 12px rgba(0,0,0,0.06); --radius: 16px; --radius-sm: 10px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Noto Sans JP', sans-serif; background: var(--cream); color: var(--text); line-height: 1.7; min-height: 100vh; }
+
+.header { background: linear-gradient(135deg, var(--green-dark), var(--green-main)); color: var(--white); padding: 20px 16px; text-align: center; }
+.header h1 { font-size: 1.2rem; font-weight: 700; }
+
+.container { max-width: 500px; margin: 0 auto; padding: 16px; }
+
+/* Auth */
+#auth-screen { text-align: center; padding: 60px 20px; }
+#auth-screen h2 { margin-bottom: 16px; color: var(--green-dark); }
+#auth-screen input {
+  width: 100%; max-width: 280px; padding: 12px 16px;
+  border: 2px solid #ddd; border-radius: var(--radius-sm);
+  font-size: 1rem; font-family: inherit; text-align: center;
+}
+#auth-screen input:focus { outline: none; border-color: var(--green-main); }
+#auth-screen .btn { margin-top: 12px; }
+#auth-error { color: var(--red); font-size: 0.85rem; margin-top: 8px; display: none; }
+
+/* Nav */
+.nav { display: flex; gap: 6px; margin-bottom: 16px; overflow-x: auto; }
+.nav-btn {
+  padding: 8px 14px; border: none; border-radius: 20px;
+  font-size: 0.8rem; font-weight: 500; font-family: inherit;
+  cursor: pointer; white-space: nowrap;
+  background: var(--green-pale); color: var(--green-dark);
+}
+.nav-btn.active { background: var(--green-main); color: var(--white); }
+
+/* Panels */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* Form */
+.form-group { margin-bottom: 16px; }
+.form-group label {
+  display: block; font-size: 0.82rem; font-weight: 600;
+  color: var(--text-light); margin-bottom: 4px;
+}
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%; padding: 10px 12px;
+  border: 2px solid #e0e0e0; border-radius: var(--radius-sm);
+  font-size: 0.95rem; font-family: inherit;
+  background: var(--white);
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  outline: none; border-color: var(--green-main);
+}
+.form-group textarea { resize: vertical; min-height: 80px; }
+
+/* Photo upload */
+.photo-area {
+  border: 2px dashed #ccc; border-radius: var(--radius);
+  padding: 20px; text-align: center; cursor: pointer;
+  transition: border-color 0.2s; position: relative;
+  min-height: 120px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.photo-area:hover { border-color: var(--green-main); }
+.photo-area.has-photo { border-style: solid; border-color: var(--green-main); padding: 8px; }
+.photo-area input[type="file"] {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  opacity: 0; cursor: pointer;
+}
+.photo-area .preview {
+  max-width: 100%; max-height: 200px; border-radius: var(--radius-sm);
+  object-fit: contain;
+}
+.photo-area .placeholder { color: var(--text-muted); font-size: 0.85rem; }
+.photo-area .placeholder .icon { font-size: 2rem; margin-bottom: 4px; }
+.photo-size { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+
+/* Button */
+.btn {
+  display: inline-block; padding: 12px 24px;
+  border: none; border-radius: var(--radius-sm);
+  font-size: 0.9rem; font-weight: 600; font-family: inherit;
+  cursor: pointer; transition: opacity 0.2s; width: 100%;
+}
+.btn-primary { background: var(--green-main); color: var(--white); }
+.btn-primary:hover { opacity: 0.9; }
+.btn-danger { background: var(--red); color: var(--white); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Return list (for editing) */
+.return-item-mini {
+  background: var(--white); border-radius: var(--radius-sm);
+  padding: 12px; margin-bottom: 8px; box-shadow: var(--shadow);
+  cursor: pointer; transition: box-shadow 0.2s;
+}
+.return-item-mini:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+.return-item-mini .title { font-weight: 600; font-size: 0.9rem; }
+.return-item-mini .sub { font-size: 0.78rem; color: var(--text-light); }
+.return-item-mini .badge {
+  display: inline-block; padding: 1px 8px; border-radius: 8px;
+  font-size: 0.65rem; font-weight: 600;
+}
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: var(--green-dark); color: var(--white);
+  padding: 12px 24px; border-radius: 24px;
+  font-size: 0.85rem; font-weight: 500;
+  z-index: 100; opacity: 0; transition: opacity 0.3s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; }
+
+/* Back link */
+.back-link { display: block; text-align: center; margin-top: 20px; color: var(--green-main); font-size: 0.82rem; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🔒 管理画面</h1>
+</div>
+
+<!-- Auth Screen -->
+<div id="auth-screen" class="container">
+  <h2>パスワードを入力</h2>
+  <input type="password" id="pw-input" placeholder="パスワード" autofocus>
+  <div id="auth-error">パスワードが違います</div>
+  <br>
+  <button class="btn btn-primary" onclick="tryAuth()" style="max-width:280px">入る</button>
+</div>
+
+<!-- Main -->
+<div id="main-screen" class="container" style="display:none">
+  <div class="nav">
+    <button class="nav-btn active" data-panel="add-return">実績を追加</button>
+    <button class="nav-btn" data-panel="add-photo">写真を追加</button>
+    <button class="nav-btn" data-panel="add-comment">コメント追加</button>
+    <button class="nav-btn" data-panel="add-partner">パートナー</button>
+  </div>
+
+  <!-- Add Return -->
+  <div id="add-return" class="panel active">
+    <div class="form-group">
+      <label>提供品</label>
+      <input type="text" id="r-item" placeholder="モルック棒">
+    </div>
+    <div class="form-group">
+      <label>区分</label>
+      <select id="r-category">
+        <option value="大会">大会</option>
+        <option value="学校">学校</option>
+        <option value="個人">個人</option>
+        <option value="自主提供">自主提供</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>受取先</label>
+      <input type="text" id="r-recipient" placeholder="プレミアム明石大会">
+    </div>
+    <div class="form-group">
+      <label>状態</label>
+      <select id="r-condition">
+        <option value="新品">新品</option>
+        <option value="訳あり">訳あり</option>
+        <option value="中古">中古</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>提供元</label>
+      <input type="text" id="r-provider" placeholder="モルックドーム" value="モルックドーム">
+    </div>
+    <div class="form-group">
+      <label>仲介者（いれば）</label>
+      <input type="text" id="r-mediator" placeholder="サノ">
+    </div>
+    <div class="form-group">
+      <label>受け渡し方法</label>
+      <input type="text" id="r-handoff" placeholder="手渡し（仲介）" value="手渡し（仲介）">
+    </div>
+    <div class="form-group">
+      <label>受け渡し場所・イベント</label>
+      <input type="text" id="r-event" placeholder="OSAKA CUP SINGLESにて">
+    </div>
+    <div class="form-group">
+      <label>日付</label>
+      <input type="date" id="r-date">
+    </div>
+    <button class="btn btn-primary" onclick="addReturn()">提供実績を追加</button>
+  </div>
+
+  <!-- Add Photo -->
+  <div id="add-photo" class="panel">
+    <div class="form-group">
+      <label>どの実績に写真を追加？</label>
+      <div id="photo-return-list"></div>
+    </div>
+    <div id="photo-upload-area" style="display:none">
+      <div class="form-group">
+        <label>写真を選択</label>
+        <div class="photo-area" id="photo-drop">
+          <div class="placeholder">
+            <div class="icon">📷</div>
+            <div>タップして写真を選択</div>
+          </div>
+          <input type="file" accept="image/*" id="photo-input" capture="environment">
+        </div>
+        <div class="photo-size" id="photo-size-info"></div>
+      </div>
+      <button class="btn btn-primary" id="photo-save-btn" onclick="savePhoto()" disabled>写真を保存</button>
+    </div>
+  </div>
+
+  <!-- Add Comment -->
+  <div id="add-comment" class="panel">
+    <div class="form-group">
+      <label>どの実績にコメントを追加？</label>
+      <div id="comment-return-list"></div>
+    </div>
+    <div id="comment-form" style="display:none">
+      <div class="form-group">
+        <label>コメント者の表示名</label>
+        <input type="text" id="c-name" placeholder="Asuさん（教員）">
+      </div>
+      <div class="form-group">
+        <label>コメント</label>
+        <textarea id="c-text" placeholder="子供たちが大喜びでした！"></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="saveComment()">コメントを保存</button>
+    </div>
+  </div>
+
+  <!-- Add Partner -->
+  <div id="add-partner" class="panel">
+    <div class="form-group">
+      <label>パートナー名</label>
+      <input type="text" id="p-name" placeholder="ナイモルジャパン">
+    </div>
+    <div class="form-group">
+      <label>形態</label>
+      <select id="p-type">
+        <option value="応援ボード">応援ボード</option>
+        <option value="パートナー（ライト）">パートナー（ライト）</option>
+        <option value="パートナー（スタンダード）">パートナー（スタンダード）</option>
+        <option value="記事上部掲載">記事上部掲載</option>
+        <option value="専用紹介記事">専用紹介記事</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Xアカウント（@なし）</label>
+      <input type="text" id="p-x" placeholder="MolkkyDome">
+    </div>
+    <div class="form-group">
+      <label>サイトURL</label>
+      <input type="url" id="p-link" placeholder="https://molkky-dome.com">
+    </div>
+    <button class="btn btn-primary" onclick="addPartner()">パートナーを追加</button>
+  </div>
+
+  <a href="index.html" class="back-link">← ポータルに戻る</a>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyALYXDVMecauxwozKtueJBc-6AJXv_CyQc",
+  authDomain: "viisi-master-app.firebaseapp.com",
+  databaseURL: "https://viisi-master-app-default-rtdb.firebaseio.com",
+  projectId: "viisi-master-app",
+  storageBucket: "viisi-master-app.firebasestorage.app",
+  messagingSenderId: "634488531014",
+  appId: "1:634488531014:web:e2f7d7360e5d8b1414c247"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const ADMIN_PW = 'molkhub2026';
+let returnsData = [];
+let selectedReturnKey = null;
+let compressedPhotoData = null;
+
+// Auth
+document.getElementById('pw-input').addEventListener('keydown', e => { if (e.key === 'Enter') tryAuth(); });
+
+function tryAuth() {
+  const pw = document.getElementById('pw-input').value;
+  if (pw === ADMIN_PW) {
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('main-screen').style.display = 'block';
+    loadReturns();
+  } else {
+    document.getElementById('auth-error').style.display = 'block';
+  }
+}
+
+// Nav
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(this.dataset.panel).classList.add('active');
+    this.classList.add('active');
+  });
+});
+
+// Load returns for photo/comment selection
+function loadReturns() {
+  db.ref('partner/returns').orderByChild('_order').on('value', snap => {
+    returnsData = [];
+    snap.forEach(child => {
+      returnsData.push({ ...child.val(), _key: child.key });
+    });
+    renderReturnSelection('photo-return-list', selectReturnForPhoto);
+    renderReturnSelection('comment-return-list', selectReturnForComment);
+  });
+  // Set today's date as default
+  document.getElementById('r-date').value = new Date().toISOString().split('T')[0];
+}
+
+function renderReturnSelection(containerId, onSelect) {
+  const el = document.getElementById(containerId);
+  if (!returnsData.length) {
+    el.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;">実績がまだありません。先に実績を追加してください。</p>';
+    return;
+  }
+  el.innerHTML = [...returnsData].sort((a, b) => (b.date || '').localeCompare(a.date || '')).map(r => `
+    <div class="return-item-mini" data-key="${r._key}">
+      <div class="title">
+        <span class="badge" style="background:var(--blue-pale);color:var(--blue);">${esc(r.category)}</span>
+        ${esc(r.item)}
+        ${r.image_url ? ' 📷' : ''}
+        ${r.recipient_comment ? ' 💬' : ''}
+      </div>
+      <div class="sub">${esc(r.date)} — ${esc(r.recipient)}</div>
+    </div>
+  `).join('');
+  el.querySelectorAll('.return-item-mini').forEach(item => {
+    item.addEventListener('click', () => onSelect(item.dataset.key));
+  });
+}
+
+// Photo
+function selectReturnForPhoto(key) {
+  selectedReturnKey = key;
+  document.getElementById('photo-upload-area').style.display = 'block';
+  document.querySelectorAll('#photo-return-list .return-item-mini').forEach(el => {
+    el.style.borderLeft = el.dataset.key === key ? '3px solid var(--green-main)' : 'none';
+  });
+  // Reset photo state
+  compressedPhotoData = null;
+  document.getElementById('photo-save-btn').disabled = true;
+  const area = document.getElementById('photo-drop');
+  area.classList.remove('has-photo');
+  area.querySelector('.placeholder').style.display = '';
+  const oldPreview = area.querySelector('.preview');
+  if (oldPreview) oldPreview.remove();
+  document.getElementById('photo-size-info').textContent = '';
+}
+
+document.getElementById('photo-input').addEventListener('change', async function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const origSize = (file.size / 1024).toFixed(0);
+
+  // Compress
+  const compressed = await compressImage(file, 1200, 0.7);
+  compressedPhotoData = compressed.dataUrl;
+  const newSize = (compressed.size / 1024).toFixed(0);
+
+  // Show preview
+  const area = document.getElementById('photo-drop');
+  area.classList.add('has-photo');
+  area.querySelector('.placeholder').style.display = 'none';
+  let preview = area.querySelector('.preview');
+  if (!preview) {
+    preview = document.createElement('img');
+    preview.className = 'preview';
+    area.appendChild(preview);
+  }
+  preview.src = compressed.dataUrl;
+
+  document.getElementById('photo-size-info').textContent =
+    `元: ${origSize}KB → 圧縮後: ${newSize}KB`;
+  document.getElementById('photo-save-btn').disabled = false;
+});
+
+async function compressImage(file, maxWidth, quality) {
+  return new Promise(resolve => {
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = e => {
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        if (w > maxWidth) {
+          h = Math.round(h * maxWidth / w);
+          w = maxWidth;
+        }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        const size = Math.round(dataUrl.length * 3 / 4);
+        resolve({ dataUrl, size, width: w, height: h });
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function savePhoto() {
+  if (!selectedReturnKey || !compressedPhotoData) return;
+  document.getElementById('photo-save-btn').disabled = true;
+  document.getElementById('photo-save-btn').textContent = '保存中...';
+
+  try {
+    // Save image data to a separate path to keep returns clean
+    await db.ref(`partner/images/${selectedReturnKey}`).set(compressedPhotoData);
+    // Update return record with reference
+    await db.ref(`partner/returns/${selectedReturnKey}/image_url`).set(`fb:${selectedReturnKey}`);
+    toast('写真を保存しました');
+    // Reset
+    compressedPhotoData = null;
+    document.getElementById('photo-save-btn').textContent = '写真を保存';
+  } catch (err) {
+    toast('エラー: ' + err.message);
+    document.getElementById('photo-save-btn').disabled = false;
+    document.getElementById('photo-save-btn').textContent = '写真を保存';
+  }
+}
+
+// Comment
+function selectReturnForComment(key) {
+  selectedReturnKey = key;
+  document.getElementById('comment-form').style.display = 'block';
+  document.querySelectorAll('#comment-return-list .return-item-mini').forEach(el => {
+    el.style.borderLeft = el.dataset.key === key ? '3px solid var(--green-main)' : 'none';
+  });
+  // Pre-fill existing data
+  const r = returnsData.find(x => x._key === key);
+  if (r) {
+    document.getElementById('c-name').value = r.recipient_name_display || r.recipient || '';
+    document.getElementById('c-text').value = r.recipient_comment || '';
+  }
+}
+
+async function saveComment() {
+  if (!selectedReturnKey) return;
+  const name = document.getElementById('c-name').value.trim();
+  const text = document.getElementById('c-text').value.trim();
+  if (!text) { toast('コメントを入力してください'); return; }
+
+  try {
+    const updates = { recipient_comment: text };
+    if (name) updates.recipient_name_display = name;
+    await db.ref(`partner/returns/${selectedReturnKey}`).update(updates);
+    toast('コメントを保存しました');
+  } catch (err) {
+    toast('エラー: ' + err.message);
+  }
+}
+
+// Add Return
+async function addReturn() {
+  const item = document.getElementById('r-item').value.trim();
+  const recipient = document.getElementById('r-recipient').value.trim();
+  if (!item || !recipient) { toast('提供品と受取先は必須です'); return; }
+
+  const maxOrder = returnsData.reduce((max, r) => Math.max(max, r._order || 0), 0);
+  const data = {
+    item,
+    category: document.getElementById('r-category').value,
+    recipient,
+    condition: document.getElementById('r-condition').value,
+    provider: document.getElementById('r-provider').value.trim() || 'モルハブ',
+    mediator: document.getElementById('r-mediator').value.trim(),
+    handoff_method: document.getElementById('r-handoff').value.trim(),
+    handoff_event: document.getElementById('r-event').value.trim(),
+    date: document.getElementById('r-date').value,
+    completed: false,
+    image_url: '',
+    recipient_comment: '',
+    _order: maxOrder + 1
+  };
+
+  try {
+    await db.ref('partner/returns').push(data);
+    toast('提供実績を追加しました');
+    // Reset form
+    document.getElementById('r-item').value = '';
+    document.getElementById('r-recipient').value = '';
+    document.getElementById('r-mediator').value = '';
+    document.getElementById('r-event').value = '';
+  } catch (err) {
+    toast('エラー: ' + err.message);
+  }
+}
+
+// Add Partner
+async function addPartner() {
+  const name = document.getElementById('p-name').value.trim();
+  if (!name) { toast('パートナー名は必須です'); return; }
+
+  const id = name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+  const data = {
+    name,
+    type: document.getElementById('p-type').value,
+    x_handle: document.getElementById('p-x').value.trim(),
+    link: document.getElementById('p-link').value.trim(),
+    status: 'active',
+    since: new Date().toISOString().slice(0, 7)
+  };
+
+  try {
+    await db.ref(`partner/config/partners/${id || 'p-' + Date.now()}`).set(data);
+    toast('パートナーを追加しました');
+    document.getElementById('p-name').value = '';
+    document.getElementById('p-x').value = '';
+    document.getElementById('p-link').value = '';
+  } catch (err) {
+    toast('エラー: ' + err.message);
+  }
+}
+
+// Toast
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+function esc(s) {
+  if (!s) return '';
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+</script>
+</body>
+</html>
