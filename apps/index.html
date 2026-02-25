@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SP Apps</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0e1117; --card: #161b22; --border: #30363d;
+  --text: #e6edf3; --sub: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --orange: #d29922; --purple: #bc8cff;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg); color: var(--text);
+  max-width: 600px; margin: 0 auto; padding: 24px 16px;
+  min-height: 100vh;
+}
+.header { padding: 20px 0 24px; }
+.header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+.header p { font-size: 13px; color: var(--sub); }
+.app-group { margin-bottom: 28px; }
+.group-label {
+  font-size: 11px; font-weight: 600; color: var(--sub);
+  text-transform: uppercase; letter-spacing: 1px;
+  margin-bottom: 10px; padding-left: 2px;
+}
+.app-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 12px;
+  text-decoration: none; color: var(--text);
+  transition: border-color 0.2s;
+}
+.app-card:hover { border-color: var(--accent); }
+.app-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.app-body { flex: 1; min-width: 0; }
+.app-name { font-size: 14px; font-weight: 600; }
+.app-desc { font-size: 12px; color: var(--sub); margin-top: 2px; }
+.app-badges { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+.badge {
+  font-size: 10px; padding: 2px 8px; border-radius: 12px;
+  font-weight: 600;
+}
+.badge-pages { background: #1f2a3d; color: var(--accent); }
+.badge-wp { background: #2a2117; color: var(--orange); }
+.badge-vercel { background: #1a2417; color: var(--green); }
+.badge-firebase { background: #2a1f2d; color: var(--purple); }
+.arrow { color: var(--sub); font-size: 18px; flex-shrink: 0; }
+.sub-links {
+  display: flex; gap: 6px; margin: -2px 0 8px 52px; flex-wrap: wrap;
+}
+.sub-link {
+  font-size: 11px; color: var(--accent); text-decoration: none;
+  padding: 3px 10px; border-radius: 8px;
+  background: #1f2a3d; border: 1px solid #253040;
+  transition: background 0.2s;
+}
+.sub-link:hover { background: #253550; }
+.footer { padding: 20px 0; text-align: center; font-size: 11px; color: var(--sub); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>SP Apps</h1>
+  <p>アプリ・ツール一覧</p>
+</div>
+
+<div class="app-group">
+  <div class="group-label">GitHub Pages</div>
+
+  <a class="app-card" href="https://jonyjean21.github.io/sp-projects/viisi-master/" target="_blank">
+    <div class="app-icon" style="background:#1f2a3d">👑</div>
+    <div class="app-body">
+      <div class="app-name">5先王（ヴィーシマスター）</div>
+      <div class="app-desc">結果記録 & X投稿ツール</div>
+      <div class="app-badges">
+        <span class="badge badge-pages">GitHub Pages</span>
+        <span class="badge badge-firebase">Firebase RTDB</span>
+      </div>
+    </div>
+    <span class="arrow">›</span>
+  </a>
+  <div class="sub-links">
+    <a class="sub-link" href="https://jonyjean21.github.io/sp-projects/viisi-master/manual-gatekeeper.html" target="_blank">門番ガイド</a>
+  </div>
+
+  <a class="app-card" href="https://jonyjean21.github.io/sp-projects/meguri/" target="_blank">
+    <div class="app-icon" style="background:#1a2417">🍃</div>
+    <div class="app-body">
+      <div class="app-name">めぐり帳</div>
+      <div class="app-desc">恩・約束・貸し借りの記録</div>
+      <div class="app-badges">
+        <span class="badge badge-pages">GitHub Pages</span>
+        <span class="badge badge-firebase">Firebase Auth + RTDB</span>
+      </div>
+    </div>
+    <span class="arrow">›</span>
+  </a>
+
+  <a class="app-card" href="https://jonyjean21.github.io/sp-projects/partner-portal/" target="_blank">
+    <div class="app-icon" style="background:#2a2117">🤝</div>
+    <div class="app-body">
+      <div class="app-name">パートナー循環ポータル</div>
+      <div class="app-desc">MOLKKY HUB パートナー制度の可視化</div>
+      <div class="app-badges">
+        <span class="badge badge-pages">GitHub Pages</span>
+        <span class="badge badge-firebase">Firebase RTDB</span>
+      </div>
+    </div>
+    <span class="arrow">›</span>
+  </a>
+  <div class="sub-links">
+    <a class="sub-link" href="https://jonyjean21.github.io/sp-projects/partner-portal/admin.html" target="_blank">管理画面</a>
+  </div>
+</div>
+
+<div class="app-group">
+  <div class="group-label">External</div>
+
+  <a class="app-card" href="https://molkky-hub.com" target="_blank">
+    <div class="app-icon" style="background:#2a2117">📰</div>
+    <div class="app-body">
+      <div class="app-name">MOLKKY HUB</div>
+      <div class="app-desc">モルック総合情報メディア</div>
+      <div class="app-badges">
+        <span class="badge badge-wp">WordPress</span>
+      </div>
+    </div>
+    <span class="arrow">›</span>
+  </a>
+  <div class="sub-links">
+    <a class="sub-link" href="https://molkky-hub.com/event/tournament/" target="_blank">大会情報</a>
+    <a class="sub-link" href="https://molkky-hub.com/wp-admin/" target="_blank">管理画面</a>
+  </div>
+
+  <a class="app-card" href="https://marutamura-bot.vercel.app" target="_blank">
+    <div class="app-icon" style="background:#1a2417">🤖</div>
+    <div class="app-body">
+      <div class="app-name">marutamura-bot</div>
+      <div class="app-desc">マルタ村 LINE Bot（Claude AI）</div>
+      <div class="app-badges">
+        <span class="badge badge-vercel">Vercel</span>
+      </div>
+    </div>
+    <span class="arrow">›</span>
+  </a>
+</div>
+
+<div class="footer">SP Apps Dashboard</div>
+
+</body>
+</html>
