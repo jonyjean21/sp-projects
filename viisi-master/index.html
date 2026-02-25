@@ -732,14 +732,12 @@ function addEntry() {
   const id = entryCount++;
   const today = new Date().toISOString().slice(0, 10);
 
-  // 前の試合の選択値を引き継ぐ
-  let prevChallenger = '', prevDefender = '', prevDate = today;
+  // 日付だけ前の試合から引き継ぐ
+  let prevDate = today;
   if (entries.length > 0) {
     const lastEntry = entries[entries.length - 1];
     const lastEl = document.getElementById(`entry-${lastEntry.id}`);
     if (lastEl) {
-      prevChallenger = lastEl.querySelector('[data-field="challenger"]').value || '';
-      prevDefender = lastEl.querySelector('[data-field="defender"]').value || '';
       prevDate = lastEl.querySelector('[data-field="date"]').value || today;
     }
   }
@@ -759,12 +757,12 @@ function addEntry() {
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
       <div>
         <div class="section-label" style="margin-bottom: 4px;">挑戦者</div>
-        <select class="big-select" data-field="challenger" onchange="onPlayerSelect(this, ${id})">${playerOptions(prevChallenger)}</select>
+        <select class="big-select" data-field="challenger" onchange="onPlayerSelect(this, ${id})">${playerOptions('')}</select>
         <div class="player-display" id="entry-${id}-challenger-info"></div>
       </div>
       <div>
         <div class="section-label" style="margin-bottom: 4px;">防衛側</div>
-        <select class="big-select" data-field="defender" onchange="onDefenderSelect(this, ${id})">${playerOptions(prevDefender)}</select>
+        <select class="big-select" data-field="defender" onchange="onDefenderSelect(this, ${id})">${playerOptions('')}</select>
         <div class="player-display" id="entry-${id}-defender-info"></div>
       </div>
     </div>
@@ -791,12 +789,6 @@ function addEntry() {
   `;
   document.getElementById('match-entries').appendChild(div);
   entries.push({ id, sc: 0, sd: 0 });
-  // 引き継いだ選手の情報を表示
-  if (prevChallenger) updatePlayerInfo(id, 'challenger', prevChallenger);
-  if (prevDefender) {
-    updatePlayerInfo(id, 'defender', prevDefender);
-    autoDetectMatchType(id, prevDefender);
-  }
   checkSaveReady();
 }
 
@@ -1290,7 +1282,7 @@ function renderTitleHistory() {
     const resultText = won ? '王座交代' : '防衛成功';
     const resultClass = won ? 'tag-newchamp' : 'tag-defense';
     return `
-      <div class="match-item" style="border-left:3px solid #60a5fa;">
+      <div class="match-item">
         <div class="match-num" style="font-size:11px;color:#64748b;">${m.date}</div>
         <div class="detail">
           <div class="match-players">👑 ${m.challenger} vs ${m.defender}</div>
