@@ -328,6 +328,10 @@
 <!-- ===== ページ2: 出力（X投稿） ===== -->
 <div id="page-output" class="page">
 
+  <button class="btn-full btn-primary" id="btn-gen-post" onclick="generateFromSelected()" disabled style="margin-bottom: 12px;">
+    投稿を生成
+  </button>
+
   <!-- 試合選択 -->
   <div class="section-label">投稿する試合を選択</div>
   <div class="card" id="post-match-selector"></div>
@@ -691,8 +695,8 @@ document.addEventListener('keydown', function(e) {
 // ナビゲーション
 // ============================================================
 function goTo(page) {
-  // 記録はパスワード保護（投稿は誰でもOK）
-  if (page === 'record' && !isAuthenticated) {
+  // 記録と投稿はパスワード保護
+  if ((page === 'record' || page === 'output') && !isAuthenticated) {
     requireAuth(function() { goToInternal(page); });
     return;
   }
@@ -975,7 +979,6 @@ function renderPostSelector() {
     });
     html += `</div>`;
   });
-  html += `<button class="btn-full btn-primary" id="btn-gen-post" onclick="generateFromSelected()" disabled style="margin-top:12px;">投稿を生成</button>`;
   el.innerHTML = html;
 }
 
