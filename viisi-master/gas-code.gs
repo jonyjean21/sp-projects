@@ -11,7 +11,7 @@
 function _getSpreadsheet() {
   // バウンドスクリプトならそのまま使う
   try {
-    var ss = _getSpreadsheet();
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
     if (ss) return ss;
   } catch(e) {}
 
