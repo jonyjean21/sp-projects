@@ -5,6 +5,33 @@
 // ============================================================
 // シート名: "試合" / "選手"
 // デプロイ: ウェブアプリ → 実行: 自分 / アクセス: 全員
+// ※ スタンドアロンスクリプトでもOK（自動でシートを作成）
+
+// --- スプレッドシート取得（バウンド／スタンドアロン両対応） ---
+function _getSpreadsheet() {
+  // バウンドスクリプトならそのまま使う
+  try {
+    var ss = _getSpreadsheet();
+    if (ss) return ss;
+  } catch(e) {}
+
+  // スタンドアロン: PropertiesServiceにシートIDを保存して再利用
+  var props = PropertiesService.getScriptProperties();
+  var sheetId = props.getProperty('SHEET_ID');
+
+  if (sheetId) {
+    try {
+      return SpreadsheetApp.openById(sheetId);
+    } catch(e) {
+      // シートが削除された場合は新規作成へ
+    }
+  }
+
+  // 新規スプレッドシートを作成
+  var ss = SpreadsheetApp.create('5先王データ');
+  props.setProperty('SHEET_ID', ss.getId());
+  return ss;
+}
 
 // --- 自動セットアップ: シートが無ければ作成＆ヘッダー追加 ---
 function _ensureSheets(ss) {
@@ -29,7 +56,7 @@ function _ensureSheets(ss) {
 }
 
 function doGet(e) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = _getSpreadsheet();
   var sheets = _ensureSheets(ss);
   var matchesSheet = sheets.matchesSheet;
   var playersSheet = sheets.playersSheet;
@@ -79,7 +106,7 @@ function doPost(e) {
   lock.waitLock(10000);
 
   try {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var ss = _getSpreadsheet();
     _ensureSheets(ss);
     var data = JSON.parse(e.postData.contents);
     var action = data.action;
