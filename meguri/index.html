@@ -265,10 +265,18 @@ body {
 
 /* ===== Resolve button ===== */
 .resolve-btn {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 6px 14px; border: 1.5px solid var(--green); border-radius: 20px;
-  background: var(--green-light); color: var(--green); font-size: 12px; font-weight: 600;
-  cursor: pointer; margin-top: 8px;
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 3px 10px; border: 1px solid var(--green); border-radius: 20px;
+  background: var(--green-light); color: var(--green); font-size: 10px; font-weight: 600;
+  cursor: pointer; flex-shrink: 0;
+}
+
+/* ===== Unresolve button ===== */
+.unresolve-btn {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 3px 10px; border: 1px solid var(--text-light); border-radius: 20px;
+  background: var(--bg); color: var(--text-sub); font-size: 10px; font-weight: 600;
+  cursor: pointer; flex-shrink: 0;
 }
 </style>
 </head>
@@ -337,7 +345,7 @@ body {
 
   <!-- ===== Person Detail Page ===== -->
   <div id="pageDetail" class="page">
-    <button class="back-btn" onclick="showPage('people')">← もどる</button>
+    <button class="back-btn" onclick="goBackFromDetail()">← もどる</button>
     <div id="detailHeader" class="detail-header"></div>
     <div class="section-title">めぐりの記録</div>
     <div id="detailEntries"></div>
@@ -642,6 +650,10 @@ function entryCardHTML(id, e, showResolve = false) {
   const dateStr = e.createdAt ? new Date(e.createdAt).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' }) : '';
   const amountStr = e.type === 'money' && e.amount ? `¥${Number(e.amount).toLocaleString()}` : '';
 
+  const actionBtn = e.status === 'pending'
+    ? `<button class="resolve-btn" onclick="event.stopPropagation();resolveEntry('${esc(id)}')">✓ 解決</button>`
+    : `<button class="unresolve-btn" onclick="event.stopPropagation();unresolveEntry('${esc(id)}')">↩ 戻す</button>`;
+
   return `
     <div class="entry-card" onclick="openEditModal('${esc(id)}')">
       <div class="entry-icon ${e.type}">${icons[e.type] || '📝'}</div>
@@ -654,8 +666,8 @@ function entryCardHTML(id, e, showResolve = false) {
         </div>
       </div>
       ${amountStr ? `<div class="entry-amount">${amountStr}</div>` : ''}
+      ${actionBtn}
     </div>
-    ${e.status === 'pending' ? `<div style="text-align:right;margin-top:-4px;margin-bottom:8px;"><button class="resolve-btn" onclick="event.stopPropagation();resolveEntry('${esc(id)}')">✓ 解決済みにする</button></div>` : ''}
   `;
 }
 
@@ -670,10 +682,13 @@ function showPage(page) {
 }
 
 function showPersonDetail(name) {
+  previousPage = currentPage;
   renderDetail(name);
   showPage('detail');
-  // Don't highlight any nav btn for detail
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  // Highlight people nav btn for detail
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.page === 'people');
+  });
 }
 
 // ===== Modal =====
@@ -806,10 +821,23 @@ function deleteEntry() {
 }
 
 function resolveEntry(id) {
+  if (!confirm('解決済みにしますか？')) return;
   db.ref(`meguri/${uid}/entries/${id}`).update({
     status: 'resolved',
     resolvedAt: Date.now()
   });
+}
+
+function unresolveEntry(id) {
+  db.ref(`meguri/${uid}/entries/${id}`).update({
+    status: 'pending',
+    resolvedAt: null
+  });
+}
+
+let previousPage = 'home';
+function goBackFromDetail() {
+  showPage(previousPage);
 }
 
 // ===== Helpers =====
