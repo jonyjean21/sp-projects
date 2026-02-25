@@ -2,135 +2,203 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>5先王 門番マニュアル</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>5先王 門番ガイド</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0f172a">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
     background: #0f172a; color: #e2e8f0;
-    max-width: 640px; margin: 0 auto; padding: 20px 16px 60px;
-    line-height: 1.8;
+    max-width: 480px; margin: 0 auto; padding: 16px 16px 60px;
+    line-height: 1.7;
   }
+  a { color: #60a5fa; text-decoration: none; }
 
-  /* ヘッダー */
-  .manual-header {
-    text-align: center; padding: 20px 0 24px;
-    border-bottom: 2px solid #fbbf24;
-    margin-bottom: 32px;
+  /* ===== ヘッダー ===== */
+  .header {
+    text-align: center; padding: 16px 0 20px;
+    border-bottom: 2px solid #fbbf24; margin-bottom: 24px;
   }
-  .manual-header h1 { font-size: 22px; color: #fbbf24; }
-  .manual-header .sub { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+  .header h1 { font-size: 20px; color: #fbbf24; font-weight: 800; }
+  .header .sub { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+  .back-link { font-size: 12px; color: #64748b; display: block; margin-bottom: 8px; }
 
-  /* 目次 */
+  /* ===== お知らせカード ===== */
+  .announce {
+    background: linear-gradient(135deg, #1e293b, #1a2332);
+    border-radius: 14px; padding: 18px; margin-bottom: 24px;
+    border: 1px solid #334155;
+  }
+  .announce .title { font-size: 14px; font-weight: 700; color: #fbbf24; margin-bottom: 8px; }
+  .announce p { font-size: 13px; color: #cbd5e1; margin-bottom: 6px; }
+  .announce .highlight { color: #fbbf24; font-weight: 700; }
+
+  /* ===== 目次 ===== */
   .toc {
-    background: #1e293b; border-radius: 12px; padding: 20px;
-    border: 1px solid #334155; margin-bottom: 32px;
+    background: #1e293b; border-radius: 12px; padding: 16px;
+    border: 1px solid #334155; margin-bottom: 24px;
   }
-  .toc h2 { font-size: 14px; color: #fbbf24; margin-bottom: 12px; letter-spacing: 1px; }
+  .toc-title { font-size: 12px; font-weight: 700; color: #64748b; letter-spacing: 1px; margin-bottom: 10px; }
   .toc a {
-    display: block; color: #60a5fa; text-decoration: none;
-    font-size: 14px; padding: 6px 0; border-bottom: 1px solid #1e293b;
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid #0f172a;
+    font-size: 14px; font-weight: 600; color: #e2e8f0;
   }
   .toc a:last-child { border-bottom: none; }
-  .toc a:hover { color: #fbbf24; }
-  .toc .toc-num { color: #fbbf24; font-weight: 700; margin-right: 8px; }
-
-  /* セクション */
-  .section {
-    margin-bottom: 40px;
-    scroll-margin-top: 20px;
-  }
-  .section h2 {
-    font-size: 18px; color: #fbbf24; margin-bottom: 16px;
-    padding-bottom: 8px; border-bottom: 1px solid #334155;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .section h3 {
-    font-size: 15px; color: #f1f5f9; margin: 20px 0 10px;
-    padding-left: 12px; border-left: 3px solid #fbbf24;
-  }
-  .section p {
-    font-size: 14px; color: #cbd5e1; margin-bottom: 12px;
-  }
-
-  /* ステップ */
-  .steps { list-style: none; counter-reset: step; }
-  .steps li {
-    counter-increment: step;
-    position: relative; padding: 16px 16px 16px 52px;
-    background: #1e293b; border-radius: 10px;
-    border: 1px solid #334155; margin-bottom: 10px;
-    font-size: 14px;
-  }
-  .steps li::before {
-    content: counter(step);
-    position: absolute; left: 16px; top: 16px;
-    width: 28px; height: 28px; border-radius: 50%;
+  .toc a:active { color: #fbbf24; }
+  .toc .num {
+    width: 24px; height: 24px; border-radius: 50%;
     background: #fbbf2422; color: #fbbf24; border: 1px solid #fbbf2444;
     display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 800;
+    font-size: 11px; font-weight: 800; flex-shrink: 0;
   }
-  .steps li strong { color: #fbbf24; }
-  .steps li .sub-note { font-size: 12px; color: #94a3b8; margin-top: 4px; }
-
-  /* 注意ボックス */
-  .note {
-    background: #fbbf2411; border: 1px solid #fbbf2444; border-radius: 10px;
-    padding: 14px 16px; margin: 12px 0; font-size: 13px; color: #fbbf24;
+  .toc .emoji { font-size: 16px; flex-shrink: 0; }
+  .toc .badge-new {
+    font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 6px;
+    background: #ef444422; color: #f87171; border: 1px solid #ef444444;
+    margin-left: auto;
   }
-  .note::before { content: "💡 "; }
-
-  .warning {
-    background: #ef444411; border: 1px solid #ef444444; border-radius: 10px;
-    padding: 14px 16px; margin: 12px 0; font-size: 13px; color: #f87171;
-  }
-  .warning::before { content: "⚠️ "; }
-
-  .tip {
-    background: #10b98111; border: 1px solid #10b98144; border-radius: 10px;
-    padding: 14px 16px; margin: 12px 0; font-size: 13px; color: #34d399;
-  }
-  .tip::before { content: "✅ "; }
-
-  /* 画面説明 */
-  .screen-desc {
-    background: #1e293b; border-radius: 12px; padding: 16px;
-    border: 1px solid #334155; margin: 12px 0;
-  }
-  .screen-desc .label {
-    font-size: 11px; font-weight: 700; color: #64748b;
-    letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;
-  }
-  .screen-desc .item {
-    display: flex; align-items: flex-start; gap: 10px;
-    padding: 8px 0; border-bottom: 1px solid #0f172a; font-size: 13px;
-  }
-  .screen-desc .item:last-child { border-bottom: none; }
-  .screen-desc .icon { font-size: 18px; flex-shrink: 0; width: 24px; text-align: center; }
-  .screen-desc .text { flex: 1; }
-  .screen-desc .text b { color: #f1f5f9; }
-  .screen-desc .text span { color: #94a3b8; }
-
-  /* ショートカットキー風 */
-  .key {
-    display: inline-block; padding: 2px 10px; border-radius: 6px;
+  .toc .badge-main {
+    font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 6px;
     background: #fbbf2422; color: #fbbf24; border: 1px solid #fbbf2444;
-    font-size: 12px; font-weight: 700;
+    margin-left: auto;
   }
 
-  /* 戻るボタン */
-  .back-link {
-    display: inline-block; margin-bottom: 16px;
-    color: #60a5fa; text-decoration: none; font-size: 13px;
+  /* ===== セクション ===== */
+  .section { margin-bottom: 36px; scroll-margin-top: 16px; }
+  .section-head {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 17px; font-weight: 800; color: #fbbf24;
+    margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid #334155;
   }
-  .back-link:hover { color: #fbbf24; }
+  .section p { font-size: 13px; color: #cbd5e1; margin-bottom: 10px; }
 
-  /* フッター */
-  .manual-footer {
-    text-align: center; padding: 24px 0;
-    border-top: 1px solid #334155;
-    font-size: 12px; color: #475569;
+  /* ===== ステップ ===== */
+  .steps { list-style: none; counter-reset: step; }
+  .steps > li {
+    counter-increment: step;
+    position: relative; padding: 14px 14px 14px 48px;
+    background: #1e293b; border-radius: 10px;
+    border: 1px solid #334155; margin-bottom: 8px;
+    font-size: 14px; color: #f1f5f9;
+  }
+  .steps > li::before {
+    content: counter(step);
+    position: absolute; left: 14px; top: 14px;
+    width: 26px; height: 26px; border-radius: 50%;
+    background: #fbbf2422; color: #fbbf24; border: 1px solid #fbbf2444;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800;
+  }
+  .steps > li strong { color: #fbbf24; }
+  .steps > li .detail { font-size: 12px; color: #94a3b8; margin-top: 4px; line-height: 1.5; }
+
+  /* ===== ボックス系 ===== */
+  .box {
+    border-radius: 10px; padding: 12px 14px; margin: 10px 0; font-size: 13px; line-height: 1.6;
+  }
+  .box-point { background: #fbbf2411; border: 1px solid #fbbf2444; color: #fbbf24; }
+  .box-point::before { content: "POINT "; font-weight: 800; }
+  .box-warn { background: #ef444411; border: 1px solid #ef444444; color: #f87171; }
+  .box-warn::before { content: "注意 "; font-weight: 800; }
+  .box-ok { background: #10b98111; border: 1px solid #10b98144; color: #34d399; }
+  .box-ok::before { content: "OK "; font-weight: 800; }
+  .box-info { background: #3b82f611; border: 1px solid #3b82f644; color: #60a5fa; }
+  .box-info::before { content: "INFO "; font-weight: 800; }
+
+  /* ===== 画面モック ===== */
+  .mock {
+    background: #0f172a; border: 1px solid #334155; border-radius: 12px;
+    padding: 16px; margin: 12px 0; font-size: 13px;
+  }
+  .mock-title {
+    font-size: 11px; font-weight: 700; color: #64748b; letter-spacing: 1px;
+    margin-bottom: 10px; text-align: center;
+  }
+  .mock-nav {
+    display: flex; justify-content: center; gap: 4px;
+    background: #1e293b; border-radius: 10px; padding: 8px;
+    margin-bottom: 10px;
+  }
+  .mock-nav-btn {
+    padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 600;
+    color: #64748b; text-align: center;
+  }
+  .mock-nav-btn.active { background: #fbbf2422; color: #fbbf24; }
+  .mock-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 0; border-bottom: 1px solid #1e293b;
+    font-size: 13px;
+  }
+  .mock-item:last-child { border-bottom: none; }
+  .mock-item .icon { width: 20px; text-align: center; flex-shrink: 0; }
+  .mock-item .label { color: #f1f5f9; font-weight: 600; }
+  .mock-item .desc { color: #64748b; font-size: 11px; }
+
+  /* ===== フロー図 ===== */
+  .flow {
+    display: flex; flex-direction: column; align-items: center; gap: 0;
+    margin: 16px 0;
+  }
+  .flow-step {
+    background: #1e293b; border: 1px solid #334155; border-radius: 10px;
+    padding: 10px 20px; text-align: center; font-size: 13px; font-weight: 600;
+    color: #f1f5f9; width: 80%;
+  }
+  .flow-step.highlight { border-color: #fbbf24; color: #fbbf24; background: #fbbf2411; }
+  .flow-arrow { color: #475569; font-size: 16px; padding: 2px 0; }
+
+  /* ===== Xリンク取得手順 ===== */
+  .x-guide {
+    background: #1e293b; border-radius: 12px; padding: 16px; margin: 12px 0;
+    border: 1px solid #334155;
+  }
+  .x-guide .x-title { font-size: 13px; font-weight: 700; color: #f1f5f9; margin-bottom: 10px; }
+  .x-step {
+    display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid #0f172a;
+    font-size: 13px; color: #cbd5e1;
+  }
+  .x-step:last-child { border-bottom: none; }
+  .x-step .x-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #3b82f622; color: #60a5fa; border: 1px solid #3b82f644;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 800; flex-shrink: 0;
+  }
+
+  /* ===== FAQ ===== */
+  .faq-item { margin-bottom: 16px; }
+  .faq-q {
+    font-size: 14px; font-weight: 700; color: #f1f5f9; margin-bottom: 6px;
+    padding-left: 10px; border-left: 3px solid #fbbf24;
+  }
+  .faq-a { font-size: 13px; color: #94a3b8; padding-left: 13px; }
+  .faq-a a { color: #60a5fa; }
+
+  /* ===== フッター ===== */
+  .footer {
+    text-align: center; padding: 20px 0;
+    border-top: 1px solid #334155; margin-top: 20px;
+    font-size: 11px; color: #475569;
+  }
+
+  /* ===== アコーディオン ===== */
+  .accordion { margin: 12px 0; }
+  .accordion summary {
+    background: #1e293b; border: 1px solid #334155; border-radius: 10px;
+    padding: 12px 14px; font-size: 13px; font-weight: 600; color: #f1f5f9;
+    cursor: pointer; list-style: none;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .accordion summary::-webkit-details-marker { display: none; }
+  .accordion summary::after { content: "▼"; font-size: 10px; color: #475569; margin-left: auto; }
+  .accordion[open] summary::after { content: "▲"; }
+  .accordion .acc-body {
+    background: #1e293b; border: 1px solid #334155; border-top: none;
+    border-radius: 0 0 10px 10px; padding: 14px;
+    margin-top: -4px;
   }
 </style>
 </head>
@@ -138,333 +206,315 @@
 
 <a href="index.html" class="back-link">&larr; 5先王ツールに戻る</a>
 
-<div class="manual-header">
-  <h1>📖 5先王 門番マニュアル</h1>
-  <div class="sub">記録係のための操作ガイド</div>
+<div class="header">
+  <h1>📖 5先王 門番ガイド</h1>
+  <div class="sub">門番の皆さまへ -- 記録方法のご案内</div>
+</div>
+
+<!-- ===== お知らせ ===== -->
+<div class="announce">
+  <div class="title">門番の皆さまへ</div>
+  <p>いつもお疲れ様です！</p>
+  <p>運営の負担軽減のため、対戦記録アプリを作りました。
+  対戦終了後に <span class="highlight">記録タブから結果の入力</span> にご協力ください！</p>
+  <p>投稿タブは運営側で対応するので触らなくてOKです。</p>
 </div>
 
 <!-- ===== 目次 ===== -->
 <div class="toc">
-  <h2>📋 もくじ</h2>
-  <a href="#sec-overview"><span class="toc-num">1</span>画面の見方</a>
-  <a href="#sec-password"><span class="toc-num">2</span>パスワードについて</a>
-  <a href="#sec-record"><span class="toc-num">3</span>試合を記録する</a>
-  <a href="#sec-multi"><span class="toc-num">4</span>複数試合をまとめて記録する</a>
-  <a href="#sec-edit"><span class="toc-num">5</span>記録を修正する</a>
-  <a href="#sec-delete"><span class="toc-num">6</span>記録を削除する</a>
-  <a href="#sec-add-player"><span class="toc-num">7</span>新しい選手を追加する</a>
-  <a href="#sec-edit-player"><span class="toc-num">8</span>選手情報を編集する</a>
-  <a href="#sec-post"><span class="toc-num">9</span>X投稿を作成する</a>
-  <a href="#sec-trouble"><span class="toc-num">10</span>困ったときは</a>
+  <div class="toc-title">やりたいことから探す</div>
+  <a href="#sec-record">
+    <span class="num">1</span>
+    <span class="emoji">✏️</span>
+    対戦結果を記録する
+    <span class="badge-main">メイン</span>
+  </a>
+  <a href="#sec-newplayer">
+    <span class="num">2</span>
+    <span class="emoji">👤</span>
+    初挑戦の選手を登録する
+    <span class="badge-new">重要</span>
+  </a>
+  <a href="#sec-x-link">
+    <span class="num">3</span>
+    <span class="emoji">𝕏</span>
+    Xアカウントの入力方法
+  </a>
+  <a href="#sec-fix">
+    <span class="num">4</span>
+    <span class="emoji">🔧</span>
+    記録を修正・削除する
+  </a>
+  <a href="#sec-multi">
+    <span class="num">5</span>
+    <span class="emoji">📝</span>
+    複数試合をまとめて記録
+  </a>
+  <a href="#sec-faq">
+    <span class="num">6</span>
+    <span class="emoji">❓</span>
+    困ったときは（FAQ）
+  </a>
 </div>
 
-<!-- ===== 1. 画面の見方 ===== -->
-<div class="section" id="sec-overview">
-  <h2>1. 画面の見方</h2>
-  <p>画面下のナビゲーションバーで各ページに切り替えます。</p>
+<!-- ============================================================ -->
+<!-- 1. 対戦結果を記録する -->
+<!-- ============================================================ -->
+<div class="section" id="sec-record">
+  <div class="section-head">✏️ 対戦結果を記録する</div>
+  <p>対戦が終わったらすぐに記録をお願いします！</p>
 
-  <div class="screen-desc">
-    <div class="label">ナビゲーション（下部バー）</div>
-    <div class="item">
-      <div class="icon">✏️</div>
-      <div class="text"><b>記録</b> <span>— 試合結果を入力して保存する画面</span></div>
-    </div>
-    <div class="item">
-      <div class="icon">📤</div>
-      <div class="text"><b>投稿</b> <span>— 記録した試合からX投稿文を生成する画面</span></div>
-    </div>
-    <div class="item">
-      <div class="icon">📊</div>
-      <div class="text"><b>戦績</b> <span>— チャンピオン・門番・挑戦者の成績一覧</span></div>
-    </div>
-    <div class="item">
-      <div class="icon">📋</div>
-      <div class="text"><b>全試合</b> <span>— 過去の全試合を確認＆編集できる画面</span></div>
-    </div>
-    <div class="item">
-      <div class="icon">⚙️</div>
-      <div class="text"><b>設定</b> <span>— 選手の追加・編集・削除ができる画面</span></div>
-    </div>
+  <!-- フロー図 -->
+  <div class="flow">
+    <div class="flow-step">アプリを開く</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-step">パスワード入力</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-step highlight">記録タブで入力</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-step">「記録する」をタップ</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-step" style="background:#10b98122;border-color:#10b98144;color:#34d399;">完了！</div>
+  </div>
+
+  <ol class="steps">
+    <li>
+      下のナビバーの <strong>✏️ 記録</strong> をタップ
+      <div class="detail">パスワードを聞かれたら入力してください（パスワードは別途共有します）</div>
+    </li>
+    <li>
+      <strong>日付</strong> を確認
+      <div class="detail">今日の日付が自動で入ります。違う日の試合なら日付を変えてください</div>
+    </li>
+    <li>
+      <strong>挑戦者</strong> を選ぶ（挑戦してきた人）
+      <div class="detail">ドロップダウンを開くと選手一覧が出ます。過去に挑戦された方の情報は残っています</div>
+    </li>
+    <li>
+      <strong>防衛側</strong> を選ぶ（自分の名前）
+      <div class="detail">門番を選ぶと「門番戦」、王者を選ぶと「チャンピオン戦」が自動でセットされます</div>
+    </li>
+    <li>
+      <strong>スコア</strong> を入力
+      <div class="detail">挑戦者のスコアと防衛側のスコアをそれぞれ選んでください。勝った方が黄色くなります</div>
+    </li>
+    <li>
+      黄色い <strong>「記録する」</strong> ボタンをタップ
+      <div class="detail">「1試合を記録しました」と出たらOK！</div>
+    </li>
+  </ol>
+
+  <div class="box box-point">
+    「記録する」ボタンが押せない場合：挑戦者と防衛側を両方選んでいるか、スコアが0-0になっていないか確認してください
   </div>
 </div>
 
-<!-- ===== 2. パスワード ===== -->
-<div class="section" id="sec-password">
-  <h2>2. パスワードについて</h2>
-  <p>「記録」と「投稿」のページはパスワード保護されています。初回アクセス時にパスワード入力が求められます。</p>
-
-  <div class="note">パスワードは <strong>gosaki</strong> です。一度入力すればブラウザを閉じるまで再入力は不要です。</div>
-
-  <p>設定ページでの選手編集・追加時にもパスワードが必要です（同じパスワード）。</p>
-</div>
-
-<!-- ===== 3. 試合を記録する ===== -->
-<div class="section" id="sec-record">
-  <h2>3. 試合を記録する</h2>
-  <p>基本的な試合記録の流れです。</p>
+<!-- ============================================================ -->
+<!-- 2. 初挑戦の選手を登録 -->
+<!-- ============================================================ -->
+<div class="section" id="sec-newplayer">
+  <div class="section-head">👤 初挑戦の選手を登録する</div>
+  <p>初めて挑戦する方はまだアプリに登録されていません。記録の前に選手登録が必要です。</p>
 
   <ol class="steps">
     <li>
-      下のナビから <strong>✏️ 記録</strong> をタップ
-      <div class="sub-note">パスワード入力画面が出たら「gosaki」を入力</div>
+      記録ページの挑戦者ドロップダウンを開く
     </li>
     <li>
-      <strong>日付</strong>を確認・変更する
-      <div class="sub-note">今日の日付が自動で入ります。過去の試合を入れる場合は日付を変更してください</div>
+      一番下の <strong>「+ 新しい選手」</strong> を選択
+      <div class="detail">選手追加の画面が開きます</div>
     </li>
     <li>
-      <strong>挑戦者</strong>をドロップダウンから選択
-      <div class="sub-note">選手の役割（王者/門番/挑戦者）がタグで表示されます</div>
+      <strong>名前</strong> を入力
+      <div class="detail">例: サキ、フトシ など普段呼んでいる名前でOK</div>
     </li>
     <li>
-      <strong>防衛側</strong>をドロップダウンから選択
-      <div class="sub-note">門番や王者を選ぶと「試合タイプ」が自動で切り替わります（「自動検出」バッジが出ます）</div>
+      <strong>Xアカウント</strong> を入力
+      <div class="detail">@を含めて入力してください（例: @saki_1221_0121）。わからなければ空欄でOK、後から追加できます</div>
     </li>
     <li>
-      <strong>スコア</strong>を入力（挑戦者 / 防衛側それぞれ）
-      <div class="sub-note">0〜15から選択。勝者側のスコアが黄色でハイライトされます</div>
-    </li>
-    <li>
-      黄色の <strong>「記録する」</strong> ボタンをタップ
-      <div class="sub-note">「○試合を記録しました」のトースト通知が出たら成功です</div>
+      <strong>「追加」</strong> をタップ
+      <div class="detail">追加されたら、もう一度挑戦者ドロップダウンから選べるようになります</div>
     </li>
   </ol>
 
-  <div class="tip">挑戦者・防衛側のどちらかを選んでいない場合や、スコアが両方0の場合は「記録する」ボタンが押せません。</div>
+  <div class="box box-ok">
+    登録した選手は次回からドロップダウンに表示されるので、2回目以降は登録不要です
+  </div>
 </div>
 
-<!-- ===== 4. 複数試合 ===== -->
-<div class="section" id="sec-multi">
-  <h2>4. 複数試合をまとめて記録する</h2>
-  <p>同じ日に複数試合があった場合、まとめて記録できます。</p>
+<!-- ============================================================ -->
+<!-- 3. Xアカウントの入力方法 -->
+<!-- ============================================================ -->
+<div class="section" id="sec-x-link">
+  <div class="section-head">𝕏 Xアカウントの入力方法</div>
+  <p>挑戦者のXアカウントは投稿時にメンション付きで使われます。相手のXアカウントの確認方法はこちら。</p>
+
+  <div class="x-guide">
+    <div class="x-title">相手のXアカウントを調べる方法</div>
+    <div class="x-step">
+      <span class="x-num">1</span>
+      <span>相手のXプロフィール画面を開く</span>
+    </div>
+    <div class="x-step">
+      <span class="x-num">2</span>
+      <span><strong>「共有する」ボタン</strong>（シェアアイコン）をタップ</span>
+    </div>
+    <div class="x-step">
+      <span class="x-num">3</span>
+      <span><strong>「プロフィールのリンクをコピー」</strong> を選択</span>
+    </div>
+    <div class="x-step">
+      <span class="x-num">4</span>
+      <span>アプリのXアカウント欄にそのまま <strong>ペースト</strong> でOK！</span>
+    </div>
+  </div>
+
+  <div class="box box-info">
+    URLをそのまま貼り付けてOKです。<br>
+    例: https://x.com/saki_1221_0121<br>
+    → 自動で @saki_1221_0121 に変換されます
+  </div>
+
+  <div class="box box-ok">
+    Xアカウントがわからなければ空欄のままでも記録はできます。後から設定ページで追加できます
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 4. 記録を修正・削除する -->
+<!-- ============================================================ -->
+<div class="section" id="sec-fix">
+  <div class="section-head">🔧 記録を修正・削除する</div>
+  <p>スコアや選手を間違えた場合は後から修正できます。</p>
+
+  <h3 style="font-size:14px;color:#f1f5f9;margin:16px 0 10px;padding-left:10px;border-left:3px solid #fbbf24;">修正する場合</h3>
 
   <ol class="steps">
     <li>
-      1試合目を入力した後、<strong>「+ もう1試合追加」</strong> ボタンをタップ
-      <div class="sub-note">新しい試合入力フォームが下に追加されます。日付は前の試合から自動で引き継がれます</div>
-    </li>
-    <li>
-      2試合目の <strong>挑戦者・防衛側・スコア</strong> を入力
-    </li>
-    <li>
-      必要な試合数だけ追加を繰り返す
-      <div class="sub-note">何試合でも追加できます。各試合の右上の「✕」で個別に削除もできます</div>
-    </li>
-    <li>
-      全て入力したら <strong>「記録する」</strong> をタップ
-      <div class="sub-note">追加した全ての試合が一括で保存されます</div>
-    </li>
-  </ol>
-
-  <div class="note">日付を変えれば別の日の試合も同時に登録できます。各試合で個別に日付を設定してください。</div>
-</div>
-
-<!-- ===== 5. 記録を修正する ===== -->
-<div class="section" id="sec-edit">
-  <h2>5. 記録を修正する</h2>
-  <p>入力ミスがあった場合の修正方法です。</p>
-
-  <ol class="steps">
-    <li>
-      下のナビから <strong>📋 全試合</strong> をタップ
+      下のナビバーの <strong>📋 全試合</strong> をタップ
     </li>
     <li>
       修正したい試合を見つける
-      <div class="sub-note">上部のフィルター（「全て」「門番戦」「タイトルマッチ」や選手名）で絞り込めます</div>
+      <div class="detail">上部のフィルターで「門番戦」や選手名で絞り込めます</div>
     </li>
     <li>
-      試合の右端にある <strong>✎（鉛筆）ボタン</strong> をタップ
-      <div class="sub-note">パスワード入力を求められる場合があります</div>
+      試合の右にある <strong>✎（鉛筆マーク）</strong>をタップ
     </li>
     <li>
-      編集モーダルで内容を修正する
-      <div class="sub-note">修正できる項目: 日付、挑戦者、防衛側、試合タイプ、スコア（両方）</div>
-    </li>
-    <li>
-      <strong>「保存」</strong> ボタンをタップ
-      <div class="sub-note">「修正しました」のトースト通知が出たら成功です</div>
+      編集画面で内容を修正して <strong>「保存」</strong>をタップ
+      <div class="detail">日付・挑戦者・防衛側・試合タイプ・スコア、全て修正できます</div>
     </li>
   </ol>
 
-  <div class="warning">スコアを変更すると勝者も自動で変わります。スコアが同点の場合はエラーになりませんが、正しい結果になっているか確認してください。</div>
-</div>
-
-<!-- ===== 6. 記録を削除する ===== -->
-<div class="section" id="sec-delete">
-  <h2>6. 記録を削除する</h2>
-  <p>誤って記録した試合を削除する方法です。</p>
+  <h3 style="font-size:14px;color:#f1f5f9;margin:16px 0 10px;padding-left:10px;border-left:3px solid #fbbf24;">削除する場合</h3>
 
   <ol class="steps">
     <li>
-      上記の修正と同じ手順で <strong>✎ ボタン</strong> から編集モーダルを開く
+      上と同じ手順で <strong>✎</strong> から編集画面を開く
     </li>
     <li>
-      モーダル下部の赤い <strong>「削除」</strong> ボタンをタップ
+      赤い <strong>「削除」</strong> ボタンをタップ
     </li>
     <li>
-      確認ダイアログで <strong>OK</strong> をタップ
-      <div class="sub-note">削除は取り消せないので注意してください</div>
+      確認ダイアログで <strong>OK</strong>
     </li>
   </ol>
 
-  <div class="warning">一度削除した試合は元に戻せません。間違い防止のため、削除前にスコアを確認してください。</div>
-</div>
-
-<!-- ===== 7. 新しい選手を追加する ===== -->
-<div class="section" id="sec-add-player">
-  <h2>7. 新しい選手を追加する</h2>
-  <p>初めて参加する選手を登録する方法です。2つの方法があります。</p>
-
-  <h3>方法A: 設定ページから追加</h3>
-  <ol class="steps">
-    <li>
-      下のナビから <strong>⚙️ 設定</strong> をタップ
-    </li>
-    <li>
-      <strong>「+ 新しい選手を追加」</strong> ボタンをタップ
-      <div class="sub-note">パスワード入力が求められます</div>
-    </li>
-    <li>
-      <strong>名前</strong> と <strong>Xアカウント</strong>（任意）を入力
-      <div class="sub-note">Xアカウントは「@xxx」の形式で入力。なければ空欄でOK</div>
-    </li>
-    <li>
-      <strong>「追加」</strong> ボタンをタップ
-    </li>
-  </ol>
-
-  <h3>方法B: 試合記録中に追加</h3>
-  <ol class="steps">
-    <li>
-      記録ページで挑戦者 or 防衛側のドロップダウンの一番下にある <strong>「+ 新しい選手」</strong> を選択
-    </li>
-    <li>
-      同じ追加モーダルが開くので、名前とXアカウントを入力
-    </li>
-    <li>
-      追加後、ドロップダウンから新しい選手を選び直す
-    </li>
-  </ol>
-
-  <div class="note">新しい選手は自動的に「挑戦者」として登録されます。門番への昇格は設定ページの選手編集から変更できます。</div>
-</div>
-
-<!-- ===== 8. 選手情報を編集する ===== -->
-<div class="section" id="sec-edit-player">
-  <h2>8. 選手情報を編集する</h2>
-  <p>名前の修正、Xアカウントの追加、役割の変更ができます。</p>
-
-  <ol class="steps">
-    <li>
-      下のナビから <strong>⚙️ 設定</strong> をタップ
-    </li>
-    <li>
-      編集したい選手の行を <strong>タップ</strong>
-      <div class="sub-note">パスワード入力が求められます</div>
-    </li>
-    <li>
-      編集モーダルで変更したい項目を修正
-      <div class="sub-note">変更できる項目: 名前、Xアカウント、役割（王者/門番/元王者/挑戦者）</div>
-    </li>
-    <li>
-      <strong>「保存」</strong> ボタンをタップ
-    </li>
-  </ol>
-
-  <div class="warning">名前を変更すると過去の試合記録も自動で更新されます。正しい名前を入力してください。</div>
-
-  <p>選手を削除する場合は、編集モーダルの赤い「削除」ボタンをタップします。</p>
-</div>
-
-<!-- ===== 9. X投稿を作成する ===== -->
-<div class="section" id="sec-post">
-  <h2>9. X投稿を作成する</h2>
-  <p>記録した試合からX投稿用テキストを自動生成できます。</p>
-
-  <ol class="steps">
-    <li>
-      下のナビから <strong>📤 投稿</strong> をタップ
-      <div class="sub-note">パスワード入力が求められます</div>
-    </li>
-    <li>
-      投稿したい試合を <strong>チェックボックスで選択</strong>
-      <div class="sub-note">日付ヘッダーをタップするとその日の全試合を一括選択できます</div>
-    </li>
-    <li>
-      上部の黄色い <strong>「投稿を生成」</strong> ボタンをタップ
-    </li>
-    <li>
-      テンプレートタブからお好みの形式を選択
-      <div class="sub-note">用途別テンプレート:
-        🏆結果報告 / 💥試合速報 / 💪防衛報告 / 🎉新王誕生 / ✏️カスタム / 📋全試合結果 / 🛡️門番戦歴 / 👑タイトルマッチ</div>
-    </li>
-    <li>
-      <strong>「X投稿をコピー」</strong> ボタンをタップしてクリップボードにコピー
-    </li>
-    <li>
-      Xアプリに切り替えて <strong>ペースト</strong> して投稿
-      <div class="sub-note">文字数は右下に表示されます。280文字を超えると赤くなります</div>
-    </li>
-  </ol>
-
-  <div class="screen-desc">
-    <div class="label">テンプレートの使い分け</div>
-    <div class="item">
-      <div class="icon">🏆</div>
-      <div class="text"><b>結果報告</b> <span>— 定番。試合結果をフォーマルに報告</span></div>
-    </div>
-    <div class="item">
-      <div class="icon">💥</div>
-      <div class="text"><b>試合速報</b> <span>— カジュアルに試合結果を速報</span></div>
-    </div>
-    <div class="item">
-      <div class="icon">💪</div>
-      <div class="text"><b>防衛報告</b> <span>— 門番が全勝した週のまとめ向き</span></div>
-    </div>
-    <div class="item">
-      <div class="icon">🎉</div>
-      <div class="text"><b>新王誕生</b> <span>— チャンピオン交代時の特別テンプレート</span></div>
-    </div>
-    <div class="item">
-      <div class="icon">✏️</div>
-      <div class="text"><b>カスタム</b> <span>— シンプルなスコア一覧。自由に編集向き</span></div>
-    </div>
+  <div class="box box-warn">
+    削除した試合は元に戻せません。削除前にスコアを確認してください
   </div>
 </div>
 
-<!-- ===== 10. 困ったときは ===== -->
-<div class="section" id="sec-trouble">
-  <h2>10. 困ったときは</h2>
+<!-- ============================================================ -->
+<!-- 5. 複数試合をまとめて記録 -->
+<!-- ============================================================ -->
+<div class="section" id="sec-multi">
+  <div class="section-head">📝 複数試合をまとめて記録</div>
+  <p>同じ日に複数の対戦があった場合、まとめて記録できます。</p>
 
-  <h3>Q. データが消えた？</h3>
-  <p>データはスマホのブラウザ（localStorage）に保存されています。ブラウザのキャッシュを削除するとデータが消えます。別のブラウザ（Chrome/Safari切り替えなど）でも別データになります。<strong>常に同じブラウザでアクセスしてください。</strong></p>
-
-  <h3>Q. パスワードを忘れた</h3>
-  <p>パスワードは <strong>gosaki</strong> です。</p>
-
-  <h3>Q. スコアを間違えて記録した</h3>
-  <p>「📋 全試合」ページから ✎ ボタンで修正できます。→ <a href="#sec-edit" style="color:#60a5fa">5. 記録を修正する</a></p>
-
-  <h3>Q. 選手が見つからない</h3>
-  <p>新しい選手は先に登録が必要です。→ <a href="#sec-add-player" style="color:#60a5fa">7. 新しい選手を追加する</a></p>
-
-  <h3>Q. 「記録する」ボタンが押せない</h3>
-  <p>以下を確認してください:</p>
-  <ul style="margin-left: 20px; font-size: 14px; color: #cbd5e1;">
-    <li>挑戦者と防衛側を両方選んでいるか</li>
-    <li>挑戦者と防衛側が同じ選手になっていないか</li>
-    <li>スコアが両方0になっていないか（最低どちらか1以上必要）</li>
-  </ul>
-
-  <h3>Q. X投稿が280文字を超える</h3>
-  <p>「✏️ カスタム」テンプレートはシンプルなので文字数が少なくなります。または投稿する試合数を減らしてみてください。</p>
-
-  <h3>Q. 別のスマホからも見たい</h3>
-  <p>データは各端末のブラウザに個別に保存されているため、端末間でデータは共有されません。1台の端末で管理することをおすすめします。</p>
+  <ol class="steps">
+    <li>
+      1試合目を入力する
+    </li>
+    <li>
+      <strong>「+ もう1試合追加」</strong> ボタンをタップ
+      <div class="detail">新しい入力欄が下に追加されます。日付は自動で引き継がれます</div>
+    </li>
+    <li>
+      2試合目以降を入力
+      <div class="detail">何試合でも追加OK。各試合の右上の「✕」で個別に消せます</div>
+    </li>
+    <li>
+      全て入力したら <strong>「記録する」</strong> をタップ
+      <div class="detail">「○試合を記録しました」と出たらOK！</div>
+    </li>
+  </ol>
 </div>
 
-<div class="manual-footer">
-  5先王 門番マニュアル v1.0 — 2026/02/25
+<!-- ============================================================ -->
+<!-- 6. FAQ -->
+<!-- ============================================================ -->
+<div class="section" id="sec-faq">
+  <div class="section-head">❓ 困ったときは</div>
+
+  <div class="faq-item">
+    <div class="faq-q">Q. ボタンが押せない / 動かない</div>
+    <div class="faq-a">ページをリロード（再読み込み）してみてください。それでもダメな場合は運営に連絡ください。</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">Q. 挑戦者の名前がリストにない</div>
+    <div class="faq-a">初挑戦の方です。ドロップダウンの一番下「+ 新しい選手」から登録してください。→ <a href="#sec-newplayer">選手登録のやり方</a></div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">Q. スコアを間違えて記録してしまった</div>
+    <div class="faq-a">「📋 全試合」ページから修正できます。→ <a href="#sec-fix">修正のやり方</a></div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">Q. 「記録する」ボタンが押せない</div>
+    <div class="faq-a">
+      チェックポイント:<br>
+      ・挑戦者と防衛側を両方選んだか<br>
+      ・同じ選手を選んでいないか<br>
+      ・スコアが両方0になっていないか
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">Q. Xアカウントがわからない</div>
+    <div class="faq-a">空欄でも記録できます。後から設定ページで追加できるので、まずは記録を優先してください。</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">Q. 投稿タブはどうすればいい？</div>
+    <div class="faq-a">投稿は運営側で対応します。門番さんは <strong>記録だけでOK</strong> です！</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">Q. データが消えた？</div>
+    <div class="faq-a">データはブラウザに保存されています。キャッシュ削除やブラウザの切り替えでデータが消える場合があります。常に同じブラウザでアクセスしてください。</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">Q. その他の問題</div>
+    <div class="faq-a">運営までご連絡ください！</div>
+  </div>
+</div>
+
+<!-- ===== まとめ ===== -->
+<div class="announce" style="border-color: #fbbf2444;">
+  <div class="title">まとめ: 門番さんにお願いすること</div>
+  <p><span class="highlight">1.</span> 対戦後に <strong>記録タブ</strong> で結果を入力する</p>
+  <p><span class="highlight">2.</span> 初挑戦の相手がいたら <strong>選手登録</strong> してから記録する</p>
+  <p><span class="highlight">3.</span> 間違えたら <strong>全試合タブ</strong> から修正する</p>
+  <p style="margin-top:8px;font-size:12px;color:#94a3b8;">投稿タブは触らなくてOKです！ご協力ありがとうございます！</p>
+</div>
+
+<div class="footer">
+  5先王 門番ガイド v2.0 — 2026/02/25
 </div>
 
 </body>
