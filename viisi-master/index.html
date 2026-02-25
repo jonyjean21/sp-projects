@@ -933,17 +933,24 @@ function scoreOptions(selected) {
 }
 
 function playerOptions(selected) {
-  // 王者→門番→元王者→挑戦者の順
+  // 王者→門番→元王者→挑戦者の順（王者は常に最上位）
+  const gkNames = D.gatekeepers ? D.gatekeepers.map(g => g.name) : [];
   const names = Object.keys(D.players).sort((a, b) => {
-    const order = { champion: 0, gatekeeper: 1, former_champion: 2, challenger: 3 };
-    return (order[D.players[a].role] || 9) - (order[D.players[b].role] || 9);
+    const roleOf = (n) => {
+      if (D.players[n].role === 'champion') return 0;
+      if (gkNames.includes(n)) return 1;
+      if (D.players[n].role === 'former_champion') return 2;
+      return 3;
+    };
+    return roleOf(a) - roleOf(b);
   });
   let html = '<option value="">選択...</option>';
   names.forEach(n => {
     const p = D.players[n];
-    const tag = p.role === 'champion' ? '👑' : p.role === 'gatekeeper' ? '🛡️' : '';
+    const isGk = gkNames.includes(n);
+    const tag = p.role === 'champion' ? '👑 ' : isGk ? '🛡️ ' : p.role === 'former_champion' ? '⭐ ' : '';
     const sel = n === selected ? ' selected' : '';
-    html += `<option value="${n}"${sel}>${tag} ${n}</option>`;
+    html += `<option value="${n}"${sel}>${tag}${n}</option>`;
   });
   html += '<option value="__new__">+ 新しい選手</option>';
   return html;
@@ -1833,7 +1840,11 @@ function addNewPlayer() {
   const handle = rawHandle ? normalizeHandle(rawHandle) : null;
   if (!name) return;
   D.players[name] = { x: handle, role: 'challenger' };
-  saveData();
+  // Firebase に直接書き込み（確実に永続化）
+  if (firebaseConnected) {
+    configRef.child('players').child(name).set({ x: handle, role: 'challenger' });
+  }
+  saveLocalCache();
   hideModal('add-player-modal');
   document.getElementById('new-player-name').value = '';
   document.getElementById('new-player-handle').value = '';
