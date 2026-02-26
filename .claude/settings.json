@@ -1,28 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "Bash(git add:*)",
-      "Bash(git status:*)",
-      "Bash(git diff:*)",
-      "Bash(git log:*)",
-      "Bash(git branch:*)",
-      "Bash(git checkout:*)",
-      "Bash(git pull:*)",
-      "Bash(npm install:*)",
-      "Bash(npm ls:*)",
-      "Bash(npx:*)",
-      "Bash(firebase deploy:*)",
-      "Bash(firebase projects:*)",
-      "Bash(curl:*)",
-      "Bash(python3:*)",
-      "Bash(node:*)",
-      "Bash(brew:*)",
-      "Bash(which:*)",
-      "Bash(ls:*)",
-      "Bash(mkdir:*)",
-      "Bash(cd:*)"
+      "Bash(*)",
+      "Read(*)",
+      "Write(*)",
+      "Edit(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "NotebookEdit(*)"
     ],
     "deny": [
       "Bash(rm -rf:*)",

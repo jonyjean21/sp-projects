@@ -16,6 +16,15 @@
         ".indexOn": ["_order", "date"]
       }
     },
+    "chapche-queue": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": ["status"]
+    },
+    "chapche-log": {
+      ".read": true,
+      ".write": true
+    },
     "tournament-queue": {
       ".read": true,
       "$id": {
