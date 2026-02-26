@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大会情報かんたん投稿 | MOLKKY HUB</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', sans-serif;
+    background: #0a0a0a;
+    color: #e0e0e0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .container {
+    width: 100%;
+    max-width: 520px;
+    padding: 24px 16px;
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .header h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .header p {
+    font-size: 13px;
+    color: #888;
+    line-height: 1.6;
+  }
+  .input-area {
+    position: relative;
+    margin-bottom: 16px;
+  }
+  .input-area input {
+    width: 100%;
+    padding: 16px;
+    padding-right: 48px;
+    font-size: 16px;
+    background: #1a1a1a;
+    border: 2px solid #333;
+    border-radius: 12px;
+    color: #fff;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .input-area input:focus {
+    border-color: #4a9eff;
+  }
+  .input-area input::placeholder {
+    color: #555;
+  }
+  .input-area .paste-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #4a9eff;
+    font-size: 22px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+  }
+  .input-area .paste-btn:active {
+    background: rgba(74, 158, 255, 0.1);
+  }
+  .submit-btn {
+    width: 100%;
+    padding: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    background: #4a9eff;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s, opacity 0.2s;
+  }
+  .submit-btn:hover { background: #3a8eef; }
+  .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .submit-btn.loading { background: #333; }
+
+  .preview {
+    margin-top: 24px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 16px;
+    display: none;
+  }
+  .preview.show { display: block; }
+  .preview h3 {
+    font-size: 14px;
+    color: #4a9eff;
+    margin-bottom: 12px;
+  }
+  .preview .tweet-text {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #ccc;
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin-bottom: 12px;
+  }
+  .preview .tweet-meta {
+    font-size: 12px;
+    color: #666;
+  }
+  .preview .tweet-images {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .preview .tweet-images img {
+    max-width: 120px;
+    border-radius: 8px;
+    border: 1px solid #333;
+  }
+
+  .status {
+    margin-top: 16px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    text-align: center;
+    display: none;
+  }
+  .status.show { display: block; }
+  .status.success {
+    background: rgba(46, 160, 67, 0.15);
+    color: #3fb950;
+    border: 1px solid rgba(46, 160, 67, 0.3);
+  }
+  .status.error {
+    background: rgba(248, 81, 73, 0.15);
+    color: #f85149;
+    border: 1px solid rgba(248, 81, 73, 0.3);
+  }
+
+  .queue-info {
+    margin-top: 32px;
+    text-align: center;
+    font-size: 12px;
+    color: #555;
+    line-height: 1.6;
+  }
+  .queue-info a {
+    color: #4a9eff;
+    text-decoration: none;
+  }
+
+  .how-to {
+    margin-top: 32px;
+    padding: 16px;
+    background: #111;
+    border-radius: 12px;
+    border: 1px solid #222;
+  }
+  .how-to h3 {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 12px;
+  }
+  .how-to ol {
+    padding-left: 20px;
+    font-size: 13px;
+    color: #777;
+    line-height: 2;
+  }
+  .how-to ol li strong {
+    color: #ccc;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>MOLKKY HUB 大会情報投稿</h1>
+    <p>大会のXポストや詳細ページのURLを貼るだけ！<br>情報は自動で読み取られます。</p>
+  </div>
+
+  <div class="input-area">
+    <input type="url" id="urlInput" placeholder="https://x.com/... のURLを貼り付け"
+           autocomplete="off" autocorrect="off" autocapitalize="off">
+    <button class="paste-btn" id="pasteBtn" title="クリップボードから貼り付け">📋</button>
+  </div>
+
+  <button class="submit-btn" id="submitBtn" disabled>送信する</button>
+
+  <div class="preview" id="preview">
+    <h3>プレビュー</h3>
+    <div class="tweet-text" id="tweetText"></div>
+    <div class="tweet-images" id="tweetImages"></div>
+    <div class="tweet-meta" id="tweetMeta"></div>
+  </div>
+
+  <div class="status" id="status"></div>
+
+  <div class="how-to">
+    <h3>使い方</h3>
+    <ol>
+      <li>Xで大会のポストを見つける</li>
+      <li><strong>URLをコピー</strong>（共有ボタン→リンクをコピー）</li>
+      <li>このページに<strong>貼り付けて送信</strong></li>
+      <li>あとは自動！情報が読み取られてサイトに掲載されます</li>
+    </ol>
+  </div>
+
+  <div class="queue-info">
+    <p>送信されたURLは確認後、<a href="https://molkky-hub.com/event/tournament/" target="_blank">MOLKKY HUB 大会情報ページ</a>に掲載されます。</p>
+  </div>
+</div>
+
+<script>
+const QUEUE_SHEET_URL = '%%GAS_WEBHOOK_URL%%'; // GAS Web App URL (後で設定)
+
+const urlInput = document.getElementById('urlInput');
+const submitBtn = document.getElementById('submitBtn');
+const pasteBtn = document.getElementById('pasteBtn');
+const preview = document.getElementById('preview');
+const tweetText = document.getElementById('tweetText');
+const tweetImages = document.getElementById('tweetImages');
+const tweetMeta = document.getElementById('tweetMeta');
+const status = document.getElementById('status');
+
+// Paste button
+pasteBtn.addEventListener('click', async () => {
+  try {
+    const text = await navigator.clipboard.readText();
+    urlInput.value = text;
+    urlInput.dispatchEvent(new Event('input'));
+  } catch (e) {
+    urlInput.focus();
+  }
+});
+
+// Validate URL on input
+urlInput.addEventListener('input', () => {
+  const url = urlInput.value.trim();
+  const isValid = url.length > 10 && (
+    url.includes('x.com/') ||
+    url.includes('twitter.com/') ||
+    url.startsWith('http')
+  );
+  submitBtn.disabled = !isValid;
+
+  // Auto-preview for X tweets
+  if (isValid && (url.includes('x.com/') || url.includes('twitter.com/'))) {
+    fetchTweetPreview(url);
+  } else {
+    preview.classList.remove('show');
+  }
+});
+
+// Fetch tweet preview
+async function fetchTweetPreview(url) {
+  const match = url.match(/status\/(\d+)/);
+  if (!match) return;
+  const tweetId = match[1];
+
+  try {
+    const resp = await fetch(`https://cdn.syndication.twimg.com/tweet-result?id=${tweetId}&token=x`);
+    if (!resp.ok) return;
+    const data = await resp.json();
+
+    tweetText.textContent = data.text || '';
+    tweetMeta.textContent = `@${data.user?.screen_name || '?'} · ${new Date(data.created_at).toLocaleDateString('ja-JP')}`;
+
+    tweetImages.innerHTML = '';
+    if (data.mediaDetails) {
+      data.mediaDetails.forEach(m => {
+        if (m.media_url_https) {
+          const img = document.createElement('img');
+          img.src = m.media_url_https + '?format=jpg&name=small';
+          img.alt = 'チラシ';
+          tweetImages.appendChild(img);
+        }
+      });
+    }
+
+    preview.classList.add('show');
+  } catch (e) {
+    // CORS or network error - show without preview
+    preview.classList.remove('show');
+  }
+}
+
+// Submit
+submitBtn.addEventListener('click', async () => {
+  const url = urlInput.value.trim();
+  if (!url) return;
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = '送信中...';
+  submitBtn.classList.add('loading');
+  showStatus('', '');
+
+  try {
+    if (QUEUE_SHEET_URL.includes('%%')) {
+      // GAS未設定の場合: フォールバック（ローカルストレージに保存）
+      const queue = JSON.parse(localStorage.getItem('tournament_queue') || '[]');
+      queue.push({ url, timestamp: new Date().toISOString() });
+      localStorage.setItem('tournament_queue', JSON.stringify(queue));
+      showStatus('success', '送信完了！確認後サイトに掲載されます。');
+    } else {
+      const resp = await fetch(QUEUE_SHEET_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, timestamp: new Date().toISOString() }),
+        mode: 'no-cors'
+      });
+      showStatus('success', '送信完了！確認後サイトに掲載されます。');
+    }
+
+    urlInput.value = '';
+    preview.classList.remove('show');
+  } catch (e) {
+    showStatus('error', '送信に失敗しました。もう一度試してください。');
+  }
+
+  submitBtn.textContent = '送信する';
+  submitBtn.classList.remove('loading');
+  submitBtn.disabled = true;
+});
+
+function showStatus(type, message) {
+  if (!message) {
+    status.classList.remove('show');
+    return;
+  }
+  status.className = `status show ${type}`;
+  status.textContent = message;
+}
+</script>
+</body>
+</html>
