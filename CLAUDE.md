@@ -11,16 +11,19 @@
 3. **セキュリティ最優先** — トークンやシークレットは絶対にコードやコミットに含めない
 4. **手動作業を発生させない** — ブラウザでの操作をユーザーに指示するのは最終手段
 
-### 操作方法（トークン不要）
-- **git push/pull**: ローカルプロキシ経由で認証不要で動作する
-- **ブランチのマージ**: PRを使わず `git merge` → `git push origin main` で直接マージする
-- **ブランチ作成**: `git checkout -b <branch>` → `git push -u origin <branch>`
+### 操作方法
 
-### GitHub API が必要な場合（トークン要）
-- PR作成・マージ、リポジトリ設定変更、GitHub Pages設定など
+#### トークン不要（プロキシ経由で動作）
+- **feature branchへのpush/pull**: `claude/` で始まるブランチは認証不要
+- **ブランチ作成**: `git checkout -b <branch>` → `git push -u origin <branch>`
+- **コードの開発・コミット**: 通常のgit操作は全てトークン不要
+
+#### トークンが必要（mainへのマージ時のみ）
+- mainへの直接pushはプロキシが403でブロックする
+- **mainへマージするには**: GitHub API で PR作成・マージが必要
+- トークンはセッション開始時にユーザーに1回だけ確認する
 - GitHub Secrets に PAT を保存済み（`GH_PAT_CLASSIC`, `GH_PAT_FINEGRAINED`）
-- トークンが必要な場合のみユーザーに確認する
-- 基本的にはトークン不要のgit操作で完結させること
+  - ただしSecretsは読み出し不可。ユーザーからの提供が必要
 
 ### セキュリティルール
 - `.env` ファイルは `.gitignore` に含め、絶対にコミットしない
