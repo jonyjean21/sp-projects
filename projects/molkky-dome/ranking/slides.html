@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>川西モルックの会 シーズン大会 & 新人年間王 — Slides</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+/* ===== Reset & Base ===== */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; overflow: hidden; }
+:root {
+  --navy: #1a365d;
+  --gray: #4a5568;
+  --orange: #ed8936;
+  --bg-white: #ffffff;
+  --bg-light: #f7fafc;
+  --gold: #d69e2e;
+  --green: #38a169;
+  --red: #e53e3e;
+  --blue-light: #ebf8ff;
+  --green-light: #f0fff4;
+  --orange-light: #fffaf0;
+  counter-reset: slide-counter;
+}
+body {
+  font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
+  color: var(--gray);
+  line-height: 1.85;
+  font-feature-settings: "palt";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== Scroll Snap Container ===== */
+.slides {
+  width: 100vw;
+  height: 100vh;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ===== Slide Base ===== */
+.slide {
+  width: 100vw;
+  height: 100vh;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  counter-increment: slide-counter;
+  overflow: hidden;
+  padding: 3rem 2rem;
+}
+.slide::after {
+  content: counter(slide-counter);
+  position: absolute;
+  bottom: 1.5rem;
+  right: 2rem;
+  font-size: 0.9rem;
+  color: #a0aec0;
+  font-weight: 700;
+}
+
+/* Dark slides — hide or lighten page number */
+.slide--dark::after { color: rgba(255,255,255,0.3); }
+
+/* ===== Slide Inner ===== */
+.slide__inner {
+  max-width: 900px;
+  width: 100%;
+  text-align: center;
+}
+.slide__inner--left { text-align: left; }
+
+/* ===== Typography ===== */
+.t-title {
+  font-weight: 900;
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  line-height: 1.35;
+  color: var(--navy);
+}
+.t-heading {
+  font-weight: 700;
+  font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+  line-height: 1.4;
+  color: var(--navy);
+}
+.t-subheading {
+  font-weight: 700;
+  font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+  line-height: 1.5;
+  color: var(--navy);
+}
+.t-body {
+  font-weight: 400;
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  line-height: 1.85;
+  color: var(--gray);
+}
+.t-small {
+  font-weight: 400;
+  font-size: clamp(0.85rem, 1.6vw, 1rem);
+  line-height: 1.75;
+  color: var(--gray);
+}
+
+/* ===== Cover Slide ===== */
+.slide--cover {
+  background: linear-gradient(135deg, #1a365d 0%, #2d3748 50%, #1a365d 100%);
+  color: #fff;
+}
+.slide--cover .t-title {
+  color: #fff;
+  margin-bottom: 1rem;
+}
+.cover-subtitle {
+  color: rgba(255,255,255,0.7);
+  font-size: clamp(0.95rem, 2vw, 1.15rem);
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.8;
+}
+.cover-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--orange);
+  background: rgba(237,137,54,0.15);
+  border: 1px solid rgba(237,137,54,0.35);
+  padding: 0.3rem 1.2rem;
+  border-radius: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ===== Stats Slide ===== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+.stat-card {
+  background: var(--bg-white);
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 2rem 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.stat-number {
+  font-weight: 900;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.2;
+}
+.stat-label {
+  font-size: clamp(0.8rem, 1.5vw, 1rem);
+  color: var(--gray);
+  margin-top: 0.5rem;
+  font-weight: 700;
+}
+
+/* ===== Section Divider ===== */
+.slide--divider {
+  background: var(--bg-light);
+}
+.divider-number {
+  font-weight: 900;
+  font-size: clamp(6rem, 15vw, 12rem);
+  color: rgba(26,54,93,0.06);
+  line-height: 1;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -55%);
+  pointer-events: none;
+  user-select: none;
+}
+.divider-label {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 0.3rem 1.2rem;
+  border-radius: 2rem;
+  margin-bottom: 1rem;
+}
+.divider-label--fire {
+  color: var(--orange);
+  background: var(--orange-light);
+  border: 1px solid #fbd38d;
+}
+.divider-label--green {
+  color: var(--green);
+  background: var(--green-light);
+  border: 1px solid #9ae6b4;
+}
+
+/* ===== Tables ===== */
+.s-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1.5rem;
+  text-align: left;
+}
+.s-table th {
+  font-size: clamp(0.7rem, 1.3vw, 0.85rem);
+  font-weight: 700;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid #e2e8f0;
+  background: var(--bg-light);
+}
+.s-table td {
+  font-size: clamp(0.9rem, 1.8vw, 1.05rem);
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #edf2f7;
+}
+.s-table tbody tr:last-child td { border-bottom: none; }
+.pt-val {
+  font-weight: 900;
+  font-size: clamp(1.1rem, 2vw, 1.3rem);
+}
+.pt-unit { font-weight: 400; font-size: 0.8em; color: var(--gray); }
+.rank-gold { color: var(--gold); }
+.rank-silver { color: #718096; }
+.rank-bronze { color: #b7791f; }
+.rank-red { color: var(--red); }
+
+/* ===== Badge ===== */
+.badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.25rem 0.8rem;
+  border-radius: 0.5rem;
+  letter-spacing: 1px;
+  vertical-align: middle;
+  margin-right: 0.5rem;
+}
+.badge--main { background: var(--orange-light); color: var(--orange); border: 1px solid #fbd38d; }
+.badge--regular { background: var(--blue-light); color: #3182ce; border: 1px solid #90cdf4; }
+.badge--rookie { background: var(--green-light); color: var(--green); border: 1px solid #9ae6b4; }
+.badge--final { background: rgba(214,158,46,0.15); color: var(--gold); border: 1px solid rgba(214,158,46,0.4); }
+
+/* ===== Cards Grid ===== */
+.cards-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+  margin-top: 1.5rem;
+}
+.sim-card {
+  background: var(--bg-white);
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  text-align: left;
+}
+.sim-card__header {
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid #edf2f7;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  font-size: clamp(0.8rem, 1.5vw, 0.95rem);
+  background: var(--bg-light);
+}
+.sim-card__total {
+  font-weight: 900;
+  font-size: clamp(1rem, 2vw, 1.3rem);
+}
+.sim-card__body {
+  padding: 0.8rem 1.2rem;
+}
+.sim-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.4rem 0;
+  font-size: clamp(0.7rem, 1.3vw, 0.85rem);
+  color: var(--gray);
+  border-bottom: 1px solid #edf2f7;
+}
+.sim-row:last-child { border-bottom: none; }
+.sim-val { font-weight: 700; color: var(--navy); white-space: nowrap; margin-left: 0.5rem; }
+.sim-val--red { color: var(--red); }
+.sim-val--green { color: var(--green); }
+
+/* ===== Season Cards ===== */
+.season-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+.season-card {
+  background: var(--bg-white);
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1.5rem 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  text-align: left;
+}
+.season-tag {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 900;
+  padding: 0.2rem 0.8rem;
+  border-radius: 0.5rem;
+  margin-bottom: 0.8rem;
+}
+.season-card h4 {
+  font-size: clamp(0.85rem, 1.6vw, 1rem);
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 0.5rem;
+}
+.season-card p {
+  font-size: clamp(0.7rem, 1.3vw, 0.85rem);
+  color: var(--gray);
+  line-height: 1.65;
+}
+.season-card .date-main {
+  color: var(--navy);
+  font-weight: 700;
+}
+
+/* ===== Flow Steps ===== */
+.flow-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 1.5rem;
+  text-align: left;
+}
+.flow-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.8rem 0;
+}
+.flow-num {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 900;
+  flex-shrink: 0;
+  color: #fff;
+  background: var(--navy);
+}
+.flow-num--green { background: var(--green); }
+.flow-num--orange { background: var(--orange); }
+.flow-content { flex: 1; }
+.flow-title {
+  font-size: clamp(0.95rem, 1.8vw, 1.15rem);
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 0.25rem;
+}
+.flow-desc {
+  font-size: clamp(0.8rem, 1.5vw, 0.95rem);
+  color: var(--gray);
+  line-height: 1.7;
+}
+.flow-connector {
+  width: 2px;
+  height: 1rem;
+  background: var(--navy);
+  margin-left: 1.2rem;
+  opacity: 0.2;
+}
+.flow-connector--green { background: var(--green); }
+
+/* ===== Bracket ===== */
+.bracket-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.block-card {
+  background: var(--bg-white);
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1.2rem;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.block-label {
+  font-size: clamp(0.75rem, 1.4vw, 0.9rem);
+  font-weight: 900;
+  color: var(--navy);
+  margin-bottom: 0.8rem;
+  letter-spacing: 1px;
+}
+.slot {
+  font-size: clamp(0.7rem, 1.3vw, 0.85rem);
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.4rem;
+  background: var(--bg-light);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 0.3rem;
+}
+.slot--pass { border-color: var(--green); color: var(--green); font-weight: 700; }
+.slot--wc { border-color: #805ad5; color: #805ad5; font-weight: 700; }
+
+.bracket-center-card {
+  background: var(--bg-white);
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1rem 1.5rem;
+  text-align: center;
+  margin-top: 0.8rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.bracket-label {
+  display: inline-block;
+  font-size: clamp(0.7rem, 1.3vw, 0.85rem);
+  font-weight: 700;
+  color: var(--navy);
+  background: var(--bg-light);
+  border: 1px solid #e2e8f0;
+  padding: 0.3rem 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ===== Info Box ===== */
+.info-box {
+  background: var(--blue-light);
+  border-left: 4px solid var(--navy);
+  border-radius: 0.5rem;
+  padding: 1rem 1.5rem;
+  margin-top: 1rem;
+  text-align: left;
+}
+.info-box p {
+  font-size: clamp(0.8rem, 1.5vw, 0.95rem);
+  color: #2a4365;
+  line-height: 1.75;
+}
+.info-box--green {
+  background: var(--green-light);
+  border-left-color: var(--green);
+}
+.info-box--green p { color: #276749; }
+
+/* ===== Checklist ===== */
+.checklist {
+  list-style: none;
+  text-align: left;
+  margin-top: 1.5rem;
+}
+.checklist li {
+  font-size: clamp(0.9rem, 1.8vw, 1.05rem);
+  padding: 0.8rem 0;
+  border-bottom: 1px solid #edf2f7;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  color: var(--gray);
+}
+.checklist li:last-child { border-bottom: none; }
+.check-box {
+  width: 1.3rem;
+  height: 1.3rem;
+  border-radius: 0.25rem;
+  border: 2px solid #cbd5e0;
+  flex-shrink: 0;
+}
+
+/* ===== Qual List ===== */
+.qual-list {
+  list-style: none;
+  margin-top: 1rem;
+  text-align: left;
+}
+.qual-list li {
+  font-size: clamp(0.9rem, 1.8vw, 1.05rem);
+  padding: 0.6rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  color: var(--gray);
+  border-bottom: 1px solid #edf2f7;
+}
+.qual-list li:last-child { border-bottom: none; }
+.qual-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+.qual-pass { background: var(--green-light); color: var(--green); border: 1px solid #9ae6b4; }
+.qual-sub { background: #faf5ff; color: #805ad5; border: 1px solid #d6bcfa; }
+
+/* ===== Closing Slide ===== */
+.slide--closing {
+  background: linear-gradient(135deg, #1a365d 0%, #2d3748 50%, #1a365d 100%);
+  color: #fff;
+}
+.closing-title {
+  font-weight: 900;
+  font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+  color: #fff;
+  line-height: 1.4;
+  margin-bottom: 1.5rem;
+}
+.closing-meta {
+  font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+  color: rgba(255,255,255,0.5);
+}
+
+/* ===== Accent Border ===== */
+.accent-bar {
+  width: 60px;
+  height: 4px;
+  border-radius: 2px;
+  margin: 1.2rem auto;
+}
+.accent-bar--orange { background: var(--orange); }
+.accent-bar--green { background: var(--green); }
+.accent-bar--navy { background: var(--navy); }
+
+/* ===== Tournament Flow (Horizontal) ===== */
+.h-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+.h-flow__step {
+  background: var(--bg-white);
+  border: 2px solid var(--navy);
+  border-radius: 1rem;
+  padding: 1rem 1.5rem;
+  text-align: center;
+  min-width: 140px;
+}
+.h-flow__step--active {
+  background: var(--navy);
+  color: #fff;
+}
+.h-flow__step--active .h-flow__label { color: #fff; }
+.h-flow__step--active .h-flow__sub { color: rgba(255,255,255,0.7); }
+.h-flow__arrow {
+  font-size: 1.5rem;
+  color: var(--navy);
+  font-weight: 900;
+}
+.h-flow__label {
+  font-weight: 700;
+  font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+  color: var(--navy);
+}
+.h-flow__sub {
+  font-size: clamp(0.7rem, 1.3vw, 0.8rem);
+  color: var(--gray);
+  margin-top: 0.2rem;
+}
+
+/* ===== Ranking Info ===== */
+.ranking-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.8rem;
+  margin-top: 1rem;
+  text-align: left;
+}
+.ranking-item {
+  background: var(--bg-white);
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 0.8rem 1rem;
+  font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+  color: var(--gray);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+}
+.ranking-item strong { color: var(--navy); }
+
+/* ===== Match Format ===== */
+.match-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.2rem;
+  margin-top: 1.5rem;
+}
+.match-card {
+  background: var(--bg-white);
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.match-card__stage {
+  font-size: clamp(0.75rem, 1.4vw, 0.9rem);
+  font-weight: 700;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.5rem;
+}
+.match-card__format {
+  font-weight: 900;
+  font-size: clamp(2rem, 4vw, 3rem);
+  color: var(--navy);
+  line-height: 1.2;
+}
+.match-card__desc {
+  font-size: clamp(0.75rem, 1.4vw, 0.9rem);
+  color: var(--gray);
+  margin-top: 0.5rem;
+}
+
+/* ===== Annual Timeline ===== */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 1.5rem;
+  text-align: left;
+  position: relative;
+  padding-left: 2rem;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 0.6rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #e2e8f0;
+}
+.timeline__item {
+  position: relative;
+  padding: 0.6rem 0 0.6rem 1.5rem;
+}
+.timeline__item::before {
+  content: '';
+  position: absolute;
+  left: -1.65rem;
+  top: 1rem;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: var(--navy);
+  border: 2px solid var(--bg-light);
+}
+.timeline__item--gold::before { background: var(--gold); }
+.timeline__item--green::before { background: var(--green); }
+.timeline__item--orange::before { background: var(--orange); }
+.timeline__month {
+  font-weight: 900;
+  font-size: clamp(0.85rem, 1.6vw, 1rem);
+  color: var(--navy);
+}
+.timeline__desc {
+  font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+  color: var(--gray);
+}
+
+/* ===== Overview Cards ===== */
+.overview-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 1.5rem;
+}
+.overview-card {
+  background: var(--bg-white);
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1.2rem 2rem;
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+  font-size: clamp(0.95rem, 1.8vw, 1.1rem);
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.overview-plus {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: #cbd5e0;
+}
+.overview-arrow {
+  font-size: 1.5rem;
+  color: var(--gold);
+}
+.overview-result {
+  font-weight: 900;
+  font-size: clamp(1.1rem, 2.2vw, 1.4rem);
+  color: var(--gold);
+  margin-top: 0.5rem;
+}
+
+/* ===== FINAL Qual ===== */
+.final-quals {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+.final-qual {
+  background: var(--bg-white);
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.final-qual__num {
+  font-weight: 900;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  color: var(--gold);
+  margin-bottom: 0.3rem;
+}
+.final-qual__text {
+  font-size: clamp(0.8rem, 1.5vw, 0.95rem);
+  color: var(--gray);
+  line-height: 1.6;
+}
+
+/* ===== App Features ===== */
+.app-features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+.app-feature {
+  background: var(--bg-white);
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1.2rem;
+  text-align: left;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.app-feature__icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+.app-feature__title {
+  font-weight: 700;
+  font-size: clamp(0.85rem, 1.6vw, 1rem);
+  color: var(--navy);
+  margin-bottom: 0.3rem;
+}
+.app-feature__desc {
+  font-size: clamp(0.75rem, 1.3vw, 0.85rem);
+  color: var(--gray);
+}
+
+/* ===== Mobile Responsive ===== */
+@media (max-width: 768px) {
+  .slide { padding: 2rem 1.5rem; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+  .cards-row { grid-template-columns: 1fr; }
+  .season-grid { grid-template-columns: repeat(2, 1fr); }
+  .bracket-grid { grid-template-columns: 1fr; }
+  .h-flow { flex-direction: column; }
+  .h-flow__arrow { transform: rotate(90deg); }
+  .match-grid { grid-template-columns: 1fr; }
+  .ranking-grid { grid-template-columns: 1fr; }
+  .final-quals { grid-template-columns: 1fr; }
+  .app-features { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .slide { padding: 1.5rem 1rem; }
+  .season-grid { grid-template-columns: 1fr; }
+}
+
+/* ===== Print / PDF ===== */
+@media print {
+  html, body, .slides { height: auto; overflow: visible; }
+  .slides { scroll-snap-type: none; }
+  .slide {
+    scroll-snap-align: none;
+    page-break-after: always;
+    page-break-inside: avoid;
+    height: 100vh;
+    min-height: 100vh;
+  }
+  .slide::after { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="slides">
+
+  <!-- ==================== Slide 1: Cover ==================== -->
+  <section class="slide slide--dark slide--cover">
+    <div class="slide__inner">
+      <div class="cover-badge">NEW PROJECT</div>
+      <h1 class="t-title">川西モルックの会<br>シーズン大会 &amp; 新人年間王</h1>
+      <div class="accent-bar accent-bar--orange"></div>
+      <p class="cover-subtitle">
+        3ヶ月のポイントレースで最強を決める「シーズン大会」と<br>
+        新人戦の1年を締めくくる「新人年間王決定戦」
+      </p>
+    </div>
+  </section>
+
+  <!-- ==================== Slide 2: Stats Overview ==================== -->
+  <section class="slide">
+    <div class="slide__inner">
+      <p class="t-heading" style="color: var(--navy);">一目でわかる全体像</p>
+      <div class="accent-bar accent-bar--navy"></div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number" style="color: var(--orange);">年4回</div>
+          <div class="stat-label">シーズン大会</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" style="color: var(--navy);">12名</div>
+          <div class="stat-label">出場枠</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" style="color: var(--gold);">全順位</div>
+          <div class="stat-label">1位〜12位 確定</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" style="color: var(--green);">掲示</div>
+          <div class="stat-label">ドーム内に掲出</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== Slide 3: Part 1 Divider ==================== -->
+  <section class="slide slide--divider">
+    <div class="divider-number">01</div>
+    <div class="slide__inner">
+      <div class="divider-label divider-label--fire">PART 1</div>
+      <h2 class="t-heading" style="color: var(--orange);">川西モルックの会<br>最強は誰だ！？シーズン大会</h2>
+      <div class="accent-bar accent-bar--orange"></div>
+    </div>
+  </section>
+
+  <!-- ==================== Slide 4: Concept ==================== -->
+  <section class="slide">
+    <div class="slide__inner slide__inner--left">
+      <p class="t-heading">3ヶ月のポイントレース →<br>上位12名の頂上決戦</p>
+      <div class="accent-bar accent-bar--orange" style="margin: 1.2rem 0;"></div>
+      <p class="t-body" style="max-width: 700px;">
+        毎月の合戦・定期大会の成績をポイント化。
+        3ヶ月（1シーズン）のポイント上位<strong style="color: var(--navy);">12名だけ</strong>が出場できる招待制シーズン大会を開催。
+        合戦や定期大会では味わえない、本気のバトルの舞台。
+      </p>
+      <div class="info-box" style="margin-top: 1.5rem;">
+        <p>
+          <strong>対象:</strong> 川西モルックの会 所属メンバー限定<br>
+          <strong>サイクル:</strong> 3ヶ月制（3ヶ月ポイントレース → シーズン大会 / 年4回）<br>
+          <strong>開催場所:</strong> 満願寺（雨天時は予備日に延期）<br>
+          <strong>集計:</strong> 専用アプリで管理・自動集計
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== Slide 5: Point System — MAIN ==================== -->
+  <section class="slide">
+    <div class="slide__inner slide__inner--left">
+      <p class="t-heading">
+        <span class="badge badge--main">MAIN</span>
+        モルック合戦のポイント
+      </p>
+      <p class="t-small" style="margin-top: 0.5rem;">月1回 / 48名参加</p>
+      <table class="s-table">
+        <thead>
+          <tr><th>順位</th><th>ポイント</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>優勝</td><td><span class="pt-val rank-gold">10 <span class="pt-unit">pt</span></span></td></tr>
+          <tr><td>準優勝</td><td><span class="pt-val rank-silver">7 <span class="pt-unit">pt</span></span></td></tr>
+          <tr><td>3位</td><td><span class="pt-val rank-bronze">5 <span class="pt-unit">pt</span></span></td></tr>
+          <tr><td>ベスト4</td><td><span class="pt-val">4 <span class="pt-unit">pt</span></span></td></tr>
+          <tr><td>ベスト8</td><td><span class="pt-val">3 <span class="pt-unit">pt</span></span></td></tr>
+          <tr><td>ベスト16</td><td><span class="pt-val">2 <span class="pt-unit">pt</span></span></td></tr>
+          <tr><td>ベスト24</td><td><span class="pt-val">1 <span class="pt-unit">pt</span></span></td></tr>
+          <tr><td style="color: var(--red);">予選落ち</td><td><span class="pt-val rank-red">-1 <span class="pt-unit">pt</span></span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ==================== Slide 6: Point System — REGULAR ==================== -->
+  <section class="slide">
+    <div class="slide__inner slide__inner--left">
+      <p class="t-heading">
+        <span class="badge badge--regular">REGULAR</span>
+        定期大会のポイント
+      </p>
+      <p class="t-small" style="margin-top: 0.5rem;">各月1回 / 〜20名程度参加（モルックナイト / 平日カップ / 早朝カップ）</p>
+      <table class="s-table">
+        <thead>
+          <tr><th>順位</th><th>ポイント</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>優勝</td><td><span class="pt-val rank-gold">4 <span class="pt-unit">pt</span></span></td></tr>
+          <tr><td>準優勝</td><td><span class="pt-val rank-silver">3 <span class="pt-unit">pt</span></span></td></tr>
+          <tr><td>3位</td><td><span class="pt-val rank-bronze">2 <span class="pt-unit">pt</span></span></td></tr>
+          <tr><td>準決勝進出</td><td><span class="pt-val">1 <span class="pt-unit">pt</span></span></td></tr>
+          <tr><td style="color: var(--red);">予選落ち</td><td><span class="pt-val rank-red">-1 <span class="pt-unit">pt</span></span></td></tr>
+        </tbody>
+      </table>
+      <div class="info-box" style="margin-top: 1.5rem;">
+        <p>合戦は規模が大きくガチ度が高いため高配点。ただし定期大会3つ全勝なら月12pt → 合戦優勝(10pt)すら超える。<strong>コツコツ参加する人も、合戦で勝つ人も、両方報われる設計。</strong><br>
+        <strong style="color: var(--red);">予選落ち = -1pt</strong> で出場するだけではポイントが伸びない。勝ち上がってこそ価値がある。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== Slide 7: Point Simulation ==================== -->
+  <section class="slide">
+    <div class="slide__inner">
+      <p class="t-heading">ポイントシミュレーション</p>
+      <p class="t-small">1シーズン / 3ヶ月分</p>
+      <div class="cards-row">
+        <!-- 合戦特化型 -->
+        <div class="sim-card">
+          <div class="sim-card__header">
+            <span>合戦特化型</span>
+            <span class="sim-card__total" style="color: var(--gold);">22 pt</span>
+          </div>
+          <div class="sim-card__body">
+            <div class="sim-row"><span>1月: 合戦優勝 / ナイト予選落ち</span><span class="sim-val">9 pt</span></div>
+            <div class="sim-row"><span>2月: 合戦3位</span><span class="sim-val">5 pt</span></div>
+            <div class="sim-row"><span>3月: 合戦優勝 / 早朝予選落ち</span><span class="sim-val">8 pt</span></div>
+          </div>
+        </div>
+        <!-- 安定型 -->
+        <div class="sim-card" style="border-top: 3px solid var(--green);">
+          <div class="sim-card__header">
+            <span>全大会参加の安定型</span>
+            <span class="sim-card__total sim-val--green">35 pt</span>
+          </div>
+          <div class="sim-card__body">
+            <div class="sim-row"><span>1月: 合戦B8 + ナイト優勝 + 平日準優勝 + 早朝優勝</span><span class="sim-val">14 pt</span></div>
+            <div class="sim-row"><span>2月: 合戦B4 + ナイト準優勝 + 平日優勝 + 早朝3位</span><span class="sim-val">12 pt</span></div>
+            <div class="sim-row"><span>3月: 合戦B8 + ナイト優勝 + 平日予選落ち + 早朝優勝</span><span class="sim-val">10 pt</span></div>
+          </div>
+        </div>
+        <!-- 参加だけ -->
+        <div class="sim-card" style="border-top: 3px solid var(--red);">
+          <div class="sim-card__header">
+            <span>参加だけして勝てない</span>
+            <span class="sim-card__total sim-val--red">-6 pt</span>
+          </div>
+          <div class="sim-card__body">
+            <div class="sim-row"><span>1月: 合戦予選落ち + ナイト予選落ち</span><span class="sim-val sim-val--red">-2 pt</span></div>
+            <div class="sim-row"><span>2月: 合戦予選落ち + 平日予選落ち</span><span class="sim-val sim-val--red">-2 pt</span></div>
+            <div class="sim-row"><span>3月: 合戦予選落ち + 早朝予選落ち</span><span class="sim-val sim-val--red">-2 pt</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== Slide 8: Season Schedule ==================== -->
+  <section class="slide">
+    <div class="slide__inner">
+      <p class="t-heading">シーズンスケジュール</p>
+      <p class="t-small">年4シーズン制</p>
+      <div class="season-grid">
+        <div class="season-card">
+          <div class="season-tag" style="background: var(--green-light); color: var(--green); border: 1px solid #9ae6b4;">S1</div>
+          <h4>Season 1 — Spring</h4>
+          <p>
+            <span class="date-main">レース: 3月〜5月</span><br>
+            合戦3回 + ナイト3回 + 平日3回 + 早朝3回 = 計12大会<br>
+            <span class="date-main">本戦: 6月</span><br>
+            会場: 満願寺
+          </p>
+        </div>
+        <div class="season-card">
+          <div class="season-tag" style="background: var(--orange-light); color: var(--orange); border: 1px solid #fbd38d;">S2</div>
+          <h4>Season 2 — Summer</h4>
+          <p>
+            <span class="date-main">レース: 6月〜8月</span><br>
+            合戦3回 + ナイト3回 + 平日3回 + 早朝3回 = 計12大会<br>
+            <span class="date-main">本戦: 9月</span><br>
+            会場: 満願寺
+          </p>
+        </div>
+        <div class="season-card">
+          <div class="season-tag" style="background: #fffaf0; color: #b7791f; border: 1px solid #f6e05e;">S3</div>
+          <h4>Season 3 — Autumn</h4>
+          <p>
+            <span class="date-main">レース: 9月〜11月</span><br>
+            合戦3回 + ナイト3回 + 平日3回 + 早朝3回 = 計12大会<br>
+            <span class="date-main">本戦: 12月</span><br>
+            会場: 満願寺
+          </p>
+        </div>
+        <div class="season-card">
+          <div class="season-tag" style="background: var(--blue-light); color: #3182ce; border: 1px solid #90cdf4;">S4</div>
+          <h4>Season 4 — Winter</h4>
+          <p>
+            <span class="date-main">レース: 12月〜2月</span><br>
+            合戦3回 + ナイト3回 + 平日3回 + 早朝3回 = 計12大会<br>
+            <span class="date-main">本戦: 3月</span><br>
+            会場: 満願寺
+          </p>
+        </div>
+      </div>
+      <div class="info-box" style="margin-top: 1rem;">
+        <p>3ヶ月の短いサイクルで年4回チャンスあり。シーズンごとにリセットされるので逆転も起きやすく、モチベーション維持に最適。<strong>初回は2026年3月スタート → 6月に第1回シーズン大会を開催。</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== Slide 9: Tournament Format Flow ==================== -->
+  <section class="slide">
+    <div class="slide__inner">
+      <p class="t-heading">シーズン大会フォーマット</p>
+      <div class="accent-bar accent-bar--orange" style="margin: 1rem auto;"></div>
+      <div class="h-flow">
+        <div class="h-flow__step">
+          <div class="h-flow__label">予選</div>
+          <div class="h-flow__sub">3ブロック x 4名<br>総当たり</div>
+        </div>
+        <div class="h-flow__arrow">→</div>
+        <div class="h-flow__step">
+          <div class="h-flow__label">通過</div>
+          <div class="h-flow__sub">各ブロック<br>上位2名 = 6名</div>
+        </div>
+        <div class="h-flow__arrow">→</div>
+        <div class="h-flow__step">
+          <div class="h-flow__label">WC戦</div>
+          <div class="h-flow__sub">3位 x 3名から<br>2名が復活</div>
+        </div>
+        <div class="h-flow__arrow">→</div>
+        <div class="h-flow__step h-flow__step--active">
+          <div class="h-flow__label">決勝T</div>
+          <div class="h-flow__sub">8名による<br>トーナメント</div>
+        </div>
+      </div>
+      <div class="info-box" style="margin-top: 1.5rem;">
+        <p>ポイント上位12名を3ブロックに振り分け → 各ブロック内で総当たり。上位2名 + WC2名 = 計8名で決勝トーナメント。<strong>1位〜12位の全順位を確定 → ドーム内に掲示。</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== Slide 10: Bracket Visualization ==================== -->
+  <section class="slide">
+    <div class="slide__inner">
+      <p class="t-heading">ブラケット構成</p>
+      <div class="accent-bar accent-bar--navy" style="margin: 0.8rem auto;"></div>
+
+      <div class="bracket-label">予選ブロック</div>
+      <div class="bracket-grid">
+        <div class="block-card">
+          <div class="block-label">BLOCK A</div>
+          <div class="slot slot--pass">1位 → 通過</div>
+          <div class="slot slot--pass">2位 → 通過</div>
+          <div class="slot slot--wc">3位 → WC戦</div>
+          <div class="slot">4位 → 敗退</div>
+        </div>
+        <div class="block-card">
+          <div class="block-label">BLOCK B</div>
+          <div class="slot slot--pass">1位 → 通過</div>
+          <div class="slot slot--pass">2位 → 通過</div>
+          <div class="slot slot--wc">3位 → WC戦</div>
+          <div class="slot">4位 → 敗退</div>
+        </div>
+        <div class="block-card">
+          <div class="block-label">BLOCK C</div>
+          <div class="slot slot--pass">1位 → 通過</div>
+          <div class="slot slot--pass">2位 → 通過</div>
+          <div class="slot slot--wc">3位 → WC戦</div>
+          <div class="slot">4位 → 敗退</div>
+        </div>
+      </div>
+
+      <div class="bracket-center-card">
+        <div style="font-size: clamp(0.8rem, 1.5vw, 0.95rem); color: var(--gray);">
+          WC: 3位 x 3名 → <strong style="color: #805ad5;">2名</strong>が決勝T進出
+        </div>
+      </div>
+
+      <div class="bracket-center-card">
+        <div class="bracket-label">決勝トーナメント 8名</div>
+        <div style="font-size: clamp(0.85rem, 1.6vw, 1rem); color: var(--gray); line-height: 2;">
+          準々決勝（4試合） → 準決勝（2試合） → 3位決定戦 + <strong style="color: var(--gold);">決 勝</strong>
+        </div>
+      </div>
+
+      <div class="ranking-grid">
+        <div class="ranking-item"><strong>1〜4位:</strong> 決勝T結果で確定（3位決定戦あり）</div>
+        <div class="ranking-item"><strong>5〜8位:</strong> 準々決勝敗退者（予選ポイント順）</div>
+        <div class="ranking-item"><strong>9位:</strong> WC戦敗退者</div>
+        <div class="ranking-item"><strong>10〜12位:</strong> 予選ブロック最下位（予選成績順）</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== Slide 11: Match Format ==================== -->
+  <section class="slide">
+    <div class="slide__inner">
+      <p class="t-heading">試合形式 — オールタイマン</p>
+      <p class="t-body" style="margin-top: 0.5rem;">全試合が1対1の真剣勝負。チーム戦なし。</p>
+      <div class="accent-bar accent-bar--navy" style="margin: 1rem auto;"></div>
+      <div class="match-grid">
+        <div class="match-card">
+          <div class="match-card__stage">予選ラウンド</div>
+          <div class="match-card__format">2先</div>
+          <div class="match-card__desc">2本先取 / 最大3ゲーム</div>
+        </div>
+        <div class="match-card">
+          <div class="match-card__stage">決勝トーナメント</div>
+          <div class="match-card__format">3先</div>
+          <div class="match-card__desc">3本先取 / 最大5ゲーム</div>
+        </div>
+      </div>
+      <div class="info-box" style="margin-top: 1.5rem;">
+        <p>ステージが上がるほどガチ度UP。予選はテンポ良く、決勝Tはじっくり戦える設計。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== Slide 12: Scoring System App ==================== -->
+  <section class="slide">
+    <div class="slide__inner">
+      <p class="t-heading">集計システム</p>
+      <p class="t-body" style="margin-top: 0.5rem;">専用アプリで自動集計</p>
+      <div class="accent-bar accent-bar--navy" style="margin: 1rem auto;"></div>
+      <p class="t-small" style="max-width: 600px; margin: 0 auto;">
+        各大会の結果を入力すると、ポイントを自動計算してランキングをリアルタイム更新。
+        シーズン中のランキング変動をいつでも確認できる。
+      </p>
+      <div class="app-features">
+        <div class="app-feature">
+          <div class="app-feature__icon">&#x1F4CA;</div>
+          <div class="app-feature__title">大会結果入力</div>
+          <div class="app-feature__desc">各大会の結果をかんたんに入力</div>
+        </div>
+        <div class="app-feature">
+          <div class="app-feature__icon">&#x26A1;</div>
+          <div class="app-feature__title">ポイント自動計算</div>
+          <div class="app-feature__desc">順位に応じたポイントを自動算出</div>
+        </div>
+        <div class="app-feature">
+          <div class="app-feature__icon">&#x1F3C6;</div>
+          <div class="app-feature__title">リアルタイムランキング</div>
+          <div class="app-feature__desc">ランキング変動をいつでも確認</div>
+        </div>
+        <div class="app-feature">
+          <div class="app-feature__icon">&#x1F4C5;</div>
+          <div class="app-feature__title">シーズン別履歴</div>
+          <div class="app-feature__desc">過去のシーズン結果も閲覧可能</div>
+        </div>
+      </div>
+      <div class="info-box" style="margin-top: 1rem;">
+        <p><strong>技術:</strong> GitHub Pages + Firebase RTDB で構築予定</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== Slide 13: Part 2 Divider ==================== -->
+  <section class="slide slide--divider">
+    <div class="divider-number" style="color: rgba(56,161,105,0.08);">02</div>
+    <div class="slide__inner">
+      <div class="divider-label divider-label--green">PART 2</div>
+      <h2 class="t-heading" style="color: var(--green);">新人年間王決定戦</h2>
+      <div class="accent-bar accent-bar--green"></div>
+    </div>
+  </section>
+
+  <!-- ==================== Slide 14: 新人年間王 Concept ==================== -->
+  <section class="slide">
+    <div class="slide__inner slide__inner--left">
+      <p class="t-heading" style="color: var(--green);">新人の中で最強は誰だ？<br>1年の集大成</p>
+      <div class="accent-bar accent-bar--green" style="margin: 1.2rem 0;"></div>
+      <p class="t-body" style="max-width: 700px;">
+        毎月の新人戦で結果を残した選手が年末に集結。
+        1月〜12月の<strong style="color: var(--navy);">新人戦 優勝者・準優勝者</strong>による個人戦で、
+        新人の中の年間最強を決める。
+      </p>
+      <div class="info-box info-box--green" style="margin-top: 1.5rem;">
+        <p>
+          <strong>目的:</strong> 新人の年間を通じた参加モチベーション維持 + 新人にもスポットライトを<br>
+          <strong>開催時期:</strong> 毎年12月
+        </p>
+      </div>
+
+      <p class="t-subheading" style="color: var(--green); margin-top: 2rem;">出場資格</p>
+      <ul class="qual-list">
+        <li>
+          <span class="qual-icon qual-pass">優</span>
+          各月 新人戦 優勝者（最大12名）
+        </li>
+        <li>
+          <span class="qual-icon qual-sub">準</span>
+          各月 新人戦 準優勝者（最大12名）
+        </li>
+      </ul>
+      <div class="info-box info-box--green" style="margin-top: 0.8rem;">
+        <p>最大<strong>24名</strong>が出場権を獲得（重複出場者がいれば実人数は減少）</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== Slide 15: 新人年間王 Format ==================== -->
+  <section class="slide">
+    <div class="slide__inner">
+      <p class="t-heading" style="color: var(--green);">
+        <span class="badge badge--rookie">個人戦</span>
+        新人年間王 フォーマット
+      </p>
+      <div class="accent-bar accent-bar--green" style="margin: 1rem auto;"></div>
+      <div class="flow-steps" style="max-width: 700px; margin: 1.5rem auto 0;">
+        <div class="flow-step">
+          <div class="flow-num flow-num--green">1</div>
+          <div class="flow-content">
+            <div class="flow-title">予選リーグ（ブロック分け）</div>
+            <div class="flow-desc">出場者を4名ずつのブロックに分割。各ブロック内で総当たり戦。</div>
+          </div>
+        </div>
+        <div class="flow-connector flow-connector--green"></div>
+        <div class="flow-step">
+          <div class="flow-num flow-num--green">2</div>
+          <div class="flow-content">
+            <div class="flow-title">各ブロック上位者が決勝トーナメント進出</div>
+            <div class="flow-desc">参加人数に応じて通過枠を調整。シード権は年間成績上位者に付与。</div>
+          </div>
+        </div>
+        <div class="flow-connector flow-connector--green"></div>
+        <div class="flow-step">
+          <div class="flow-num flow-num--green">3</div>
+          <div class="flow-content">
+            <div class="flow-title">決勝トーナメント</div>
+            <div class="flow-desc">1対1のタイマン勝負。準決勝・決勝は3本先取で白熱の展開に。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== Slide 16: Annual Schedule ==================== -->
+  <section class="slide">
+    <div class="slide__inner">
+      <p class="t-heading" style="color: var(--green);">年間スケジュール</p>
+      <div class="accent-bar accent-bar--green" style="margin: 1rem auto;"></div>
+      <div class="timeline" style="max-width: 600px; margin: 1.5rem auto 0;">
+        <div class="timeline__item timeline__item--green">
+          <span class="timeline__month" style="color: var(--green);">1月〜12月</span>
+          <span class="timeline__desc">毎月の新人戦で<strong>優勝・準優勝 = 出場権獲得</strong></span>
+        </div>
+        <div class="timeline__item">
+          <span class="timeline__month">6月</span>
+          <span class="timeline__desc">中間発表（出場権獲得者一覧を公開）</span>
+        </div>
+        <div class="timeline__item">
+          <span class="timeline__month">11月</span>
+          <span class="timeline__desc">最終確定（出場者リスト・トーナメント表作成）</span>
+        </div>
+        <div class="timeline__item timeline__item--gold">
+          <span class="timeline__month" style="color: var(--gold);">12月</span>
+          <span class="timeline__desc"><strong style="color: var(--gold);">新人年間王決定戦 開催</strong></span>
+        </div>
+        <div class="timeline__item timeline__item--orange">
+          <span class="timeline__month" style="color: var(--orange);">翌年1月</span>
+          <span class="timeline__desc"><strong style="color: var(--orange);">合戦FINAL 開催</strong>（合戦決勝進出者 + シーズン大会優勝者 + 新人年間王が出場）</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== Slide 17: Overview ==================== -->
+  <section class="slide">
+    <div class="slide__inner">
+      <p class="t-heading">年間の全体像</p>
+      <div class="accent-bar accent-bar--navy" style="margin: 1rem auto;"></div>
+      <div class="overview-stack">
+        <div class="overview-card" style="color: var(--orange); border-top: 3px solid var(--orange);">
+          シーズン大会 x 年4回<br><span style="font-weight: 400; font-size: 0.85em; color: var(--gray);">3ヶ月ごと / 満願寺</span>
+        </div>
+        <div class="overview-plus">+</div>
+        <div class="overview-card" style="color: var(--green); border-top: 3px solid var(--green);">
+          新人年間王決定戦 x 年1回<br><span style="font-weight: 400; font-size: 0.85em; color: var(--gray);">12月開催</span>
+        </div>
+        <div class="overview-plus">+</div>
+        <div class="overview-card" style="color: var(--gold); border-top: 3px solid var(--gold);">
+          合戦FINAL x 年1回<br><span style="font-weight: 400; font-size: 0.85em; color: var(--gray);">翌年1月 / 合戦決勝進出者 + シーズン大会優勝者 + 新人年間王</span>
+        </div>
+        <div class="overview-arrow">&#x2193;</div>
+        <div class="overview-result">川西モルックの会の1年を彩る大会体系</div>
+      </div>
+      <div class="info-box" style="margin-top: 1rem;">
+        <p>シーズン大会で<strong>日頃の実力を可視化</strong>し、新人年間王で<strong>新人にスポットライト</strong>を。
+        12月の新人年間王 → 翌年1月の合戦FINALで、年間のクライマックスを締めくくる。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== Slide 18: 合戦FINAL ==================== -->
+  <section class="slide">
+    <div class="slide__inner">
+      <p class="t-heading">
+        <span class="badge badge--final">FINAL</span>
+        合戦FINAL
+      </p>
+      <p class="t-body" style="margin-top: 0.5rem;">年間を通じた実績者による頂上決戦</p>
+      <div class="accent-bar accent-bar--orange" style="margin: 1rem auto;"></div>
+      <p class="t-small" style="max-width: 650px; margin: 0 auto;">
+        毎月のモルック合戦で<strong style="color: var(--navy);">決勝に進出した者</strong>に加え、<strong style="color: var(--navy);">シーズン大会の優勝者</strong>と<strong style="color: var(--navy);">新人年間王</strong>も出場権を獲得。
+        1年間を通じて結果を残してきた精鋭が、翌年1月に一堂に会して最強を決める。
+      </p>
+      <div class="final-quals">
+        <div class="final-qual">
+          <div class="final-qual__num">&#9312;</div>
+          <div class="final-qual__text">3月〜12月のモルック合戦で<strong>決勝に進出</strong></div>
+        </div>
+        <div class="final-qual">
+          <div class="final-qual__num">&#9313;</div>
+          <div class="final-qual__text">シーズン大会で<strong>優勝</strong><br>（年4回チャンスあり）</div>
+        </div>
+        <div class="final-qual">
+          <div class="final-qual__num">&#9314;</div>
+          <div class="final-qual__text">新人年間王決定戦で<strong>優勝</strong></div>
+        </div>
+      </div>
+      <div class="info-box" style="margin-top: 1.5rem;">
+        <p><strong>開催時期:</strong> 翌年1月<br><strong>開催場所:</strong> 満願寺（雨天時は予備日に延期）</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== Slide 19: 決めておくこと ==================== -->
+  <section class="slide">
+    <div class="slide__inner slide__inner--left">
+      <p class="t-heading">決めておくこと</p>
+      <div class="accent-bar accent-bar--navy" style="margin: 1rem 0;"></div>
+      <ul class="checklist">
+        <li><span class="check-box"></span>シーズン大会の具体的な日程（各シーズンの本戦日 + 予備日）</li>
+        <li><span class="check-box"></span>ポイント集計アプリの開発・運用開始</li>
+        <li><span class="check-box"></span>ワイルドカード決定戦の具体ルール</li>
+        <li><span class="check-box"></span>同ポイント時の順位決定方法</li>
+        <li><span class="check-box"></span>新人戦の定義（何年目まで「新人」とするか）</li>
+        <li><span class="check-box"></span>新人年間王の重複出場者が多い場合の繰り上げルール</li>
+        <li><span class="check-box"></span>出場権獲得者の辞退時の対応</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ==================== Slide 20: Closing ==================== -->
+  <section class="slide slide--dark slide--closing">
+    <div class="slide__inner">
+      <div class="closing-title">
+        川西モルックの会<br>シーズン大会 &amp; 新人年間王<br>企画書
+      </div>
+      <div class="accent-bar accent-bar--orange"></div>
+      <div class="closing-meta">2026年2月 Draft</div>
+    </div>
+  </section>
+
+</div><!-- /.slides -->
+
+</body>
+</html>
