@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>引用リポスト生成 | MOLKKY HUB</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', sans-serif;
+  background: #0a0a0a; color: #e0e0e0;
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center;
+}
+.container { width: 100%; max-width: 520px; padding: 24px 16px; }
+.header { text-align: center; margin-bottom: 28px; }
+.header h1 { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+.header p { font-size: 13px; color: #888; line-height: 1.6; }
+
+/* Input */
+.input-group { margin-bottom: 12px; }
+.input-label { font-size: 12px; font-weight: 600; color: #888; margin-bottom: 6px; display: block; }
+.input-area { position: relative; }
+.input-area textarea {
+  width: 100%; padding: 14px; font-size: 15px; line-height: 1.7;
+  background: #1a1a1a; border: 2px solid #333; border-radius: 12px;
+  color: #fff; outline: none; transition: border-color 0.2s;
+  resize: vertical; min-height: 100px; font-family: inherit;
+}
+.input-area textarea:focus { border-color: #4a9eff; }
+.input-area textarea::placeholder { color: #555; }
+
+.context-input {
+  width: 100%; padding: 12px 14px; font-size: 14px;
+  background: #1a1a1a; border: 2px solid #333; border-radius: 12px;
+  color: #fff; outline: none; transition: border-color 0.2s;
+  font-family: inherit;
+}
+.context-input:focus { border-color: #4a9eff; }
+.context-input::placeholder { color: #555; }
+
+.generate-btn {
+  width: 100%; padding: 16px; font-size: 16px; font-weight: 600;
+  background: #4a9eff; color: #fff; border: none; border-radius: 12px;
+  cursor: pointer; transition: background 0.2s, opacity 0.2s;
+  margin-top: 12px;
+}
+.generate-btn:hover { background: #3a8eef; }
+.generate-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.generate-btn.loading { background: #333; }
+
+/* Post cards */
+.posts-area { margin-top: 24px; display: none; }
+.posts-area.show { display: block; }
+.posts-area h3 { font-size: 14px; color: #4a9eff; margin-bottom: 16px; text-align: center; }
+
+.post-card {
+  background: #1a1a1a; border: 1px solid #333; border-radius: 12px;
+  margin-bottom: 12px; overflow: hidden; transition: border-color 0.2s;
+}
+.post-card:hover { border-color: #4a9eff; }
+.post-card-header {
+  padding: 10px 16px; background: #111; border-bottom: 1px solid #222;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.post-card-header .type { font-size: 12px; font-weight: 600; color: #aaa; }
+.post-card-header .chars { font-size: 11px; color: #666; }
+.post-card-body {
+  padding: 16px; font-size: 14px; line-height: 1.8; color: #ddd;
+  white-space: pre-wrap; word-break: break-word; user-select: all;
+}
+.post-card-footer {
+  padding: 10px 16px; border-top: 1px solid #222;
+  display: flex; gap: 8px;
+}
+.copy-btn {
+  flex: 1; padding: 10px; font-size: 13px; font-weight: 600;
+  border: none; border-radius: 8px; cursor: pointer; text-align: center;
+  transition: background 0.2s; background: #4a9eff; color: #fff;
+}
+.copy-btn:hover { background: #3a8eef; }
+.copy-btn.copied { background: #2ea043; }
+
+/* Status */
+.status {
+  margin-top: 16px; padding: 12px 16px; border-radius: 12px;
+  font-size: 14px; text-align: center; display: none;
+}
+.status.show { display: block; }
+.status.error { background: rgba(248,81,73,0.15); color: #f85149; border: 1px solid rgba(248,81,73,0.3); }
+.status.info { background: rgba(74,158,255,0.1); color: #4a9eff; border: 1px solid rgba(74,158,255,0.2); }
+
+/* Persona preview */
+.persona-box {
+  margin-top: 20px; padding: 14px 16px; background: #111;
+  border: 1px solid #222; border-radius: 12px;
+  font-size: 12px; color: #666; line-height: 1.6;
+}
+.persona-box strong { color: #888; }
+
+.footer-note {
+  margin-top: 32px; text-align: center; font-size: 11px; color: #444; line-height: 1.6;
+}
+.footer-note a { color: #4a9eff; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>引用リポスト生成</h1>
+    <p>モルハブ宛のポストに対する<br>引用リポスト案を自動生成します</p>
+  </div>
+
+  <div class="input-group">
+    <label class="input-label">元ポストの内容（コピペ or 要約）</label>
+    <div class="input-area">
+      <textarea id="tweetInput" placeholder="例: S-möl大阪版にモルハブからモルック棒を協賛いただきました。ありがとうございます！ #モルック @molkkyhub"></textarea>
+    </div>
+  </div>
+
+  <div class="input-group">
+    <label class="input-label">投稿者名（任意）</label>
+    <input class="context-input" id="authorInput" placeholder="例: オーモリ / @omori_molkky">
+  </div>
+
+  <div class="input-group">
+    <label class="input-label">補足情報（任意: 関連記事URL、掲載予定 等）</label>
+    <input class="context-input" id="contextInput" placeholder="例: 寄稿記事として掲載予定">
+  </div>
+
+  <button class="generate-btn" id="generateBtn" disabled>引用リポスト案を生成</button>
+
+  <div class="status" id="status"></div>
+
+  <div class="posts-area" id="postsArea">
+    <h3>引用リポスト案（タップでコピー）</h3>
+    <div id="postCards"></div>
+  </div>
+
+  <div class="persona-box">
+    <strong>モルハブ人格設定:</strong> メディア × ハブ × 裏方<br>
+    完全敬語 / 相手を主役に / つながりを示す / 自己主張控えめ
+  </div>
+
+  <div class="footer-note">
+    <a href="https://molkky-hub.com" target="_blank">MOLKKY HUB</a> 引用リポストツール
+  </div>
+</div>
+
+<script>
+const GEMINI_KEY = 'AIzaSyAfpDcLF8i4ApRffCvgz8qFTLu6Fk1IwbE';
+
+const tweetInput = document.getElementById('tweetInput');
+const authorInput = document.getElementById('authorInput');
+const contextInput = document.getElementById('contextInput');
+const generateBtn = document.getElementById('generateBtn');
+const postsArea = document.getElementById('postsArea');
+const postCards = document.getElementById('postCards');
+const statusEl = document.getElementById('status');
+
+tweetInput.addEventListener('input', () => {
+  generateBtn.disabled = tweetInput.value.trim().length < 10;
+  postsArea.classList.remove('show');
+  showStatus('', '');
+});
+
+generateBtn.addEventListener('click', async () => {
+  const tweet = tweetInput.value.trim();
+  if (!tweet) return;
+
+  generateBtn.disabled = true;
+  generateBtn.textContent = '過去ポストを参照中...';
+  generateBtn.classList.add('loading');
+  showStatus('', '');
+  postsArea.classList.remove('show');
+
+  try {
+    // 1. Fetch recent molkkyhub posts for tone reference
+    let pastPosts = '';
+    try {
+      const resp = await fetch('https://syndication.twitter.com/srv/timeline-profile/screen-name/molkkyhub');
+      const html = await resp.text();
+      const matches = html.match(/"text":"([^"]{20,})"/g);
+      if (matches) {
+        pastPosts = matches.slice(0, 8).map(m => m.replace(/"text":"/, '').replace(/"$/, '')).join('\n---\n');
+      }
+    } catch (e) {
+      // Syndication API may fail, continue without it
+    }
+
+    // 2. Generate with Gemini
+    generateBtn.textContent = 'Geminiで生成中...';
+    const posts = await generateRepost(tweet, authorInput.value.trim(), contextInput.value.trim(), pastPosts);
+
+    // 3. Display
+    displayPosts(posts);
+
+  } catch (e) {
+    showStatus('error', e.message);
+  }
+
+  generateBtn.textContent = '引用リポスト案を生成';
+  generateBtn.classList.remove('loading');
+  generateBtn.disabled = false;
+});
+
+async function generateRepost(originalTweet, author, context, pastPosts) {
+  const prompt = `あなたはモルック（フィンランド発祥の投擲スポーツ）の情報メディア「MOLKKY HUB（モルハブ）」のX（Twitter）アカウント @molkkyhub の運用担当です。
+
+以下の元ポストに対する「引用リポスト」の文面を3パターン生成してください。
+
+## モルハブの人格設定（厳守）
+- **立場**: モルック界の情報ハブ。つなぎ役の黒子メディア
+- **3つの柱**: メディア（正確・丁寧な情報発信）/ ハブ（人と情報をつなぐ）/ 裏方（自分を前に出さず相手を持ち上げる）
+- **文体**: 完全敬語（です・ます調）。タメ口・カジュアル表現は一切使わない
+- **距離感**: 丁寧で誠実。馴れ馴れしくない。品のある文体
+- **温度感**: 冷たくはないが、過度にテンション高くしない。静かな熱量
+- **自己主張**: 控えめ。自画自賛は絶対にしない
+- **絵文字**: 控えめに2〜3個程度（✨📝🪵🎉📊あたり）
+- **ハッシュタグ**: 末尾に必ず #モルック #molkky
+- **関西弁禁止**: 標準語の敬語で統一
+- **NG表現**: 「〜だよね」「〜じゃん」「嬉しい！」等のカジュアル表現は使わない。「嬉しく思います」「幸いです」等に
+
+## 引用リポスト時の原則
+1. 相手を主役にする（モルハブは脇役）
+2. 補足情報を自然に添える（ハブとしての価値）
+3. 感謝を丁寧に示す
+4. モルック界のつながり・広がりに触れる
+5. 宣伝臭を出さない
+
+## 元ポストの内容
+${originalTweet}
+
+${author ? `## 投稿者: ${author}` : ''}
+${context ? `## 補足情報: ${context}` : ''}
+
+${pastPosts ? `## モルハブの過去ポスト（トーン参考）\n${pastPosts}` : ''}
+
+## 生成ルール
+1. 各ポストは80〜160文字程度（ハッシュタグ込み）。引用リポストなので短めで良い
+2. 完全敬語。誰からもツッコミが入らない品のある文体
+3. 3パターンは切り口を変える: A=感謝・称賛型、B=情報補足型、C=つながり型
+4. ハッシュタグは必ず末尾に #モルック #molkky
+5. 改行を適度に入れて読みやすく
+
+## 出力形式（JSON）
+[
+  {"type": "感謝・称賛型", "text": "文面A"},
+  {"type": "情報補足型", "text": "文面B"},
+  {"type": "つながり型", "text": "文面C"}
+]`;
+
+  const resp = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.6, responseMimeType: 'application/json' }
+      })
+    }
+  );
+
+  const result = await resp.json();
+  if (result.error) throw new Error('Gemini API: ' + result.error.message);
+
+  const text = result.candidates[0].content.parts[0].text;
+  return JSON.parse(text);
+}
+
+function displayPosts(posts) {
+  postCards.innerHTML = '';
+
+  posts.forEach((post, i) => {
+    const card = document.createElement('div');
+    card.className = 'post-card';
+    const charCount = post.text.length;
+
+    card.innerHTML = `
+      <div class="post-card-header">
+        <span class="type">${String.fromCharCode(65 + i)}. ${post.type}</span>
+        <span class="chars">${charCount}文字</span>
+      </div>
+      <div class="post-card-body">${escapeHtml(post.text)}</div>
+      <div class="post-card-footer">
+        <button class="copy-btn" data-text="${escapeAttr(post.text)}">コピー</button>
+      </div>
+    `;
+
+    postCards.appendChild(card);
+  });
+
+  postCards.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(btn.dataset.text);
+        btn.textContent = 'コピー完了!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'コピー';
+          btn.classList.remove('copied');
+        }, 2000);
+      } catch (e) {
+        const body = btn.closest('.post-card').querySelector('.post-card-body');
+        const range = document.createRange();
+        range.selectNodeContents(body);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+      }
+    });
+  });
+
+  postsArea.classList.add('show');
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+}
+
+function escapeAttr(str) {
+  return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function showStatus(type, message) {
+  if (!message) { statusEl.classList.remove('show'); return; }
+  statusEl.className = `status show ${type}`;
+  statusEl.textContent = message;
+}
+</script>
+</body>
+</html>
