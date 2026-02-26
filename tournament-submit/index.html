@@ -186,11 +186,11 @@
 <div class="container">
   <div class="header">
     <h1>MOLKKY HUB 大会情報投稿</h1>
-    <p>大会のXポストや詳細ページのURLを貼るだけ！<br>情報は自動で読み取られます。</p>
+    <p>大会のXポスト・公式サイト・申込ページなど<br>URLを貼るだけ！情報は自動で読み取られます。</p>
   </div>
 
   <div class="input-area">
-    <input type="url" id="urlInput" placeholder="https://x.com/... のURLを貼り付け"
+    <input type="url" id="urlInput" placeholder="XポストやウェブページのURLを貼り付け"
            autocomplete="off" autocorrect="off" autocapitalize="off">
     <button class="paste-btn" id="pasteBtn" title="クリップボードから貼り付け">📋</button>
   </div>
@@ -209,7 +209,7 @@
   <div class="how-to">
     <h3>使い方</h3>
     <ol>
-      <li>Xで大会のポストを見つける</li>
+      <li>大会のXポスト・公式サイト・申込ページを見つける</li>
       <li><strong>URLをコピー</strong>（共有ボタン→リンクをコピー）</li>
       <li>このページに<strong>貼り付けて送信</strong></li>
       <li>あとは自動！情報が読み取られてサイトに掲載されます</li>
@@ -296,17 +296,44 @@ async function fetchTweetPreview(url) {
   }
 }
 
+// Check for duplicate URL in queue (indexOn不要: 全件取得してクライアント側で照合)
+async function checkDuplicate(url) {
+  try {
+    const resp = await fetch(`${FIREBASE_DB}${QUEUE_PATH}.json`);
+    if (!resp.ok) return false;
+    const data = await resp.json();
+    if (!data) return false;
+    return Object.values(data).some(
+      e => e.url === url && (e.status === 'pending' || e.status === 'posted')
+    );
+  } catch (e) {
+    return false; // チェック失敗時は通す
+  }
+}
+
 // Submit to Firebase RTDB
 submitBtn.addEventListener('click', async () => {
   const url = urlInput.value.trim();
   if (!url) return;
 
   submitBtn.disabled = true;
-  submitBtn.textContent = '送信中...';
+  submitBtn.textContent = '確認中...';
   submitBtn.classList.add('loading');
   showStatus('', '');
 
   try {
+    // 重複チェック
+    const isDuplicate = await checkDuplicate(url);
+    if (isDuplicate) {
+      showStatus('error', 'このURLは既に送信済みです。');
+      submitBtn.textContent = '送信する';
+      submitBtn.classList.remove('loading');
+      submitBtn.disabled = false;
+      return;
+    }
+
+    submitBtn.textContent = '送信中...';
+
     const entry = {
       url: url,
       timestamp: new Date().toISOString(),
