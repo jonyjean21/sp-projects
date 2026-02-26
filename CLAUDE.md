@@ -11,17 +11,16 @@
 3. **セキュリティ最優先** — トークンやシークレットは絶対にコードやコミットに含めない
 4. **手動作業を発生させない** — ブラウザでの操作をユーザーに指示するのは最終手段
 
-### 操作方法
-- **git push が 403 で失敗する場合**: `gh api` 経由でブランチ作成・更新を行う
-- **リポジトリ設定**: `gh api repos/{owner}/{repo} -X PATCH` で変更する
-- **GitHub Pages**: `gh api` で設定する
-- **PRの作成・マージ**: `gh pr create` / `gh pr merge` を使う
-- **ブランチ保護**: `gh api` で設定する
+### 操作方法（トークン不要）
+- **git push/pull**: ローカルプロキシ経由で認証不要で動作する
+- **ブランチのマージ**: PRを使わず `git merge` → `git push origin main` で直接マージする
+- **ブランチ作成**: `git checkout -b <branch>` → `git push -u origin <branch>`
 
-### GitHub API認証
+### GitHub API が必要な場合（トークン要）
+- PR作成・マージ、リポジトリ設定変更、GitHub Pages設定など
 - GitHub Secrets に PAT を保存済み（`GH_PAT_CLASSIC`, `GH_PAT_FINEGRAINED`）
-- `gh` CLI が使えない環境では、GitHub REST API + `curl` で PR作成・マージを行う
-- トークンが必要な場合はユーザーに確認する（Secretsから直接読み出しはできない）
+- トークンが必要な場合のみユーザーに確認する
+- 基本的にはトークン不要のgit操作で完結させること
 
 ### セキュリティルール
 - `.env` ファイルは `.gitignore` に含め、絶対にコミットしない
