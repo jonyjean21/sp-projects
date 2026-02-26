@@ -18,6 +18,11 @@
 - **PRの作成・マージ**: `gh pr create` / `gh pr merge` を使う
 - **ブランチ保護**: `gh api` で設定する
 
+### GitHub API認証
+- GitHub Secrets に PAT を保存済み（`GH_PAT_CLASSIC`, `GH_PAT_FINEGRAINED`）
+- `gh` CLI が使えない環境では、GitHub REST API + `curl` で PR作成・マージを行う
+- トークンが必要な場合はユーザーに確認する（Secretsから直接読み出しはできない）
+
 ### セキュリティルール
 - `.env` ファイルは `.gitignore` に含め、絶対にコミットしない
 - トークンやAPIキーをコード内にハードコードしない
