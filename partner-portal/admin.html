@@ -87,6 +87,17 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--cream); color:
   object-fit: contain;
 }
 .photo-area .placeholder { color: var(--text-muted); font-size: 0.85rem; }
+
+/* Source toggle buttons */
+.source-toggle {
+  flex: 1; padding: 8px 12px; border: 2px solid #e0e0e0;
+  background: var(--white); color: var(--text); font-size: 0.85rem;
+  border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s;
+}
+.source-toggle.active {
+  border-color: var(--green-main); background: var(--green-pale);
+  color: var(--green-dark); font-weight: 600;
+}
 .photo-area .placeholder .icon { font-size: 2rem; margin-bottom: 4px; }
 .photo-size { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
 
@@ -127,6 +138,20 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--cream); color:
 }
 .toast.show { opacity: 1; }
 
+/* Modal */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5); z-index: 50;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+}
+.modal {
+  background: var(--white); border-radius: var(--radius);
+  padding: 20px; width: 100%; max-width: 460px;
+  max-height: 85vh; overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
 /* Back link */
 .back-link { display: block; text-align: center; margin-top: 20px; color: var(--green-main); font-size: 0.82rem; text-decoration: none; }
 </style>
@@ -150,6 +175,7 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--cream); color:
 <div id="main-screen" class="container" style="display:none">
   <div class="nav">
     <button class="nav-btn active" data-panel="add-return">実績を追加</button>
+    <button class="nav-btn" data-panel="edit-history">履歴編集</button>
     <button class="nav-btn" data-panel="add-photo">写真を追加</button>
     <button class="nav-btn" data-panel="add-comment">コメント追加</button>
     <button class="nav-btn" data-panel="add-partner">パートナー</button>
@@ -184,25 +210,87 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--cream); color:
     </div>
     <div class="form-group">
       <label>提供元</label>
-      <input type="text" id="r-provider" placeholder="モルックドーム" value="モルックドーム">
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <button type="button" class="btn source-toggle active" data-source="partner" onclick="toggleSource('partner')">パートナー提供</button>
+        <button type="button" class="btn source-toggle" data-source="hub" onclick="toggleSource('hub')">モルハブ協賛</button>
+      </div>
     </div>
-    <div class="form-group">
-      <label>仲介者（いれば）</label>
-      <input type="text" id="r-mediator" placeholder="サノ">
-    </div>
-    <div class="form-group">
-      <label>受け渡し方法</label>
-      <input type="text" id="r-handoff" placeholder="手渡し（仲介）" value="手渡し（仲介）">
-    </div>
-    <div class="form-group">
-      <label>受け渡し場所・イベント</label>
-      <input type="text" id="r-event" placeholder="OSAKA CUP SINGLESにて">
+    <div id="partner-fields">
+      <div class="form-group">
+        <label>パートナー名</label>
+        <input type="text" id="r-provider" placeholder="モルックドーム" value="モルックドーム">
+      </div>
+      <div class="form-group">
+        <label>仲介者（いれば）</label>
+        <input type="text" id="r-mediator" placeholder="サノ">
+      </div>
     </div>
     <div class="form-group">
       <label>日付</label>
       <input type="date" id="r-date">
     </div>
     <button class="btn btn-primary" onclick="addReturn()">提供実績を追加</button>
+  </div>
+
+  <!-- Edit History -->
+  <div id="edit-history" class="panel">
+    <div id="edit-list"></div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div id="edit-modal" class="modal-overlay" style="display:none">
+    <div class="modal">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h3 style="font-size:1rem;color:var(--green-dark);">実績を編集</h3>
+        <button onclick="closeEditModal()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text-muted);">✕</button>
+      </div>
+      <div class="form-group">
+        <label>提供品</label>
+        <input type="text" id="e-item">
+      </div>
+      <div class="form-group">
+        <label>区分</label>
+        <select id="e-category">
+          <option value="大会">大会</option>
+          <option value="学校">学校</option>
+          <option value="個人">個人</option>
+          <option value="自主提供">自主提供</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>受取先</label>
+        <input type="text" id="e-recipient">
+      </div>
+      <div class="form-group">
+        <label>状態</label>
+        <select id="e-condition">
+          <option value="新品">新品</option>
+          <option value="訳あり">訳あり</option>
+          <option value="中古">中古</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>提供元</label>
+        <input type="text" id="e-provider">
+      </div>
+      <div class="form-group">
+        <label>仲介者</label>
+        <input type="text" id="e-mediator">
+      </div>
+      <div class="form-group">
+        <label>日付</label>
+        <input type="date" id="e-date">
+      </div>
+      <div class="form-group">
+        <label>完了状態</label>
+        <select id="e-completed">
+          <option value="false">進行中</option>
+          <option value="true">完了</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="saveEdit()" style="margin-bottom:8px;">保存</button>
+      <button class="btn btn-danger" onclick="deleteReturn()">この実績を削除</button>
+    </div>
   </div>
 
   <!-- Add Photo -->
@@ -212,6 +300,15 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--cream); color:
       <div id="photo-return-list"></div>
     </div>
     <div id="photo-upload-area" style="display:none">
+      <div id="existing-photo-preview" style="display:none">
+        <div class="form-group">
+          <label>現在の写真</label>
+          <div style="position:relative;">
+            <img id="existing-photo-img" style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;background:#f0f0f0;">
+          </div>
+          <p style="color:var(--text-muted);font-size:0.8rem;margin-top:6px;">新しい写真を選択すると上書きされます</p>
+        </div>
+      </div>
       <div class="form-group">
         <label>写真を選択</label>
         <div class="photo-area" id="photo-drop">
@@ -236,7 +333,7 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--cream); color:
     <div id="comment-form" style="display:none">
       <div class="form-group">
         <label>コメント者の表示名</label>
-        <input type="text" id="c-name" placeholder="Asuさん（教員）">
+        <input type="text" id="c-name" placeholder="Asu">
       </div>
       <div class="form-group">
         <label>コメント</label>
@@ -329,6 +426,7 @@ function loadReturns() {
     });
     renderReturnSelection('photo-return-list', selectReturnForPhoto);
     renderReturnSelection('comment-return-list', selectReturnForComment);
+    renderEditList();
   });
   // Set today's date as default
   document.getElementById('r-date').value = new Date().toISOString().split('T')[0];
@@ -372,6 +470,29 @@ function selectReturnForPhoto(key) {
   const oldPreview = area.querySelector('.preview');
   if (oldPreview) oldPreview.remove();
   document.getElementById('photo-size-info').textContent = '';
+
+  // Show existing photo preview if available
+  const r = returnsData.find(x => x._key === key);
+  const previewEl = document.getElementById('existing-photo-preview');
+  const previewImg = document.getElementById('existing-photo-img');
+  if (r && r.image_url) {
+    previewEl.style.display = 'block';
+    previewImg.src = '';
+    if (r.image_url.startsWith('fb:')) {
+      const fbKey = r.image_url.slice(3);
+      db.ref(`partner/images/${fbKey}`).once('value', snap => {
+        const data = snap.val();
+        if (data) previewImg.src = data;
+        else previewEl.style.display = 'none';
+      });
+    } else if (r.image_url.startsWith('http')) {
+      previewImg.src = r.image_url;
+    } else {
+      previewEl.style.display = 'none';
+    }
+  } else {
+    previewEl.style.display = 'none';
+  }
 }
 
 document.getElementById('photo-input').addEventListener('change', async function(e) {
@@ -480,22 +601,33 @@ async function saveComment() {
   }
 }
 
+// Source toggle
+let currentSource = 'partner';
+function toggleSource(source) {
+  currentSource = source;
+  document.querySelectorAll('.source-toggle').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.source === source);
+  });
+  document.getElementById('partner-fields').style.display = source === 'partner' ? '' : 'none';
+}
+
 // Add Return
 async function addReturn() {
   const item = document.getElementById('r-item').value.trim();
   const recipient = document.getElementById('r-recipient').value.trim();
   if (!item || !recipient) { toast('提供品と受取先は必須です'); return; }
 
+  const isHub = currentSource === 'hub';
   const maxOrder = returnsData.reduce((max, r) => Math.max(max, r._order || 0), 0);
   const data = {
     item,
     category: document.getElementById('r-category').value,
     recipient,
     condition: document.getElementById('r-condition').value,
-    provider: document.getElementById('r-provider').value.trim() || 'モルハブ',
-    mediator: document.getElementById('r-mediator').value.trim(),
-    handoff_method: document.getElementById('r-handoff').value.trim(),
-    handoff_event: document.getElementById('r-event').value.trim(),
+    provider: isHub ? 'MOLKKY HUB' : (document.getElementById('r-provider').value.trim() || 'モルハブ'),
+    mediator: isHub ? '' : document.getElementById('r-mediator').value.trim(),
+    handoff_method: '',
+    handoff_event: '',
     date: document.getElementById('r-date').value,
     completed: false,
     image_url: '',
@@ -537,6 +669,82 @@ async function addPartner() {
     document.getElementById('p-name').value = '';
     document.getElementById('p-x').value = '';
     document.getElementById('p-link').value = '';
+  } catch (err) {
+    toast('エラー: ' + err.message);
+  }
+}
+
+// Edit History
+let editKey = null;
+
+function renderEditList() {
+  const el = document.getElementById('edit-list');
+  if (!returnsData.length) {
+    el.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;">実績がまだありません。</p>';
+    return;
+  }
+  el.innerHTML = [...returnsData].sort((a, b) => (b.date || '').localeCompare(a.date || '')).map(r => `
+    <div class="return-item-mini" data-key="${r._key}" onclick="openEditModal('${r._key}')">
+      <div class="title">
+        <span class="badge" style="background:${r.completed ? 'var(--green-pale)' : 'var(--orange-pale)'};color:${r.completed ? 'var(--green-main)' : 'var(--orange)'};">${r.completed ? '完了' : '進行中'}</span>
+        <span class="badge" style="background:var(--blue-pale);color:var(--blue);">${esc(r.category)}</span>
+        ${esc(r.item)}
+      </div>
+      <div class="sub">${esc(r.date)} — ${esc(r.recipient)} ← ${esc(r.provider)}</div>
+    </div>
+  `).join('');
+}
+
+function openEditModal(key) {
+  editKey = key;
+  const r = returnsData.find(x => x._key === key);
+  if (!r) return;
+  document.getElementById('e-item').value = r.item || '';
+  document.getElementById('e-category').value = r.category || '大会';
+  document.getElementById('e-recipient').value = r.recipient || '';
+  document.getElementById('e-condition').value = r.condition || '新品';
+  document.getElementById('e-provider').value = r.provider || '';
+  document.getElementById('e-mediator').value = r.mediator || '';
+  document.getElementById('e-date').value = r.date || '';
+  document.getElementById('e-completed').value = r.completed ? 'true' : 'false';
+  document.getElementById('edit-modal').style.display = 'flex';
+}
+
+function closeEditModal() {
+  document.getElementById('edit-modal').style.display = 'none';
+  editKey = null;
+}
+
+async function saveEdit() {
+  if (!editKey) return;
+  const updates = {
+    item: document.getElementById('e-item').value.trim(),
+    category: document.getElementById('e-category').value,
+    recipient: document.getElementById('e-recipient').value.trim(),
+    condition: document.getElementById('e-condition').value,
+    provider: document.getElementById('e-provider').value.trim(),
+    mediator: document.getElementById('e-mediator').value.trim(),
+    date: document.getElementById('e-date').value,
+    completed: document.getElementById('e-completed').value === 'true'
+  };
+  if (!updates.item || !updates.recipient) { toast('提供品と受取先は必須です'); return; }
+  try {
+    await db.ref(`partner/returns/${editKey}`).update(updates);
+    toast('更新しました');
+    closeEditModal();
+  } catch (err) {
+    toast('エラー: ' + err.message);
+  }
+}
+
+async function deleteReturn() {
+  if (!editKey) return;
+  if (!confirm('この実績を削除しますか？')) return;
+  try {
+    await db.ref(`partner/returns/${editKey}`).remove();
+    await db.ref(`partner/images/${editKey}`).remove();
+    toast('削除しました');
+    closeEditModal();
   } catch (err) {
     toast('エラー: ' + err.message);
   }
