@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>川西モルックの会 ランキング & ガチ大会</title>
+<title>川西モルックの会 シーズン大会 & 新人年間王</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
@@ -11,7 +11,7 @@
   --border: #2a3040; --text: #e6edf3; --sub: #8b949e;
   --accent: #58a6ff; --gold: #ffd700; --silver: #c0c0c0;
   --bronze: #cd7f32; --fire: #ff6b35; --green: #3fb950;
-  --purple: #bc8cff; --red: #f85149;
+  --purple: #bc8cff; --red: #f85149; --cyan: #56d4dd;
 }
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -33,12 +33,30 @@ body {
   border: 1px solid #3a2520;
 }
 .hero h1 {
-  font-size: 26px; font-weight: 800; line-height: 1.3;
+  font-size: 24px; font-weight: 800; line-height: 1.3;
   background: linear-gradient(135deg, var(--gold) 0%, var(--fire) 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-.hero p { font-size: 14px; color: var(--sub); margin-top: 8px; }
+.hero p { font-size: 14px; color: var(--sub); margin-top: 8px; line-height: 1.6; }
+
+/* Divider */
+.part-divider {
+  text-align: center; padding: 40px 0 8px;
+}
+.part-divider .label {
+  display: inline-block; font-size: 11px; font-weight: 700;
+  letter-spacing: 2px; padding: 6px 20px; border-radius: 20px;
+}
+.part-divider .label-fire {
+  color: var(--fire); background: #2a1510; border: 1px solid #3a2520;
+}
+.part-divider .label-green {
+  color: var(--green); background: #102a1a; border: 1px solid #203a2a;
+}
+.part-divider h2 {
+  font-size: 20px; font-weight: 800; margin-top: 12px;
+}
 
 /* Section */
 .section { margin-top: 32px; }
@@ -52,6 +70,7 @@ body {
   content: ''; display: block; width: 3px; height: 16px;
   border-radius: 2px; background: var(--accent);
 }
+.section-title.green::before { background: var(--green); }
 
 /* Point Table */
 .point-table { width: 100%; border-collapse: collapse; }
@@ -90,6 +109,40 @@ body {
 }
 .event-main { background: #2a1a10; color: var(--fire); border: 1px solid #3a2a20; }
 .event-sub { background: #101a2a; color: var(--accent); border: 1px solid #203040; }
+.event-rookie { background: #102a1a; color: var(--green); border: 1px solid #203a2a; }
+
+/* Tournament cards */
+.tourney-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden; margin-bottom: 12px;
+}
+.tourney-header {
+  padding: 14px 18px; display: flex; align-items: center; gap: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.tourney-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.tourney-header-text h3 { font-size: 15px; font-weight: 700; }
+.tourney-header-text p { font-size: 11px; color: var(--sub); margin-top: 2px; }
+.tourney-body { padding: 16px 18px; }
+
+/* Qualification list */
+.qual-list { list-style: none; padding: 0; }
+.qual-list li {
+  font-size: 13px; padding: 8px 0; border-bottom: 1px solid #1a2030;
+  display: flex; align-items: center; gap: 10px; color: var(--sub);
+}
+.qual-list li:last-child { border-bottom: none; }
+.qual-icon {
+  width: 24px; height: 24px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; flex-shrink: 0;
+}
+.qual-pass { background: #102a1a; color: var(--green); border: 1px solid #203a2a; }
+.qual-sub { background: #1a1530; color: var(--purple); border: 1px solid #2a2540; }
 
 /* Tournament Bracket */
 .bracket { padding: 16px 0; }
@@ -139,6 +192,9 @@ body {
   font-size: 14px; font-weight: 700; flex-shrink: 0;
   background: #101a2a; color: var(--accent); border: 1px solid #203040;
 }
+.flow-num-green {
+  background: #102a1a; color: var(--green); border: 1px solid #203a2a;
+}
 .flow-content { flex: 1; }
 .flow-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
 .flow-desc { font-size: 12px; color: var(--sub); line-height: 1.5; }
@@ -166,6 +222,42 @@ body {
 }
 .sim-row:last-child { border-bottom: none; }
 .sim-row .val { color: var(--text); font-weight: 600; }
+.sim-row .val-minus { color: var(--red); font-weight: 600; }
+
+/* Schedule table */
+.schedule-grid {
+  display: grid; grid-template-columns: 1fr; gap: 10px;
+}
+.schedule-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px; display: flex; gap: 14px;
+  align-items: flex-start;
+}
+.schedule-season {
+  font-size: 12px; font-weight: 800; padding: 6px 12px;
+  border-radius: 8px; white-space: nowrap; flex-shrink: 0;
+}
+.schedule-body { flex: 1; }
+.schedule-body h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.schedule-body p { font-size: 12px; color: var(--sub); line-height: 1.5; }
+.schedule-body .date-main { color: var(--text); font-weight: 600; }
+.schedule-body .date-backup { color: var(--sub); font-size: 11px; }
+
+/* Comparison */
+.compare-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.compare-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px; text-align: center;
+}
+.compare-card h4 {
+  font-size: 11px; font-weight: 700; margin-bottom: 10px;
+}
+.compare-stat {
+  font-size: 22px; font-weight: 800; margin-bottom: 4px;
+}
+.compare-label { font-size: 10px; color: var(--sub); }
 
 /* Info boxes */
 .info-box {
@@ -174,6 +266,10 @@ body {
 }
 .info-box p { font-size: 12px; color: var(--accent); line-height: 1.6; }
 .info-box strong { color: var(--text); }
+.info-box-green {
+  background: #0a1a10; border: 1px solid #1a3020;
+}
+.info-box-green p { color: var(--green); }
 
 /* Checklist */
 .checklist { list-style: none; padding: 0; }
@@ -200,24 +296,34 @@ body {
 <!-- Hero -->
 <div class="hero">
   <div class="hero-badge">NEW PROJECT</div>
-  <h1>川西モルックの会<br>ランキング & ガチ大会</h1>
-  <p>定期大会のポイントで競い、上位12名だけの頂上決戦へ</p>
+  <h1>川西モルックの会<br>シーズン大会 & 新人年間王</h1>
+  <p>3ヶ月のポイントレースで最強を決める「シーズン大会」と<br>新人戦の1年を締めくくる「新人年間王決定戦」</p>
+</div>
+
+<!-- ============================== -->
+<!-- PART 1: シーズン大会 -->
+<!-- ============================== -->
+<div class="part-divider">
+  <span class="label label-fire">PART 1</span>
+  <h2 style="color: var(--fire);">川西モルックの会<br>最強は誰だ！？シーズン大会</h2>
 </div>
 
 <!-- コンセプト -->
 <div class="section">
   <div class="section-title">コンセプト</div>
   <div class="card">
-    <div class="card-title">川西モルックの会で最強は誰だ？</div>
+    <div class="card-title">3ヶ月のポイントレース → 上位12名の頂上決戦</div>
     <div class="card-desc">
-      毎月の定期大会の成績をポイント化。シーズンを通じて安定的に強いメンバーを可視化し、
-      上位12名だけが出場できる<strong>招待制ガチ大会</strong>を開催する。
-      合戦や定期大会では味わえない本気のバトルの舞台。
+      毎月の合戦・定期大会の成績をポイント化。
+      3ヶ月（1シーズン）のポイント上位<strong>12名だけ</strong>が出場できる招待制シーズン大会を開催。
+      合戦や定期大会では味わえない、本気のバトルの舞台。
     </div>
   </div>
   <div class="info-box">
     <p><strong>対象:</strong> 川西モルックの会 所属メンバー限定<br>
-    <strong>シーズン:</strong> 半年制（6ヶ月のポイントレース → ガチ大会）</p>
+    <strong>サイクル:</strong> 3ヶ月制（3ヶ月ポイントレース → シーズン大会 / 年4回）<br>
+    <strong>開催場所:</strong> 満願寺（雨天時は予備日に延期）<br>
+    <strong>集計:</strong> 専用アプリで管理・自動集計</p>
   </div>
 </div>
 
@@ -242,6 +348,7 @@ body {
         <tr><td>ベスト8</td><td><span class="pt-val">3 <span>pt</span></span></td></tr>
         <tr><td>ベスト16</td><td><span class="pt-val">2 <span>pt</span></span></td></tr>
         <tr><td>ベスト24</td><td><span class="pt-val">1 <span>pt</span></span></td></tr>
+        <tr><td style="color: var(--red);">予選落ち</td><td><span class="pt-val" style="color: var(--red);">-1 <span>pt</span></span></td></tr>
       </tbody>
     </table>
   </div>
@@ -261,54 +368,132 @@ body {
         <tr><td>準優勝</td><td><span class="pt-val rank-2">3 <span>pt</span></span></td></tr>
         <tr><td>3位</td><td><span class="pt-val rank-3">2 <span>pt</span></span></td></tr>
         <tr><td>準決勝進出</td><td><span class="pt-val">1 <span>pt</span></span></td></tr>
+        <tr><td style="color: var(--red);">予選落ち</td><td><span class="pt-val" style="color: var(--red);">-1 <span>pt</span></span></td></tr>
       </tbody>
     </table>
   </div>
 
   <div class="info-box">
-    <p>合戦は規模が大きくガチ度が高いため高配点。ただし定期大会3つ全勝なら月12pt → 合戦優勝(10pt)すら超える。<strong>コツコツ参加する人も、合戦で勝つ人も、両方報われる設計。</strong></p>
+    <p>合戦は規模が大きくガチ度が高いため高配点。ただし定期大会3つ全勝なら月12pt → 合戦優勝(10pt)すら超える。<strong>コツコツ参加する人も、合戦で勝つ人も、両方報われる設計。</strong><br><br>
+    <strong style="color: var(--red);">予選落ち = -1pt</strong> で出場するだけではポイントが伸びない。勝ち上がってこそ価値がある。</p>
   </div>
 </div>
 
 <!-- シミュレーション -->
 <div class="section">
-  <div class="section-title">ポイントシミュレーション（3ヶ月分）</div>
+  <div class="section-title">ポイントシミュレーション（1シーズン / 3ヶ月分）</div>
 
   <div class="sim-card">
     <div class="sim-header">
       <span>合戦特化型プレイヤー</span>
-      <span class="sim-total">25 pt</span>
+      <span class="sim-total">22 pt</span>
     </div>
     <div class="sim-body">
-      <div class="sim-row"><span>3月 合戦 優勝</span><span class="val">10 pt</span></div>
-      <div class="sim-row"><span>4月 合戦 3位</span><span class="val">5 pt</span></div>
-      <div class="sim-row"><span>5月 合戦 優勝</span><span class="val">10 pt</span></div>
+      <div class="sim-row"><span>1ヶ月目: 合戦 優勝 / ナイト予選落ち</span><span class="val">10 - 1 = 9 pt</span></div>
+      <div class="sim-row"><span>2ヶ月目: 合戦 3位</span><span class="val">5 pt</span></div>
+      <div class="sim-row"><span>3ヶ月目: 合戦 優勝 / 早朝予選落ち</span><span class="val">10 - 1 = 8 pt</span></div>
     </div>
   </div>
 
   <div class="sim-card">
     <div class="sim-header">
       <span>全大会参加の安定型</span>
-      <span class="sim-total" style="color: var(--green);">37 pt</span>
+      <span class="sim-total" style="color: var(--green);">35 pt</span>
     </div>
     <div class="sim-body">
-      <div class="sim-row"><span>3月 合戦B8 + ナイト優勝 + 平日準優勝 + 早朝優勝</span><span class="val">14 pt</span></div>
-      <div class="sim-row"><span>4月 合戦B4 + ナイト準優勝 + 平日優勝 + 早朝3位</span><span class="val">12 pt</span></div>
-      <div class="sim-row"><span>5月 合戦B8 + ナイト優勝 + 平日3位 + 早朝優勝</span><span class="val">11 pt</span></div>
+      <div class="sim-row"><span>1ヶ月目: 合戦B8 + ナイト優勝 + 平日準優勝 + 早朝優勝</span><span class="val">14 pt</span></div>
+      <div class="sim-row"><span>2ヶ月目: 合戦B4 + ナイト準優勝 + 平日優勝 + 早朝3位</span><span class="val">12 pt</span></div>
+      <div class="sim-row"><span>3ヶ月目: 合戦B8 + ナイト優勝 + 平日予選落ち + 早朝優勝</span><span class="val">10 pt</span></div>
     </div>
+  </div>
+
+  <div class="sim-card">
+    <div class="sim-header">
+      <span>参加だけして勝てないパターン</span>
+      <span class="sim-total" style="color: var(--red);">-6 pt</span>
+    </div>
+    <div class="sim-body">
+      <div class="sim-row"><span>1ヶ月目: 合戦予選落ち + ナイト予選落ち</span><span class="val-minus">-2 pt</span></div>
+      <div class="sim-row"><span>2ヶ月目: 合戦予選落ち + 平日予選落ち</span><span class="val-minus">-2 pt</span></div>
+      <div class="sim-row"><span>3ヶ月目: 合戦予選落ち + 早朝予選落ち</span><span class="val-minus">-2 pt</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- シーズンスケジュール -->
+<div class="section">
+  <div class="section-title">シーズンスケジュール（年4シーズン）</div>
+
+  <div class="schedule-grid">
+    <div class="schedule-card">
+      <div class="schedule-season" style="background: #1a2510; color: var(--green); border: 1px solid #2a3520;">S1</div>
+      <div class="schedule-body">
+        <h4>Season 1 — Spring</h4>
+        <p>
+          <span class="date-main">ポイントレース: 3月〜5月</span><br>
+          合戦3回 + ナイト3回 + 平日3回 + 早朝3回 = 計12大会<br>
+          <span class="date-main">シーズン大会: 6月</span><br>
+          <span class="date-backup">会場: 満願寺 / 雨天時は翌週に延期</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="schedule-card">
+      <div class="schedule-season" style="background: #2a1a10; color: var(--fire); border: 1px solid #3a2a20;">S2</div>
+      <div class="schedule-body">
+        <h4>Season 2 — Summer</h4>
+        <p>
+          <span class="date-main">ポイントレース: 6月〜8月</span><br>
+          合戦3回 + ナイト3回 + 平日3回 + 早朝3回 = 計12大会<br>
+          <span class="date-main">シーズン大会: 9月</span><br>
+          <span class="date-backup">会場: 満願寺 / 雨天時は翌週に延期</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="schedule-card">
+      <div class="schedule-season" style="background: #2a1510; color: #e09040; border: 1px solid #3a2520;">S3</div>
+      <div class="schedule-body">
+        <h4>Season 3 — Autumn</h4>
+        <p>
+          <span class="date-main">ポイントレース: 9月〜11月</span><br>
+          合戦3回 + ナイト3回 + 平日3回 + 早朝3回 = 計12大会<br>
+          <span class="date-main">シーズン大会: 12月</span><br>
+          <span class="date-backup">会場: 満願寺 / 雨天時は翌週に延期</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="schedule-card">
+      <div class="schedule-season" style="background: #10152a; color: var(--accent); border: 1px solid #203040;">S4</div>
+      <div class="schedule-body">
+        <h4>Season 4 — Winter</h4>
+        <p>
+          <span class="date-main">ポイントレース: 12月〜2月</span><br>
+          合戦3回 + ナイト3回 + 平日3回 + 早朝3回 = 計12大会<br>
+          <span class="date-main">シーズン大会: 3月</span><br>
+          <span class="date-backup">会場: 満願寺 / 雨天時は翌週に延期</span>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <p>3ヶ月の短いサイクルで年4回チャンスあり。シーズンごとにリセットされるので逆転も起きやすく、モチベーション維持に最適。<br>
+    <strong>初回は2026年3月スタート → 6月に第1回シーズン大会を開催。</strong></p>
   </div>
 </div>
 
 <!-- ガチ大会フォーマット -->
 <div class="section">
-  <div class="section-title">ガチ大会フォーマット</div>
+  <div class="section-title">シーズン大会フォーマット</div>
 
   <div class="flow-steps">
     <div class="flow-step">
       <div class="flow-num">1</div>
       <div class="flow-content">
         <div class="flow-title">予選ラウンド（3ブロック × 4名）</div>
-        <div class="flow-desc">12名を3ブロックに振り分け、各ブロック内で総当たり。各選手3試合。</div>
+        <div class="flow-desc">ポイント上位12名を3ブロックに振り分け、各ブロック内で総当たり。各選手3試合。</div>
       </div>
     </div>
     <div class="flow-connector"></div>
@@ -420,47 +605,153 @@ body {
   </div>
 </div>
 
-<!-- スケジュール -->
+<!-- ポイント集計アプリ -->
 <div class="section">
-  <div class="section-title">シーズンスケジュール</div>
-
-  <div class="card" style="margin-bottom: 16px;">
-    <div class="card-title">
-      <span class="event-badge event-main">PLAN A</span>
-      半年制（6ヶ月）
-    </div>
-    <div class="card-desc" style="line-height: 2.2; font-size: 13px;">
-      <strong style="color: var(--accent);">3月〜8月</strong> — シーズン1 ポイントレース<br>
-      　合戦6回 + ナイト6回 + 平日6回 + 早朝6回 = 計24大会<br>
-      <span style="color: var(--sub);">　5月末 中間ランキング発表</span><br>
-      <span style="color: var(--sub);">　8月末 最終ランキング確定</span><br><br>
-      <strong style="color: var(--gold);">9月</strong> — ガチ大会（予選 + 決勝トーナメント）<br><br>
-      <strong style="color: var(--accent);">9月〜2月</strong> — シーズン2 ポイントレース<br>
-      <strong style="color: var(--gold);">3月</strong> — シーズン2 ガチ大会
+  <div class="section-title">集計システム</div>
+  <div class="card">
+    <div class="card-title">専用アプリで自動集計</div>
+    <div class="card-desc">
+      各大会の結果を入力すると、ポイントを自動計算してランキングをリアルタイム更新。<br>
+      シーズン中のランキング変動をいつでも確認できる。
     </div>
   </div>
+  <div class="info-box">
+    <p><strong>機能:</strong> 大会結果入力 / ポイント自動計算 / リアルタイムランキング / シーズン別履歴<br>
+    <strong>技術:</strong> GitHub Pages + Firebase RTDB で構築予定</p>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!-- PART 2: 新人年間王決定戦 -->
+<!-- ============================== -->
+<div class="part-divider">
+  <span class="label label-green">PART 2</span>
+  <h2 style="color: var(--green);">新人年間王決定戦</h2>
+</div>
+
+<!-- コンセプト -->
+<div class="section">
+  <div class="section-title green">コンセプト</div>
+  <div class="card">
+    <div class="card-title">新人の中で最強は誰だ？ 1年の集大成</div>
+    <div class="card-desc">
+      毎月の新人戦で結果を残した選手が年末に集結。
+      1月〜12月の<strong>新人戦 優勝者・準優勝者</strong>による個人戦で、
+      新人の中の年間最強を決める。
+    </div>
+  </div>
+  <div class="info-box info-box-green">
+    <p><strong>目的:</strong> 新人の年間を通じた参加モチベーション維持 + 新人にもスポットライトを<br>
+    <strong>開催時期:</strong> 毎年12月（合戦Finalと合わせた年末の祭典として）</p>
+  </div>
+</div>
+
+<!-- 出場資格 -->
+<div class="section">
+  <div class="section-title green">出場資格</div>
+
+  <div class="tourney-card">
+    <div class="tourney-header">
+      <div class="tourney-icon" style="background: #102a1a; border: 1px solid #203a2a;">👑</div>
+      <div class="tourney-header-text">
+        <h3 style="color: var(--green);">年間新人王決定戦</h3>
+        <p>1月〜12月の新人戦 優勝者 / 準優勝者による個人戦</p>
+      </div>
+    </div>
+    <div class="tourney-body">
+      <div class="card-desc" style="margin-bottom: 12px;">
+        毎月の新人戦で優勝・準優勝を勝ち取った選手が年末に集結。
+        新人の中で最強は誰なのか、1年の総決算として決着をつける。
+      </div>
+      <ul class="qual-list">
+        <li>
+          <span class="qual-icon qual-pass">優</span>
+          各月 新人戦 優勝者（最大12名）
+        </li>
+        <li>
+          <span class="qual-icon qual-sub">準</span>
+          各月 新人戦 準優勝者（最大12名）
+        </li>
+      </ul>
+      <div class="info-box info-box-green" style="margin-top: 12px;">
+        <p>最大<strong>24名</strong>が出場権を獲得（重複出場者がいれば実人数は減少）</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 大会フォーマット -->
+<div class="section">
+  <div class="section-title green">大会フォーマット</div>
 
   <div class="card">
     <div class="card-title">
-      <span class="event-badge event-sub">PLAN B</span>
-      3ヶ月制（クォーター）
+      <span class="event-badge event-rookie">個人戦</span>
+      新人年間王決定戦
     </div>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="flow-num flow-num-green">1</div>
+        <div class="flow-content">
+          <div class="flow-title">予選リーグ（ブロック分け）</div>
+          <div class="flow-desc">出場者を4名ずつのブロックに分割。各ブロック内で総当たり戦。</div>
+        </div>
+      </div>
+      <div class="flow-connector"></div>
+      <div class="flow-step">
+        <div class="flow-num flow-num-green">2</div>
+        <div class="flow-content">
+          <div class="flow-title">各ブロック上位者が決勝トーナメント進出</div>
+          <div class="flow-desc">参加人数に応じて通過枠を調整。シード権は年間成績上位者に付与。</div>
+        </div>
+      </div>
+      <div class="flow-connector"></div>
+      <div class="flow-step">
+        <div class="flow-num flow-num-green">3</div>
+        <div class="flow-content">
+          <div class="flow-title">決勝トーナメント</div>
+          <div class="flow-desc">1対1のタイマン勝負。準決勝・決勝は3本先取で白熱の展開に。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 年間スケジュール -->
+<div class="section">
+  <div class="section-title green">年間スケジュール</div>
+
+  <div class="card">
     <div class="card-desc" style="line-height: 2.2; font-size: 13px;">
-      <strong style="color: var(--accent);">3月〜5月</strong> — Q1 ポイントレース<br>
-      　合戦3回 + ナイト3回 + 平日3回 + 早朝3回 = 計12大会<br><br>
-      <strong style="color: var(--gold);">6月</strong> — Q1 ガチ大会<br><br>
-      <strong style="color: var(--accent);">6月〜8月</strong> — Q2 ポイントレース<br>
-      <strong style="color: var(--gold);">9月</strong> — Q2 ガチ大会<br><br>
-      <strong style="color: var(--accent);">9月〜11月</strong> — Q3 ポイントレース<br>
-      <strong style="color: var(--gold);">12月</strong> — Q3 ガチ大会<br><br>
-      <strong style="color: var(--accent);">12月〜2月</strong> — Q4 ポイントレース<br>
-      <strong style="color: var(--gold);">3月</strong> — Q4 ガチ大会
+      <strong style="color: var(--green);">1月〜12月</strong> — 毎月の新人戦で<strong>優勝・準優勝 = 出場権獲得</strong><br>
+      <span style="color: var(--sub);">　6月: 中間発表（出場権獲得者一覧を公開）</span><br>
+      <span style="color: var(--sub);">　11月: 最終確定（出場者リスト・トーナメント表作成）</span><br>
+      <strong style="color: var(--gold);">12月</strong> — <strong style="color: var(--gold);">新人年間王決定戦 開催</strong>（合戦Finalと合わせて年末の祭典に）
+    </div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!-- 全体像 -->
+<!-- ============================== -->
+<div class="section" style="margin-top: 48px;">
+  <div class="section-title">年間の全体像</div>
+
+  <div class="card" style="text-align: center;">
+    <div class="card-desc" style="font-size: 14px; line-height: 2.4;">
+      <span style="color: var(--fire);">シーズン大会 × 年4回</span>（3ヶ月ごと / 満願寺）<br>
+      ＋<br>
+      <span style="color: var(--green);">新人年間王決定戦 × 年1回</span>（12月）<br>
+      ＋<br>
+      <span style="color: var(--gold);">合戦Final × 年1回</span>（12月 / 既存）<br>
+      ↓<br>
+      <strong style="color: var(--gold); font-size: 16px;">川西モルックの会の1年を彩る大会体系</strong>
     </div>
   </div>
 
   <div class="info-box">
-    <p><strong>半年制:</strong> じっくりポイントが積み上がり、実力が反映されやすい。年2回のガチ大会で特別感◎<br>
-    <strong>3ヶ月制:</strong> シーズンの回転が早く、チャンスが多い。モチベーション維持◎ 逆転も起きやすい</p>
+    <p>シーズン大会で<strong>日頃の実力を可視化</strong>し、新人年間王で<strong>新人にスポットライト</strong>を。
+    合戦Finalと合わせて、12月を年間のクライマックスに。</p>
   </div>
 </div>
 
@@ -469,18 +760,19 @@ body {
   <div class="section-title">決めておくこと</div>
   <div class="card">
     <ul class="checklist">
-      <li><span class="check-box"></span>シーズン期間（半年制 PLAN A or 3ヶ月制 PLAN B）</li>
-      <li><span class="check-box"></span>ポイント管理方法（スプレッドシート / アプリ）</li>
-      <li><span class="check-box"></span>ランキング掲示方法（掲示板 / デジタル / SNS）</li>
+      <li><span class="check-box"></span>シーズン大会の具体的な日程（各シーズンの本戦日 + 予備日）</li>
+      <li><span class="check-box"></span>ポイント集計アプリの開発・運用開始</li>
       <li><span class="check-box"></span>ワイルドカード決定戦の具体ルール</li>
-      <li><span class="check-box"></span>試合形式の最終決定（予選2先+決勝3先 or 全試合3先）</li>
       <li><span class="check-box"></span>同ポイント時の順位決定方法</li>
+      <li><span class="check-box"></span>新人戦の定義（何年目まで「新人」とするか）</li>
+      <li><span class="check-box"></span>新人年間王の重複出場者が多い場合の繰り上げルール</li>
+      <li><span class="check-box"></span>出場権獲得者の辞退時の対応</li>
     </ul>
   </div>
 </div>
 
 <div class="footer">
-  川西モルックの会 ランキング制度 企画書<br>
+  川西モルックの会 シーズン大会 & 新人年間王 企画書<br>
   2026年2月 Draft
 </div>
 
