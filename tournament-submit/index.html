@@ -222,7 +222,9 @@
 </div>
 
 <script>
-const QUEUE_SHEET_URL = '%%GAS_WEBHOOK_URL%%'; // GAS Web App URL (後で設定)
+// Firebase RTDB
+const FIREBASE_DB = 'https://viisi-master-app-default-rtdb.firebaseio.com';
+const QUEUE_PATH = '/tournament-queue';
 
 const urlInput = document.getElementById('urlInput');
 const submitBtn = document.getElementById('submitBtn');
@@ -290,12 +292,11 @@ async function fetchTweetPreview(url) {
 
     preview.classList.add('show');
   } catch (e) {
-    // CORS or network error - show without preview
     preview.classList.remove('show');
   }
 }
 
-// Submit
+// Submit to Firebase RTDB
 submitBtn.addEventListener('click', async () => {
   const url = urlInput.value.trim();
   if (!url) return;
@@ -306,24 +307,25 @@ submitBtn.addEventListener('click', async () => {
   showStatus('', '');
 
   try {
-    if (QUEUE_SHEET_URL.includes('%%')) {
-      // GAS未設定の場合: フォールバック（ローカルストレージに保存）
-      const queue = JSON.parse(localStorage.getItem('tournament_queue') || '[]');
-      queue.push({ url, timestamp: new Date().toISOString() });
-      localStorage.setItem('tournament_queue', JSON.stringify(queue));
-      showStatus('success', '送信完了！確認後サイトに掲載されます。');
-    } else {
-      const resp = await fetch(QUEUE_SHEET_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, timestamp: new Date().toISOString() }),
-        mode: 'no-cors'
-      });
-      showStatus('success', '送信完了！確認後サイトに掲載されます。');
-    }
+    const entry = {
+      url: url,
+      timestamp: new Date().toISOString(),
+      status: 'pending'
+    };
 
-    urlInput.value = '';
-    preview.classList.remove('show');
+    const resp = await fetch(`${FIREBASE_DB}${QUEUE_PATH}.json`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entry)
+    });
+
+    if (resp.ok) {
+      showStatus('success', '送信完了！確認後サイトに掲載されます。');
+      urlInput.value = '';
+      preview.classList.remove('show');
+    } else {
+      throw new Error('送信失敗');
+    }
   } catch (e) {
     showStatus('error', '送信に失敗しました。もう一度試してください。');
   }

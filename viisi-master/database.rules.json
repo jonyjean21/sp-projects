@@ -15,6 +15,14 @@
       "returns": {
         ".indexOn": ["_order", "date"]
       }
+    },
+    "tournament-queue": {
+      ".read": true,
+      "$id": {
+        ".write": "!data.exists() || newData.child('status').val() !== data.child('status').val()",
+        ".validate": "newData.hasChildren(['url', 'timestamp'])"
+      },
+      ".indexOn": ["status", "timestamp"]
     }
   }
 }
