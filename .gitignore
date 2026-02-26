@@ -7,6 +7,17 @@ firebase-debug.log
 .env
 .env.*
 
+# Personal finance (機密情報)
+data/finance/
+
+# 一時データ・大容量ファイル
+data/meet_transcripts/
+data/extracted_json/
+data/notionshare/
+data/notionshare_extracted/
+data/notionshare.zip
+data/notion_extracted_text.txt
+
 # Node
 node_modules/
 
