@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>川西モルックの会 ランキング & ガチ大会</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0a0e14; --card: #131920; --card2: #1a2030;
+  --border: #2a3040; --text: #e6edf3; --sub: #8b949e;
+  --accent: #58a6ff; --gold: #ffd700; --silver: #c0c0c0;
+  --bronze: #cd7f32; --fire: #ff6b35; --green: #3fb950;
+  --purple: #bc8cff; --red: #f85149;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg); color: var(--text);
+  max-width: 640px; margin: 0 auto; padding: 0 16px 40px;
+  min-height: 100vh;
+}
+
+/* Hero */
+.hero {
+  text-align: center; padding: 40px 0 32px;
+  background: linear-gradient(180deg, #0f1520 0%, var(--bg) 100%);
+  margin: 0 -16px; padding-left: 16px; padding-right: 16px;
+}
+.hero-badge {
+  display: inline-block; font-size: 11px; font-weight: 700;
+  color: var(--fire); background: #2a1510; padding: 4px 14px;
+  border-radius: 20px; letter-spacing: 1px; margin-bottom: 12px;
+  border: 1px solid #3a2520;
+}
+.hero h1 {
+  font-size: 26px; font-weight: 800; line-height: 1.3;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--fire) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero p { font-size: 14px; color: var(--sub); margin-top: 8px; }
+
+/* Section */
+.section { margin-top: 32px; }
+.section-title {
+  font-size: 13px; font-weight: 700; color: var(--sub);
+  text-transform: uppercase; letter-spacing: 1.5px;
+  margin-bottom: 14px; padding-left: 2px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-title::before {
+  content: ''; display: block; width: 3px; height: 16px;
+  border-radius: 2px; background: var(--accent);
+}
+
+/* Point Table */
+.point-table { width: 100%; border-collapse: collapse; }
+.point-table th {
+  font-size: 11px; font-weight: 600; color: var(--sub);
+  text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border);
+}
+.point-table td {
+  font-size: 14px; padding: 10px 12px; border-bottom: 1px solid #1a2030;
+}
+.point-table tr:last-child td { border-bottom: none; }
+.pt-val {
+  font-weight: 700; font-size: 16px; display: inline-flex;
+  align-items: center; gap: 4px;
+}
+.pt-val span { font-size: 11px; font-weight: 500; color: var(--sub); }
+.rank-1 { color: var(--gold); }
+.rank-2 { color: var(--silver); }
+.rank-3 { color: var(--bronze); }
+
+/* Cards */
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px; margin-bottom: 10px;
+}
+.card-title {
+  font-size: 15px; font-weight: 700; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 8px;
+}
+.card-desc { font-size: 13px; color: var(--sub); line-height: 1.6; }
+
+/* Event badges */
+.event-badge {
+  display: inline-block; font-size: 10px; font-weight: 700;
+  padding: 3px 10px; border-radius: 10px;
+}
+.event-main { background: #2a1a10; color: var(--fire); border: 1px solid #3a2a20; }
+.event-sub { background: #101a2a; color: var(--accent); border: 1px solid #203040; }
+
+/* Tournament Bracket */
+.bracket { padding: 16px 0; }
+.bracket-phase {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+}
+.phase-label {
+  font-size: 12px; font-weight: 700; color: var(--accent);
+  background: #101a2a; padding: 6px 14px; border-radius: 8px;
+  border: 1px solid #203040; white-space: nowrap;
+}
+.phase-line { flex: 1; height: 1px; background: var(--border); }
+
+.bracket-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  margin-bottom: 16px;
+}
+.block-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px; text-align: center;
+}
+.block-label {
+  font-size: 12px; font-weight: 700; color: var(--accent);
+  margin-bottom: 8px;
+}
+.block-slots {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.slot {
+  font-size: 12px; padding: 6px 8px; border-radius: 6px;
+  background: var(--card2); border: 1px solid var(--border);
+}
+.slot-pass { border-color: var(--green); color: var(--green); font-weight: 600; }
+.slot-wc { border-color: var(--purple); color: var(--purple); font-weight: 600; }
+
+/* Flow */
+.flow-steps {
+  display: flex; flex-direction: column; gap: 0;
+}
+.flow-step {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 14px 0;
+}
+.flow-num {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; flex-shrink: 0;
+  background: #101a2a; color: var(--accent); border: 1px solid #203040;
+}
+.flow-content { flex: 1; }
+.flow-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.flow-desc { font-size: 12px; color: var(--sub); line-height: 1.5; }
+.flow-connector {
+  width: 1px; height: 12px; background: var(--border);
+  margin-left: 16px;
+}
+
+/* Sim Table */
+.sim-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden; margin-bottom: 10px;
+}
+.sim-header {
+  padding: 12px 16px; font-size: 13px; font-weight: 700;
+  background: var(--card2); border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.sim-total { color: var(--gold); font-size: 16px; }
+.sim-body { padding: 10px 16px; }
+.sim-row {
+  display: flex; justify-content: space-between; padding: 6px 0;
+  font-size: 12px; color: var(--sub);
+  border-bottom: 1px solid #1a2030;
+}
+.sim-row:last-child { border-bottom: none; }
+.sim-row .val { color: var(--text); font-weight: 600; }
+
+/* Info boxes */
+.info-box {
+  background: #101a2a; border: 1px solid #203040;
+  border-radius: 10px; padding: 14px 16px; margin-top: 10px;
+}
+.info-box p { font-size: 12px; color: var(--accent); line-height: 1.6; }
+.info-box strong { color: var(--text); }
+
+/* Checklist */
+.checklist { list-style: none; padding: 0; }
+.checklist li {
+  font-size: 13px; padding: 10px 0; border-bottom: 1px solid #1a2030;
+  display: flex; align-items: center; gap: 10px; color: var(--sub);
+}
+.checklist li:last-child { border-bottom: none; }
+.check-box {
+  width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0;
+  border: 1.5px solid var(--border); display: flex;
+  align-items: center; justify-content: center;
+}
+
+/* Footer */
+.footer {
+  text-align: center; padding: 32px 0 16px;
+  font-size: 11px; color: var(--sub);
+}
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-badge">NEW PROJECT</div>
+  <h1>川西モルックの会<br>ランキング & ガチ大会</h1>
+  <p>定期大会のポイントで競い、上位12名だけの頂上決戦へ</p>
+</div>
+
+<!-- コンセプト -->
+<div class="section">
+  <div class="section-title">コンセプト</div>
+  <div class="card">
+    <div class="card-title">川西モルックの会で最強は誰だ？</div>
+    <div class="card-desc">
+      毎月の定期大会の成績をポイント化。シーズンを通じて安定的に強いメンバーを可視化し、
+      上位12名だけが出場できる<strong>招待制ガチ大会</strong>を開催する。
+      合戦や定期大会では味わえない本気のバトルの舞台。
+    </div>
+  </div>
+  <div class="info-box">
+    <p><strong>対象:</strong> 川西モルックの会 所属メンバー限定<br>
+    <strong>シーズン:</strong> 半年制（6ヶ月のポイントレース → ガチ大会）</p>
+  </div>
+</div>
+
+<!-- ポイント制度 -->
+<div class="section">
+  <div class="section-title">ポイント制度</div>
+
+  <div class="card" style="margin-bottom: 16px;">
+    <div class="card-title">
+      <span class="event-badge event-main">MAIN</span>
+      モルック合戦（月1回）
+    </div>
+    <table class="point-table">
+      <thead>
+        <tr><th>順位</th><th>ポイント</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>優勝</td><td><span class="pt-val rank-1">10 <span>pt</span></span></td></tr>
+        <tr><td>準優勝</td><td><span class="pt-val rank-2">7 <span>pt</span></span></td></tr>
+        <tr><td>3位</td><td><span class="pt-val rank-3">5 <span>pt</span></span></td></tr>
+        <tr><td>ベスト4</td><td><span class="pt-val">4 <span>pt</span></span></td></tr>
+        <tr><td>ベスト8</td><td><span class="pt-val">3 <span>pt</span></span></td></tr>
+        <tr><td>ベスト16</td><td><span class="pt-val">2 <span>pt</span></span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="event-badge event-sub">REGULAR</span>
+      定期大会（各月1回）
+    </div>
+    <div class="card-desc" style="margin-bottom: 10px;">モルックナイト / 平日カップ / 早朝カップ</div>
+    <table class="point-table">
+      <thead>
+        <tr><th>順位</th><th>ポイント</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>優勝</td><td><span class="pt-val rank-1">3 <span>pt</span></span></td></tr>
+        <tr><td>準優勝</td><td><span class="pt-val rank-2">2 <span>pt</span></span></td></tr>
+        <tr><td>3位</td><td><span class="pt-val rank-3">1 <span>pt</span></span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info-box">
+    <p>合戦は規模が大きくガチ度が高いため高配点。ただし定期大会3つ全勝なら月9pt → 合戦準優勝(7pt)を超える。<strong>コツコツ参加する人も、合戦で勝つ人も、両方報われる設計。</strong></p>
+  </div>
+</div>
+
+<!-- シミュレーション -->
+<div class="section">
+  <div class="section-title">ポイントシミュレーション（3ヶ月分）</div>
+
+  <div class="sim-card">
+    <div class="sim-header">
+      <span>合戦特化型プレイヤー</span>
+      <span class="sim-total">25 pt</span>
+    </div>
+    <div class="sim-body">
+      <div class="sim-row"><span>4月 合戦 優勝</span><span class="val">10 pt</span></div>
+      <div class="sim-row"><span>5月 合戦 3位</span><span class="val">5 pt</span></div>
+      <div class="sim-row"><span>6月 合戦 優勝</span><span class="val">10 pt</span></div>
+    </div>
+  </div>
+
+  <div class="sim-card">
+    <div class="sim-header">
+      <span>全大会参加の安定型</span>
+      <span class="sim-total" style="color: var(--green);">31 pt</span>
+    </div>
+    <div class="sim-body">
+      <div class="sim-row"><span>4月 合戦B8 + ナイト優勝 + 平日2位 + 早朝優勝</span><span class="val">11 pt</span></div>
+      <div class="sim-row"><span>5月 合戦B4 + ナイト2位 + 平日優勝 + 早朝3位</span><span class="val">10 pt</span></div>
+      <div class="sim-row"><span>6月 合戦B8 + ナイト優勝 + 平日3位 + 早朝優勝</span><span class="val">10 pt</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ガチ大会フォーマット -->
+<div class="section">
+  <div class="section-title">ガチ大会フォーマット</div>
+
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="flow-num">1</div>
+      <div class="flow-content">
+        <div class="flow-title">予選ラウンド（3ブロック × 4名）</div>
+        <div class="flow-desc">12名を3ブロックに振り分け、各ブロック内で総当たり。各選手3試合。</div>
+      </div>
+    </div>
+    <div class="flow-connector"></div>
+    <div class="flow-step">
+      <div class="flow-num">2</div>
+      <div class="flow-content">
+        <div class="flow-title">ブロック上位2名が通過（計6名）</div>
+        <div class="flow-desc">各ブロック1位・2位は無条件で決勝トーナメント進出。</div>
+      </div>
+    </div>
+    <div class="flow-connector"></div>
+    <div class="flow-step">
+      <div class="flow-num">3</div>
+      <div class="flow-content">
+        <div class="flow-title">ワイルドカード決定戦（2枠）</div>
+        <div class="flow-desc">各ブロック3位の3名から2名が敗者復活。検定対決など特別ルールで決定。</div>
+      </div>
+    </div>
+    <div class="flow-connector"></div>
+    <div class="flow-step">
+      <div class="flow-num">4</div>
+      <div class="flow-content">
+        <div class="flow-title">決勝トーナメント（8名）</div>
+        <div class="flow-desc">準々決勝 → 準決勝 → 決勝。オールタイマン。シード順で組み合わせ。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ブロック視覚化 -->
+  <div class="bracket">
+    <div class="bracket-phase">
+      <div class="phase-label">予選ブロック</div>
+      <div class="phase-line"></div>
+    </div>
+    <div class="bracket-grid">
+      <div class="block-card">
+        <div class="block-label">BLOCK A</div>
+        <div class="block-slots">
+          <div class="slot slot-pass">1位 → 通過</div>
+          <div class="slot slot-pass">2位 → 通過</div>
+          <div class="slot slot-wc">3位 → WC戦</div>
+          <div class="slot">4位 → 敗退</div>
+        </div>
+      </div>
+      <div class="block-card">
+        <div class="block-label">BLOCK B</div>
+        <div class="block-slots">
+          <div class="slot slot-pass">1位 → 通過</div>
+          <div class="slot slot-pass">2位 → 通過</div>
+          <div class="slot slot-wc">3位 → WC戦</div>
+          <div class="slot">4位 → 敗退</div>
+        </div>
+      </div>
+      <div class="block-card">
+        <div class="block-label">BLOCK C</div>
+        <div class="block-slots">
+          <div class="slot slot-pass">1位 → 通過</div>
+          <div class="slot slot-pass">2位 → 通過</div>
+          <div class="slot slot-wc">3位 → WC戦</div>
+          <div class="slot">4位 → 敗退</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bracket-phase">
+      <div class="phase-label">ワイルドカード</div>
+      <div class="phase-line"></div>
+    </div>
+    <div class="card" style="text-align: center;">
+      <div class="card-desc">
+        3位 × 3名 → 検定対決等で <strong style="color: var(--purple);">2名</strong> が決勝T進出
+      </div>
+    </div>
+
+    <div class="bracket-phase" style="margin-top: 16px;">
+      <div class="phase-label">決勝トーナメント 8名</div>
+      <div class="phase-line"></div>
+    </div>
+    <div class="card" style="text-align: center;">
+      <div class="card-desc" style="font-size: 14px; line-height: 2;">
+        準々決勝（4試合）<br>
+        ↓<br>
+        準決勝（2試合）<br>
+        ↓<br>
+        <strong style="color: var(--gold); font-size: 16px;">決 勝</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 試合形式 -->
+<div class="section">
+  <div class="section-title">試合形式</div>
+  <div class="card">
+    <div class="card-title">オールタイマン（1対1）</div>
+    <div class="card-desc" style="margin-bottom: 12px;">全試合が1対1の真剣勝負。チーム戦なし。</div>
+    <table class="point-table">
+      <thead>
+        <tr><th>ステージ</th><th>形式</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>予選ラウンド</td><td><strong>2先</strong>（2本先取 / 最大3ゲーム）</td></tr>
+        <tr><td>決勝トーナメント</td><td><strong>3先</strong>（3本先取 / 最大5ゲーム）</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="info-box">
+    <p>ステージが上がるほどガチ度UP。予選はテンポ良く、決勝Tはじっくり戦える設計。</p>
+  </div>
+</div>
+
+<!-- スケジュール -->
+<div class="section">
+  <div class="section-title">シーズンスケジュール（半年制）</div>
+  <div class="card">
+    <div class="card-desc" style="line-height: 2.2; font-size: 13px;">
+      <strong style="color: var(--accent);">4月〜9月</strong> — ポイントレース期間<br>
+      　合戦6回 + ナイト6回 + 平日6回 + 早朝6回 = 計24大会<br>
+      <span style="color: var(--sub);">　6月末 中間ランキング発表</span><br>
+      <span style="color: var(--sub);">　9月末 最終ランキング確定</span><br><br>
+      <strong style="color: var(--gold);">10月</strong> — ガチ大会（予選 + 決勝トーナメント）<br><br>
+      <strong style="color: var(--accent);">10月〜3月</strong> — シーズン2 ポイントレース<br>
+      <strong style="color: var(--gold);">4月</strong> — シーズン2 ガチ大会
+    </div>
+  </div>
+</div>
+
+<!-- 決めること -->
+<div class="section">
+  <div class="section-title">決めておくこと</div>
+  <div class="card">
+    <ul class="checklist">
+      <li><span class="check-box"></span>シーズン期間（半年 or 3ヶ月）</li>
+      <li><span class="check-box"></span>第1シーズンの開始時期</li>
+      <li><span class="check-box"></span>ポイント管理方法（スプレッドシート / アプリ）</li>
+      <li><span class="check-box"></span>ランキング掲示方法（掲示板 / デジタル / SNS）</li>
+      <li><span class="check-box"></span>ワイルドカード決定戦の具体ルール</li>
+      <li><span class="check-box"></span>試合形式の最終決定（予選2先+決勝3先 or 全試合3先）</li>
+      <li><span class="check-box"></span>同ポイント時の順位決定方法</li>
+    </ul>
+  </div>
+</div>
+
+<div class="footer">
+  川西モルックの会 ランキング制度 企画書<br>
+  2026年2月 Draft
+</div>
+
+</body>
+</html>
