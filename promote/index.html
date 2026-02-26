@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Xポスト生成 | MOLKKY HUB</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', sans-serif;
+  background: #0a0a0a; color: #e0e0e0;
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center;
+}
+.container { width: 100%; max-width: 520px; padding: 24px 16px; }
+.header { text-align: center; margin-bottom: 32px; }
+.header h1 { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+.header p { font-size: 13px; color: #888; line-height: 1.6; }
+
+.input-area { position: relative; margin-bottom: 16px; }
+.input-area input {
+  width: 100%; padding: 16px; padding-right: 48px; font-size: 16px;
+  background: #1a1a1a; border: 2px solid #333; border-radius: 12px;
+  color: #fff; outline: none; transition: border-color 0.2s;
+}
+.input-area input:focus { border-color: #4a9eff; }
+.input-area input::placeholder { color: #555; }
+.paste-btn {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; color: #4a9eff; font-size: 22px;
+  cursor: pointer; padding: 8px; border-radius: 8px;
+}
+.paste-btn:active { background: rgba(74, 158, 255, 0.1); }
+
+.generate-btn {
+  width: 100%; padding: 16px; font-size: 16px; font-weight: 600;
+  background: #4a9eff; color: #fff; border: none; border-radius: 12px;
+  cursor: pointer; transition: background 0.2s, opacity 0.2s;
+}
+.generate-btn:hover { background: #3a8eef; }
+.generate-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.generate-btn.loading { background: #333; }
+
+/* Article preview */
+.article-preview {
+  margin-top: 20px; padding: 16px; background: #1a1a1a;
+  border: 1px solid #333; border-radius: 12px; display: none;
+}
+.article-preview.show { display: block; }
+.article-preview .label { font-size: 11px; color: #4a9eff; font-weight: 600; margin-bottom: 8px; }
+.article-preview .title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+.article-preview .excerpt { font-size: 12px; color: #888; line-height: 1.6; }
+.article-preview .category { font-size: 11px; color: #4a9eff; margin-top: 8px; }
+
+/* Post cards */
+.posts-area { margin-top: 24px; display: none; }
+.posts-area.show { display: block; }
+.posts-area h3 { font-size: 14px; color: #4a9eff; margin-bottom: 16px; text-align: center; }
+
+.post-card {
+  background: #1a1a1a; border: 1px solid #333; border-radius: 12px;
+  margin-bottom: 12px; overflow: hidden; transition: border-color 0.2s;
+}
+.post-card:hover { border-color: #4a9eff; }
+.post-card-header {
+  padding: 10px 16px; background: #111; border-bottom: 1px solid #222;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.post-card-header .type { font-size: 12px; font-weight: 600; color: #aaa; }
+.post-card-header .chars { font-size: 11px; color: #666; }
+.post-card-body {
+  padding: 16px; font-size: 14px; line-height: 1.8; color: #ddd;
+  white-space: pre-wrap; word-break: break-word; user-select: all;
+}
+.post-card-footer {
+  padding: 10px 16px; border-top: 1px solid #222;
+  display: flex; gap: 8px;
+}
+.copy-btn, .open-x-btn {
+  flex: 1; padding: 10px; font-size: 13px; font-weight: 600;
+  border: none; border-radius: 8px; cursor: pointer; text-align: center;
+  transition: background 0.2s; text-decoration: none;
+}
+.copy-btn {
+  background: #4a9eff; color: #fff;
+}
+.copy-btn:hover { background: #3a8eef; }
+.copy-btn.copied { background: #2ea043; }
+.open-x-btn {
+  background: #222; color: #aaa; display: block;
+}
+.open-x-btn:hover { background: #333; color: #fff; }
+
+/* Status */
+.status {
+  margin-top: 16px; padding: 12px 16px; border-radius: 12px;
+  font-size: 14px; text-align: center; display: none;
+}
+.status.show { display: block; }
+.status.error { background: rgba(248,81,73,0.15); color: #f85149; border: 1px solid rgba(248,81,73,0.3); }
+.status.info { background: rgba(74,158,255,0.1); color: #4a9eff; border: 1px solid rgba(74,158,255,0.2); }
+
+.footer-note {
+  margin-top: 32px; text-align: center; font-size: 11px; color: #444; line-height: 1.6;
+}
+.footer-note a { color: #4a9eff; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Xポスト生成</h1>
+    <p>MOLKKY HUBの記事URLを貼るだけ<br>Xポスト案を自動生成します</p>
+  </div>
+
+  <div class="input-area">
+    <input type="url" id="urlInput" placeholder="molkky-hub.com の記事URLを貼り付け"
+           autocomplete="off" autocorrect="off" autocapitalize="off">
+    <button class="paste-btn" id="pasteBtn" title="クリップボードから貼り付け">📋</button>
+  </div>
+
+  <button class="generate-btn" id="generateBtn" disabled>ポスト案を生成</button>
+
+  <div class="article-preview" id="articlePreview">
+    <div class="label">取得した記事</div>
+    <div class="title" id="articleTitle"></div>
+    <div class="excerpt" id="articleExcerpt"></div>
+    <div class="category" id="articleCategory"></div>
+  </div>
+
+  <div class="status" id="status"></div>
+
+  <div class="posts-area" id="postsArea">
+    <h3>Xポスト案（タップでコピー）</h3>
+    <div id="postCards"></div>
+  </div>
+
+  <div class="footer-note">
+    <a href="https://molkky-hub.com" target="_blank">MOLKKY HUB</a> プロモーションツール
+  </div>
+</div>
+
+<script>
+const GEMINI_KEY = 'AIzaSyAfpDcLF8i4ApRffCvgz8qFTLu6Fk1IwbE';
+const WP_API = 'https://molkky-hub.com/wp-json/wp/v2';
+
+// Category config
+const CATEGORY_MAP = {
+  122: { name: '寄稿', tone: '知的・読み応え訴求', tags: '#モルック #モルハブ #molkky' },
+  126: { name: '寄稿（いとゆう）', tone: '知的・読み応え訴求', tags: '#モルック #モルハブ #molkky', author: 'いとゆう' },
+  125: { name: '寄稿（かずえ）', tone: '知的・読み応え訴求', tags: '#モルック #モルハブ #molkky', author: 'かずえ' },
+  123: { name: '寄稿（ソウタ）', tone: '知的・読み応え訴求', tags: '#モルック #モルハブ #molkky', author: 'ソウタ' },
+  127: { name: '寄稿（ナイモル）', tone: '知的・読み応え訴求', tags: '#モルック #モルハブ #molkky', author: 'ナイモル' },
+  8: { name: '大会情報', tone: '速報・情報提供系', tags: '#モルック #大会情報 #molkky' },
+  56: { name: 'チーム紹介', tone: '親しみやすい', tags: '#モルック #チーム紹介 #molkky' },
+  2: { name: 'ルール・遊び方', tone: '初心者歓迎', tags: '#モルック #モルックとは #molkky' },
+  117: { name: '商品紹介', tone: '実用性訴求', tags: '#モルック #molkky' },
+  57: { name: 'YouTube', tone: 'エンタメ', tags: '#モルック #molkky #YouTube' },
+};
+
+const urlInput = document.getElementById('urlInput');
+const generateBtn = document.getElementById('generateBtn');
+const pasteBtn = document.getElementById('pasteBtn');
+const articlePreview = document.getElementById('articlePreview');
+const postsArea = document.getElementById('postsArea');
+const postCards = document.getElementById('postCards');
+const statusEl = document.getElementById('status');
+
+// Paste
+pasteBtn.addEventListener('click', async () => {
+  try {
+    urlInput.value = await navigator.clipboard.readText();
+    urlInput.dispatchEvent(new Event('input'));
+  } catch (e) { urlInput.focus(); }
+});
+
+// Validate
+urlInput.addEventListener('input', () => {
+  const url = urlInput.value.trim();
+  generateBtn.disabled = !url.includes('molkky-hub.com/');
+  postsArea.classList.remove('show');
+  articlePreview.classList.remove('show');
+  showStatus('', '');
+});
+
+// Generate
+generateBtn.addEventListener('click', async () => {
+  const url = urlInput.value.trim();
+  if (!url) return;
+
+  generateBtn.disabled = true;
+  generateBtn.textContent = '記事を取得中...';
+  generateBtn.classList.add('loading');
+  showStatus('', '');
+  postsArea.classList.remove('show');
+
+  try {
+    // 1. Extract slug from URL
+    const slug = url.replace(/\/$/, '').split('/').pop();
+    if (!slug) throw new Error('URLからスラッグを取得できませんでした');
+
+    // 2. Fetch article from WP REST API
+    let article = await fetchArticle(slug);
+    if (!article) throw new Error('記事が見つかりませんでした');
+
+    // 3. Show preview
+    showArticlePreview(article);
+
+    // 4. Generate posts with Gemini
+    generateBtn.textContent = 'Geminiで生成中...';
+    const posts = await generatePosts(article, url);
+
+    // 5. Display
+    displayPosts(posts, url);
+
+  } catch (e) {
+    showStatus('error', e.message);
+  }
+
+  generateBtn.textContent = 'ポスト案を生成';
+  generateBtn.classList.remove('loading');
+  generateBtn.disabled = false;
+});
+
+async function fetchArticle(slug) {
+  // Try regular posts first
+  let resp = await fetch(`${WP_API}/posts?slug=${slug}&_embed`);
+  let data = await resp.json();
+  if (data.length > 0) return data[0];
+
+  // Try tournament custom post type
+  resp = await fetch(`${WP_API}/tournament?slug=${slug}`);
+  data = await resp.json();
+  if (data.length > 0) return { ...data[0], _type: 'tournament' };
+
+  return null;
+}
+
+function stripHtml(html) {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  return div.textContent || '';
+}
+
+function getCategoryInfo(categories) {
+  if (!categories) return { name: '記事', tone: '情報提供', tags: '#モルック #molkky', author: null };
+  for (const id of categories) {
+    if (CATEGORY_MAP[id]) return CATEGORY_MAP[id];
+  }
+  return { name: '記事', tone: '情報提供', tags: '#モルック #molkky', author: null };
+}
+
+function showArticlePreview(article) {
+  const title = stripHtml(article.title.rendered);
+  const excerpt = stripHtml(article.excerpt?.rendered || '').substring(0, 120);
+  const catInfo = getCategoryInfo(article.categories);
+
+  document.getElementById('articleTitle').textContent = title;
+  document.getElementById('articleExcerpt').textContent = excerpt + '...';
+  document.getElementById('articleCategory').textContent = catInfo.name;
+  articlePreview.classList.add('show');
+}
+
+function buildUtmUrl(url, campaign) {
+  const base = url.replace(/\?.*$/, '').replace(/\/$/, '');
+  return `${base}/?utm_source=twitter&utm_medium=social&utm_campaign=${campaign}`;
+}
+
+async function generatePosts(article, originalUrl) {
+  const title = stripHtml(article.title.rendered);
+  const content = stripHtml(article.content.rendered).substring(0, 3000);
+  const catInfo = getCategoryInfo(article.categories);
+  const slug = article.slug || 'article';
+  const utmUrl = buildUtmUrl(originalUrl, slug);
+
+  const prompt = `あなたはモルック（フィンランド発祥の投擲スポーツ）の情報メディア「MOLKKY HUB」のSNS担当です。
+以下の記事をX（Twitter）で宣伝するポスト文面を3パターン生成してください。
+
+## 記事情報
+- タイトル: ${title}
+- カテゴリ: ${catInfo.name}
+- トーン: ${catInfo.tone}
+${catInfo.author ? `- 著者: ${catInfo.author}` : ''}
+- 記事URL（投稿時に使うURL）: ${utmUrl}
+- ハッシュタグ: ${catInfo.tags}
+
+## 記事本文（抜粋）
+${content}
+
+## ルール
+1. 各ポストは200〜260文字程度（URL・ハッシュタグ込みで280文字以内）
+2. 標準語で書くこと（関西弁は使わない）
+3. 構成: フック（1行目で興味を引く）→ 要約 → URL → ハッシュタグ
+4. 3パターンは切り口を変える: A=問いかけ型、B=要約型、C=引用型
+5. URLは必ず「${utmUrl}」を使うこと
+6. ハッシュタグは必ず「${catInfo.tags}」を末尾に入れること
+7. 改行を適度に入れて読みやすくすること
+8. 絵文字は控えめに（0〜2個程度）
+
+## 出力形式（JSON）
+[
+  {"type": "問いかけ型", "text": "ポスト文面A"},
+  {"type": "要約型", "text": "ポスト文面B"},
+  {"type": "引用型", "text": "ポスト文面C"}
+]`;
+
+  const resp = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.7, responseMimeType: 'application/json' }
+      })
+    }
+  );
+
+  const result = await resp.json();
+  if (result.error) throw new Error('Gemini API: ' + result.error.message);
+
+  const text = result.candidates[0].content.parts[0].text;
+  return JSON.parse(text);
+}
+
+function displayPosts(posts, originalUrl) {
+  postCards.innerHTML = '';
+
+  posts.forEach((post, i) => {
+    const card = document.createElement('div');
+    card.className = 'post-card';
+
+    const charCount = post.text.length;
+    const encodedText = encodeURIComponent(post.text);
+    const xIntentUrl = `https://twitter.com/intent/tweet?text=${encodedText}`;
+
+    card.innerHTML = `
+      <div class="post-card-header">
+        <span class="type">${String.fromCharCode(65 + i)}. ${post.type}</span>
+        <span class="chars">${charCount}文字</span>
+      </div>
+      <div class="post-card-body">${escapeHtml(post.text)}</div>
+      <div class="post-card-footer">
+        <button class="copy-btn" data-text="${escapeAttr(post.text)}">コピー</button>
+        <a class="open-x-btn" href="${xIntentUrl}" target="_blank">Xで開く</a>
+      </div>
+    `;
+
+    postCards.appendChild(card);
+  });
+
+  // Copy button handlers
+  postCards.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(btn.dataset.text);
+        btn.textContent = 'コピー完了!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'コピー';
+          btn.classList.remove('copied');
+        }, 2000);
+      } catch (e) {
+        // Fallback: select text
+        const body = btn.closest('.post-card').querySelector('.post-card-body');
+        const range = document.createRange();
+        range.selectNodeContents(body);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+      }
+    });
+  });
+
+  postsArea.classList.add('show');
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+}
+
+function escapeAttr(str) {
+  return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function showStatus(type, message) {
+  if (!message) { statusEl.classList.remove('show'); return; }
+  statusEl.className = `status show ${type}`;
+  statusEl.textContent = message;
+}
+</script>
+</body>
+</html>
