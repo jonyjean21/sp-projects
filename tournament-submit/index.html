@@ -296,17 +296,16 @@ async function fetchTweetPreview(url) {
   }
 }
 
-// Check for duplicate URL in queue
+// Check for duplicate URL in queue (indexOn不要: 全件取得してクライアント側で照合)
 async function checkDuplicate(url) {
   try {
-    const resp = await fetch(
-      `${FIREBASE_DB}${QUEUE_PATH}.json?orderBy="url"&equalTo="${encodeURIComponent(url)}"`
-    );
+    const resp = await fetch(`${FIREBASE_DB}${QUEUE_PATH}.json`);
     if (!resp.ok) return false;
     const data = await resp.json();
     if (!data) return false;
-    // pending or posted のエントリがあれば重複
-    return Object.values(data).some(e => e.status === 'pending' || e.status === 'posted');
+    return Object.values(data).some(
+      e => e.url === url && (e.status === 'pending' || e.status === 'posted')
+    );
   } catch (e) {
     return false; // チェック失敗時は通す
   }
