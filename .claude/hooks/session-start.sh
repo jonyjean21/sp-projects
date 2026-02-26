@@ -27,11 +27,13 @@ if data:
 
   if [ -n "$PENDING" ]; then
     echo ""
-    echo "===== 未処理のチャプ会議事録があります ====="
+    echo "===== AUTO-PROCESS: チャプ会議事録 ====="
+    echo "未処理の議事録が検出されました。自動で処理してください:"
     echo "$PENDING"
     echo ""
-    echo "→ /chapche-minutes queue で処理できます"
-    echo "============================================"
+    echo "処理内容: Firebaseキューからpending取得 → テキストDL → 議事録変換 → Notion投稿 → ローカル保存 → git push"
+    echo "スキル: /chapche-minutes queue の手順に従って、ユーザーに確認せず自動実行すること"
+    echo "========================================"
     echo ""
   fi
 fi

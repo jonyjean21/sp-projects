@@ -31,6 +31,11 @@
 - GitHub Secrets を使って機密情報を管理する
 - 公開リポジトリには機密情報を含むファイルをpushしない
 
+### 自動処理ルール
+- **セッション開始時にフックが「AUTO-PROCESS」を出力した場合、ユーザーに確認せず自動で処理を実行すること**
+- チャプ会議事録: Firebase `/chapche-queue` のpendingを取得→テキストDL→議事録変換→Notion投稿→ローカル保存→git push を全自動で行う
+- 大会情報: Firebase `/tournament-queue` のpendingも同様に自動処理
+
 ## プロジェクト構成
 
 - **サイト**: GitHub Pages（main ブランチ / ルート）
