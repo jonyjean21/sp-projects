@@ -182,6 +182,7 @@ body {
 }
 .role-tag.provider { background: var(--blue-pale); color: var(--blue); }
 .role-tag.hub-tag { background: var(--green-pale); color: var(--green-dark); }
+.role-tag.sponsor-tag { background: #e8f5e9; color: #2e7d32; }
 .role-tag.mediator-tag { background: #eee; color: var(--text-light); }
 .role-tag.recipient-tag { background: var(--orange-pale); color: var(--orange); }
 
@@ -420,6 +421,12 @@ function renderReturnCard(r) {
       <div class="flow-viz">
         <div class="flow-viz-label">届けた流れ</div>
         <div class="flow-chain">
+          ${r.provider === 'MOLKKY HUB' || r.provider === 'モルハブ' || r.provider === 'モルックハブ' ? `
+          <span class="flow-person hub">
+            <img src="${avatarUrl('MOLKKY HUB')}" alt="">
+            モルハブ <span class="role-tag sponsor-tag">協賛</span>
+          </span>
+          ` : `
           <span class="flow-person from">
             <img src="${avatarUrl(r.provider)}" alt="">
             ${esc(r.provider)} <span class="role-tag provider">パートナー</span>
@@ -429,6 +436,7 @@ function renderReturnCard(r) {
             <img src="${avatarUrl('MOLKKY HUB')}" alt="">
             モルハブ <span class="role-tag hub-tag">手配</span>
           </span>
+          `}
           <span class="arrow">→</span>
           ${r.mediator ? `
             <span class="flow-person mediator">
