@@ -6,43 +6,94 @@
 <title>川西モルックの会 シーズン大会 & 新人年間王</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+::selection { background: rgba(88,166,255,0.3); color: #fff; }
 :root {
   --bg: #0a0e14; --card: #131920; --card2: #1a2030;
-  --border: #2a3040; --text: #e6edf3; --sub: #8b949e;
+  --border: #2a3040; --text: #e0e6ed; --sub: #8b949e;
   --accent: #58a6ff; --gold: #ffd700; --silver: #c0c0c0;
   --bronze: #cd7f32; --fire: #ff6b35; --green: #3fb950;
   --purple: #bc8cff; --red: #f85149; --cyan: #56d4dd;
 }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', sans-serif;
   background: var(--bg); color: var(--text);
   max-width: 640px; margin: 0 auto; padding: 0 16px 40px;
   min-height: 100vh;
+  line-height: 1.8; letter-spacing: 0.03em;
+  font-feature-settings: "palt";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Keyframes */
+@keyframes heroGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Hero */
 .hero {
-  text-align: center; padding: 40px 0 32px;
-  background: linear-gradient(180deg, #0f1520 0%, var(--bg) 100%);
+  text-align: center; padding: 48px 0 36px;
+  background: linear-gradient(135deg, #0f1520 0%, #141a2a 25%, #1a1020 50%, #0f1520 75%, #101a25 100%);
+  background-size: 300% 300%;
+  animation: heroGradient 12s ease infinite;
   margin: 0 -16px; padding-left: 16px; padding-right: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(255,107,53,0.08) 0%, transparent 60%);
+  pointer-events: none;
 }
 .hero-badge {
   display: inline-block; font-size: 11px; font-weight: 700;
   color: var(--fire); background: #2a1510; padding: 4px 14px;
-  border-radius: 20px; letter-spacing: 1px; margin-bottom: 12px;
+  border-radius: 20px; letter-spacing: 1px; margin-bottom: 16px;
   border: 1px solid #3a2520;
+  animation: fadeInUp 0.4s ease both;
 }
 .hero h1 {
   font-size: 24px; font-weight: 800; line-height: 1.3;
   background: linear-gradient(135deg, var(--gold) 0%, var(--fire) 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
+  animation: fadeInUp 0.5s ease 0.1s both;
 }
-.hero p { font-size: 14px; color: var(--sub); margin-top: 8px; line-height: 1.6; }
+.hero p {
+  font-size: 14px; color: var(--sub); margin-top: 8px; line-height: 1.6;
+  animation: fadeInUp 0.5s ease 0.2s both;
+}
+
+/* Hero Stats Row */
+.hero-stats {
+  display: flex; justify-content: center; gap: 10px;
+  margin-top: 20px; flex-wrap: wrap;
+  animation: fadeInUp 0.5s ease 0.3s both;
+}
+.hero-stat {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px; padding: 10px 14px; text-align: center;
+  min-width: 70px; backdrop-filter: blur(4px);
+}
+.hero-stat .stat-value {
+  font-size: 16px; font-weight: 800; color: var(--text);
+  line-height: 1.2;
+}
+.hero-stat .stat-label {
+  font-size: 10px; color: var(--sub); margin-top: 3px;
+  letter-spacing: 0.5px;
+}
 
 /* Divider */
 .part-divider {
-  text-align: center; padding: 40px 0 8px;
+  text-align: center; padding: 56px 0 8px;
+  animation: fadeInUp 0.6s ease both;
 }
 .part-divider .label {
   display: inline-block; font-size: 11px; font-weight: 700;
@@ -56,31 +107,57 @@ body {
 }
 .part-divider h2 {
   font-size: 20px; font-weight: 800; margin-top: 12px;
+  display: inline-block; position: relative; padding-bottom: 12px;
+}
+.part-divider h2::after {
+  content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 60px; height: 3px; border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--fire), transparent);
+}
+.part-divider h2.green-underline::after {
+  background: linear-gradient(90deg, transparent, var(--green), transparent);
 }
 
 /* Section */
-.section { margin-top: 32px; }
+.section {
+  margin-top: 32px;
+  animation: fadeInUp 0.5s ease both;
+}
 .section-title {
   font-size: 13px; font-weight: 700; color: var(--sub);
   text-transform: uppercase; letter-spacing: 1.5px;
   margin-bottom: 14px; padding-left: 2px;
   display: flex; align-items: center; gap: 8px;
+  position: relative; padding-bottom: 10px;
 }
 .section-title::before {
   content: ''; display: block; width: 3px; height: 16px;
   border-radius: 2px; background: var(--accent);
 }
+.section-title::after {
+  content: ''; position: absolute; bottom: 0; left: 0;
+  width: 40px; height: 2px; border-radius: 1px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
 .section-title.green::before { background: var(--green); }
+.section-title.green::after {
+  background: linear-gradient(90deg, var(--green), transparent);
+}
 
 /* Point Table */
 .point-table { width: 100%; border-collapse: collapse; }
 .point-table th {
   font-size: 11px; font-weight: 600; color: var(--sub);
-  text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border);
+  text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border);
+  text-transform: uppercase; letter-spacing: 0.5px;
 }
 .point-table td {
-  font-size: 14px; padding: 10px 12px; border-bottom: 1px solid #1a2030;
+  font-size: 14px; padding: 12px 14px; border-bottom: 1px solid #1a2030;
+  transition: background 0.15s ease;
 }
+.point-table tr:hover td { background: rgba(88,166,255,0.04); }
+.point-table tbody tr:first-child td { background: rgba(255,215,0,0.03); }
+.point-table tbody tr:first-child:hover td { background: rgba(255,215,0,0.06); }
 .point-table tr:last-child td { border-bottom: none; }
 .pt-val {
   font-weight: 700; font-size: 16px; display: inline-flex;
@@ -95,12 +172,19 @@ body {
 .card {
   background: var(--card); border: 1px solid var(--border);
   border-radius: 12px; padding: 18px; margin-bottom: 10px;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.card:hover {
+  transform: translateY(-2px); border-color: rgba(88,166,255,0.3);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
 }
 .card-title {
   font-size: 15px; font-weight: 700; margin-bottom: 6px;
   display: flex; align-items: center; gap: 8px;
 }
 .card-desc { font-size: 13px; color: var(--sub); line-height: 1.6; }
+.card-accent-fire { border-top: 3px solid var(--fire); }
+.card-accent-blue { border-top: 3px solid var(--accent); }
 
 /* Event badges */
 .event-badge {
@@ -115,6 +199,12 @@ body {
 .tourney-card {
   background: var(--card); border: 1px solid var(--border);
   border-radius: 12px; overflow: hidden; margin-bottom: 12px;
+  border-top: 3px solid var(--green);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.tourney-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
 }
 .tourney-header {
   padding: 14px 18px; display: flex; align-items: center; gap: 10px;
@@ -163,6 +253,10 @@ body {
 .block-card {
   background: var(--card); border: 1px solid var(--border);
   border-radius: 10px; padding: 14px; text-align: center;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.block-card:hover {
+  transform: translateY(-2px); border-color: rgba(88,166,255,0.2);
 }
 .block-label {
   font-size: 12px; font-weight: 700; color: var(--accent);
@@ -181,32 +275,44 @@ body {
 /* Flow */
 .flow-steps {
   display: flex; flex-direction: column; gap: 0;
+  position: relative;
 }
 .flow-step {
   display: flex; align-items: flex-start; gap: 14px;
   padding: 14px 0;
 }
 .flow-num {
-  width: 32px; height: 32px; border-radius: 50%;
+  width: 36px; height: 36px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 14px; font-weight: 700; flex-shrink: 0;
-  background: #101a2a; color: var(--accent); border: 1px solid #203040;
+  font-size: 14px; font-weight: 800; flex-shrink: 0;
+  background: #101a2a; color: var(--accent); border: 2px solid #203040;
+  box-shadow: 0 0 12px rgba(88,166,255,0.1);
+  position: relative; z-index: 1;
 }
 .flow-num-green {
-  background: #102a1a; color: var(--green); border: 1px solid #203a2a;
+  background: #102a1a; color: var(--green); border: 2px solid #203a2a;
+  box-shadow: 0 0 12px rgba(63,185,80,0.1);
 }
 .flow-content { flex: 1; }
 .flow-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
-.flow-desc { font-size: 12px; color: var(--sub); line-height: 1.5; }
+.flow-desc { font-size: 12px; color: var(--sub); line-height: 1.6; }
 .flow-connector {
-  width: 1px; height: 12px; background: var(--border);
-  margin-left: 16px;
+  width: 2px; height: 16px;
+  background: linear-gradient(180deg, var(--accent), rgba(88,166,255,0.2));
+  margin-left: 17px; border-radius: 1px;
+}
+.flow-connector-green {
+  background: linear-gradient(180deg, var(--green), rgba(63,185,80,0.2)) !important;
 }
 
 /* Sim Table */
 .sim-card {
   background: var(--card); border: 1px solid var(--border);
   border-radius: 12px; overflow: hidden; margin-bottom: 10px;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.sim-card:hover {
+  transform: translateY(-1px); border-color: rgba(88,166,255,0.2);
 }
 .sim-header {
   padding: 12px 16px; font-size: 13px; font-weight: 700;
@@ -232,6 +338,11 @@ body {
   background: var(--card); border: 1px solid var(--border);
   border-radius: 12px; padding: 16px; display: flex; gap: 14px;
   align-items: flex-start;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.schedule-card:hover {
+  transform: translateY(-2px); border-color: rgba(88,166,255,0.2);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
 }
 .schedule-season {
   font-size: 12px; font-weight: 800; padding: 6px 12px;
@@ -250,6 +361,10 @@ body {
 .compare-card {
   background: var(--card); border: 1px solid var(--border);
   border-radius: 10px; padding: 14px; text-align: center;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.compare-card:hover {
+  transform: translateY(-2px); border-color: rgba(88,166,255,0.2);
 }
 .compare-card h4 {
   font-size: 11px; font-weight: 700; margin-bottom: 10px;
@@ -262,12 +377,14 @@ body {
 /* Info boxes */
 .info-box {
   background: #101a2a; border: 1px solid #203040;
-  border-radius: 10px; padding: 14px 16px; margin-top: 10px;
+  border-left: 3px solid var(--accent);
+  border-radius: 10px; padding: 16px 20px; margin-top: 10px;
 }
-.info-box p { font-size: 12px; color: var(--accent); line-height: 1.6; }
+.info-box p { font-size: 12px; color: var(--accent); line-height: 1.7; }
 .info-box strong { color: var(--text); }
 .info-box-green {
   background: #0a1a10; border: 1px solid #1a3020;
+  border-left: 3px solid var(--green);
 }
 .info-box-green p { color: var(--green); }
 
@@ -286,8 +403,18 @@ body {
 
 /* Footer */
 .footer {
-  text-align: center; padding: 32px 0 16px;
+  text-align: center; padding: 40px 0 20px;
   font-size: 11px; color: var(--sub);
+  border-top: 1px solid var(--border);
+  margin-top: 48px;
+}
+
+/* Mobile adjustments */
+@media (max-width: 400px) {
+  .hero-stats { gap: 6px; }
+  .hero-stat { padding: 8px 10px; min-width: 60px; }
+  .hero-stat .stat-value { font-size: 14px; }
+  .bracket-grid { grid-template-columns: 1fr; gap: 10px; }
 }
 </style>
 </head>
@@ -298,6 +425,24 @@ body {
   <div class="hero-badge">NEW PROJECT</div>
   <h1>川西モルックの会<br>シーズン大会 & 新人年間王</h1>
   <p>3ヶ月のポイントレースで最強を決める「シーズン大会」と<br>新人戦の1年を締めくくる「新人年間王決定戦」</p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="stat-value" style="color: var(--fire);">年4回</div>
+      <div class="stat-label">シーズン</div>
+    </div>
+    <div class="hero-stat">
+      <div class="stat-value" style="color: var(--accent);">12名</div>
+      <div class="stat-label">出場</div>
+    </div>
+    <div class="hero-stat">
+      <div class="stat-value" style="color: var(--gold);">全順位</div>
+      <div class="stat-label">確定</div>
+    </div>
+    <div class="hero-stat">
+      <div class="stat-value" style="color: var(--green);">掲示</div>
+      <div class="stat-label">ドーム内</div>
+    </div>
+  </div>
 </div>
 
 <!-- ============================== -->
@@ -331,7 +476,7 @@ body {
 <div class="section">
   <div class="section-title">ポイント制度</div>
 
-  <div class="card" style="margin-bottom: 16px;">
+  <div class="card card-accent-fire" style="margin-bottom: 16px;">
     <div class="card-title">
       <span class="event-badge event-main">MAIN</span>
       モルック合戦（月1回 / 48名参加）
@@ -353,7 +498,7 @@ body {
     </table>
   </div>
 
-  <div class="card">
+  <div class="card card-accent-blue">
     <div class="card-title">
       <span class="event-badge event-sub">REGULAR</span>
       定期大会（各月1回 / 〜20名程度参加）
@@ -634,7 +779,7 @@ body {
 <!-- ============================== -->
 <div class="part-divider">
   <span class="label label-green">PART 2</span>
-  <h2 style="color: var(--green);">新人年間王決定戦</h2>
+  <h2 class="green-underline" style="color: var(--green);">新人年間王決定戦</h2>
 </div>
 
 <!-- コンセプト -->
@@ -705,7 +850,7 @@ body {
           <div class="flow-desc">出場者を4名ずつのブロックに分割。各ブロック内で総当たり戦。</div>
         </div>
       </div>
-      <div class="flow-connector"></div>
+      <div class="flow-connector flow-connector-green"></div>
       <div class="flow-step">
         <div class="flow-num flow-num-green">2</div>
         <div class="flow-content">
@@ -713,7 +858,7 @@ body {
           <div class="flow-desc">参加人数に応じて通過枠を調整。シード権は年間成績上位者に付与。</div>
         </div>
       </div>
-      <div class="flow-connector"></div>
+      <div class="flow-connector flow-connector-green"></div>
       <div class="flow-step">
         <div class="flow-num flow-num-green">3</div>
         <div class="flow-content">
