@@ -87,6 +87,17 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--cream); color:
   object-fit: contain;
 }
 .photo-area .placeholder { color: var(--text-muted); font-size: 0.85rem; }
+
+/* Source toggle buttons */
+.source-toggle {
+  flex: 1; padding: 8px 12px; border: 2px solid #e0e0e0;
+  background: var(--white); color: var(--text); font-size: 0.85rem;
+  border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s;
+}
+.source-toggle.active {
+  border-color: var(--green-main); background: var(--green-pale);
+  color: var(--green-dark); font-weight: 600;
+}
 .photo-area .placeholder .icon { font-size: 2rem; margin-bottom: 4px; }
 .photo-size { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
 
@@ -183,12 +194,21 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--cream); color:
       </select>
     </div>
     <div class="form-group">
-      <label>パートナー</label>
-      <input type="text" id="r-provider" placeholder="モルックドーム" value="モルックドーム">
+      <label>提供元</label>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <button type="button" class="btn source-toggle active" data-source="partner" onclick="toggleSource('partner')">パートナー提供</button>
+        <button type="button" class="btn source-toggle" data-source="hub" onclick="toggleSource('hub')">モルハブ協賛</button>
+      </div>
     </div>
-    <div class="form-group">
-      <label>仲介者（いれば）</label>
-      <input type="text" id="r-mediator" placeholder="サノ">
+    <div id="partner-fields">
+      <div class="form-group">
+        <label>パートナー名</label>
+        <input type="text" id="r-provider" placeholder="モルックドーム" value="モルックドーム">
+      </div>
+      <div class="form-group">
+        <label>仲介者（いれば）</label>
+        <input type="text" id="r-mediator" placeholder="サノ">
+      </div>
     </div>
     <div class="form-group">
       <label>受け渡し方法</label>
@@ -212,6 +232,15 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--cream); color:
       <div id="photo-return-list"></div>
     </div>
     <div id="photo-upload-area" style="display:none">
+      <div id="existing-photo-preview" style="display:none">
+        <div class="form-group">
+          <label>現在の写真</label>
+          <div style="position:relative;">
+            <img id="existing-photo-img" style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;background:#f0f0f0;">
+          </div>
+          <p style="color:var(--text-muted);font-size:0.8rem;margin-top:6px;">新しい写真を選択すると上書きされます</p>
+        </div>
+      </div>
       <div class="form-group">
         <label>写真を選択</label>
         <div class="photo-area" id="photo-drop">
@@ -372,6 +401,29 @@ function selectReturnForPhoto(key) {
   const oldPreview = area.querySelector('.preview');
   if (oldPreview) oldPreview.remove();
   document.getElementById('photo-size-info').textContent = '';
+
+  // Show existing photo preview if available
+  const r = returnsData.find(x => x._key === key);
+  const previewEl = document.getElementById('existing-photo-preview');
+  const previewImg = document.getElementById('existing-photo-img');
+  if (r && r.image_url) {
+    previewEl.style.display = 'block';
+    previewImg.src = '';
+    if (r.image_url.startsWith('fb:')) {
+      const fbKey = r.image_url.slice(3);
+      db.ref(`partner/images/${fbKey}`).once('value', snap => {
+        const data = snap.val();
+        if (data) previewImg.src = data;
+        else previewEl.style.display = 'none';
+      });
+    } else if (r.image_url.startsWith('http')) {
+      previewImg.src = r.image_url;
+    } else {
+      previewEl.style.display = 'none';
+    }
+  } else {
+    previewEl.style.display = 'none';
+  }
 }
 
 document.getElementById('photo-input').addEventListener('change', async function(e) {
@@ -480,20 +532,31 @@ async function saveComment() {
   }
 }
 
+// Source toggle
+let currentSource = 'partner';
+function toggleSource(source) {
+  currentSource = source;
+  document.querySelectorAll('.source-toggle').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.source === source);
+  });
+  document.getElementById('partner-fields').style.display = source === 'partner' ? '' : 'none';
+}
+
 // Add Return
 async function addReturn() {
   const item = document.getElementById('r-item').value.trim();
   const recipient = document.getElementById('r-recipient').value.trim();
   if (!item || !recipient) { toast('提供品と受取先は必須です'); return; }
 
+  const isHub = currentSource === 'hub';
   const maxOrder = returnsData.reduce((max, r) => Math.max(max, r._order || 0), 0);
   const data = {
     item,
     category: document.getElementById('r-category').value,
     recipient,
     condition: document.getElementById('r-condition').value,
-    provider: document.getElementById('r-provider').value.trim() || 'モルハブ',
-    mediator: document.getElementById('r-mediator').value.trim(),
+    provider: isHub ? 'MOLKKY HUB' : (document.getElementById('r-provider').value.trim() || 'モルハブ'),
+    mediator: isHub ? '' : document.getElementById('r-mediator').value.trim(),
     handoff_method: document.getElementById('r-handoff').value.trim(),
     handoff_event: document.getElementById('r-event').value.trim(),
     date: document.getElementById('r-date').value,
