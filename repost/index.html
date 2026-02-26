@@ -148,7 +148,14 @@ body {
 </div>
 
 <script>
-const GEMINI_KEY = 'AIzaSyAfpDcLF8i4ApRffCvgz8qFTLu6Fk1IwbE';
+function getGeminiKey() {
+  let key = localStorage.getItem('GEMINI_API_KEY');
+  if (!key) {
+    key = prompt('Gemini APIキーを入力してください（初回のみ）');
+    if (key) localStorage.setItem('GEMINI_API_KEY', key);
+  }
+  return key;
+}
 
 const tweetInput = document.getElementById('tweetInput');
 const authorInput = document.getElementById('authorInput');
@@ -251,7 +258,7 @@ ${pastPosts ? `## モルハブの過去ポスト（トーン参考）\n${pastPos
 ]`;
 
   const resp = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${getGeminiKey()}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
