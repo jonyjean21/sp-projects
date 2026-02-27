@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ナイモル大会結果HTML生成</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0a;--card:#1a1a1a;--card2:#111;--border:#333;--border2:#222;
+  --text:#e0e0e0;--text2:#fff;--sub:#888;--accent:#4a9eff;--accent2:#3a8eef;
+  --green:#3fb950;--red:#f85149;--orange:#d29922;
+}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Kaku Gothic ProN',sans-serif;min-height:100vh}
+.container{max-width:560px;margin:0 auto;padding:24px 16px}
+.header{padding:16px 0 20px}
+.header h1{font-size:20px;font-weight:700;color:var(--text2);margin-bottom:4px}
+.header p{font-size:13px;color:var(--sub);line-height:1.6}
+
+/* Section */
+.section{margin-bottom:24px}
+.section-title{font-size:14px;font-weight:700;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* Input */
+.input-group{margin-bottom:12px}
+.input-label{font-size:12px;color:var(--sub);margin-bottom:4px;display:block}
+.input-field{
+  width:100%;background:var(--card);border:2px solid var(--border);border-radius:10px;
+  color:var(--text2);font-size:14px;padding:10px 12px;font-family:inherit;
+  transition:border-color 0.2s;
+}
+.input-field:focus{outline:none;border-color:var(--accent)}
+.input-field::placeholder{color:#555}
+
+/* Team Card */
+.team-card{
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:14px;margin-bottom:10px;
+}
+.team-card-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:13px;font-weight:700}
+.team-card .input-group{margin-bottom:8px}
+.medal{font-size:18px}
+
+/* Perfect Molkky List */
+.pm-item{
+  background:var(--card);border:1px solid var(--border);border-radius:10px;
+  padding:10px 12px;margin-bottom:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+}
+.pm-item input{flex:1;min-width:80px}
+.pm-item .pm-remove{
+  background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;padding:4px;flex-shrink:0;
+}
+.add-btn{
+  background:var(--card2);border:2px dashed var(--border);border-radius:10px;
+  color:var(--sub);padding:10px;width:100%;cursor:pointer;font-size:13px;font-family:inherit;
+  transition:border-color 0.2s,color 0.2s;
+}
+.add-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* Generate Button */
+.gen-btn{
+  width:100%;padding:14px;background:var(--accent);color:var(--text2);border:none;
+  border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;
+  transition:background 0.2s;margin-top:8px;
+}
+.gen-btn:hover{background:var(--accent2)}
+
+/* Output */
+.output-section{display:none;margin-top:24px}
+.output-section.show{display:block}
+.output-tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tab-btn{
+  padding:8px 14px;border-radius:8px;border:1px solid var(--border);
+  background:var(--card);color:var(--sub);font-size:12px;cursor:pointer;font-family:inherit;
+  transition:all 0.2s;
+}
+.tab-btn.active{background:var(--accent);color:var(--text2);border-color:var(--accent)}
+.tab-btn:hover:not(.active){border-color:var(--accent);color:var(--accent)}
+
+.copy-btn{
+  padding:8px 16px;border-radius:8px;border:1px solid var(--accent);
+  background:transparent;color:var(--accent);font-size:12px;cursor:pointer;
+  font-family:inherit;transition:all 0.2s;margin-bottom:12px;
+}
+.copy-btn:hover{background:var(--accent);color:var(--text2)}
+.copy-btn.copied{background:var(--green);border-color:var(--green);color:#fff}
+
+.code-block{
+  background:var(--card2);border:1px solid var(--border2);border-radius:10px;
+  padding:12px;font-size:11px;font-family:'SF Mono',Monaco,monospace;
+  color:var(--sub);max-height:300px;overflow:auto;white-space:pre-wrap;word-break:break-all;
+  line-height:1.5;
+}
+
+/* Preview */
+.preview-frame{
+  background:#fff;border-radius:10px;padding:16px;margin-bottom:16px;
+  max-height:500px;overflow-y:auto;color:#333;font-size:14px;line-height:1.7;
+}
+
+/* Status */
+.status{
+  padding:10px 14px;border-radius:10px;font-size:13px;margin-top:12px;display:none;
+}
+.status.show{display:block}
+.status.success{background:rgba(46,160,67,0.15);color:var(--green);border:1px solid rgba(46,160,67,0.3)}
+.status.error{background:rgba(248,81,73,0.15);color:var(--red);border:1px solid rgba(248,81,73,0.3)}
+
+/* Save indicator */
+.save-indicator{font-size:11px;color:var(--sub);text-align:right;margin-top:4px;opacity:0;transition:opacity 0.3s}
+.save-indicator.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <h1>ナイモル大会結果 HTML生成</h1>
+  <p>入力情報からWP用HTMLを自動生成。コピーしてカスタムHTMLブロックに貼り付け。</p>
+</div>
+
+<!-- ===== 大会基本情報 ===== -->
+<div class="section">
+  <div class="section-title">大会基本情報</div>
+  <div class="input-group">
+    <label class="input-label">大会正式名（冒頭テキスト用）</label>
+    <input class="input-field" id="eventTitle" placeholder="例: 第5回宮前公園ナイモルカップ" data-save>
+  </div>
+  <div class="input-group">
+    <label class="input-label">大会スラッグ（WPページ階層用）</label>
+    <input class="input-field" id="eventSlug" placeholder="例: nice_molkky_5" data-save>
+  </div>
+  <div class="input-group">
+    <label class="input-label">Ninja Tables ID</label>
+    <input class="input-field" id="ninjaId" placeholder="例: 3954（CSV import後に控える番号）" data-save>
+  </div>
+  <div class="input-group">
+    <label class="input-label">Ninja Tables タイトル（aria-label用）</label>
+    <input class="input-field" id="ninjaLabel" placeholder="例: 第5回ナイモルカップ大会順位表" data-save>
+  </div>
+</div>
+
+<!-- ===== 上位入賞チーム ===== -->
+<div class="section">
+  <div class="section-title">上位入賞チーム（4チーム）</div>
+  <div id="teamCards"></div>
+</div>
+
+<!-- ===== パーフェクトモルック賞 ===== -->
+<div class="section">
+  <div class="section-title">パーフェクトモルック賞</div>
+  <div id="pmList"></div>
+  <button class="add-btn" onclick="addPM()">+ チームを追加</button>
+</div>
+
+<!-- ===== ギャラリー ===== -->
+<div class="section">
+  <div class="section-title">ギャラリー情報</div>
+  <div class="input-group">
+    <label class="input-label">ギャラリーページURL</label>
+    <input class="input-field" id="galleryUrl" placeholder="例: https://molkky-hub.com/.../gallery/" data-save>
+  </div>
+  <div class="input-group">
+    <label class="input-label">サムネイル画像URL</label>
+    <input class="input-field" id="galleryThumb" placeholder="例: https://molkky-hub.com/wp-content/uploads/..." data-save>
+  </div>
+  <div class="input-group">
+    <label class="input-label">ギャラリータイトル</label>
+    <input class="input-field" id="galleryTitle" placeholder="例: 第5回宮前公園ナイモルカップギャラリー" data-save>
+  </div>
+</div>
+
+<!-- ===== 生成ボタン ===== -->
+<button class="gen-btn" onclick="generate()">HTML生成</button>
+<div class="save-indicator" id="saveIndicator">自動保存済み</div>
+<div class="status" id="status"></div>
+
+<!-- ===== 出力エリア ===== -->
+<div class="output-section" id="outputSection">
+
+  <div class="output-tabs">
+    <button class="tab-btn active" onclick="switchTab('all',this)">全体HTML</button>
+    <button class="tab-btn" onclick="switchTab('podium',this)">上位入賞</button>
+    <button class="tab-btn" onclick="switchTab('perfect',this)">パーフェクトモルック</button>
+    <button class="tab-btn" onclick="switchTab('preview',this)">プレビュー</button>
+  </div>
+
+  <button class="copy-btn" id="copyBtn" onclick="copyOutput()">コピー</button>
+
+  <div id="tabAll"><div class="code-block" id="codeAll"></div></div>
+  <div id="tabPodium" style="display:none"><div class="code-block" id="codePodium"></div></div>
+  <div id="tabPerfect" style="display:none"><div class="code-block" id="codePerfect"></div></div>
+  <div id="tabPreview" style="display:none"><div class="preview-frame" id="previewFrame"></div></div>
+</div>
+
+</div>
+
+<script>
+// ===== Team Cards Setup =====
+const RANKS = [
+  { rank: '優勝', medal: '🥇', cls: 'gold' },
+  { rank: '準優勝', medal: '🥈', cls: 'silver' },
+  { rank: '3位', medal: '🥉', cls: 'bronze' },
+  { rank: '3位', medal: '🥉', cls: 'bronze' }
+];
+
+function initTeamCards() {
+  const container = document.getElementById('teamCards');
+  RANKS.forEach((r, i) => {
+    container.innerHTML += `
+      <div class="team-card">
+        <div class="team-card-header"><span class="medal">${r.medal}</span> ${r.rank}</div>
+        <div class="input-group">
+          <label class="input-label">チーム名</label>
+          <input class="input-field" id="team${i}Name" placeholder="チーム名" data-save>
+        </div>
+        <div class="input-group">
+          <label class="input-label">スラッグ（空欄＝掲載不可）</label>
+          <input class="input-field" id="team${i}Slug" placeholder="例: hiroma" data-save>
+        </div>
+        <div class="input-group">
+          <label class="input-label">写真URL（WPメディアURL）</label>
+          <input class="input-field" id="team${i}Photo" placeholder="https://molkky-hub.com/wp-content/uploads/..." data-save>
+        </div>
+      </div>`;
+  });
+}
+initTeamCards();
+
+// ===== Perfect Molkky =====
+let pmCount = 0;
+function addPM(name, slug, match) {
+  const id = pmCount++;
+  const container = document.getElementById('pmList');
+  const div = document.createElement('div');
+  div.className = 'pm-item';
+  div.id = `pm${id}`;
+  div.innerHTML = `
+    <input class="input-field" placeholder="チーム名" value="${name||''}" data-pm="${id}" data-field="name" style="flex:2">
+    <input class="input-field" placeholder="スラッグ" value="${slug||''}" data-pm="${id}" data-field="slug" style="flex:1.5">
+    <input class="input-field" placeholder="予選リーグ第N試合" value="${match||''}" data-pm="${id}" data-field="match" style="flex:2">
+    <button class="pm-remove" onclick="removePM(${id})">✕</button>`;
+  container.appendChild(div);
+  return div;
+}
+function removePM(id) {
+  document.getElementById(`pm${id}`)?.remove();
+  saveAll();
+}
+
+// ===== localStorage =====
+const STORAGE_KEY = 'naimol_result_data';
+
+function saveAll() {
+  const data = {};
+  document.querySelectorAll('[data-save]').forEach(el => {
+    data[el.id] = el.value;
+  });
+  // PM items
+  const pms = [];
+  document.querySelectorAll('.pm-item').forEach(item => {
+    const inputs = item.querySelectorAll('input');
+    pms.push({ name: inputs[0].value, slug: inputs[1].value, match: inputs[2].value });
+  });
+  data._pm = pms;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  const ind = document.getElementById('saveIndicator');
+  ind.classList.add('show');
+  setTimeout(() => ind.classList.remove('show'), 1500);
+}
+
+function loadSaved() {
+  try {
+    const data = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (!data) return;
+    document.querySelectorAll('[data-save]').forEach(el => {
+      if (data[el.id] !== undefined) el.value = data[el.id];
+    });
+    if (data._pm) {
+      data._pm.forEach(pm => addPM(pm.name, pm.slug, pm.match));
+    }
+  } catch (e) {}
+}
+loadSaved();
+
+// Auto-save on input
+document.addEventListener('input', (e) => {
+  if (e.target.matches('[data-save], .pm-item input')) saveAll();
+});
+
+// ===== HTML Generation =====
+function generate() {
+  const title = document.getElementById('eventTitle').value.trim();
+  const slug = document.getElementById('eventSlug').value.trim();
+  const ninjaId = document.getElementById('ninjaId').value.trim();
+  const ninjaLabel = document.getElementById('ninjaLabel').value.trim();
+  const galleryUrl = document.getElementById('galleryUrl').value.trim();
+  const galleryThumb = document.getElementById('galleryThumb').value.trim();
+  const galleryTitle = document.getElementById('galleryTitle').value.trim();
+
+  if (!title) { showStatus('error', '大会正式名を入力してください'); return; }
+
+  // Teams
+  const teams = [];
+  for (let i = 0; i < 4; i++) {
+    teams.push({
+      name: document.getElementById(`team${i}Name`).value.trim(),
+      slug: document.getElementById(`team${i}Slug`).value.trim(),
+      photo: document.getElementById(`team${i}Photo`).value.trim(),
+      ...RANKS[i]
+    });
+  }
+
+  // PM
+  const pms = [];
+  document.querySelectorAll('.pm-item').forEach(item => {
+    const inputs = item.querySelectorAll('input');
+    const name = inputs[0].value.trim();
+    if (name) pms.push({ name, slug: inputs[1].value.trim(), match: inputs[2].value.trim() });
+  });
+
+  // Build HTML parts
+  const podiumHTML = buildPodium(teams, slug);
+  const perfectHTML = buildPerfect(pms, slug);
+  const fullHTML = buildFull(title, podiumHTML, ninjaId, ninjaLabel, perfectHTML, galleryUrl, galleryThumb, galleryTitle);
+
+  // Output
+  document.getElementById('codeAll').textContent = fullHTML;
+  document.getElementById('codePodium').textContent = podiumHTML;
+  document.getElementById('codePerfect').textContent = perfectHTML;
+  document.getElementById('previewFrame').innerHTML = podiumHTML + perfectHTML;
+
+  document.getElementById('outputSection').classList.add('show');
+  showStatus('success', 'HTML生成完了！');
+  switchTab('all', document.querySelector('.tab-btn'));
+}
+
+function buildPodium(teams, eventSlug) {
+  const teamBase = `/nice_molkky_japan_details/${eventSlug}/teams`;
+  let items = '';
+  teams.forEach(t => {
+    if (!t.name) return;
+    const photoTag = t.photo
+      ? `<img decoding="async" src="${t.photo}" alt="${t.name}の写真" onclick="openModal(this)">`
+      : '';
+    const nameTag = t.slug
+      ? `<a href="${teamBase}/${t.slug}/" class="team-link">${t.name}</a>`
+      : t.name;
+    items += `
+    <div class="podium-item ${t.cls}">
+      <div class="rank-icon">${t.medal}</div>
+      <div class="podium-photo">${photoTag}</div>
+      <div class="team-info">
+        <div class="position">${t.rank}</div>
+        <div class="team-name">${nameTag}</div>
+      </div>
+    </div>`;
+  });
+
+  return `<h3 class="wp-block-heading">🏆 大会成績</h3>
+
+<p>本大会の上位入賞チーム！！！✨✨</p>
+
+<div class="top-results-mobile">
+  <div class="podium-list">${items}
+  </div>
+</div>
+
+<!-- モーダル -->
+<div id="photoModal" class="photo-modal" onclick="closeModal()">
+  <span class="photo-modal-close" onclick="closeModal()">&times;</span>
+  <img class="photo-modal-content" id="modalImg" alt="">
+</div>
+
+<style>
+.top-results-mobile{margin:0.7rem 0}
+.podium-list{display:flex;flex-direction:column;gap:0.3rem;align-items:flex-start;width:100%;max-width:520px;margin:0 auto}
+.podium-item{display:flex;flex-direction:row;align-items:center;width:100%;background:#fff;border-radius:10px;box-shadow:0 1px 2px rgba(0,0,0,0.05);border-left:8px solid;margin:0;padding:0.4rem 0.5rem;min-width:0;min-height:0;transition:box-shadow 0.2s}
+.podium-item.gold{border-left-color:#FFD700}
+.podium-item.silver{border-left-color:#C0C0C0}
+.podium-item.bronze{border-left-color:#CD7F32}
+.rank-icon{font-size:1.1rem;margin-right:0.5rem;flex-shrink:0}
+.podium-photo{width:56px;height:56px;border-radius:7px;margin-right:0.7rem;flex-shrink:0;overflow:hidden;background:#f4f4f4;display:flex;align-items:center;justify-content:center}
+.podium-photo img{width:100%;height:100%;object-fit:cover;display:block;cursor:pointer;transition:transform 0.2s}
+.podium-photo img:hover{transform:scale(1.05)}
+.team-info{flex:1;min-width:0;text-align:left;display:flex;flex-direction:column;gap:0.1rem}
+.position{font-size:0.98rem;font-weight:bold;color:#2c3e50;margin-bottom:0.05rem;line-height:1.1}
+.team-name{font-size:1.05rem;font-weight:700;word-break:break-word;line-height:1.1}
+.team-link{color:#3498db;text-decoration:none;font-weight:700}
+.team-link:hover{color:#2980b9;text-decoration:underline}
+.photo-modal{display:none;position:fixed;z-index:9999;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);align-items:center;justify-content:center}
+.photo-modal.open{display:flex}
+.photo-modal-content{max-width:90vw;max-height:80vh;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.3)}
+.photo-modal-close{position:absolute;top:20px;right:30px;color:#fff;font-size:2rem;font-weight:bold;cursor:pointer;z-index:10000;text-shadow:0 2px 8px #000}
+@media(min-width:769px){
+  .podium-list{align-items:flex-start!important;margin-left:0!important;margin-right:auto!important}
+  .podium-item{min-height:84px!important;padding-top:0.6rem!important;padding-bottom:0.6rem!important;margin-left:0!important;margin-right:auto!important;text-align:left!important}
+  .podium-photo{width:84px!important;height:84px!important;border-radius:10px!important}
+  .rank-icon{font-size:1.65rem!important}
+  .position{font-size:1.2rem!important}
+  .team-name{font-size:1.3rem!important}
+}
+</style>
+
+<script>
+function openModal(img){var m=document.getElementById('photoModal');var mi=document.getElementById('modalImg');m.classList.add('open');mi.src=img.src;mi.alt=img.alt}
+function closeModal(){document.getElementById('photoModal').classList.remove('open')}
+</script>`;
+}
+
+function buildPerfect(pms, eventSlug) {
+  if (!pms.length) return '';
+  const teamBase = `/nice_molkky_japan_details/${eventSlug}/teams`;
+  let items = '';
+  pms.forEach(pm => {
+    const nameTag = pm.slug
+      ? `<a href="${teamBase}/${pm.slug}/" class="perfect-team-link">${pm.name}</a>`
+      : `<span class="perfect-team-link">${pm.name}</span>`;
+    items += `
+    <div class="perfect-team-item">
+      <span class="perfect-icon">⚡</span>
+      ${nameTag}
+      <span class="perfect-target">${pm.match}</span>
+    </div>`;
+  });
+
+  return `<h3 class="wp-block-heading">⚡ パーフェクトモルック賞</h3>
+
+<p>5ターンで50点獲得（＝パーフェクトモルック）を達成したチームに贈られます。<br>パーフェクトモルック賞を受賞したチームにはNMP（ナイモルポイント）を付与します。</p>
+
+<div class="perfect-molkky-teams">
+  <div class="perfect-teams-list" id="perfectTeamsList">${items}
+  </div>
+</div>
+
+<style>
+.perfect-molkky-teams{margin:2rem 0}
+.perfect-teams-list{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);overflow:hidden;max-width:480px;margin:0 auto;align-items:flex-start}
+.perfect-team-item{display:flex;align-items:center;padding:1.1rem 1.2rem;border-bottom:1px solid #f1f3f4;transition:none;white-space:normal;overflow:visible;text-overflow:clip;text-align:left}
+.perfect-team-item:hover{background:#f8f9fa}
+.perfect-team-item:last-child{border-bottom:none}
+.perfect-icon{font-size:1.3rem;margin-right:1rem;color:#f39c12;flex-shrink:0}
+.perfect-team-link{color:#2c3e50;font-weight:500;font-size:1.1rem;flex:1;min-width:0;word-break:break-word;text-decoration:none;white-space:normal;transition:color 0.2s}
+a.perfect-team-link:hover{color:#3498db;text-decoration:underline}
+.perfect-target{color:#888;font-size:1rem;margin-left:1.2rem;flex-shrink:0;white-space:nowrap}
+@media(min-width:769px){
+  .perfect-molkky-teams,.perfect-teams-list{margin-left:0!important;margin-right:auto!important;align-items:flex-start!important;text-align:left!important}
+}
+@media(max-width:768px){
+  .perfect-teams-list{max-width:99vw}
+  .perfect-team-item{padding:0.7rem 0.7rem}
+  .perfect-icon{font-size:1rem;margin-right:0.7rem}
+  .perfect-team-link{font-size:0.98rem;line-height:1.2}
+  .perfect-target{font-size:0.93rem;margin-left:0.7rem}
+}
+</style>`;
+}
+
+function buildFull(title, podiumHTML, ninjaId, ninjaLabel, perfectHTML, galleryUrl, galleryThumb, galleryTitle) {
+  let html = `<p>${title}の大会結果をお知らせいたします。</p>\n\n`;
+  html += podiumHTML + '\n\n';
+
+  // Ninja Tables
+  html += `<h3 class="wp-block-heading">📊 全順位表</h3>\n\n`;
+  html += `<p>大会参加チーム全ての順位・成績を掲載しています。</p>\n\n`;
+  if (ninjaId) {
+    html += `[ninja_tables id="${ninjaId}"]\n\n`;
+  } else {
+    html += `<!-- Ninja Tables ID未設定。CSV import後にショートコードを挿入: [ninja_tables id="XXX"] -->\n\n`;
+  }
+
+  // Perfect Molkky
+  if (perfectHTML) {
+    html += perfectHTML + '\n\n';
+  }
+
+  // Gallery
+  if (galleryUrl) {
+    html += `<div class="swell-block-postLink">
+  <div class="p-blogCard -external" data-type="type3" data-onclick="clickLink">
+    <div class="p-blogCard__inner">
+      <span class="p-blogCard__caption">ギャラリーはコチラから</span>
+      <div class="p-blogCard__thumb c-postThumb">
+        <figure class="c-postThumb__figure">
+          <img decoding="async" src="${galleryThumb}" alt="" class="c-postThumb__img u-obf-cover" width="320" height="180">
+        </figure>
+      </div>
+      <div class="p-blogCard__body">
+        <a class="p-blogCard__title" href="${galleryUrl}">📷ギャラリー</a>
+        <span class="p-blogCard__excerpt">${galleryTitle} 大会の様子や参加者の皆さんの笑顔をギャラリーでご紹介します。お気に入りの一枚を見つけてください！ スマホからは画像長押しで...</span>
+      </div>
+    </div>
+  </div>
+</div>\n`;
+  }
+
+  return html;
+}
+
+// ===== Tab Switching =====
+let currentTab = 'all';
+function switchTab(tab, btn) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  ['all', 'podium', 'perfect', 'preview'].forEach(t => {
+    const el = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (el) el.style.display = t === tab ? 'block' : 'none';
+  });
+  document.getElementById('copyBtn').style.display = tab === 'preview' ? 'none' : 'block';
+}
+
+// ===== Copy =====
+function copyOutput() {
+  let text = '';
+  if (currentTab === 'all') text = document.getElementById('codeAll').textContent;
+  else if (currentTab === 'podium') text = document.getElementById('codePodium').textContent;
+  else if (currentTab === 'perfect') text = document.getElementById('codePerfect').textContent;
+
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = 'コピー完了！';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'コピー'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// ===== Status =====
+function showStatus(type, msg) {
+  const el = document.getElementById('status');
+  el.className = `status show ${type}`;
+  el.textContent = msg;
+  if (type === 'success') setTimeout(() => el.classList.remove('show'), 3000);
+}
+</script>
+
+</body>
+</html>

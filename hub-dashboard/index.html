@@ -168,6 +168,18 @@ body {
       <div class="kpi-source">GA4 手動入力</div>
     </div>
     <div class="kpi-card">
+      <div class="kpi-label">月間PV</div>
+      <div class="kpi-value" id="kpiPV">-</div>
+      <div class="kpi-change" id="kpiPVChange"></div>
+      <div class="kpi-source">GA4 手動入力</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">月間ユーザー</div>
+      <div class="kpi-value" id="kpiUsers">-</div>
+      <div class="kpi-change" id="kpiUsersChange"></div>
+      <div class="kpi-source">GA4 手動入力</div>
+    </div>
+    <div class="kpi-card">
       <div class="kpi-label">大会情報数</div>
       <div class="kpi-value" id="kpiTournaments">-</div>
       <div class="kpi-change kpi-neutral" id="kpiTournamentsChange"></div>
@@ -365,8 +377,6 @@ const db = firebase.database();
 
 // ========== Utility ==========
 function fmt(n) {
-  if (n >= 10000) return (n / 10000).toFixed(1) + '万';
-  if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
   return n.toLocaleString();
 }
 function changeHTML(current, previous, invert) {
@@ -406,6 +416,10 @@ function renderTraffic() {
 
   document.getElementById('kpiSessions').textContent = fmt(latest.sessions);
   document.getElementById('kpiSessionsChange').innerHTML = changeHTML(latest.sessions, prev.sessions);
+  document.getElementById('kpiPV').textContent = fmt(latest.pv);
+  document.getElementById('kpiPVChange').innerHTML = changeHTML(latest.pv, prev.pv);
+  document.getElementById('kpiUsers').textContent = fmt(latest.users);
+  document.getElementById('kpiUsersChange').innerHTML = changeHTML(latest.users, prev.users);
 
   const maxVal = Math.max(...months.map(m => m.sessions));
   let html = '';
