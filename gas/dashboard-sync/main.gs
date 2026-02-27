@@ -243,9 +243,41 @@ function getSNSData_() {
 
 function getPropertyId_() {
   const p = PropertiesService.getScriptProperties();
-  const id = p.getProperty('GA4_PROPERTY_ID');
-  if (!id) throw new Error('GA4_PROPERTY_ID が未設定です。findMyGA4Property() を実行してください');
+  let id = p.getProperty('GA4_PROPERTY_ID');
+  if (!id) {
+    // Auto-discover on first access
+    Logger.log('GA4_PROPERTY_ID 未設定 — 自動検出を試行');
+    id = autoDiscoverPropertyId_();
+    if (!id) throw new Error('GA4プロパティが見つかりません。手動でGA4_PROPERTY_IDを設定してください');
+  }
   return id;
+}
+
+function autoDiscoverPropertyId_() {
+  try {
+    const summaries = AnalyticsAdmin.AccountSummaries.list();
+    if (!summaries.accountSummaries) return null;
+
+    for (const account of summaries.accountSummaries) {
+      for (const prop of (account.propertySummaries || [])) {
+        try {
+          const streams = AnalyticsAdmin.Properties.DataStreams.list(prop.property);
+          for (const stream of (streams.dataStreams || [])) {
+            if (stream.webStreamData &&
+                stream.webStreamData.measurementId === MEASUREMENT_ID) {
+              const id = prop.property.replace('properties/', '');
+              PropertiesService.getScriptProperties().setProperty('GA4_PROPERTY_ID', id);
+              Logger.log('GA4_PROPERTY_ID 自動設定: ' + id + ' (' + prop.displayName + ')');
+              return id;
+            }
+          }
+        } catch (e) { /* skip inaccessible */ }
+      }
+    }
+  } catch (e) {
+    Logger.log('Auto-discover failed: ' + e.message);
+  }
+  return null;
 }
 
 // ===== Setup Helpers =====
