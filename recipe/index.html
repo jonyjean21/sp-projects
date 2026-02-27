@@ -287,17 +287,27 @@ body {
 .detail-source:hover { text-decoration: underline; }
 .detail-actions {
   display: flex; gap: 8px; margin: 12px 0; padding: 0 16px;
+  flex-wrap: wrap;
 }
 .detail-actions button {
-  flex: 1; padding: 10px; border-radius: 10px;
+  padding: 10px 14px; border-radius: 10px;
   font-size: 13px; font-weight: 600; cursor: pointer;
-  border: none; transition: opacity 0.2s;
+  border: none; transition: opacity 0.2s; white-space: nowrap;
 }
 .detail-actions button:active { opacity: 0.7; }
 .btn-fav { background: var(--yellow-light); color: var(--yellow); }
 .btn-fav.active { background: var(--yellow); color: #fff; }
 .btn-edit { background: var(--accent-light); color: var(--accent); }
 .btn-delete { background: var(--red-light); color: var(--red); }
+.ingredient-item.added-to-cart label { color: var(--green); }
+.ingredient-item.added-to-cart input[type="checkbox"] { accent-color: var(--green); }
+.ing-cart-btn {
+  padding: 2px 8px; border-radius: 6px; border: 1px solid var(--border);
+  background: none; color: var(--text-light); font-size: 11px; cursor: pointer;
+  white-space: nowrap; transition: all 0.2s;
+}
+.ing-cart-btn:active { background: var(--green-light); }
+.ing-cart-btn.added { background: var(--green-light); color: var(--green); border-color: var(--green-light); }
 
 .timer-btn {
   padding: 8px 16px; border-radius: 10px;
@@ -1605,11 +1615,8 @@ function renderDetail(id) {
       ${r.sourceUrl ? `<a class="detail-source" href="${esc(r.sourceUrl)}" target="_blank">🔗 元のレシピを見る</a>` : ''}
     </div>
     <div class="detail-actions">
-      <button class="btn-fav ${r.favorite ? 'active' : ''}" onclick="toggleFav('${id}')">${r.favorite ? '★ お気に入り' : '☆ お気に入り'}</button>
-      <button class="btn-edit" onclick="addRecipeToShopping('${id}')" style="background:var(--green-light);color:var(--green);border-color:var(--green-light)">🛒 買い物リスト</button>
+      <button class="btn-fav ${r.favorite ? 'active' : ''}" onclick="toggleFav('${id}')">${r.favorite ? '★' : '☆'}</button>
       <button class="btn-edit" onclick="shareRecipe('${id}')">共有</button>
-    </div>
-    <div class="detail-actions">
       <button class="btn-edit" onclick="editRecipe('${id}')">編集</button>
       <button class="btn-delete" onclick="deleteRecipe('${id}')">削除</button>
     </div>
@@ -1629,9 +1636,12 @@ function renderDetail(id) {
       </div>
       <ul class="ingredient-list" id="ingredientDisplay">
         ${r.ingredients.map((ing, i) => `
-          <li class="ingredient-item">
-            <label><input type="checkbox"> ${esc(ing.name)}</label>
-            <span class="ingredient-amount" data-orig="${esc(ing.amount || '')}">${esc(ing.amount || '')}</span>
+          <li class="ingredient-item" id="ing-${i}">
+            <span class="ingredient-name">${esc(ing.name)}</span>
+            <span style="display:flex;align-items:center;gap:6px">
+              <span class="ingredient-amount" data-orig="${esc(ing.amount || '')}">${esc(ing.amount || '')}</span>
+              <button class="ing-cart-btn" onclick="addIngToShopping('${id}',${i},this)" title="買い物リストに追加">+🛒</button>
+            </span>
           </li>
         `).join('')}
       </ul>
@@ -2382,6 +2392,19 @@ function addShoppingItemManual() {
   familyRef('shopping').push({ name, amount: '', source: '', checked: false, createdAt: Date.now() });
   input.value = '';
   showToast('追加しました');
+}
+
+function addIngToShopping(recipeId, ingIndex, btn) {
+  const r = itemsData[recipeId];
+  if (!r || !r.ingredients || !r.ingredients[ingIndex]) return;
+  const ing = r.ingredients[ingIndex];
+  familyRef('shopping').push({
+    name: ing.name, amount: ing.amount || '', source: r.title,
+    checked: false, createdAt: Date.now()
+  });
+  btn.classList.add('added');
+  btn.textContent = '✓';
+  showToast(`${ing.name} を追加`);
 }
 
 function addRecipeToShopping(recipeId) {
