@@ -126,6 +126,19 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
 .media-item:hover { border-color: var(--accent); }
 .media-item img { width: 100%; height: 100%; object-fit: cover; }
 .media-loading { text-align: center; padding: 2rem; color: var(--dim); }
+
+/* Toast notification */
+.toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: var(--ok); color: #fff; padding: 0.6rem 1.5rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600; z-index: 200; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+.toast.show { opacity: 1; }
+
+/* Sortable section list */
+.section-list { list-style: none; }
+.section-item { display: flex; align-items: center; gap: 0.7rem; padding: 0.6rem 0.8rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; cursor: grab; user-select: none; transition: border-color 0.15s, background 0.15s; }
+.section-item:active { cursor: grabbing; }
+.section-item.drag-over { border-color: var(--accent); background: rgba(99,102,241,0.08); }
+.section-item .drag-handle { color: var(--dim); font-size: 1rem; }
+.section-item .section-name { flex: 1; font-size: 0.85rem; }
+.section-item .section-count { font-size: 0.75rem; color: var(--dim); }
 </style>
 </head>
 <body>
@@ -231,6 +244,7 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
   <div class="card">
     <h3>公開</h3>
     <div class="btn-row">
+      <button class="btn btn-outline btn-sm" onclick="addCrossLinks()">結果⇔ギャラリー相互リンク追加</button>
       <button class="btn btn-warn" onclick="publishPage('result')">結果ページを公開</button>
     </div>
   </div>
@@ -290,8 +304,18 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
   </div>
 
   <div class="card">
-    <h3>アップロード済み写真</h3>
-    <div id="galleryPreview" class="gallery-grid"></div>
+    <h3>セクション並び替え</h3>
+    <p style="font-size:0.78rem;color:var(--dim);margin-bottom:0.8rem">ドラッグで順番を変更できます。</p>
+    <ul class="section-list" id="sectionList">
+      <li style="color:var(--dim);font-size:0.85rem;padding:1rem;text-align:center">大会を選択してください</li>
+    </ul>
+    <div class="btn-row">
+      <button class="btn btn-primary btn-sm" id="sectionSaveBtn" onclick="saveSectionOrder()" disabled>並び替えを反映</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>公開</h3>
     <div class="btn-row">
       <button class="btn btn-outline btn-sm" onclick="loadGalleryMedia()">WPメディアを読み込み</button>
       <button class="btn btn-warn" onclick="publishPage('gallery')">ギャラリーを公開</button>
@@ -308,6 +332,8 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
 </div>
 
 </div><!-- /content -->
+
+<div class="toast" id="toast"></div>
 
 <!-- Media picker modal -->
 <div class="modal-overlay" id="mediaModal" style="display:none" onclick="if(event.target===this)closeMediaPicker()">
@@ -347,6 +373,14 @@ document.querySelectorAll('.tab').forEach(tab => {
     document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
   });
 });
+
+// ===== Toast =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
 
 // ===== Logging =====
 function log(msg, cls = '') {
@@ -426,6 +460,7 @@ async function onEventChange() {
   loadPageMeta('gallery', galleryPage);
 
   if (resultPage) loadResultPhotos();
+  if (galleryPage) loadGallerySections();
 }
 
 function updatePageInfo(type, page) {
@@ -457,6 +492,7 @@ function saveSettings() {
   };
   localStorage.setItem('naimol_settings', JSON.stringify(settings));
   log('設定を保存しました', 'ok');
+  showToast('設定を保存しました');
 }
 
 function loadSettings() {
@@ -657,6 +693,8 @@ async function savePageMeta(type) {
   if (slug) body.slug = slug;
   if (mediaId) body.featured_media = mediaId;
 
+  const btn = event?.target || document.querySelector(`[onclick="savePageMeta('${type}')"]`);
+  if (btn) { btn.disabled = true; btn.textContent = '保存中...'; }
   try {
     const updated = await wpFetch('/wp-json/wp/v2/pages/' + page.id, {
       method: 'POST',
@@ -666,8 +704,12 @@ async function savePageMeta(type) {
     if (type === 'result') resultPage = updated; else galleryPage = updated;
     updatePageInfo(type, updated);
     log(type + 'ページ設定を保存しました', 'ok');
+    showToast('保存しました');
+    if (btn) { btn.textContent = '保存済み'; setTimeout(() => { btn.textContent = '設定を保存'; btn.disabled = false; }, 1500); }
   } catch (e) {
     log(type + '設定保存失敗: ' + e.message, 'err');
+    showToast('保存に失敗しました');
+    if (btn) { btn.textContent = '設定を保存'; btn.disabled = false; }
   }
 }
 
@@ -713,6 +755,7 @@ async function uploadPhotos() {
     // Reset changed flags
     podiumTeams.forEach(t => t.changed = false);
     renderPhotoGrid();
+    showToast('ページに反映しました');
   } finally {
     btn.textContent = '写真をアップロード & 反映'; checkPhotoReady();
   }
@@ -877,6 +920,151 @@ ${images}</figure>
   } catch (e) {
     log('ギャラリーページ作成失敗: ' + e.message, 'err');
   }
+}
+
+// ===== Gallery: section reorder =====
+let gallerySections = []; // [{name, html}]
+
+async function loadGallerySections() {
+  if (!galleryPage) return;
+  const page = await wpFetch('/wp-json/wp/v2/pages/' + galleryPage.id + '?context=edit');
+  const raw = page.content.raw;
+
+  // Parse sections: each starts with <!-- wp:heading --> ... <!-- /wp:heading --> followed by <!-- wp:gallery --> ... <!-- /wp:gallery -->
+  gallerySections = [];
+  const sectionRegex = /(<!-- wp:heading[^>]*-->[\s\S]*?<!-- \/wp:heading -->)\s*(<!-- wp:gallery[\s\S]*?<!-- \/wp:gallery -->)/g;
+  let match;
+  while ((match = sectionRegex.exec(raw)) !== null) {
+    const headingHtml = match[1];
+    const galleryHtml = match[2];
+    // Extract section name from <h3>
+    const nameMatch = headingHtml.match(/<h3[^>]*>(.*?)<\/h3>/);
+    let name = nameMatch ? nameMatch[1] : 'Unknown';
+    // Remove count like （47枚）
+    name = name.replace(/[（\(]\d+枚[）\)]/, '').trim();
+    // Count images
+    const imgCount = (galleryHtml.match(/wp:image/g) || []).length;
+    gallerySections.push({ name, headingHtml, galleryHtml, imgCount });
+  }
+
+  renderSectionList();
+  log('ギャラリー: ' + gallerySections.length + 'セクション読み込み', 'info');
+}
+
+function renderSectionList() {
+  const list = document.getElementById('sectionList');
+  list.innerHTML = '';
+  if (gallerySections.length === 0) {
+    list.innerHTML = '<li style="color:var(--dim);font-size:0.85rem;padding:1rem;text-align:center">セクションなし</li>';
+    return;
+  }
+  gallerySections.forEach((sec, i) => {
+    const li = document.createElement('li');
+    li.className = 'section-item';
+    li.draggable = true;
+    li.dataset.idx = i;
+    li.innerHTML = `<span class="drag-handle">&#x2630;</span><span class="section-name">${sec.name}</span><span class="section-count">${sec.imgCount}枚</span>`;
+    // Drag events
+    li.ondragstart = e => { e.dataTransfer.setData('text/plain', i); li.style.opacity = '0.4'; };
+    li.ondragend = () => { li.style.opacity = '1'; };
+    li.ondragover = e => { e.preventDefault(); li.classList.add('drag-over'); };
+    li.ondragleave = () => li.classList.remove('drag-over');
+    li.ondrop = e => {
+      e.preventDefault(); li.classList.remove('drag-over');
+      const from = parseInt(e.dataTransfer.getData('text/plain'));
+      const to = i;
+      if (from === to) return;
+      const moved = gallerySections.splice(from, 1)[0];
+      gallerySections.splice(to, 0, moved);
+      renderSectionList();
+      document.getElementById('sectionSaveBtn').disabled = false;
+    };
+    list.appendChild(li);
+  });
+}
+
+async function saveSectionOrder() {
+  if (!galleryPage) return;
+  const btn = document.getElementById('sectionSaveBtn');
+  btn.disabled = true; btn.textContent = '反映中...';
+
+  try {
+    const page = await wpFetch('/wp-json/wp/v2/pages/' + galleryPage.id + '?context=edit');
+    let raw = page.content.raw;
+
+    // Extract the preamble (everything before first heading+gallery section)
+    const firstHeadingIdx = raw.indexOf('<!-- wp:heading');
+    const preamble = firstHeadingIdx > 0 ? raw.substring(0, firstHeadingIdx) : '';
+
+    // Extract the postamble (everything after last gallery section - cross links etc)
+    const lastGalleryEnd = raw.lastIndexOf('<!-- /wp:gallery -->');
+    const postamble = lastGalleryEnd > 0 ? raw.substring(lastGalleryEnd + '<!-- /wp:gallery -->'.length) : '';
+
+    // Rebuild content with reordered sections (without count in heading)
+    let newContent = preamble;
+    for (const sec of gallerySections) {
+      // Update heading to remove count
+      let heading = sec.headingHtml.replace(/[（\(]\d+枚[）\)]/, '').replace(/<\/h3>/, '</h3>');
+      newContent += heading + '\n\n' + sec.galleryHtml + '\n\n';
+    }
+    newContent += postamble;
+
+    await wpFetch('/wp-json/wp/v2/pages/' + galleryPage.id, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: newContent })
+    });
+
+    log('ギャラリーセクション並び替え完了', 'ok');
+    showToast('並び替えを反映しました');
+    btn.textContent = '反映済み';
+    setTimeout(() => { btn.textContent = '並び替えを反映'; }, 1500);
+  } catch (e) {
+    log('並び替え失敗: ' + e.message, 'err');
+    btn.textContent = '並び替えを反映'; btn.disabled = false;
+  }
+}
+
+// ===== Cross links =====
+async function addCrossLinks() {
+  if (!resultPage || !galleryPage || !selectedEvent) return;
+  const slug = selectedEvent.slug;
+  const resultUrl = WP + '/nice_molkky_japan_details/' + slug + '/result/';
+  const galleryUrl = WP + '/nice_molkky_japan_details/' + slug + '/gallery/';
+
+  // Add link to gallery at bottom of result page
+  try {
+    const rp = await wpFetch('/wp-json/wp/v2/pages/' + resultPage.id + '?context=edit');
+    let rc = rp.content.raw;
+    const galLinkHtml = '\n<!-- wp:paragraph -->\n<p><a href="' + galleryUrl + '">ギャラリーはこちら</a></p>\n<!-- /wp:paragraph -->';
+    if (!rc.includes('ギャラリーはこちら')) {
+      rc += galLinkHtml;
+      await wpFetch('/wp-json/wp/v2/pages/' + resultPage.id, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: rc })
+      });
+      log('結果ページにギャラリーリンク追加', 'ok');
+    }
+  } catch (e) { log('結果→ギャラリーリンク失敗: ' + e.message, 'err'); }
+
+  // Add link to result at bottom of gallery page
+  try {
+    const gp = await wpFetch('/wp-json/wp/v2/pages/' + galleryPage.id + '?context=edit');
+    let gc = gp.content.raw;
+    const resLinkHtml = '\n<!-- wp:paragraph -->\n<p><a href="' + resultUrl + '">大会結果はこちら</a></p>\n<!-- /wp:paragraph -->';
+    if (!gc.includes('大会結果はこちら')) {
+      gc += resLinkHtml;
+      await wpFetch('/wp-json/wp/v2/pages/' + galleryPage.id, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: gc })
+      });
+      log('ギャラリーに結果リンク追加', 'ok');
+    }
+  } catch (e) { log('ギャラリー→結果リンク失敗: ' + e.message, 'err'); }
+
+  showToast('相互リンクを追加しました');
 }
 
 // ===== Publish =====
