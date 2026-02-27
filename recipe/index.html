@@ -251,7 +251,7 @@ body {
 
 /* ===== Recipe Detail ===== */
 .detail-hero-wrap {
-  position: relative; width: calc(100% + 32px); margin: -16px -16px 0;
+  position: relative; width: 100%;
 }
 .detail-hero {
   width: 100%; height: 250px; object-fit: cover; background: var(--brown-light); display: block;
@@ -437,7 +437,6 @@ body {
 .dynamic-list { margin-bottom: 8px; }
 .dynamic-row {
   display: flex; gap: 6px; align-items: center; margin-bottom: 6px;
-  max-width: 100%; overflow: hidden;
 }
 .dynamic-row input {
   flex: 1; padding: 10px 12px; min-width: 0;
@@ -446,7 +445,7 @@ body {
   background: var(--bg); outline: none; font-family: inherit;
 }
 .dynamic-row input:focus { border-color: var(--accent); }
-.dynamic-row .amount-input { width: 90px; flex-shrink: 0; }
+.dynamic-row .amount-input { flex: 0 1 110px; min-width: 60px; }
 .dynamic-row .remove-row {
   width: 28px; height: 28px; border-radius: 50%;
   background: var(--red-light); border: none; color: var(--red);
@@ -553,6 +552,145 @@ body {
   transition: border-color 0.2s;
 }
 .color-dot.selected { border-color: var(--text); }
+
+/* ===== Detail Page Full-Screen Overlay ===== */
+#pageDetail.active {
+  position: fixed; top: 0; bottom: 0; left: 0; right: 0;
+  z-index: 150; background: var(--bg);
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding: 0 !important;
+  animation: slideInFromRight 0.25s ease;
+}
+#pageDetail.closing {
+  animation: slideOutToRight 0.2s ease forwards;
+}
+@keyframes slideInFromRight {
+  from { transform: translateX(40%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideOutToRight {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(40%); opacity: 0; }
+}
+#pageDetail > #detailContent {
+  max-width: 480px; margin: 0 auto;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+}
+.detail-top-bar {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center;
+  padding: calc(env(safe-area-inset-top, 8px) + 8px) 16px 10px;
+  background: rgba(253,248,243,0.92);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  gap: 12px; min-height: 48px;
+}
+.detail-top-bar .back-link {
+  display: flex; align-items: center; gap: 2px;
+  background: none; border: none;
+  font-size: 26px; font-weight: 300; color: var(--accent);
+  cursor: pointer; padding: 4px 4px 4px 0; line-height: 1; flex-shrink: 0;
+}
+.detail-top-bar .detail-top-title {
+  font-size: 14px; font-weight: 600; color: var(--text);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  flex: 1;
+}
+.detail-pull-indicator {
+  text-align: center; padding: 8px; font-size: 11px;
+  color: var(--text-light); transition: opacity 0.2s;
+  opacity: 0;
+}
+.detail-pull-indicator.visible { opacity: 1; }
+
+/* ===== Shopping List ===== */
+.shopping-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.shopping-header-title { font-size: 14px; font-weight: 700; color: var(--text); }
+.shopping-actions { display: flex; gap: 6px; }
+.shopping-actions button {
+  padding: 6px 12px; border-radius: 8px;
+  font-size: 11px; font-weight: 600;
+  border: 1px solid var(--border); background: var(--bg-card);
+  color: var(--text-sub); cursor: pointer; font-family: inherit;
+}
+.shopping-actions button:active { background: var(--bg-warm); }
+.shopping-actions button.accent { background: var(--accent-light); color: var(--accent); border-color: var(--accent-light); }
+.shopping-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; background: var(--bg-card);
+  border-radius: 10px; margin-bottom: 6px;
+  box-shadow: var(--shadow); transition: opacity 0.2s;
+}
+.shopping-item.checked { opacity: 0.5; }
+.shopping-item.checked .shopping-item-name { text-decoration: line-through; }
+.shopping-item input[type="checkbox"] {
+  accent-color: var(--accent); width: 20px; height: 20px; flex-shrink: 0;
+}
+.shopping-item-body { flex: 1; min-width: 0; }
+.shopping-item-name { font-size: 14px; }
+.shopping-item-amount { font-size: 12px; color: var(--text-sub); }
+.shopping-item-source { font-size: 10px; color: var(--text-light); }
+.shopping-item-del {
+  background: none; border: none; color: var(--text-light);
+  font-size: 16px; cursor: pointer; padding: 4px; flex-shrink: 0;
+}
+.shopping-add-section {
+  margin-top: 16px; padding: 14px; background: var(--bg-warm);
+  border-radius: 12px;
+}
+.shopping-add-row {
+  display: flex; gap: 8px;
+}
+.shopping-add-row input {
+  flex: 1; padding: 10px 12px; border: 1.5px solid var(--border);
+  border-radius: 10px; font-size: 14px; background: var(--bg-card);
+  outline: none; font-family: inherit; color: var(--text); min-width: 0;
+}
+.shopping-add-row input:focus { border-color: var(--accent); }
+.shopping-add-row button {
+  padding: 10px 16px; border-radius: 10px;
+  background: var(--accent); color: #fff; border: none;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  white-space: nowrap; flex-shrink: 0;
+}
+.shopping-recipe-btns {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;
+}
+.shopping-recipe-btn {
+  padding: 8px 14px; border-radius: 10px;
+  background: var(--bg-card); border: 1.5px solid var(--border);
+  font-size: 12px; font-weight: 600; color: var(--text);
+  cursor: pointer; font-family: inherit;
+}
+.shopping-recipe-btn:active { background: var(--accent-light); border-color: var(--accent); }
+
+/* ===== Sort Controls ===== */
+.sort-bar {
+  display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto;
+  scrollbar-width: none;
+}
+.sort-bar::-webkit-scrollbar { display: none; }
+.sort-chip {
+  padding: 6px 14px; border-radius: 20px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  border: 1.5px solid var(--border); background: var(--bg-card);
+  color: var(--text-sub); white-space: nowrap; flex-shrink: 0;
+  transition: all 0.2s;
+}
+.sort-chip.active {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+}
+
+/* ===== Search Clear ===== */
+.search-bar .search-clear {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-light); font-size: 18px; padding: 2px 4px;
+  display: none; flex-shrink: 0; line-height: 1;
+}
+.search-bar .search-clear.visible { display: block; }
 </style>
 </head>
 <body>
@@ -604,12 +742,19 @@ body {
     <div class="search-bar">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input type="text" id="searchInput" placeholder="レシピを検索..." oninput="handleSearch()">
+      <button class="search-clear" id="searchClear" onclick="clearSearch()">&#10005;</button>
+    </div>
+    <div class="sort-bar" id="sortBar">
+      <div class="sort-chip active" data-sort="recent" onclick="setSort('recent')">新しい順</div>
+      <div class="sort-chip" data-sort="old" onclick="setSort('old')">古い順</div>
+      <div class="sort-chip" data-sort="name" onclick="setSort('name')">名前順</div>
+      <div class="sort-chip" data-sort="fav" onclick="setSort('fav')">お気に入り</div>
     </div>
     <div id="favSection">
       <div class="section-title">&#9733; お気に入り</div>
       <div class="fav-scroll" id="favScroll"></div>
     </div>
-    <div class="section-title">&#128338; 最近追加</div>
+    <div class="section-title" id="listSectionTitle">&#128338; 最近追加</div>
     <div id="recentList"></div>
     <div id="searchResults" class="hidden">
       <div class="section-title">検索結果</div>
@@ -649,6 +794,27 @@ body {
     <div id="detailContent"></div>
   </div>
 
+  <!-- Page: Shopping List -->
+  <div id="pageShop" class="page">
+    <div class="shopping-header">
+      <div class="shopping-header-title">買い物リスト</div>
+      <div class="shopping-actions">
+        <button onclick="clearCheckedItems()">済みを削除</button>
+        <button onclick="clearAllShoppingItems()">全削除</button>
+      </div>
+    </div>
+    <div id="shoppingList"></div>
+    <div class="shopping-add-section">
+      <div style="font-size:12px;font-weight:600;color:var(--text-sub);margin-bottom:8px">手動で追加</div>
+      <div class="shopping-add-row">
+        <input type="text" id="shopAddInput" placeholder="買うもの" onkeydown="if(event.key==='Enter')addShoppingItemManual()">
+        <button onclick="addShoppingItemManual()">追加</button>
+      </div>
+      <div style="font-size:12px;font-weight:600;color:var(--text-sub);margin:14px 0 8px 0">レシピから追加</div>
+      <div class="shopping-recipe-btns" id="shopRecipeBtns"></div>
+    </div>
+  </div>
+
   <!-- Page: Settings -->
   <div id="pageSettings" class="page">
     <div class="section-title">設定</div>
@@ -673,12 +839,17 @@ body {
         <button onclick="exportData()">JSON保存</button>
       </div>
       <div class="settings-item">
+        <div class="settings-item-label">&#128229; データインポート</div>
+        <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="importData(event)">
+        <button onclick="document.getElementById('importFileInput').click()">JSONから復元</button>
+      </div>
+      <div class="settings-item">
         <div class="settings-item-label">&#128100; アカウント</div>
         <button class="danger" onclick="signOut()">ログアウト</button>
       </div>
     </div>
     <div style="text-align:center;margin-top:24px;font-size:11px;color:var(--text-light)">
-      レシピBOX v1.1
+      レシピBOX v2.0
     </div>
   </div>
 
@@ -694,6 +865,10 @@ body {
     </button>
     <button class="nav-btn add-btn" onclick="openAddChoice()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+    <button class="nav-btn" data-page="shop" onclick="showPage('shop')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+      買い物
     </button>
     <button class="nav-btn" data-page="settings" onclick="showPage('settings')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
@@ -975,6 +1150,9 @@ let currentDetailId = null;
 let selectedEntryImage = null;
 let aiExtractMode = 'text';
 let selectedAIImage = null;
+let currentSort = 'recent';
+let shoppingData = {};
+let searchDebounceTimer = null;
 
 function familyRef(path) {
   return db.ref(`recipes/families/${familyId}/${path}`);
@@ -1122,13 +1300,18 @@ function startListening() {
     membersData = snap.val() || {};
     renderSettings();
   });
+  familyRef('shopping').on('value', snap => {
+    shoppingData = snap.val() || {};
+    renderShoppingList();
+  });
 }
 
 // ===== Navigation =====
 function showPage(page) {
   currentPage = page;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  const pageEl = document.getElementById('page' + page.charAt(0).toUpperCase() + page.slice(1));
+  const pageMap = { home: 'pageHome', folders: 'pageFolders', detail: 'pageDetail', shop: 'pageShop', settings: 'pageSettings' };
+  const pageEl = document.getElementById(pageMap[page]);
   if (pageEl) pageEl.classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.page === page);
@@ -1137,12 +1320,16 @@ function showPage(page) {
     document.getElementById('folderListView').classList.remove('hidden');
     document.getElementById('folderDetailView').classList.add('hidden');
   }
+  if (page === 'shop') {
+    renderShoppingList();
+  }
 }
 
 // ===== Render =====
 function renderAll() {
   renderHome();
   renderFolders();
+  renderShoppingList();
   if (currentPage === 'detail' && currentDetailId) renderDetail(currentDetailId);
   if (currentPage === 'folders' && currentFolderViewId) renderFolderDetail(currentFolderViewId);
 }
@@ -1151,13 +1338,19 @@ function renderHome() {
   const entries = Object.entries(itemsData);
   const searchVal = document.getElementById('searchInput').value.trim();
 
+  // Update search clear button visibility
+  const clearBtn = document.getElementById('searchClear');
+  if (clearBtn) clearBtn.classList.toggle('visible', !!searchVal);
+
   if (entries.length === 0) {
     document.getElementById('homeEmpty').classList.remove('hidden');
     document.getElementById('favSection').classList.add('hidden');
     document.getElementById('recentList').innerHTML = '';
+    document.getElementById('sortBar').style.display = 'none';
     return;
   }
   document.getElementById('homeEmpty').classList.add('hidden');
+  document.getElementById('sortBar').style.display = searchVal ? 'none' : 'flex';
 
   // Favorites
   const favs = entries.filter(([,r]) => r.favorite);
@@ -1165,7 +1358,7 @@ function renderHome() {
     document.getElementById('favSection').classList.remove('hidden');
     document.getElementById('favScroll').innerHTML = favs.map(([id, r]) => `
       <div class="fav-card" onclick="openDetail('${id}')">
-        ${r.image ? `<img class="fav-card-img" src="${esc(r.image)}" alt="">` :
+        ${r.image ? `<img class="fav-card-img" src="${esc(r.image)}" alt="" loading="lazy">` :
           `<div class="fav-card-placeholder">🍽</div>`}
         <div class="fav-card-name">${esc(r.title)}</div>
       </div>
@@ -1177,7 +1370,7 @@ function renderHome() {
   // Search
   if (searchVal) {
     document.getElementById('searchResults').classList.remove('hidden');
-    document.getElementById('recentList').parentElement.querySelector('.section-title:last-of-type').classList.add('hidden');
+    document.getElementById('favSection').classList.add('hidden');
     const results = searchRecipes(searchVal);
     document.getElementById('searchResultsList').innerHTML = results.length ?
       results.map(([id, r]) => recipeCardHTML(id, r)).join('') :
@@ -1188,9 +1381,20 @@ function renderHome() {
 
   document.getElementById('searchResults').classList.add('hidden');
 
-  // Recent
-  const recent = entries.sort((a, b) => (b[1].createdAt || 0) - (a[1].createdAt || 0)).slice(0, 20);
-  document.getElementById('recentList').innerHTML = recent.map(([id, r]) => recipeCardHTML(id, r)).join('');
+  // Sort & display
+  const sortLabels = { recent: '&#128338; 最近追加', old: '&#128338; 古い順', name: '&#127383; 名前順', fav: '&#9733; お気に入り' };
+  document.getElementById('listSectionTitle').innerHTML = sortLabels[currentSort] || sortLabels.recent;
+  let sorted = [...entries];
+  switch (currentSort) {
+    case 'recent': sorted.sort((a, b) => (b[1].createdAt || 0) - (a[1].createdAt || 0)); break;
+    case 'old': sorted.sort((a, b) => (a[1].createdAt || 0) - (b[1].createdAt || 0)); break;
+    case 'name': sorted.sort((a, b) => (a[1].title || '').localeCompare(b[1].title || '', 'ja')); break;
+    case 'fav': sorted = sorted.filter(([,r]) => r.favorite); break;
+  }
+  const display = sorted.slice(0, 30);
+  document.getElementById('recentList').innerHTML = display.length ?
+    display.map(([id, r]) => recipeCardHTML(id, r)).join('') :
+    '<div class="empty-state"><div class="empty-text">該当するレシピがありません</div></div>';
 }
 
 function recipeCardHTML(id, r) {
@@ -1234,6 +1438,18 @@ function searchRecipes(q) {
 }
 
 function handleSearch() {
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => renderHome(), 150);
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  renderHome();
+}
+
+function setSort(mode) {
+  currentSort = mode;
+  document.querySelectorAll('.sort-chip').forEach(c => c.classList.toggle('active', c.dataset.sort === mode));
   renderHome();
 }
 
@@ -1341,9 +1557,14 @@ function saveFolder() {
 // ===== Recipe Detail =====
 function openDetail(id) {
   currentDetailId = id;
-  showPage('detail');
+  currentPage = 'detail';
+  const pageEl = document.getElementById('pageDetail');
+  pageEl.classList.remove('closing');
+  pageEl.classList.add('active');
+  pageEl.scrollTop = 0;
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   renderDetail(id);
+  initDetailPullToClose(pageEl);
 }
 
 function renderDetail(id) {
@@ -1354,11 +1575,20 @@ function renderDetail(id) {
   ).join(' ') : '';
 
   let html = '';
-  // Hero with floating back button
-  html += `<div class="detail-hero-wrap">
-    <button class="detail-back-btn" onclick="closeDetail()">&#8249;</button>`;
+
+  // Sticky top bar
+  html += `<div class="detail-top-bar">
+    <button class="back-link" onclick="closeDetail()">&#8249;</button>
+    <div class="detail-top-title">${esc(r.title)}</div>
+  </div>`;
+
+  // Pull indicator
+  html += `<div class="detail-pull-indicator" id="detailPullIndicator">↓ 下に引いて閉じる</div>`;
+
+  // Hero
+  html += `<div class="detail-hero-wrap">`;
   if (r.image) {
-    html += `<img class="detail-hero" src="${esc(r.image)}" alt="">`;
+    html += `<img class="detail-hero" src="${esc(r.image)}" alt="" loading="lazy">`;
   } else {
     html += `<div class="detail-hero-placeholder">🍽</div>`;
   }
@@ -1388,10 +1618,10 @@ function renderDetail(id) {
       <div class="detail-section-title" style="display:flex;align-items:center;justify-content:space-between">
         <span>🥕 材料</span>
         <div class="portion-btns" style="display:flex;gap:4px;font-size:11px">
-          <button onclick="scaleIngredients(0.5)" style="padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text-sub);cursor:pointer;font-family:inherit">×0.5</button>
-          <button onclick="scaleIngredients(1)" style="padding:4px 10px;border-radius:8px;border:1px solid var(--accent);background:var(--accent-light);color:var(--accent);cursor:pointer;font-weight:700;font-family:inherit">×1</button>
-          <button onclick="scaleIngredients(2)" style="padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text-sub);cursor:pointer;font-family:inherit">×2</button>
-          <button onclick="scaleIngredients(3)" style="padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text-sub);cursor:pointer;font-family:inherit">×3</button>
+          <button onclick="scaleIngredients(0.5,event)" style="padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text-sub);cursor:pointer;font-family:inherit">×0.5</button>
+          <button onclick="scaleIngredients(1,event)" style="padding:4px 10px;border-radius:8px;border:1px solid var(--accent);background:var(--accent-light);color:var(--accent);cursor:pointer;font-weight:700;font-family:inherit">×1</button>
+          <button onclick="scaleIngredients(2,event)" style="padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text-sub);cursor:pointer;font-family:inherit">×2</button>
+          <button onclick="scaleIngredients(3,event)" style="padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text-sub);cursor:pointer;font-family:inherit">×3</button>
         </div>
       </div>
       <ul class="ingredient-list" id="ingredientDisplay">
@@ -1444,21 +1674,88 @@ function renderDetail(id) {
 }
 
 function closeDetail() {
-  currentDetailId = null;
-  showPage('home');
+  const pageEl = document.getElementById('pageDetail');
+  pageEl.classList.add('closing');
+  setTimeout(() => {
+    pageEl.classList.remove('active', 'closing');
+    currentDetailId = null;
+    currentPage = 'home';
+    document.getElementById('pageHome').classList.add('active');
+    document.querySelectorAll('.nav-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.page === 'home');
+    });
+  }, 200);
 }
 
-function scaleIngredients(factor) {
+function initDetailPullToClose(pageEl) {
+  if (pageEl._pullInit) return;
+  pageEl._pullInit = true;
+  let startY = 0, currentY = 0, dragging = false;
+
+  pageEl.addEventListener('touchstart', e => {
+    if (pageEl.scrollTop <= 5) {
+      startY = e.touches[0].clientY;
+      dragging = true;
+    }
+  }, { passive: true });
+
+  pageEl.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    const dy = e.touches[0].clientY - startY;
+    currentY = dy;
+    if (dy > 0 && pageEl.scrollTop <= 0) {
+      pageEl.style.transition = 'none';
+      pageEl.style.transform = `translateY(${Math.min(dy * 0.5, 200)}px)`;
+      pageEl.style.opacity = Math.max(0.3, 1 - dy / 500);
+      const indicator = document.getElementById('detailPullIndicator');
+      if (indicator) indicator.classList.toggle('visible', dy > 40);
+    }
+  }, { passive: true });
+
+  pageEl.addEventListener('touchend', () => {
+    if (!dragging) return;
+    dragging = false;
+    pageEl.style.transition = 'transform 0.25s ease, opacity 0.25s ease';
+    const indicator = document.getElementById('detailPullIndicator');
+    if (indicator) indicator.classList.remove('visible');
+    if (currentY > 120) {
+      pageEl.style.transform = 'translateY(100%)';
+      pageEl.style.opacity = '0';
+      setTimeout(() => {
+        pageEl.style.transform = '';
+        pageEl.style.opacity = '';
+        pageEl.style.transition = '';
+        pageEl.classList.remove('active');
+        currentDetailId = null;
+        currentPage = 'home';
+        document.getElementById('pageHome').classList.add('active');
+        document.querySelectorAll('.nav-btn').forEach(b => {
+          b.classList.toggle('active', b.dataset.page === 'home');
+        });
+      }, 250);
+    } else {
+      pageEl.style.transform = '';
+      pageEl.style.opacity = '';
+      setTimeout(() => { pageEl.style.transition = ''; }, 250);
+    }
+    currentY = 0;
+  });
+}
+
+function scaleIngredients(factor, e) {
+  const btn = e ? e.target : null;
   document.querySelectorAll('.portion-btns button').forEach(b => {
     b.style.border = '1px solid var(--border)';
     b.style.background = 'none';
     b.style.color = 'var(--text-sub)';
     b.style.fontWeight = '400';
   });
-  event.target.style.border = '1px solid var(--accent)';
-  event.target.style.background = 'var(--accent-light)';
-  event.target.style.color = 'var(--accent)';
-  event.target.style.fontWeight = '700';
+  if (btn) {
+    btn.style.border = '1px solid var(--accent)';
+    btn.style.background = 'var(--accent-light)';
+    btn.style.color = 'var(--accent)';
+    btn.style.fontWeight = '700';
+  }
 
   document.querySelectorAll('#ingredientDisplay .ingredient-amount').forEach(el => {
     const orig = el.dataset.orig;
@@ -2029,6 +2326,125 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ===== Shopping List =====
+function renderShoppingList() {
+  const listEl = document.getElementById('shoppingList');
+  const btnsEl = document.getElementById('shopRecipeBtns');
+  if (!listEl) return;
+
+  const entries = Object.entries(shoppingData);
+  if (entries.length === 0) {
+    listEl.innerHTML = '<div class="empty-state"><div class="empty-icon">🛒</div><div class="empty-text">買い物リストは空です<br>レシピから材料を追加しましょう</div></div>';
+  } else {
+    // Sort: unchecked first, then checked
+    entries.sort((a, b) => (a[1].checked ? 1 : 0) - (b[1].checked ? 1 : 0));
+    listEl.innerHTML = entries.map(([id, item]) => `
+      <div class="shopping-item ${item.checked ? 'checked' : ''}">
+        <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleShoppingItem('${id}')">
+        <div class="shopping-item-body">
+          <div class="shopping-item-name">${esc(item.name)}</div>
+          ${item.amount ? `<div class="shopping-item-amount">${esc(item.amount)}</div>` : ''}
+          ${item.source ? `<div class="shopping-item-source">${esc(item.source)}</div>` : ''}
+        </div>
+        <button class="shopping-item-del" onclick="deleteShoppingItem('${id}')">×</button>
+      </div>
+    `).join('');
+  }
+
+  // Recipe buttons for quick add
+  if (btnsEl) {
+    const recipes = Object.entries(itemsData);
+    btnsEl.innerHTML = recipes.slice(0, 10).map(([id, r]) =>
+      `<button class="shopping-recipe-btn" onclick="addRecipeToShopping('${id}')">+ ${esc(r.title)}</button>`
+    ).join('');
+  }
+}
+
+function toggleShoppingItem(id) {
+  const item = shoppingData[id];
+  if (!item) return;
+  familyRef(`shopping/${id}/checked`).set(!item.checked);
+}
+
+function deleteShoppingItem(id) {
+  familyRef(`shopping/${id}`).remove();
+}
+
+function addShoppingItemManual() {
+  const input = document.getElementById('shopAddInput');
+  const name = input.value.trim();
+  if (!name) return;
+  familyRef('shopping').push({ name, amount: '', source: '', checked: false, createdAt: Date.now() });
+  input.value = '';
+  showToast('追加しました');
+}
+
+function addRecipeToShopping(recipeId) {
+  const r = itemsData[recipeId];
+  if (!r || !r.ingredients || !r.ingredients.length) {
+    showToast('材料がありません');
+    return;
+  }
+  const updates = {};
+  r.ingredients.forEach(ing => {
+    if (ing.name) {
+      const key = familyRef('shopping').push().key;
+      updates[key] = { name: ing.name, amount: ing.amount || '', source: r.title, checked: false, createdAt: Date.now() };
+    }
+  });
+  familyRef('shopping').update(updates);
+  showToast(`${r.title} の材料を追加しました`);
+}
+
+function clearCheckedItems() {
+  const checked = Object.entries(shoppingData).filter(([,item]) => item.checked);
+  if (checked.length === 0) return showToast('済みのアイテムがありません');
+  checked.forEach(([id]) => familyRef(`shopping/${id}`).remove());
+  showToast('済みのアイテムを削除しました');
+}
+
+function clearAllShoppingItems() {
+  if (Object.keys(shoppingData).length === 0) return;
+  if (!confirm('買い物リストを全て削除しますか？')) return;
+  familyRef('shopping').remove();
+  showToast('リストを全て削除しました');
+}
+
+// ===== Data Import =====
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (ev) => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!confirm(`インポートします。既存のレシピは上書きされません。\nレシピ: ${data.items ? Object.keys(data.items).length : 0}件\nフォルダ: ${data.folders ? Object.keys(data.folders).length : 0}件\n\n続行しますか？`)) return;
+
+      const updates = {};
+      if (data.items) {
+        Object.entries(data.items).forEach(([id, item]) => {
+          if (!itemsData[id]) updates[`items/${id}`] = item;
+        });
+      }
+      if (data.folders) {
+        Object.entries(data.folders).forEach(([id, folder]) => {
+          if (!foldersData[id]) updates[`folders/${id}`] = folder;
+        });
+      }
+      if (Object.keys(updates).length > 0) {
+        await familyRef('').update(updates);
+        showToast('インポートが完了しました');
+      } else {
+        showToast('新しいデータはありませんでした');
+      }
+    } catch (err) {
+      showToast('JSONファイルの読み込みに失敗しました');
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
 }
 </script>
 </body>
