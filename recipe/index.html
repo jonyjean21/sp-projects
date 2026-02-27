@@ -537,7 +537,6 @@ body {
     </div>
     <div id="userMenu" class="user-menu">
       <button class="user-menu-item" onclick="exportData()">データエクスポート</button>
-      <button class="user-menu-item" onclick="manageGeminiKey()">Gemini APIキー設定</button>
       <button class="user-menu-item danger" onclick="signOut()">ログアウト</button>
     </div>
   </div>
@@ -600,10 +599,6 @@ body {
   <div id="pageSettings" class="page">
     <div class="section-title">設定</div>
     <div class="settings-section">
-      <div class="settings-item">
-        <div class="settings-item-label">&#128273; Gemini APIキー</div>
-        <button onclick="manageGeminiKey()">設定</button>
-      </div>
       <div class="settings-item">
         <div class="settings-item-label">&#128190; データエクスポート</div>
         <button onclick="exportData()">JSON保存</button>
@@ -851,6 +846,7 @@ auth.onAuthStateChanged(user => {
 
 // ===== Data =====
 function startListening() {
+  loadGeminiKey();
   db.ref(`recipes/${uid}/items`).on('value', snap => {
     itemsData = snap.val() || {};
     renderAll();
@@ -1445,28 +1441,17 @@ async function callGemini(parts) {
 }
 
 // ===== Gemini Key =====
-function getGeminiKey() {
-  let key = localStorage.getItem('GEMINI_API_KEY');
-  if (!key) {
-    key = prompt('Gemini APIキーを入力してください（初回のみ）\n\nレシピの自動読み取りに使用します');
-    if (key) localStorage.setItem('GEMINI_API_KEY', key.trim());
-  }
-  return key;
+let geminiKeyCache = null;
+
+async function loadGeminiKey() {
+  const snap = await db.ref('config/gemini_key').once('value');
+  geminiKeyCache = snap.val();
 }
 
-function manageGeminiKey() {
-  toggleUserMenu();
-  const current = localStorage.getItem('GEMINI_API_KEY');
-  const msg = current ? `現在のキー: ${current.substring(0, 10)}...\n\n新しいキーを入力（空欄でクリア）:` : 'Gemini APIキーを入力:';
-  const key = prompt(msg);
-  if (key === null) return;
-  if (key.trim()) {
-    localStorage.setItem('GEMINI_API_KEY', key.trim());
-    showToast('APIキーを保存しました');
-  } else {
-    localStorage.removeItem('GEMINI_API_KEY');
-    showToast('APIキーをクリアしました');
-  }
+function getGeminiKey() {
+  if (geminiKeyCache) return geminiKeyCache;
+  // Fallback to localStorage if Firebase config not yet loaded
+  return localStorage.getItem('GEMINI_API_KEY');
 }
 
 // ===== Image Compression =====
