@@ -759,7 +759,7 @@ body {
     </div>
     <div class="sort-bar" id="sortBar">
       <div class="sort-chip active" data-sort="recent" onclick="setSort('recent')">新しい順</div>
-      <div class="sort-chip" data-sort="old" onclick="setSort('old')">古い順</div>
+      <div class="sort-chip" data-sort="cooked" onclick="setSort('cooked')">よく作る</div>
       <div class="sort-chip" data-sort="name" onclick="setSort('name')">名前順</div>
       <div class="sort-chip" data-sort="fav" onclick="setSort('fav')">お気に入り</div>
     </div>
@@ -1393,12 +1393,12 @@ function renderHome() {
   document.getElementById('searchResults').classList.add('hidden');
 
   // Sort & display
-  const sortLabels = { recent: '&#128338; 最近追加', old: '&#128338; 古い順', name: '&#127383; 名前順', fav: '&#9733; お気に入り' };
+  const sortLabels = { recent: '&#128338; 最近追加', cooked: '&#127859; よく作る', name: '&#127383; 名前順', fav: '&#9733; お気に入り' };
   document.getElementById('listSectionTitle').innerHTML = sortLabels[currentSort] || sortLabels.recent;
   let sorted = [...entries];
   switch (currentSort) {
     case 'recent': sorted.sort((a, b) => (b[1].createdAt || 0) - (a[1].createdAt || 0)); break;
-    case 'old': sorted.sort((a, b) => (a[1].createdAt || 0) - (b[1].createdAt || 0)); break;
+    case 'cooked': sorted.sort((a, b) => (b[1].cookedCount || 0) - (a[1].cookedCount || 0)); break;
     case 'name': sorted.sort((a, b) => (a[1].title || '').localeCompare(b[1].title || '', 'ja')); break;
     case 'fav': sorted = sorted.filter(([,r]) => r.favorite); break;
   }
@@ -1421,6 +1421,7 @@ function recipeCardHTML(id, r) {
         <div class="recipe-card-meta">
           ${r.prepTime ? `<span>⏱ ${esc(r.prepTime)}</span>` : ''}
           ${r.servings ? `<span>👤 ${esc(r.servings)}</span>` : ''}
+          ${r.cookedCount ? `<span>🍳 ${r.cookedCount}回</span>` : ''}
         </div>
         ${folderNames ? `<div class="recipe-card-folders">${folderNames}</div>` : ''}
       </div>
@@ -1663,6 +1664,12 @@ function renderDetail(id) {
       ${folderBadges ? `<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">${folderBadges}</div>` : ''}
       ${r.sourceUrl ? `<a class="detail-source" href="${esc(r.sourceUrl)}" target="_blank">🔗 元のレシピを見る</a>` : ''}
     </div>
+    <div style="margin:16px 0 8px;text-align:center">
+      <button onclick="markCooked('${id}')" style="padding:12px 28px;border-radius:50px;border:2px solid var(--green);background:var(--green-light);color:var(--green);font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.2s">
+        🍳 作った！${r.cookedCount ? `<span style="font-size:12px;font-weight:400;margin-left:4px">(${r.cookedCount}回)</span>` : ''}
+      </button>
+      ${r.lastCooked ? `<div style="font-size:11px;color:var(--text-light);margin-top:4px">最後に作った日: ${new Date(r.lastCooked).toLocaleDateString('ja-JP')}</div>` : ''}
+    </div>
     <div class="detail-actions">
       <button class="btn-fav ${r.favorite ? 'active' : ''}" onclick="toggleFav('${id}')">${r.favorite ? '★' : '☆'}</button>
       <button class="btn-edit" onclick="shareRecipe('${id}')">共有</button>
@@ -1886,6 +1893,15 @@ function toggleFav(id) {
   const r = itemsData[id];
   if (!r) return;
   familyRef(`items/${id}/favorite`).set(!r.favorite);
+}
+
+function markCooked(id) {
+  const r = itemsData[id];
+  if (!r) return;
+  const count = (r.cookedCount || 0) + 1;
+  familyRef(`items/${id}`).update({ cookedCount: count, lastCooked: Date.now() });
+  showToast(`🍳 ${count}回目！`);
+  renderDetail(id);
 }
 
 function deleteRecipe(id) {
