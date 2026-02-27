@@ -250,15 +250,25 @@ body {
 }
 
 /* ===== Recipe Detail ===== */
+.detail-hero-wrap {
+  position: relative; width: calc(100% + 32px); margin: -16px -16px 0;
+}
 .detail-hero {
-  width: calc(100% + 32px); margin: -16px -16px 0;
-  height: 220px; object-fit: cover; background: var(--brown-light);
+  width: 100%; height: 250px; object-fit: cover; background: var(--brown-light); display: block;
 }
 .detail-hero-placeholder {
-  width: calc(100% + 32px); margin: -16px -16px 0;
-  height: 160px; background: linear-gradient(135deg, var(--accent-light), var(--brown-light));
+  width: 100%; height: 160px;
+  background: linear-gradient(135deg, var(--accent-light), var(--brown-light));
   display: flex; align-items: center; justify-content: center;
   font-size: 64px;
+}
+.detail-back-btn {
+  position: absolute; top: 12px; left: 12px; z-index: 10;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(0,0,0,0.4); backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: none; cursor: pointer; font-size: 18px; color: #fff;
+  display: flex; align-items: center; justify-content: center;
 }
 .detail-header { padding: 16px 0 12px; }
 .detail-title { font-size: 20px; font-weight: 700; line-height: 1.4; }
@@ -276,7 +286,7 @@ body {
 }
 .detail-source:hover { text-decoration: underline; }
 .detail-actions {
-  display: flex; gap: 8px; margin: 12px 0;
+  display: flex; gap: 8px; margin: 12px 0; padding: 0 16px;
 }
 .detail-actions button {
   flex: 1; padding: 10px; border-radius: 10px;
@@ -297,7 +307,7 @@ body {
 }
 .timer-btn:active { background: var(--accent-light); border-color: var(--accent); }
 
-.detail-section { margin-top: 20px; }
+.detail-section { margin-top: 20px; padding: 0 16px; }
 .detail-section-title {
   font-size: 14px; font-weight: 700; color: var(--accent);
   margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
@@ -358,8 +368,9 @@ body {
   to { transform: translateY(0); }
 }
 .modal-handle {
-  width: 36px; height: 4px; border-radius: 2px;
+  width: 40px; height: 5px; border-radius: 3px;
   background: var(--border); margin: 0 auto 12px;
+  cursor: grab; touch-action: none;
 }
 .modal-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -425,16 +436,17 @@ body {
 
 .dynamic-list { margin-bottom: 8px; }
 .dynamic-row {
-  display: flex; gap: 8px; align-items: center; margin-bottom: 6px;
+  display: flex; gap: 6px; align-items: center; margin-bottom: 6px;
+  max-width: 100%; overflow: hidden;
 }
 .dynamic-row input {
-  flex: 1; padding: 10px 12px;
+  flex: 1; padding: 10px 12px; min-width: 0;
   border: 1.5px solid var(--border); border-radius: 10px;
   font-size: 14px; color: var(--text);
   background: var(--bg); outline: none; font-family: inherit;
 }
 .dynamic-row input:focus { border-color: var(--accent); }
-.dynamic-row .amount-input { max-width: 100px; }
+.dynamic-row .amount-input { width: 90px; flex-shrink: 0; }
 .dynamic-row .remove-row {
   width: 28px; height: 28px; border-radius: 50%;
   background: var(--red-light); border: none; color: var(--red);
@@ -633,12 +645,7 @@ body {
   </div>
 
   <!-- Page: Detail -->
-  <div id="pageDetail" class="page">
-    <div class="folder-detail-header" style="margin-bottom:0">
-      <button class="back-btn" onclick="closeDetail()">&#8249;</button>
-      <span style="font-size:14px;color:var(--text-sub)">レシピ詳細</span>
-      <button onclick="closeDetail()" style="background:none;border:none;font-size:22px;color:var(--text-sub);cursor:pointer;padding:4px 8px;margin-left:auto;">✕</button>
-    </div>
+  <div id="pageDetail" class="page" style="padding:0 0 16px">
     <div id="detailContent"></div>
   </div>
 
@@ -1316,15 +1323,18 @@ function renderDetail(id) {
   ).join(' ') : '';
 
   let html = '';
-  // Hero
+  // Hero with floating back button
+  html += `<div class="detail-hero-wrap">
+    <button class="detail-back-btn" onclick="closeDetail()">&#8249;</button>`;
   if (r.image) {
     html += `<img class="detail-hero" src="${esc(r.image)}" alt="">`;
   } else {
     html += `<div class="detail-hero-placeholder">🍽</div>`;
   }
+  html += `</div>`;
 
   html += `
-    <div class="detail-header">
+    <div class="detail-header" style="padding:16px 16px 0">
       <div class="detail-title">${esc(r.title)}</div>
       <div class="detail-meta">
         ${r.prepTime ? `<span class="detail-meta-item">⏱ ${esc(r.prepTime)}</span>` : ''}
@@ -1928,7 +1938,50 @@ function exportData() {
 }
 
 // ===== Modal =====
-function openModal(id) { document.getElementById(id).classList.add('open'); }
+function openModal(id) {
+  const el = document.getElementById(id);
+  el.classList.add('open');
+  // Enable swipe-down-to-close
+  const modal = el.querySelector('.modal');
+  if (modal && !modal._swipeInit) {
+    modal._swipeInit = true;
+    let startY = 0, currentY = 0, dragging = false;
+    const handle = modal.querySelector('.modal-handle');
+    const touchTarget = handle || modal;
+    touchTarget.addEventListener('touchstart', e => {
+      if (modal.scrollTop > 5) return;
+      startY = e.touches[0].clientY;
+      dragging = true;
+      modal.style.transition = 'none';
+    }, { passive: true });
+    modal.addEventListener('touchmove', e => {
+      if (!dragging) return;
+      currentY = e.touches[0].clientY - startY;
+      if (currentY > 0) {
+        modal.style.transform = `translateY(${currentY}px)`;
+        modal.style.opacity = Math.max(0.5, 1 - currentY / 400);
+      }
+    }, { passive: true });
+    modal.addEventListener('touchend', () => {
+      if (!dragging) return;
+      dragging = false;
+      modal.style.transition = 'transform 0.25s ease, opacity 0.25s ease';
+      if (currentY > 120) {
+        modal.style.transform = 'translateY(100%)';
+        modal.style.opacity = '0';
+        setTimeout(() => {
+          el.classList.remove('open');
+          modal.style.transform = '';
+          modal.style.opacity = '';
+        }, 250);
+      } else {
+        modal.style.transform = '';
+        modal.style.opacity = '';
+      }
+      currentY = 0;
+    });
+  }
+}
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 function openAddChoice() { openModal('addChoiceModal'); }
 
