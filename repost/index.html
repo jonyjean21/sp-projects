@@ -208,21 +208,32 @@ tweetInput.addEventListener('input', async () => {
     fetchStatus.textContent = 'ポストを取得中...';
     tweetInput._fetching = true;
     try {
-      const resp = await fetch(`https://syndication.twitter.com/srv/timeline-profile/screen-name/${username}`);
-      const html = await resp.text();
-      const matches = html.match(/"text":"([^"]{10,})"/g);
+      // Try syndication tweet embed API first (single tweet)
       let found = null;
-      if (matches) {
-        // Try to find the specific tweet by ID, or use first matching
-        const idPattern = new RegExp(`"id_str":"${tweetId}"`);
-        // Look for text near the tweet ID
-        const allTweets = html.match(/"text":"((?:[^"\\]|\\.)*)"/g);
-        if (allTweets) {
-          // Get all tweet texts
-          const texts = allTweets.map(m => m.replace(/^"text":"/, '').replace(/"$/, '').replace(/\\n/g, '\n').replace(/\\"/g, '"'));
-          found = texts[0]; // Use first tweet from that user as fallback
+      try {
+        const embedResp = await fetch(`https://syndication.twitter.com/srv/timeline-profile/screen-name/${username}`);
+        const html = await embedResp.text();
+        // Parse JSON data from the HTML to find the specific tweet by ID
+        const tweetIdPattern = new RegExp(`"id_str":"${tweetId}"[^}]*"text":"((?:[^"\\\\]|\\\\.)*)"`, 's');
+        const reversePattern = new RegExp(`"text":"((?:[^"\\\\]|\\\\.)*)"[^}]*"id_str":"${tweetId}"`, 's');
+        let match = html.match(tweetIdPattern) || html.match(reversePattern);
+        if (match) {
+          found = match[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
         }
-      }
+        if (!found) {
+          // Try to find tweet ID anywhere near text blocks
+          const idIdx = html.indexOf(tweetId);
+          if (idIdx > -1) {
+            // Search for nearest "text" field within ±2000 chars
+            const region = html.substring(Math.max(0, idIdx - 2000), Math.min(html.length, idIdx + 2000));
+            const textMatches = [...region.matchAll(/"text":"((?:[^"\\\\]|\\\\.)*)"/g)];
+            if (textMatches.length) {
+              found = textMatches[0][1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
+            }
+          }
+        }
+      } catch (e) { /* continue to fallback */ }
+
       if (found) {
         tweetInput.value = found;
         if (!authorInput.value) authorInput.value = `@${username}`;
@@ -230,15 +241,16 @@ tweetInput.addEventListener('input', async () => {
         fetchStatus.style.color = '#2ea043';
         generateBtn.disabled = false;
       } else {
-        fetchStatus.textContent = '取得できませんでした。内容を手動で入力してください';
+        fetchStatus.textContent = '該当ポストが見つかりません。内容を手動で貼り付けてください';
         fetchStatus.style.color = '#f85149';
+        // Don't overwrite the URL - user can manually paste the content
       }
     } catch (e) {
       fetchStatus.textContent = '取得エラー。内容を手動で入力してください';
       fetchStatus.style.color = '#f85149';
     }
     tweetInput._fetching = false;
-    setTimeout(() => { fetchStatus.style.display = 'none'; fetchStatus.style.color = '#4a9eff'; }, 4000);
+    setTimeout(() => { fetchStatus.style.display = 'none'; fetchStatus.style.color = '#4a9eff'; }, 5000);
   }
 });
 
@@ -283,6 +295,10 @@ generateBtn.addEventListener('click', async () => {
 });
 
 async function generateRepost(originalTweet, author, context, pastPosts) {
+  // Guard: if input is just a URL (tweet fetch failed), warn user
+  if (/^https?:\/\/(x\.com|twitter\.com)\//.test(originalTweet.trim()) && originalTweet.trim().split('\n').length <= 2) {
+    throw new Error('ポストの内容が取得できていません。URLではなく、ポストの内容（テキスト）を貼り付けてください。');
+  }
   const prompt = `あなたはモルック（フィンランド発祥の投擲スポーツ）の情報メディア「MOLKKY HUB（モルハブ）」のX（Twitter）アカウント @molkkyhub の運用担当です。
 
 以下の元ポストに対する「引用リポスト」の文面を3パターン生成してください。
