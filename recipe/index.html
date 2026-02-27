@@ -1465,19 +1465,67 @@ function setSort(mode) {
 }
 
 // ===== Folders =====
+let folderEditMode = false;
+function toggleFolderEditMode() {
+  folderEditMode = !folderEditMode;
+  renderFolders();
+}
 function renderFolders() {
-  const entries = Object.entries(foldersData);
-  let html = entries.map(([id, f]) => {
+  const entries = Object.entries(foldersData).sort((a, b) => (a[1].order || 0) - (b[1].order || 0));
+  let html = '';
+  if (entries.length > 1) {
+    html += `<div style="text-align:right;margin-bottom:8px">
+      <button onclick="toggleFolderEditMode()" style="padding:6px 14px;border-radius:8px;border:1px solid ${folderEditMode ? 'var(--accent)' : 'var(--border)'};background:${folderEditMode ? 'var(--accent-light)' : 'none'};color:${folderEditMode ? 'var(--accent)' : 'var(--text-sub)'};font-size:12px;cursor:pointer;font-family:inherit">${folderEditMode ? '完了' : '並び替え'}</button>
+    </div>`;
+  }
+  html += entries.map(([id, f], idx) => {
     const count = Object.values(itemsData).filter(r => r.folders && r.folders[id]).length;
+    const arrows = folderEditMode ? `
+      <div style="display:flex;flex-direction:column;gap:2px;margin-left:auto;flex-shrink:0" onclick="event.stopPropagation()">
+        <button onclick="moveFolderUp('${id}')" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:none;cursor:pointer;font-size:12px;color:var(--text-sub);${idx === 0 ? 'opacity:0.3;pointer-events:none;' : ''}" ${idx === 0 ? 'disabled' : ''}>▲</button>
+        <button onclick="moveFolderDown('${id}')" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:none;cursor:pointer;font-size:12px;color:var(--text-sub);${idx === entries.length - 1 ? 'opacity:0.3;pointer-events:none;' : ''}" ${idx === entries.length - 1 ? 'disabled' : ''}>▼</button>
+      </div>` : '';
     return `
-      <div class="folder-item" onclick="openFolderDetail('${id}')" style="border-left:4px solid ${f.color || 'var(--accent)'}">
-        <div class="folder-name">${esc(f.name)}</div>
-        <div class="folder-count">${count}レシピ</div>
+      <div class="folder-item" onclick="${folderEditMode ? '' : `openFolderDetail('${id}')`}" style="border-left:4px solid ${f.color || 'var(--accent)'};${folderEditMode ? 'display:flex;align-items:center;gap:8px;' : ''}">
+        <div style="flex:1;min-width:0">
+          <div class="folder-name">${esc(f.name)}</div>
+          <div class="folder-count">${count}レシピ</div>
+        </div>
+        ${arrows}
       </div>
     `;
   }).join('');
   html += `<div class="folder-item folder-add" onclick="openFolderCreate()"><div class="folder-add-icon">＋</div>新しいフォルダ</div>`;
   document.getElementById('folderGrid').innerHTML = html;
+}
+
+function moveFolderUp(id) {
+  const entries = Object.entries(foldersData).sort((a, b) => (a[1].order || 0) - (b[1].order || 0));
+  const idx = entries.findIndex(([fid]) => fid === id);
+  if (idx <= 0) return;
+  const updates = {};
+  updates[`folders/${entries[idx][0]}/order`] = entries[idx - 1][1].order || 0;
+  updates[`folders/${entries[idx - 1][0]}/order`] = entries[idx][1].order || 0;
+  // Ensure different values
+  if (updates[`folders/${entries[idx][0]}/order`] === updates[`folders/${entries[idx - 1][0]}/order`]) {
+    updates[`folders/${entries[idx][0]}/order`] = idx - 1;
+    updates[`folders/${entries[idx - 1][0]}/order`] = idx;
+  }
+  familyRef('').update(updates);
+}
+
+function moveFolderDown(id) {
+  const entries = Object.entries(foldersData).sort((a, b) => (a[1].order || 0) - (b[1].order || 0));
+  const idx = entries.findIndex(([fid]) => fid === id);
+  if (idx < 0 || idx >= entries.length - 1) return;
+  const updates = {};
+  updates[`folders/${entries[idx][0]}/order`] = entries[idx + 1][1].order || 0;
+  updates[`folders/${entries[idx + 1][0]}/order`] = entries[idx][1].order || 0;
+  if (updates[`folders/${entries[idx][0]}/order`] === updates[`folders/${entries[idx + 1][0]}/order`]) {
+    updates[`folders/${entries[idx][0]}/order`] = idx + 1;
+    updates[`folders/${entries[idx + 1][0]}/order`] = idx;
+  }
+  familyRef('').update(updates);
 }
 
 function openFolderDetail(fid) {
@@ -1625,14 +1673,17 @@ function renderDetail(id) {
 
   // Ingredients with portion scaling
   if (r.ingredients && r.ingredients.length) {
+    const origServings = parseInt((r.servings || '').match(/(\d+)/)?.[1]) || 2;
+    const servingOptions = [1, 2, 3, 4];
     html += `<div class="detail-section">
       <div class="detail-section-title" style="display:flex;align-items:center;justify-content:space-between">
         <span>🥕 材料</span>
-        <div class="portion-btns" style="display:flex;gap:4px;font-size:11px">
-          <button onclick="scaleIngredients(0.5,event)" style="padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text-sub);cursor:pointer;font-family:inherit">×0.5</button>
-          <button onclick="scaleIngredients(1,event)" style="padding:4px 10px;border-radius:8px;border:1px solid var(--accent);background:var(--accent-light);color:var(--accent);cursor:pointer;font-weight:700;font-family:inherit">×1</button>
-          <button onclick="scaleIngredients(2,event)" style="padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text-sub);cursor:pointer;font-family:inherit">×2</button>
-          <button onclick="scaleIngredients(3,event)" style="padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text-sub);cursor:pointer;font-family:inherit">×3</button>
+        <div class="portion-btns" data-orig-servings="${origServings}" style="display:flex;gap:4px;font-size:11px">
+          ${servingOptions.map(n => {
+            const isDefault = n === origServings;
+            const factor = n / origServings;
+            return `<button onclick="scaleIngredients(${factor},event)" style="padding:4px 10px;border-radius:8px;border:1px solid ${isDefault ? 'var(--accent)' : 'var(--border)'};background:${isDefault ? 'var(--accent-light)' : 'none'};color:${isDefault ? 'var(--accent)' : 'var(--text-sub)'};cursor:pointer;font-family:inherit;${isDefault ? 'font-weight:700;' : ''}">${n}人前</button>`;
+          }).join('')}
         </div>
       </div>
       <ul class="ingredient-list" id="ingredientDisplay">
