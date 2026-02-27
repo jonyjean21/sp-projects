@@ -102,6 +102,15 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
 .page-info a { color: var(--accent); text-decoration: none; }
 .page-info a:hover { text-decoration: underline; }
 
+/* Eyecatch box */
+.eyecatch-box {
+  width: 140px; height: 100px; border: 2px dashed var(--border); border-radius: 8px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  overflow: hidden; margin-top: 0.3rem; transition: border-color 0.15s;
+}
+.eyecatch-box:hover { border-color: var(--accent); }
+.eyecatch-box img { width: 100%; height: 100%; object-fit: cover; }
+
 /* Media picker modal */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; display: flex; align-items: center; justify-content: center; }
 .modal { background: var(--card); border: 1px solid var(--border); border-radius: 14px; width: 90vw; max-width: 700px; max-height: 80vh; display: flex; flex-direction: column; }
@@ -186,8 +195,33 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
   </div>
 
   <div class="card">
+    <h3>ページ設定</h3>
+    <div style="display:flex;gap:1rem;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+        <div class="field">
+          <label>タイトル</label>
+          <input type="text" id="resultTitle" value="大会結果">
+        </div>
+        <div class="field">
+          <label>スラッグ</label>
+          <input type="text" id="resultSlug" value="result">
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-outline btn-sm" onclick="savePageMeta('result')">設定を保存</button>
+        </div>
+      </div>
+      <div style="min-width:140px;text-align:center">
+        <label>アイキャッチ</label>
+        <div class="eyecatch-box" id="resultEyecatch" onclick="openMediaPicker(-1,'eyecatch-result')">
+          <div class="drop-hint">クリックして選択</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
     <h3>上位チーム写真</h3>
-    <p style="font-size:0.78rem;color:var(--dim);margin-bottom:0.8rem">各チームの枠に写真をドラッグ＆ドロップ（またはクリックで選択）してください。</p>
+    <p style="font-size:0.78rem;color:var(--dim);margin-bottom:0.8rem">各チームの枠に写真をドラッグ＆ドロップ、またはWPメディアから選択してください。</p>
     <div class="photo-grid" id="photoGrid"></div>
     <div class="btn-row">
       <button class="btn btn-primary" id="uploadPhotosBtn" onclick="uploadPhotos()" disabled>写真をアップロード & 反映</button>
@@ -195,7 +229,7 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
   </div>
 
   <div class="card">
-    <h3>操作</h3>
+    <h3>公開</h3>
     <div class="btn-row">
       <button class="btn btn-warn" onclick="publishPage('result')">結果ページを公開</button>
     </div>
@@ -208,6 +242,31 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
     <h3>ギャラリーページ状況</h3>
     <div class="page-info" id="galleryPageInfo">
       <span class="pill pill-none">未作成</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>ページ設定</h3>
+    <div style="display:flex;gap:1rem;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+        <div class="field">
+          <label>タイトル</label>
+          <input type="text" id="galleryTitle" value="ギャラリー">
+        </div>
+        <div class="field">
+          <label>スラッグ</label>
+          <input type="text" id="gallerySlug" value="gallery">
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-outline btn-sm" onclick="savePageMeta('gallery')">設定を保存</button>
+        </div>
+      </div>
+      <div style="min-width:140px;text-align:center">
+        <label>アイキャッチ</label>
+        <div class="eyecatch-box" id="galleryEyecatch" onclick="openMediaPicker(-1,'eyecatch-gallery')">
+          <div class="drop-hint">クリックして選択</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -363,6 +422,8 @@ async function onEventChange() {
 
   updatePageInfo('result', resultPage);
   updatePageInfo('gallery', galleryPage);
+  loadPageMeta('result', resultPage);
+  loadPageMeta('gallery', galleryPage);
 
   if (resultPage) loadResultPhotos();
 }
@@ -464,7 +525,7 @@ function renderPhotoGrid() {
         ${imgHtml}
       </div>
       <div class="${statusCls}" id="pstat-${i}">${statusText}</div>
-      <button class="btn btn-outline btn-sm" style="margin-top:0.4rem;width:100%" onclick="openMediaPicker(${i})">WPメディアから選択</button>
+      <button class="btn btn-outline btn-sm" style="margin-top:0.4rem;width:100%" onclick="openMediaPicker(${i},'podium')">WPメディアから選択</button>
     `;
     grid.appendChild(card);
   });
@@ -505,11 +566,16 @@ function checkPhotoReady() {
 // ===== Media picker =====
 let allWpMedia = [];
 let pickerTargetIdx = -1;
+let pickerMode = 'podium'; // 'podium' | 'eyecatch-result' | 'eyecatch-gallery'
 
-async function openMediaPicker(idx) {
+async function openMediaPicker(idx, mode) {
   pickerTargetIdx = idx;
+  pickerMode = mode || 'podium';
   document.getElementById('mediaModal').style.display = 'flex';
-  document.getElementById('mediaModalTitle').textContent = podiumTeams[idx].name + ' の写真を選択';
+  const title = pickerMode === 'podium'
+    ? podiumTeams[idx].name + ' の写真を選択'
+    : 'アイキャッチ画像を選択';
+  document.getElementById('mediaModalTitle').textContent = title;
   document.getElementById('mediaSearchInput').value = '';
   const grid = document.getElementById('mediaGrid');
 
@@ -557,10 +623,67 @@ function filterMedia() {
     div.title = m.title?.rendered || m.source_url;
     div.innerHTML = '<img src="' + thumb + '" loading="lazy">';
     div.onclick = () => {
-      setPhotoFromMedia(pickerTargetIdx, m.source_url);
+      if (pickerMode === 'podium') {
+        setPhotoFromMedia(pickerTargetIdx, m.source_url);
+      } else {
+        setEyecatch(pickerMode.replace('eyecatch-', ''), m.id, thumb);
+      }
       closeMediaPicker();
     };
     grid.appendChild(div);
+  }
+}
+
+// ===== Eyecatch =====
+function setEyecatch(type, mediaId, thumbUrl) {
+  const box = document.getElementById(type + 'Eyecatch');
+  box.innerHTML = '<img src="' + thumbUrl + '">';
+  box.dataset.mediaId = mediaId;
+  log(type + 'アイキャッチを選択 (ID: ' + mediaId + ')', 'info');
+}
+
+// ===== Page meta save (title, slug, featured image) =====
+async function savePageMeta(type) {
+  const page = type === 'result' ? resultPage : galleryPage;
+  if (!page) { log(type + 'ページが見つかりません', 'err'); return; }
+
+  const title = document.getElementById(type + 'Title').value.trim();
+  const slug = document.getElementById(type + 'Slug').value.trim();
+  const eyecatchBox = document.getElementById(type + 'Eyecatch');
+  const mediaId = eyecatchBox.dataset.mediaId ? parseInt(eyecatchBox.dataset.mediaId) : 0;
+
+  const body = {};
+  if (title) body.title = title;
+  if (slug) body.slug = slug;
+  if (mediaId) body.featured_media = mediaId;
+
+  try {
+    const updated = await wpFetch('/wp-json/wp/v2/pages/' + page.id, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (type === 'result') resultPage = updated; else galleryPage = updated;
+    updatePageInfo(type, updated);
+    log(type + 'ページ設定を保存しました', 'ok');
+  } catch (e) {
+    log(type + '設定保存失敗: ' + e.message, 'err');
+  }
+}
+
+// ===== Load page meta into form =====
+function loadPageMeta(type, page) {
+  if (!page) return;
+  document.getElementById(type + 'Title').value = page.title?.rendered || '';
+  document.getElementById(type + 'Slug').value = page.slug || '';
+  if (page.featured_media) {
+    // Load featured image thumbnail
+    wpFetch('/wp-json/wp/v2/media/' + page.featured_media).then(m => {
+      const thumb = m.media_details?.sizes?.thumbnail?.source_url || m.source_url;
+      const box = document.getElementById(type + 'Eyecatch');
+      box.innerHTML = '<img src="' + thumb + '">';
+      box.dataset.mediaId = page.featured_media;
+    }).catch(() => {});
   }
 }
 
