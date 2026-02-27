@@ -169,7 +169,7 @@ async function initGeminiKey() {
 function getGeminiKey() {
   let key = localStorage.getItem('GEMINI_API_KEY');
   if (!key) {
-    key = prompt('Gemini APIキーを入力してください\n（レシピBOXアプリに一度ログインすると自動取得されます）');
+    key = prompt('Gemini APIキーを入力してください（初回のみ・Google AI Studioで取得）');
     if (key) localStorage.setItem('GEMINI_API_KEY', key);
   }
   return key;

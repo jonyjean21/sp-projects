@@ -673,6 +673,13 @@ body {
     <div class="modal-handle"></div>
     <div class="modal-title">レシピを追加</div>
     <div class="add-choice">
+      <div class="add-choice-btn" onclick="closeModal('addChoiceModal');openAIExtract('url')">
+        <div class="add-choice-icon" style="background:var(--blue-light)">🔗</div>
+        <div class="add-choice-text">
+          <div class="add-choice-label">URLから取り込み</div>
+          <div class="add-choice-desc">レシピサイトのURLを貼るだけでAIが解析</div>
+        </div>
+      </div>
       <div class="add-choice-btn" onclick="closeModal('addChoiceModal');openAIExtract('text')">
         <div class="add-choice-icon" style="background:var(--accent-light)">📋</div>
         <div class="add-choice-text">
@@ -703,7 +710,14 @@ body {
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title" id="aiExtractTitle">テキストから取り込み</div>
-    <div id="aiTextSection">
+    <div id="aiUrlSection" class="hidden">
+      <div class="form-group">
+        <label class="form-label">レシピページのURL</label>
+        <input class="form-input" id="aiUrlOnlyInput" placeholder="https://cookpad.com/recipe/...">
+        <div style="font-size:11px;color:var(--text-sub);margin-top:6px">クックパッド、クラシル、Nadia、デリッシュキッチン等に対応</div>
+      </div>
+    </div>
+    <div id="aiTextSection" class="hidden">
       <div class="form-group">
         <label class="form-label">レシピURL（参照用）</label>
         <input class="form-input" id="aiUrlInput" placeholder="https://cookpad.com/recipe/...">
@@ -1464,15 +1478,20 @@ function openAIExtract(mode) {
   aiExtractMode = mode;
   selectedAIImage = null;
   document.getElementById('aiStatus').classList.add('hidden');
-  if (mode === 'text') {
+  document.getElementById('aiUrlSection').classList.add('hidden');
+  document.getElementById('aiTextSection').classList.add('hidden');
+  document.getElementById('aiImageSection').classList.add('hidden');
+  if (mode === 'url') {
+    document.getElementById('aiExtractTitle').textContent = 'URLから取り込み';
+    document.getElementById('aiUrlSection').classList.remove('hidden');
+    document.getElementById('aiUrlOnlyInput').value = '';
+  } else if (mode === 'text') {
     document.getElementById('aiExtractTitle').textContent = 'テキストから取り込み';
     document.getElementById('aiTextSection').classList.remove('hidden');
-    document.getElementById('aiImageSection').classList.add('hidden');
     document.getElementById('aiUrlInput').value = '';
     document.getElementById('aiTextInput').value = '';
   } else {
     document.getElementById('aiExtractTitle').textContent = '写真から読み取り';
-    document.getElementById('aiTextSection').classList.add('hidden');
     document.getElementById('aiImageSection').classList.remove('hidden');
     document.getElementById('aiImagePreviewArea').innerHTML = '<div class="form-image-upload" onclick="document.getElementById(\'aiImageInput\').click()">📷 タップして画像を選択</div>';
   }
@@ -1503,9 +1522,16 @@ async function runAIExtract() {
 
   try {
     let result;
-    if (aiExtractMode === 'text') {
+    let sourceUrl = '';
+    if (aiExtractMode === 'url') {
+      const url = document.getElementById('aiUrlOnlyInput').value.trim();
+      if (!url) throw new Error('URLを入力してください');
+      sourceUrl = url;
+      result = await extractFromUrl(url);
+    } else if (aiExtractMode === 'text') {
       const text = document.getElementById('aiTextInput').value.trim();
       if (!text) throw new Error('テキストを入力してください');
+      sourceUrl = document.getElementById('aiUrlInput')?.value || '';
       result = await extractFromText(text);
     } else {
       if (!selectedAIImage) throw new Error('画像を選択してください');
@@ -1518,7 +1544,7 @@ async function runAIExtract() {
     selectedEntryImage = null;
     document.getElementById('entryModalTitle').textContent = 'レシピを確認・保存';
     document.getElementById('entryTitle').value = result.title || '';
-    document.getElementById('entryUrl').value = document.getElementById('aiUrlInput')?.value || '';
+    document.getElementById('entryUrl').value = sourceUrl;
     document.getElementById('entryServings').value = result.servings || '';
     document.getElementById('entryPrepTime').value = result.prepTime || '';
     document.getElementById('entryMemo').value = '';
@@ -1542,6 +1568,52 @@ async function runAIExtract() {
     statusEl.classList.remove('hidden');
   }
   btn.disabled = false;
+}
+
+async function extractFromUrl(url) {
+  const statusEl = document.getElementById('aiStatus');
+  statusEl.textContent = 'ページを取得中...';
+
+  // Fetch page via CORS proxy
+  let html = '';
+  const proxies = [
+    u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+    u => `https://corsproxy.io/?${encodeURIComponent(u)}`
+  ];
+  for (const proxy of proxies) {
+    try {
+      const resp = await fetch(proxy(url), { signal: AbortSignal.timeout(10000) });
+      if (resp.ok) { html = await resp.text(); break; }
+    } catch (e) { /* try next proxy */ }
+  }
+  if (!html) throw new Error('ページを取得できませんでした。テキスト貼り付けモードをお試しください。');
+
+  // Strip HTML tags, scripts, styles to get text content
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  doc.querySelectorAll('script,style,nav,footer,header').forEach(el => el.remove());
+  const text = doc.body?.textContent?.replace(/\s+/g, ' ').trim() || '';
+  if (text.length < 50) throw new Error('ページからテキストを抽出できませんでした。');
+
+  statusEl.textContent = 'AIがレシピを解析中...';
+  const prompt = `以下はレシピサイト（${url}）から取得したテキストです。
+このテキストからレシピ情報を抽出してJSON形式で出力してください。
+
+## テキスト内容
+${text.substring(0, 10000)}
+
+## 出力JSON
+{
+  "title": "レシピのタイトル",
+  "servings": "○人分",
+  "prepTime": "○分",
+  "ingredients": [{"name": "材料名", "amount": "分量"}],
+  "steps": ["手順1", "手順2"],
+  "tags": ["カテゴリ"]
+}
+
+ルール: 材料は全て抽出。分量不明なら「適量」。手順は簡潔に。レシピと無関係な広告文等は無視。`;
+
+  return await callGemini([{ text: prompt }]);
 }
 
 async function extractFromText(text) {
