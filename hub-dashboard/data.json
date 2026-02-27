@@ -1,0 +1,38 @@
+{
+  "lastUpdated": "2026-02-28",
+  "traffic": {
+    "months": [
+      { "month": "2025-09", "sessions": 2100, "pv": 5200, "users": 1600 },
+      { "month": "2025-10", "sessions": 2400, "pv": 5800, "users": 1800 },
+      { "month": "2025-11", "sessions": 2600, "pv": 6200, "users": 2000 },
+      { "month": "2025-12", "sessions": 2800, "pv": 6800, "users": 2100 },
+      { "month": "2026-01", "sessions": 3000, "pv": 7200, "users": 2300 },
+      { "month": "2026-02", "sessions": 3200, "pv": 7600, "users": 2500 }
+    ]
+  },
+  "searchConsole": {
+    "months": [
+      { "month": "2025-09", "clicks": 800, "impressions": 15000, "ctr": 5.3, "position": 18.2 },
+      { "month": "2025-10", "clicks": 950, "impressions": 17000, "ctr": 5.6, "position": 17.5 },
+      { "month": "2025-11", "clicks": 1100, "impressions": 19000, "ctr": 5.8, "position": 16.8 },
+      { "month": "2025-12", "clicks": 1200, "impressions": 21000, "ctr": 5.7, "position": 16.2 },
+      { "month": "2026-01", "clicks": 1350, "impressions": 23000, "ctr": 5.9, "position": 15.5 },
+      { "month": "2026-02", "clicks": 1500, "impressions": 25000, "ctr": 6.0, "position": 15.0 }
+    ],
+    "topQueries": [
+      { "query": "モルック 大会", "clicks": 320, "impressions": 4500 },
+      { "query": "モルック ルール", "clicks": 280, "impressions": 5200 },
+      { "query": "モルック チーム", "clicks": 150, "impressions": 2800 },
+      { "query": "モルック 近く", "clicks": 120, "impressions": 2100 },
+      { "query": "モルハブ", "clicks": 100, "impressions": 800 }
+    ]
+  },
+  "sns": {
+    "xFollowers": 450,
+    "xFollowersPrev": 380,
+    "xPosts": 1200,
+    "xImpressions": 85000,
+    "xImpressionsPrev": 65000
+  },
+  "notes": "データはGA4・サーチコンソール・X Analyticsから手動入力。WP記事数・大会情報数・パートナー数はAPI自動取得。"
+}

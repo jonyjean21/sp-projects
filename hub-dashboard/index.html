@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>モルハブ向上委員会</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0e1117; --card: #161b22; --border: #30363d;
+  --text: #e6edf3; --sub: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --orange: #d29922; --purple: #bc8cff;
+  --red: #f85149; --teal: #39d2c0; --pink: #f778ba;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', sans-serif;
+  background: var(--bg); color: var(--text);
+  max-width: 640px; margin: 0 auto; padding: 20px 16px;
+  min-height: 100vh;
+}
+
+/* Header */
+.header { padding: 16px 0 20px; }
+.header h1 { font-size: 20px; font-weight: 700; margin-bottom: 2px; }
+.header-sub { font-size: 12px; color: var(--sub); display: flex; gap: 12px; align-items: center; }
+.last-updated { color: var(--accent); font-weight: 600; }
+.refresh-btn {
+  background: var(--card); border: 1px solid var(--border); color: var(--accent);
+  padding: 4px 12px; border-radius: 6px; font-size: 11px; cursor: pointer;
+  font-family: inherit;
+}
+.refresh-btn:active { opacity: 0.7; }
+
+/* Section */
+.section { margin-bottom: 28px; }
+.section-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 0; margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px; font-weight: 700; color: var(--sub);
+}
+.section-icon { font-size: 15px; }
+
+/* KPI Grid */
+.kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.kpi-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px 14px;
+}
+.kpi-label { font-size: 11px; color: var(--sub); margin-bottom: 6px; }
+.kpi-value { font-size: 24px; font-weight: 700; line-height: 1; }
+.kpi-change { font-size: 11px; margin-top: 4px; }
+.kpi-up { color: var(--green); }
+.kpi-down { color: var(--red); }
+.kpi-neutral { color: var(--sub); }
+.kpi-source { font-size: 10px; color: var(--sub); margin-top: 6px; opacity: 0.6; }
+
+/* Bar Chart */
+.chart { margin-top: 8px; }
+.chart-row {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 6px; font-size: 11px;
+}
+.chart-label { width: 42px; color: var(--sub); flex-shrink: 0; text-align: right; }
+.chart-bar-bg {
+  flex: 1; height: 22px; background: #1c2128; border-radius: 4px;
+  overflow: hidden; position: relative;
+}
+.chart-bar {
+  height: 100%; border-radius: 4px;
+  transition: width 0.8s ease;
+  display: flex; align-items: center; justify-content: flex-end;
+  padding-right: 6px; font-size: 10px; font-weight: 600;
+  color: rgba(255,255,255,0.9); min-width: 32px;
+}
+.chart-bar-sessions { background: linear-gradient(90deg, #1f6feb, #58a6ff); }
+.chart-bar-clicks { background: linear-gradient(90deg, #238636, #3fb950); }
+.chart-bar-impressions { background: linear-gradient(90deg, #6e40c9, #bc8cff); }
+.chart-bar-tournaments { background: linear-gradient(90deg, #b35d00, #d29922); }
+
+/* Data Table */
+.data-table { width: 100%; font-size: 12px; }
+.data-table th {
+  text-align: left; font-weight: 600; color: var(--sub);
+  padding: 6px 8px; border-bottom: 1px solid var(--border); font-size: 11px;
+}
+.data-table td { padding: 8px; border-bottom: 1px solid #1c2128; }
+.data-table tr:last-child td { border-bottom: none; }
+
+/* Content Cards */
+.content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.content-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 14px;
+}
+.content-num { font-size: 22px; font-weight: 700; }
+.content-label { font-size: 11px; color: var(--sub); margin-top: 2px; }
+
+/* Partner Cards */
+.partner-list { display: flex; flex-direction: column; gap: 8px; }
+.partner-item {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.partner-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.partner-name { font-size: 13px; font-weight: 600; flex: 1; }
+.partner-plan { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+.plan-standard { background: #1f2a3d; color: var(--accent); }
+.plan-light { background: #1a2417; color: var(--green); }
+
+/* Agenda */
+.agenda-box {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px; margin-top: 12px;
+}
+.agenda-title { font-size: 13px; font-weight: 700; margin-bottom: 10px; color: var(--accent); }
+.agenda-item {
+  display: flex; gap: 8px; padding: 6px 0; font-size: 12px;
+  border-bottom: 1px solid #1c2128;
+}
+.agenda-item:last-child { border-bottom: none; }
+.agenda-status {
+  width: 18px; height: 18px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; flex-shrink: 0;
+}
+.agenda-done { background: #1a2417; color: var(--green); }
+.agenda-pending { background: #2a2117; color: var(--orange); }
+.agenda-new { background: #1f2a3d; color: var(--accent); }
+
+/* Loading */
+.loading { color: var(--sub); font-size: 12px; text-align: center; padding: 16px; }
+.loading::after { content: '...'; animation: dots 1.2s infinite; }
+@keyframes dots {
+  0%, 20% { content: '.'; }
+  40% { content: '..'; }
+  60%, 100% { content: '...'; }
+}
+
+/* Footer */
+.footer { padding: 24px 0; text-align: center; font-size: 10px; color: var(--sub); }
+.footer a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>モルハブ向上委員会</h1>
+  <div class="header-sub">
+    <span>最終更新: <span class="last-updated" id="lastUpdated">読込中</span></span>
+    <button class="refresh-btn" onclick="loadAll()">更新</button>
+  </div>
+</div>
+
+<!-- ========== KPI概要 ========== -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">📊</span> KPI概要
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">月間セッション</div>
+      <div class="kpi-value" id="kpiSessions">-</div>
+      <div class="kpi-change" id="kpiSessionsChange"></div>
+      <div class="kpi-source">GA4 手動入力</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">大会情報数</div>
+      <div class="kpi-value" id="kpiTournaments">-</div>
+      <div class="kpi-change kpi-neutral" id="kpiTournamentsChange"></div>
+      <div class="kpi-source">WP API 自動取得</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">パートナー数</div>
+      <div class="kpi-value" id="kpiPartners">-</div>
+      <div class="kpi-change" id="kpiPartnersChange"></div>
+      <div class="kpi-source">Firebase 自動取得</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">総記事数</div>
+      <div class="kpi-value" id="kpiArticles">-</div>
+      <div class="kpi-change" id="kpiArticlesChange"></div>
+      <div class="kpi-source">WP API 自動取得</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== トラフィック推移 ========== -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">📈</span> トラフィック推移（直近6ヶ月）
+  </div>
+  <div class="chart" id="trafficChart">
+    <div class="loading">データ読込中</div>
+  </div>
+</div>
+
+<!-- ========== サーチコンソール ========== -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">🔍</span> Search Console
+  </div>
+  <div class="kpi-grid" style="margin-bottom:16px;">
+    <div class="kpi-card">
+      <div class="kpi-label">月間クリック数</div>
+      <div class="kpi-value" id="kpiClicks">-</div>
+      <div class="kpi-change" id="kpiClicksChange"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">平均掲載順位</div>
+      <div class="kpi-value" id="kpiPosition">-</div>
+      <div class="kpi-change" id="kpiPositionChange"></div>
+    </div>
+  </div>
+  <div class="chart" id="clicksChart"></div>
+  <div style="margin-top:16px;">
+    <div style="font-size:12px; font-weight:600; color:var(--sub); margin-bottom:8px;">検索クエリ TOP5</div>
+    <table class="data-table" id="queryTable">
+      <thead><tr><th>クエリ</th><th>クリック</th><th>表示回数</th></tr></thead>
+      <tbody id="queryBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ========== コンテンツ詳細 ========== -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">📝</span> コンテンツ（WP API自動取得）
+  </div>
+  <div class="content-grid" id="contentGrid">
+    <div class="loading">WP API 取得中</div>
+  </div>
+</div>
+
+<!-- ========== SNS ========== -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">🐦</span> SNS（X / @molkkyhub）
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">フォロワー</div>
+      <div class="kpi-value" id="kpiFollowers">-</div>
+      <div class="kpi-change" id="kpiFollowersChange"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">月間インプレッション</div>
+      <div class="kpi-value" id="kpiImpressions">-</div>
+      <div class="kpi-change" id="kpiImpressionsChange"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== パートナー状況 ========== -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">🤝</span> パートナー状況（Firebase自動取得）
+  </div>
+  <div class="partner-list" id="partnerList">
+    <div class="loading">Firebase 取得中</div>
+  </div>
+</div>
+
+<!-- ========== 月別大会掲載推移 ========== -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">🏆</span> 月別大会掲載推移
+  </div>
+  <div class="chart" id="tournamentChart">
+    <div class="loading">WP API 取得中</div>
+  </div>
+</div>
+
+<!-- ========== 向上委員会アジェンダ ========== -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">💡</span> 向上委員会アジェンダ
+  </div>
+  <p style="font-size:12px; color:var(--sub); margin-bottom:12px;">チャプ会で議論・決定すべき項目</p>
+  <div class="agenda-box">
+    <div class="agenda-title">今月の議題</div>
+    <div class="agenda-item">
+      <span class="agenda-status agenda-new">●</span>
+      <span>パートナーLP公開 → 営業開始のタイミング</span>
+    </div>
+    <div class="agenda-item">
+      <span class="agenda-status agenda-new">●</span>
+      <span>SEO強化：上位狙うキーワード選定</span>
+    </div>
+    <div class="agenda-item">
+      <span class="agenda-status agenda-pending">△</span>
+      <span>大会情報の自動投稿フローの改善</span>
+    </div>
+    <div class="agenda-item">
+      <span class="agenda-status agenda-pending">△</span>
+      <span>チーム紹介100チーム掲載に向けた計画</span>
+    </div>
+    <div class="agenda-item">
+      <span class="agenda-status agenda-done">✓</span>
+      <span>パートナー循環ポータル構築</span>
+    </div>
+    <div class="agenda-item">
+      <span class="agenda-status agenda-done">✓</span>
+      <span>チャプ会議事録の全自動化</span>
+    </div>
+  </div>
+</div>
+
+<!-- ========== リンク集 ========== -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-icon">🔗</span> クイックリンク
+  </div>
+  <div class="kpi-grid">
+    <a href="https://molkky-hub.com/wp-admin/" target="_blank" style="text-decoration:none;">
+      <div class="kpi-card" style="cursor:pointer;text-align:center;">
+        <div style="font-size:20px;margin-bottom:4px;">📰</div>
+        <div style="font-size:12px;color:var(--accent);">WP管理画面</div>
+      </div>
+    </a>
+    <a href="https://analytics.google.com/" target="_blank" style="text-decoration:none;">
+      <div class="kpi-card" style="cursor:pointer;text-align:center;">
+        <div style="font-size:20px;margin-bottom:4px;">📊</div>
+        <div style="font-size:12px;color:var(--accent);">Google Analytics</div>
+      </div>
+    </a>
+    <a href="https://search.google.com/search-console" target="_blank" style="text-decoration:none;">
+      <div class="kpi-card" style="cursor:pointer;text-align:center;">
+        <div style="font-size:20px;margin-bottom:4px;">🔍</div>
+        <div style="font-size:12px;color:var(--accent);">Search Console</div>
+      </div>
+    </a>
+    <a href="https://jonyjean21.github.io/sp-projects/partner/" target="_blank" style="text-decoration:none;">
+      <div class="kpi-card" style="cursor:pointer;text-align:center;">
+        <div style="font-size:20px;margin-bottom:4px;">📄</div>
+        <div style="font-size:12px;color:var(--accent);">パートナーLP</div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<div class="footer">
+  モルハブ向上委員会 — <a href="https://jonyjean21.github.io/sp-projects/apps/">SP Output Catalog</a>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+
+<script>
+// ========== Config ==========
+const WP_API = 'https://molkky-hub.com/wp-json/wp/v2';
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCSS1VZut5z0F_cejPES3JnGVqjurMTwG8",
+  databaseURL: "https://sp-projects-hub-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "sp-projects-hub"
+};
+
+// Firebase init
+firebase.initializeApp(FIREBASE_CONFIG);
+const db = firebase.database();
+
+// ========== Utility ==========
+function fmt(n) {
+  if (n >= 10000) return (n / 10000).toFixed(1) + '万';
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+  return n.toLocaleString();
+}
+function changeHTML(current, previous, invert) {
+  if (!previous) return '';
+  const diff = current - previous;
+  const pct = ((diff / previous) * 100).toFixed(1);
+  const isUp = invert ? diff < 0 : diff > 0;
+  const cls = diff === 0 ? 'kpi-neutral' : (isUp ? 'kpi-up' : 'kpi-down');
+  const arrow = diff === 0 ? '→' : (isUp ? '↑' : '↓');
+  return `<span class="${cls}">${arrow} ${Math.abs(pct)}% 前月比</span>`;
+}
+function shortMonth(m) {
+  const parts = m.split('-');
+  return parseInt(parts[1]) + '月';
+}
+
+// ========== Data Loading ==========
+let jsonData = null;
+
+async function loadJSON() {
+  try {
+    const res = await fetch('./data.json?t=' + Date.now());
+    jsonData = await res.json();
+    document.getElementById('lastUpdated').textContent = jsonData.lastUpdated;
+    renderTraffic();
+    renderSearchConsole();
+    renderSNS();
+  } catch (e) {
+    console.error('data.json load failed:', e);
+  }
+}
+
+function renderTraffic() {
+  const months = jsonData.traffic.months;
+  const latest = months[months.length - 1];
+  const prev = months[months.length - 2];
+
+  document.getElementById('kpiSessions').textContent = fmt(latest.sessions);
+  document.getElementById('kpiSessionsChange').innerHTML = changeHTML(latest.sessions, prev.sessions);
+
+  const maxVal = Math.max(...months.map(m => m.sessions));
+  let html = '';
+  months.forEach(m => {
+    const pct = (m.sessions / maxVal * 100).toFixed(0);
+    html += `<div class="chart-row">
+      <span class="chart-label">${shortMonth(m.month)}</span>
+      <div class="chart-bar-bg">
+        <div class="chart-bar chart-bar-sessions" style="width:${pct}%">${fmt(m.sessions)}</div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('trafficChart').innerHTML = html;
+}
+
+function renderSearchConsole() {
+  const sc = jsonData.searchConsole;
+  const months = sc.months;
+  const latest = months[months.length - 1];
+  const prev = months[months.length - 2];
+
+  document.getElementById('kpiClicks').textContent = fmt(latest.clicks);
+  document.getElementById('kpiClicksChange').innerHTML = changeHTML(latest.clicks, prev.clicks);
+  document.getElementById('kpiPosition').textContent = latest.position.toFixed(1);
+  document.getElementById('kpiPositionChange').innerHTML = changeHTML(latest.position, prev.position, true);
+
+  // Clicks chart
+  const maxClicks = Math.max(...months.map(m => m.clicks));
+  let html = '';
+  months.forEach(m => {
+    const pct = (m.clicks / maxClicks * 100).toFixed(0);
+    html += `<div class="chart-row">
+      <span class="chart-label">${shortMonth(m.month)}</span>
+      <div class="chart-bar-bg">
+        <div class="chart-bar chart-bar-clicks" style="width:${pct}%">${fmt(m.clicks)}</div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('clicksChart').innerHTML = html;
+
+  // Query table
+  let tbody = '';
+  sc.topQueries.forEach(q => {
+    tbody += `<tr><td>${q.query}</td><td>${fmt(q.clicks)}</td><td>${fmt(q.impressions)}</td></tr>`;
+  });
+  document.getElementById('queryBody').innerHTML = tbody;
+}
+
+function renderSNS() {
+  const sns = jsonData.sns;
+  document.getElementById('kpiFollowers').textContent = fmt(sns.xFollowers);
+  document.getElementById('kpiFollowersChange').innerHTML = changeHTML(sns.xFollowers, sns.xFollowersPrev);
+  document.getElementById('kpiImpressions').textContent = fmt(sns.xImpressions);
+  document.getElementById('kpiImpressionsChange').innerHTML = changeHTML(sns.xImpressions, sns.xImpressionsPrev);
+}
+
+// ========== WP API ==========
+async function loadWPData() {
+  try {
+    // Total posts
+    const postsRes = await fetch(`${WP_API}/posts?per_page=1&_fields=id`, { headers: { 'Accept': 'application/json' } });
+    const totalPosts = parseInt(postsRes.headers.get('X-WP-Total')) || 0;
+    document.getElementById('kpiArticles').textContent = totalPosts;
+
+    // Tournament count (category 5 = 大会情報)
+    const tournRes = await fetch(`${WP_API}/posts?categories=5&per_page=1&_fields=id`, { headers: { 'Accept': 'application/json' } });
+    const totalTournaments = parseInt(tournRes.headers.get('X-WP-Total')) || 0;
+    document.getElementById('kpiTournaments').textContent = totalTournaments;
+    document.getElementById('kpiTournamentsChange').textContent = '大会情報DB';
+
+    // Team introductions (category 37 = チーム紹介)
+    const teamRes = await fetch(`${WP_API}/posts?categories=37&per_page=1&_fields=id`, { headers: { 'Accept': 'application/json' } });
+    const totalTeams = parseInt(teamRes.headers.get('X-WP-Total')) || 0;
+
+    // Content grid
+    document.getElementById('contentGrid').innerHTML = `
+      <div class="content-card">
+        <div class="content-num" style="color:var(--accent)">${totalPosts}</div>
+        <div class="content-label">総記事数</div>
+      </div>
+      <div class="content-card">
+        <div class="content-num" style="color:var(--orange)">${totalTournaments}</div>
+        <div class="content-label">大会情報</div>
+      </div>
+      <div class="content-card">
+        <div class="content-num" style="color:var(--teal)">${totalTeams}</div>
+        <div class="content-label">チーム紹介</div>
+      </div>
+      <div class="content-card">
+        <div class="content-num" style="color:var(--purple)">${totalPosts - totalTournaments - totalTeams}</div>
+        <div class="content-label">その他記事</div>
+      </div>
+    `;
+
+    // Tournament monthly chart (last 6 months)
+    await loadTournamentMonthly();
+  } catch (e) {
+    console.error('WP API error:', e);
+    document.getElementById('contentGrid').innerHTML = '<div style="grid-column:1/-1;font-size:12px;color:var(--red);">WP APIの取得に失敗しました</div>';
+  }
+}
+
+async function loadTournamentMonthly() {
+  const now = new Date();
+  const months = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const after = d.toISOString();
+    const end = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
+    const before = end.toISOString();
+    const label = `${d.getMonth() + 1}月`;
+    months.push({ label, after, before });
+  }
+
+  const counts = [];
+  for (const m of months) {
+    try {
+      const res = await fetch(`${WP_API}/posts?categories=5&after=${m.after}&before=${m.before}&per_page=1&_fields=id`);
+      counts.push({ label: m.label, count: parseInt(res.headers.get('X-WP-Total')) || 0 });
+    } catch {
+      counts.push({ label: m.label, count: 0 });
+    }
+  }
+
+  const maxCount = Math.max(...counts.map(c => c.count), 1);
+  let html = '';
+  counts.forEach(c => {
+    const pct = (c.count / maxCount * 100).toFixed(0);
+    html += `<div class="chart-row">
+      <span class="chart-label">${c.label}</span>
+      <div class="chart-bar-bg">
+        <div class="chart-bar chart-bar-tournaments" style="width:${pct}%">${c.count}件</div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('tournamentChart').innerHTML = html;
+}
+
+// ========== Firebase ==========
+async function loadFirebaseData() {
+  try {
+    const snap = await db.ref('partner').once('value');
+    const data = snap.val();
+    if (!data) {
+      document.getElementById('kpiPartners').textContent = '0';
+      document.getElementById('partnerList').innerHTML = '<div style="font-size:12px;color:var(--sub);padding:8px;">パートナーデータなし</div>';
+      return;
+    }
+
+    const partners = Object.entries(data).filter(([k]) => k !== 'provisions' && k !== 'voices');
+    document.getElementById('kpiPartners').textContent = partners.length;
+    document.getElementById('kpiPartnersChange').innerHTML = `<span class="kpi-neutral">${partners.length}社</span>`;
+
+    let html = '';
+    partners.forEach(([key, val]) => {
+      const name = val.name || key;
+      const plan = val.plan || 'ライト';
+      const planCls = plan === 'スタンダード' ? 'plan-standard' : 'plan-light';
+      const dotColor = plan === 'スタンダード' ? 'var(--accent)' : 'var(--green)';
+      html += `<div class="partner-item">
+        <span class="partner-dot" style="background:${dotColor}"></span>
+        <span class="partner-name">${name}</span>
+        <span class="partner-plan ${planCls}">${plan}</span>
+      </div>`;
+    });
+    document.getElementById('partnerList').innerHTML = html || '<div style="font-size:12px;color:var(--sub);padding:8px;">パートナーデータなし</div>';
+  } catch (e) {
+    console.error('Firebase error:', e);
+    document.getElementById('partnerList').innerHTML = '<div style="font-size:12px;color:var(--red);padding:8px;">Firebase接続エラー</div>';
+  }
+}
+
+// ========== Init ==========
+function loadAll() {
+  loadJSON();
+  loadWPData();
+  loadFirebaseData();
+}
+loadAll();
+</script>
+
+</body>
+</html>

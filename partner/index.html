@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>モルハブ パートナー制度 — MOLKKY HUB</title>
+<meta name="description" content="モルック市場は7年で2,740倍。日本唯一のモルック専門メディア「MOLKKY HUB」のパートナー制度で、あなたの応援をモルッカーに届けます。">
+<meta property="og:title" content="モルハブ パートナー制度">
+<meta property="og:description" content="モルック市場は7年で2,740倍。この波に乗りませんか。">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green-dark: #2d5016;
+  --green-main: #4a7c2e;
+  --green-light: #7ab648;
+  --green-pale: #e8f5d8;
+  --cream: #faf8f0;
+  --cream-dark: #f0ede0;
+  --text: #333;
+  --text-light: #555;
+  --text-muted: #888;
+  --white: #fff;
+  --shadow: 0 2px 16px rgba(0,0,0,0.06);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.1);
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  color: var(--text);
+  line-height: 1.8;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ========== Hero ========== */
+.hero {
+  background: linear-gradient(160deg, #1a3a0a 0%, #2d5016 40%, #4a7c2e 80%, #5d9a35 100%);
+  color: var(--white);
+  padding: 64px 20px 56px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -80px; right: -80px;
+  width: 300px; height: 300px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 50%;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: -60px; left: -40px;
+  width: 200px; height: 200px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 50%;
+}
+.hero-label {
+  font-size: 12px;
+  letter-spacing: 3px;
+  opacity: 0.6;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+.hero h1 {
+  font-size: 1.6rem;
+  font-weight: 900;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+.hero h1 em {
+  font-style: normal;
+  display: block;
+  font-size: 2.2rem;
+  line-height: 1.3;
+  margin-top: 4px;
+}
+.hero-sub {
+  font-size: 0.95rem;
+  opacity: 0.85;
+  margin-bottom: 32px;
+  line-height: 1.7;
+}
+.btn-cta {
+  display: inline-block;
+  background: var(--white);
+  color: var(--green-dark);
+  padding: 14px 36px;
+  border-radius: 40px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 15px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+.btn-cta:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,0.2); }
+.btn-cta-green {
+  display: inline-block;
+  background: var(--green-main);
+  color: var(--white);
+  padding: 16px 40px;
+  border-radius: 40px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 16px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 16px rgba(45,80,22,0.3);
+}
+.btn-cta-green:hover { transform: translateY(-2px); background: #3d6c25; }
+
+/* ========== Sections ========== */
+.section {
+  padding: 56px 20px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.section-bg-cream { background: var(--cream); }
+.section-bg-white { background: var(--white); }
+.section-bg-pale { background: var(--green-pale); }
+.section-bg-green {
+  background: linear-gradient(160deg, #1a3a0a 0%, #2d5016 50%, #4a7c2e 100%);
+  color: var(--white);
+}
+.section-full { max-width: none; }
+.section-inner { max-width: 720px; margin: 0 auto; }
+
+.section-label {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--green-main);
+  font-weight: 700;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+.section-title {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: var(--green-dark);
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+.section-bg-green .section-label { color: rgba(255,255,255,0.6); }
+.section-bg-green .section-title { color: var(--white); }
+.section-desc {
+  font-size: 0.95rem;
+  color: var(--text-light);
+  margin-bottom: 32px;
+  line-height: 1.8;
+}
+.section-bg-green .section-desc { color: rgba(255,255,255,0.8); }
+
+/* ========== Number Cards ========== */
+.num-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.num-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(0,0,0,0.04);
+}
+.num-value {
+  font-size: 3rem;
+  font-weight: 900;
+  color: var(--green-dark);
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+.num-unit {
+  font-size: 1rem;
+  font-weight: 700;
+}
+.num-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.num-card-accent {
+  background: var(--green-dark);
+  color: var(--white);
+}
+.num-card-accent .num-value { color: #a8e063; }
+.num-card-accent .num-label { color: rgba(255,255,255,0.7); }
+
+/* ========== Feature Cards ========== */
+.feat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.feat-card {
+  background: var(--white);
+  border-radius: var(--radius-sm);
+  padding: 20px 16px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(0,0,0,0.04);
+}
+.feat-icon { font-size: 2rem; margin-bottom: 8px; }
+.feat-value { font-size: 1.5rem; font-weight: 900; color: var(--green-dark); }
+.feat-label { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+
+/* ========== How It Works ========== */
+.how-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.how-item {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.how-icon {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: var(--green-pale);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+.how-text h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--green-dark);
+  margin-bottom: 4px;
+}
+.how-text p {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  line-height: 1.7;
+}
+
+/* ========== Pricing ========== */
+.price-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--green-main);
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--green-pale);
+}
+.price-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 32px;
+}
+.price-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 24px 18px;
+  box-shadow: var(--shadow);
+  border: 2px solid transparent;
+  text-align: center;
+  position: relative;
+}
+.price-card-featured {
+  border-color: var(--green-main);
+}
+.price-badge {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--green-main);
+  color: var(--white);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 14px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.price-name {
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--green-dark);
+  margin-bottom: 10px;
+}
+.price-amount {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--green-dark);
+  line-height: 1;
+}
+.price-period {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+  margin-bottom: 14px;
+}
+.price-features {
+  list-style: none;
+  text-align: left;
+  font-size: 0.78rem;
+  color: var(--text-light);
+}
+.price-features li {
+  padding: 4px 0;
+  padding-left: 16px;
+  position: relative;
+}
+.price-features li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--green-light);
+  font-weight: 700;
+}
+.price-grid-3 {
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+.price-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  text-align: left;
+}
+.price-card-row .price-name { margin-bottom: 2px; font-size: 0.9rem; }
+.price-card-row .price-desc { font-size: 0.78rem; color: var(--text-muted); }
+.price-card-row .price-right { text-align: right; flex-shrink: 0; }
+.price-card-row .price-amount { font-size: 1.4rem; }
+.price-card-row .price-period { margin-bottom: 0; }
+
+/* ========== Target List ========== */
+.target-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.target-item {
+  background: var(--white);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: var(--shadow);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+}
+.target-icon { font-size: 1.3rem; flex-shrink: 0; }
+
+/* ========== Sponsors ========== */
+.sponsors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 16px;
+}
+.sponsor-tag {
+  background: rgba(74,124,46,0.08);
+  color: var(--green-dark);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 20px;
+}
+
+/* ========== Quote ========== */
+.quote-block {
+  background: rgba(255,255,255,0.1);
+  border-left: 3px solid rgba(255,255,255,0.3);
+  padding: 20px 24px;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin: 24px 0 32px;
+  font-size: 0.95rem;
+  line-height: 1.8;
+  font-style: italic;
+  opacity: 0.9;
+}
+
+/* ========== Footer ========== */
+.footer {
+  background: #1a2a10;
+  color: rgba(255,255,255,0.5);
+  padding: 32px 20px;
+  text-align: center;
+  font-size: 0.75rem;
+}
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.footer-links a {
+  color: rgba(255,255,255,0.6);
+  text-decoration: none;
+  font-size: 0.8rem;
+  transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--white); }
+
+/* ========== Responsive ========== */
+@media (min-width: 480px) {
+  .num-grid { grid-template-columns: repeat(3, 1fr); }
+  .hero h1 { font-size: 1.8rem; }
+  .hero h1 em { font-size: 2.6rem; }
+}
+@media (max-width: 479px) {
+  .feat-grid { grid-template-columns: 1fr 1fr; }
+  .price-grid { grid-template-columns: 1fr; }
+  .target-grid { grid-template-columns: 1fr; }
+  .hero { padding: 48px 16px 40px; }
+  .section { padding: 40px 16px; }
+}
+
+/* ========== Subtle Animations ========== */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-in {
+  opacity: 0;
+  animation: fadeUp 0.6s ease forwards;
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== Hero ==================== -->
+<section class="hero">
+  <div class="section-inner">
+    <p class="hero-label">MOLKKY HUB Partner</p>
+    <h1>
+      モルック市場は7年で
+      <em>2,740倍。</em>
+    </h1>
+    <p class="hero-sub">この波に、一緒に乗りませんか。<br>日本唯一のモルック専門メディアが、<br>あなたの応援をモルッカーに届けます。</p>
+    <a href="https://x.com/messages/compose?recipient_id=1721227068053479424" target="_blank" rel="noopener" class="btn-cta">パートナーについて相談する →</a>
+  </div>
+</section>
+
+<!-- ==================== 市場データ ==================== -->
+<section class="section-bg-cream section-full">
+  <div class="section" style="padding-top:56px;padding-bottom:56px;">
+    <p class="section-label">Market Data</p>
+    <h2 class="section-title">いま、モルックが来ている。</h2>
+    <p class="section-desc">「ちょっと流行っている」レベルではありません。<br>数字が、その事実を物語っています。</p>
+
+    <div class="num-grid">
+      <div class="num-card">
+        <div class="num-value">274<span class="num-unit">万人</span></div>
+        <div class="num-label">日本の競技人口（2025年1月 JMA公式調査）</div>
+      </div>
+      <div class="num-card num-card-accent">
+        <div class="num-value">2,740<span class="num-unit">倍</span></div>
+        <div class="num-label">7年間の成長率（2018年→2025年）</div>
+      </div>
+      <div class="num-card">
+        <div class="num-value">672<span class="num-unit">チーム</span></div>
+        <div class="num-label">2024函館世界大会の参加チーム数</div>
+      </div>
+    </div>
+
+    <p style="font-size:0.85rem; color:var(--text-light); text-align:center; margin-bottom:12px;">モルック市場への参入企業も急増しています</p>
+    <div class="sponsors">
+      <span class="sponsor-tag">サンリオ</span>
+      <span class="sponsor-tag">富国生命</span>
+      <span class="sponsor-tag">TIMEX</span>
+      <span class="sponsor-tag">BEAMS</span>
+      <span class="sponsor-tag">丸信運送</span>
+    </div>
+    <p style="font-size:0.7rem; color:var(--text-muted); text-align:center; margin-top:10px;">※ JMA（日本モルック協会）スポンサー企業</p>
+  </div>
+</section>
+
+<!-- ==================== モルハブとは ==================== -->
+<section class="section-bg-white section-full">
+  <div class="section" style="padding-top:56px;padding-bottom:56px;">
+    <p class="section-label">About</p>
+    <h2 class="section-title">業界唯一のモルック専門メディア</h2>
+    <p class="section-desc">MOLKKY HUB（モルハブ）は、モルックに特化した日本で唯一のWebメディアです。訪問者のほぼ全員がモルックに関心を持つ方。「広く薄く届ける広告」ではなく、「届けたい人に確実に届く」メディアです。</p>
+
+    <div class="feat-grid">
+      <div class="feat-card">
+        <div class="feat-icon">📊</div>
+        <div class="feat-value">3,000+</div>
+        <div class="feat-label">月間セッション数</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🏆</div>
+        <div class="feat-value">545+</div>
+        <div class="feat-label">大会情報DB</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">✨</div>
+        <div class="feat-value">Premium</div>
+        <div class="feat-label">X（旧Twitter）Premium課金</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🤖</div>
+        <div class="feat-value">自動化</div>
+        <div class="feat-label">独自ツール群で運用効率化</div>
+      </div>
+    </div>
+    <p style="font-size:0.82rem; color:var(--text-muted); line-height:1.7;">大会情報の自動収集、Xポストの自動生成、パートナー循環ポータルなど、テクノロジーを活用して1人メディアながら高い運用品質を維持しています。</p>
+  </div>
+</section>
+
+<!-- ==================== パートナー制度の仕組み ==================== -->
+<section class="section-bg-cream section-full">
+  <div class="section" style="padding-top:56px;padding-bottom:56px;">
+    <p class="section-label">How It Works</p>
+    <h2 class="section-title">応援が届く仕組みを、<br>一緒につくります。</h2>
+    <p class="section-desc">モルハブのパートナー制度は、単なる「広告枠の販売」ではありません。<br>オンラインとオフラインの両面で、あなたの応援をモルッカーに届けます。</p>
+
+    <div class="how-list">
+      <div class="how-item">
+        <div class="how-icon">💻</div>
+        <div class="how-text">
+          <h3>オンライン × オフライン</h3>
+          <p>サイト掲載・SNS告知に加え、大会への協賛品提供やイベント連携を通じて、リアルな場でも応援が届きます。</p>
+        </div>
+      </div>
+      <div class="how-item">
+        <div class="how-icon">🔄</div>
+        <div class="how-text">
+          <h3>循環ポータルで「見える化」</h3>
+          <p>パートナーの提供品がどの大会に届き、誰が受け取ったか。リアルタイムで可視化する独自ポータルを運用しています。「出して終わり」ではなく、応援の行き先が見える仕組みです。</p>
+        </div>
+      </div>
+      <div class="how-item">
+        <div class="how-icon">🙌</div>
+        <div class="how-text">
+          <h3>面倒な調整はモルハブが代行</h3>
+          <p>大会主催者との連絡、協賛品の手配、現地への配送調整。パートナー側の手間を最小限にする体制です。「応援したいけど何をすればいいかわからない」という方こそ、ご相談ください。</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center; margin-top:28px;">
+      <a href="https://jonyjean21.github.io/sp-projects/partner-portal/" target="_blank" rel="noopener" style="font-size:0.85rem; color:var(--green-main); font-weight:600; text-decoration:none; border-bottom:1px solid var(--green-light);">▶ パートナー循環ポータルを見る</a>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 料金プラン ==================== -->
+<section class="section-bg-white section-full">
+  <div class="section" style="padding-top:56px;padding-bottom:56px;">
+    <p class="section-label">Plans & Pricing</p>
+    <h2 class="section-title">ご予算に合わせた<br>プランをご用意しています。</h2>
+
+    <!-- パートナープラン -->
+    <p class="price-label">🤝 パートナープラン</p>
+    <div class="price-grid">
+      <div class="price-card">
+        <div class="price-name">ライト</div>
+        <div class="price-amount">5,000<span style="font-size:0.5em">円</span></div>
+        <div class="price-period">/月（税込）</div>
+        <ul class="price-features">
+          <li>パートナー一覧に掲載</li>
+          <li>循環ポータルに表示</li>
+          <li>モルハブ設計の協賛施策</li>
+        </ul>
+      </div>
+      <div class="price-card price-card-featured">
+        <span class="price-badge">おすすめ</span>
+        <div class="price-name">スタンダード</div>
+        <div class="price-amount">10,000<span style="font-size:0.5em">円</span></div>
+        <div class="price-period">/月（税込）</div>
+        <ul class="price-features">
+          <li>ライトの全内容</li>
+          <li>還元施策の強化</li>
+          <li>大会・イベント活用</li>
+          <li>SNSでの定期紹介</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 広告掲載プラン -->
+    <p class="price-label">📰 広告掲載プラン</p>
+    <div class="price-grid price-grid-3">
+      <div class="price-card price-card-row">
+        <div>
+          <div class="price-name">応援ボード掲載</div>
+          <div class="price-desc">全記事下部にロゴ・リンクを掲載</div>
+        </div>
+        <div class="price-right">
+          <div class="price-amount">20,000<span style="font-size:0.5em">円</span></div>
+          <div class="price-period">/月</div>
+        </div>
+      </div>
+      <div class="price-card price-card-row">
+        <div>
+          <div class="price-name">記事上部バナー</div>
+          <div class="price-desc">記事上部のプレミアム位置にバナー掲載</div>
+        </div>
+        <div class="price-right">
+          <div class="price-amount">10,000<span style="font-size:0.5em">円</span></div>
+          <div class="price-period">/月</div>
+        </div>
+      </div>
+      <div class="price-card price-card-row">
+        <div>
+          <div class="price-name">専用紹介記事</div>
+          <div class="price-desc">商品・サービスの専用記事を作成 + SNS告知</div>
+        </div>
+        <div class="price-right">
+          <div class="price-amount">30,000<span style="font-size:0.5em">円</span></div>
+          <div class="price-period">/本</div>
+        </div>
+      </div>
+    </div>
+
+    <p style="font-size:0.75rem; color:var(--text-muted); text-align:center;">※ 組み合わせ割引もご相談いただけます。料金は予告なく変更する場合があります。</p>
+  </div>
+</section>
+
+<!-- ==================== こんな方に ==================== -->
+<section class="section-bg-pale section-full">
+  <div class="section" style="padding-top:56px;padding-bottom:56px;">
+    <p class="section-label">For You</p>
+    <h2 class="section-title">こんな方・企業に<br>ご活用いただけます。</h2>
+
+    <div class="target-grid">
+      <div class="target-item">
+        <span class="target-icon">🪵</span>
+        <span>モルック用品・木製玩具の販売</span>
+      </div>
+      <div class="target-item">
+        <span class="target-icon">⛺</span>
+        <span>レジャー施設・キャンプ場</span>
+      </div>
+      <div class="target-item">
+        <span class="target-icon">🍽️</span>
+        <span>飲食店・フードブランド</span>
+      </div>
+      <div class="target-item">
+        <span class="target-icon">🏛️</span>
+        <span>地方自治体・観光協会</span>
+      </div>
+      <div class="target-item">
+        <span class="target-icon">👕</span>
+        <span>スポーツブランド・アパレル</span>
+      </div>
+      <div class="target-item">
+        <span class="target-icon">💚</span>
+        <span>個人でモルック界を応援したい方</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== CTA ==================== -->
+<section class="section-bg-green section-full">
+  <div class="section" style="padding-top:64px;padding-bottom:64px; text-align:center;">
+    <p class="section-label">Contact</p>
+    <h2 class="section-title">一緒に、モルック界を<br>盛り上げませんか。</h2>
+
+    <div class="quote-block">
+      「喜びと祝いが循環する、心豊かで丁寧な世界をつくっていく」<br>
+      ── MOLKKY HUB ミッション
+    </div>
+
+    <p class="section-desc">パートナー制度に関するお問い合わせは、X（旧Twitter）のDMにて受け付けています。「まずは話を聞いてみたい」という相談ベースで構いません。お気軽にどうぞ。</p>
+
+    <a href="https://x.com/messages/compose?recipient_id=1721227068053479424" target="_blank" rel="noopener" class="btn-cta" style="font-size:16px; padding:16px 40px;">
+      @molkkyhub にDMで相談する →
+    </a>
+  </div>
+</section>
+
+<!-- ==================== Footer ==================== -->
+<footer class="footer">
+  <div class="footer-links">
+    <a href="https://molkky-hub.com" target="_blank">MOLKKY HUB</a>
+    <a href="https://molkky-hub.com/event/tournament/" target="_blank">大会情報</a>
+    <a href="https://jonyjean21.github.io/sp-projects/partner-portal/" target="_blank">循環ポータル</a>
+    <a href="https://x.com/molkkyhub" target="_blank">X (@molkkyhub)</a>
+  </div>
+  <p>&copy; MOLKKY HUB. All rights reserved.</p>
+</footer>
+
+<!-- Scroll Animation -->
+<script>
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('animate-in');
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.15 });
+document.querySelectorAll('.num-card, .feat-card, .how-item, .price-card, .target-item').forEach(el => {
+  el.style.opacity = '0';
+  observer.observe(el);
+});
+</script>
+
+</body>
+</html>
