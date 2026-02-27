@@ -73,6 +73,7 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
 .drop-hint { color: var(--dim); font-size: 0.75rem; }
 .photo-status { font-size: 0.7rem; margin-top: 0.4rem; color: var(--dim); }
 .photo-status.ok { color: var(--ok); }
+.photo-status.info { color: var(--accent); }
 .photo-status.uploading { color: var(--accent); }
 .photo-status.err { color: var(--err); }
 
@@ -100,6 +101,22 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
 .page-info { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; font-size: 0.85rem; }
 .page-info a { color: var(--accent); text-decoration: none; }
 .page-info a:hover { text-decoration: underline; }
+
+/* Media picker modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; display: flex; align-items: center; justify-content: center; }
+.modal { background: var(--card); border: 1px solid var(--border); border-radius: 14px; width: 90vw; max-width: 700px; max-height: 80vh; display: flex; flex-direction: column; }
+.modal-header { display: flex; align-items: center; padding: 1rem 1.2rem; border-bottom: 1px solid var(--border); }
+.modal-header h3 { flex: 1; font-size: 0.95rem; }
+.modal-close { background: none; border: none; color: var(--dim); font-size: 1.2rem; cursor: pointer; padding: 4px 8px; }
+.modal-close:hover { color: var(--text); }
+.modal-search { padding: 0.8rem 1.2rem; border-bottom: 1px solid var(--border); }
+.modal-search input { width: 100%; padding: 0.5rem 0.8rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 0.85rem; }
+.modal-body { flex: 1; overflow-y: auto; padding: 1rem; }
+.media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+.media-item { cursor: pointer; border-radius: 8px; overflow: hidden; border: 2px solid transparent; transition: border-color 0.15s; aspect-ratio: 1; }
+.media-item:hover { border-color: var(--accent); }
+.media-item img { width: 100%; height: 100%; object-fit: cover; }
+.media-loading { text-align: center; padding: 2rem; color: var(--dim); }
 </style>
 </head>
 <body>
@@ -232,6 +249,22 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
 </div>
 
 </div><!-- /content -->
+
+<!-- Media picker modal -->
+<div class="modal-overlay" id="mediaModal" style="display:none" onclick="if(event.target===this)closeMediaPicker()">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="mediaModalTitle">WPメディアから選択</h3>
+      <button class="modal-close" onclick="closeMediaPicker()">&times;</button>
+    </div>
+    <div class="modal-search">
+      <input type="text" id="mediaSearchInput" placeholder="ファイル名で検索..." oninput="filterMedia()">
+    </div>
+    <div class="modal-body">
+      <div class="media-grid" id="mediaGrid"></div>
+    </div>
+  </div>
+</div>
 
 <script>
 const WP = 'https://molkky-hub.com';
@@ -413,11 +446,14 @@ function renderPhotoGrid() {
   podiumTeams.forEach((team, i) => {
     const card = document.createElement('div');
     card.className = 'photo-card ' + team.cls;
+    const hasPhoto = team.preview || team.photoUrl;
     const imgHtml = team.preview
       ? '<img src="' + team.preview + '">'
       : team.photoUrl
         ? '<img src="' + team.photoUrl + '">'
         : '<div class="drop-hint" style="font-size:2rem">📷</div>';
+    const statusText = team.changed ? '変更あり（未反映）' : team.photoUrl ? '設定済み' : '未設定';
+    const statusCls = team.changed ? 'photo-status info' : team.photoUrl ? 'photo-status ok' : 'photo-status';
     card.innerHTML = `
       <div class="photo-label">${team.rank}</div>
       <div class="photo-name">${team.name}</div>
@@ -427,7 +463,8 @@ function renderPhotoGrid() {
         <input type="file" accept="image/*" onchange="setPhoto(${i},this.files[0])">
         ${imgHtml}
       </div>
-      <div class="photo-status" id="pstat-${i}">${team.photoUrl ? '設定済み' : '未設定'}</div>
+      <div class="${statusCls}" id="pstat-${i}">${statusText}</div>
+      <button class="btn btn-outline btn-sm" style="margin-top:0.4rem;width:100%" onclick="openMediaPicker(${i})">WPメディアから選択</button>
     `;
     grid.appendChild(card);
   });
@@ -437,21 +474,102 @@ function renderPhotoGrid() {
 function setPhoto(idx, file) {
   if (!file || !file.type.startsWith('image/')) return;
   podiumTeams[idx].file = file;
+  podiumTeams[idx].changed = true;
   const reader = new FileReader();
   reader.onload = e => { podiumTeams[idx].preview = e.target.result; renderPhotoGrid(); };
   reader.readAsDataURL(file);
-  log(podiumTeams[idx].name + ': 写真を選択', 'info');
+  log(podiumTeams[idx].name + ': ローカル写真を選択', 'info');
+}
+
+function setPhotoFromMedia(idx, url) {
+  podiumTeams[idx].photoUrl = url;
+  podiumTeams[idx].file = null;
+  podiumTeams[idx].preview = '';
+  podiumTeams[idx].changed = true;
+  renderPhotoGrid();
+  log(podiumTeams[idx].name + ': WPメディアから選択', 'info');
 }
 
 function checkPhotoReady() {
-  document.getElementById('uploadPhotosBtn').disabled = !podiumTeams.some(t => t.file);
+  document.getElementById('uploadPhotosBtn').disabled = !podiumTeams.some(t => t.changed);
+  // Update button text based on what needs to happen
+  const hasLocalFiles = podiumTeams.some(t => t.file);
+  const hasMediaChanges = podiumTeams.some(t => t.changed && !t.file);
+  const btn = document.getElementById('uploadPhotosBtn');
+  if (hasLocalFiles && hasMediaChanges) btn.textContent = 'アップロード & ページに反映';
+  else if (hasLocalFiles) btn.textContent = 'アップロード & ページに反映';
+  else if (hasMediaChanges) btn.textContent = 'ページに反映';
+  else btn.textContent = '写真をアップロード & 反映';
+}
+
+// ===== Media picker =====
+let allWpMedia = [];
+let pickerTargetIdx = -1;
+
+async function openMediaPicker(idx) {
+  pickerTargetIdx = idx;
+  document.getElementById('mediaModal').style.display = 'flex';
+  document.getElementById('mediaModalTitle').textContent = podiumTeams[idx].name + ' の写真を選択';
+  document.getElementById('mediaSearchInput').value = '';
+  const grid = document.getElementById('mediaGrid');
+
+  if (allWpMedia.length === 0) {
+    grid.innerHTML = '<div class="media-loading">WPメディアを読み込み中...</div>';
+    try {
+      let page = 1;
+      while (true) {
+        const batch = await wpFetch('/wp-json/wp/v2/media?per_page=100&page=' + page + '&media_type=image');
+        allWpMedia = allWpMedia.concat(batch);
+        if (batch.length < 100) break;
+        page++;
+      }
+      log('WPメディア: ' + allWpMedia.length + '件読み込み', 'info');
+    } catch (e) {
+      grid.innerHTML = '<div class="media-loading">読み込み失敗: ' + e.message + '</div>';
+      return;
+    }
+  }
+  filterMedia();
+}
+
+function closeMediaPicker() {
+  document.getElementById('mediaModal').style.display = 'none';
+}
+
+function filterMedia() {
+  const q = document.getElementById('mediaSearchInput').value.toLowerCase();
+  const grid = document.getElementById('mediaGrid');
+  grid.innerHTML = '';
+  const filtered = allWpMedia.filter(m => {
+    if (!q) return true;
+    const title = (m.title?.rendered || '').toLowerCase();
+    const file = (m.source_url || '').toLowerCase();
+    return title.includes(q) || file.includes(q);
+  });
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="media-loading">該当なし</div>';
+    return;
+  }
+  for (const m of filtered) {
+    const thumb = m.media_details?.sizes?.thumbnail?.source_url || m.source_url;
+    const div = document.createElement('div');
+    div.className = 'media-item';
+    div.title = m.title?.rendered || m.source_url;
+    div.innerHTML = '<img src="' + thumb + '" loading="lazy">';
+    div.onclick = () => {
+      setPhotoFromMedia(pickerTargetIdx, m.source_url);
+      closeMediaPicker();
+    };
+    grid.appendChild(div);
+  }
 }
 
 // ===== Upload result photos =====
 async function uploadPhotos() {
   const btn = document.getElementById('uploadPhotosBtn');
-  btn.disabled = true; btn.textContent = 'アップロード中...';
+  btn.disabled = true; btn.textContent = '処理中...';
   try {
+    // First: upload local files if any
     for (let i = 0; i < podiumTeams.length; i++) {
       const team = podiumTeams[i];
       if (!team.file) continue;
@@ -467,7 +585,10 @@ async function uploadPhotos() {
       document.getElementById('pstat-' + i).className = 'photo-status ok';
       log(team.name + ': ' + media.source_url, 'ok');
     }
+    // Then: update page content with all changed photos
     await updateResultPhotos();
+    // Reset changed flags
+    podiumTeams.forEach(t => t.changed = false);
     renderPhotoGrid();
   } finally {
     btn.textContent = '写真をアップロード & 反映'; checkPhotoReady();
