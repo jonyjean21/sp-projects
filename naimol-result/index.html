@@ -17,40 +17,64 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .header h1{font-size:20px;font-weight:700;color:var(--text2);margin-bottom:4px}
 .header p{font-size:13px;color:var(--sub);line-height:1.6}
 
-/* Section */
 .section{margin-bottom:24px}
 .section-title{font-size:14px;font-weight:700;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .section-title::after{content:'';flex:1;height:1px;background:var(--border)}
 
-/* Input */
 .input-group{margin-bottom:12px}
 .input-label{font-size:12px;color:var(--sub);margin-bottom:4px;display:block}
 .input-field{
   width:100%;background:var(--card);border:2px solid var(--border);border-radius:10px;
-  color:var(--text2);font-size:14px;padding:10px 12px;font-family:inherit;
-  transition:border-color 0.2s;
+  color:var(--text2);font-size:14px;padding:10px 12px;font-family:inherit;transition:border-color 0.2s;
 }
 .input-field:focus{outline:none;border-color:var(--accent)}
 .input-field::placeholder{color:#555}
+textarea.input-field{resize:vertical;min-height:80px;line-height:1.5}
+
+/* Import section */
+.import-box{
+  background:var(--card);border:2px solid var(--accent);border-radius:12px;
+  padding:16px;margin-bottom:24px;
+}
+.import-box .section-title{color:var(--green);margin-bottom:8px}
+.import-row{display:flex;gap:8px;margin-bottom:8px}
+.import-row input{flex:1}
+.import-btn{
+  padding:10px 20px;background:var(--green);color:#000;border:none;border-radius:10px;
+  font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;
+  transition:opacity 0.2s;
+}
+.import-btn:hover{opacity:0.85}
+.import-btn:disabled{opacity:0.3;cursor:not-allowed}
+.import-status{font-size:12px;margin-top:6px;line-height:1.5}
+.import-status.ok{color:var(--green)}
+.import-status.err{color:var(--red)}
+.import-status.loading{color:var(--orange)}
+.or-divider{text-align:center;color:var(--sub);font-size:12px;margin:8px 0}
+
+/* CSV download */
+.csv-btn{
+  width:100%;padding:12px;background:var(--orange);color:#000;border:none;border-radius:10px;
+  font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity 0.2s;
+  margin-bottom:8px;display:none;
+}
+.csv-btn:hover{opacity:0.85}
+.csv-btn.show{display:block}
 
 /* Team Card */
-.team-card{
-  background:var(--card);border:1px solid var(--border);border-radius:12px;
-  padding:14px;margin-bottom:10px;
-}
+.team-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px}
 .team-card-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:13px;font-weight:700}
 .team-card .input-group{margin-bottom:8px}
 .medal{font-size:18px}
+.auto-tag{font-size:10px;background:var(--green);color:#000;padding:2px 8px;border-radius:10px;font-weight:700;margin-left:auto}
 
-/* Perfect Molkky List */
+/* PM */
 .pm-item{
   background:var(--card);border:1px solid var(--border);border-radius:10px;
   padding:10px 12px;margin-bottom:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;
 }
 .pm-item input{flex:1;min-width:80px}
-.pm-item .pm-remove{
-  background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;padding:4px;flex-shrink:0;
-}
+.pm-item .pm-remove{background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;padding:4px;flex-shrink:0}
 .add-btn{
   background:var(--card2);border:2px dashed var(--border);border-radius:10px;
   color:var(--sub);padding:10px;width:100%;cursor:pointer;font-size:13px;font-family:inherit;
@@ -58,7 +82,6 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 }
 .add-btn:hover{border-color:var(--accent);color:var(--accent)}
 
-/* Generate Button */
 .gen-btn{
   width:100%;padding:14px;background:var(--accent);color:var(--text2);border:none;
   border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;
@@ -72,8 +95,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .output-tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
 .tab-btn{
   padding:8px 14px;border-radius:8px;border:1px solid var(--border);
-  background:var(--card);color:var(--sub);font-size:12px;cursor:pointer;font-family:inherit;
-  transition:all 0.2s;
+  background:var(--card);color:var(--sub);font-size:12px;cursor:pointer;font-family:inherit;transition:all 0.2s;
 }
 .tab-btn.active{background:var(--accent);color:var(--text2);border-color:var(--accent)}
 .tab-btn:hover:not(.active){border-color:var(--accent);color:var(--accent)}
@@ -89,27 +111,24 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .code-block{
   background:var(--card2);border:1px solid var(--border2);border-radius:10px;
   padding:12px;font-size:11px;font-family:'SF Mono',Monaco,monospace;
-  color:var(--sub);max-height:300px;overflow:auto;white-space:pre-wrap;word-break:break-all;
-  line-height:1.5;
+  color:var(--sub);max-height:300px;overflow:auto;white-space:pre-wrap;word-break:break-all;line-height:1.5;
 }
+.preview-frame{background:#fff;border-radius:10px;padding:16px;margin-bottom:16px;max-height:500px;overflow-y:auto;color:#333;font-size:14px;line-height:1.7}
 
-/* Preview */
-.preview-frame{
-  background:#fff;border-radius:10px;padding:16px;margin-bottom:16px;
-  max-height:500px;overflow-y:auto;color:#333;font-size:14px;line-height:1.7;
-}
-
-/* Status */
-.status{
-  padding:10px 14px;border-radius:10px;font-size:13px;margin-top:12px;display:none;
-}
+.status{padding:10px 14px;border-radius:10px;font-size:13px;margin-top:12px;display:none}
 .status.show{display:block}
 .status.success{background:rgba(46,160,67,0.15);color:var(--green);border:1px solid rgba(46,160,67,0.3)}
 .status.error{background:rgba(248,81,73,0.15);color:var(--red);border:1px solid rgba(248,81,73,0.3)}
 
-/* Save indicator */
 .save-indicator{font-size:11px;color:var(--sub);text-align:right;margin-top:4px;opacity:0;transition:opacity 0.3s}
 .save-indicator.show{opacity:1}
+
+.summary-box{
+  background:var(--card);border:1px solid var(--green);border-radius:10px;padding:12px;
+  margin:12px 0;font-size:12px;line-height:1.8;display:none;
+}
+.summary-box.show{display:block}
+.summary-box strong{color:var(--green)}
 </style>
 </head>
 <body>
@@ -117,46 +136,60 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 
 <div class="header">
   <h1>ナイモル大会結果 HTML生成</h1>
-  <p>入力情報からWP用HTMLを自動生成。コピーしてカスタムHTMLブロックに貼り付け。</p>
+  <p>スプシURLを貼るだけで自動読込。上位チーム・パーフェクトモルック賞を自動抽出してHTML生成。</p>
 </div>
+
+<!-- ===== スプシ読み込み ===== -->
+<div class="import-box">
+  <div class="section-title" style="color:var(--green)">① スプシから自動読込</div>
+  <p style="font-size:12px;color:var(--sub);margin-bottom:10px">編集済みスプシ（Ninja Tables用）のURLを貼って読み込み。上位チーム・PM賞を自動抽出。</p>
+  <div class="import-row">
+    <input class="input-field" id="sheetUrl" placeholder="Google スプレッドシートのURL" data-save>
+    <button class="import-btn" id="importBtn" onclick="importSheet()">読込</button>
+  </div>
+  <div class="or-divider">または CSVを直接貼り付け</div>
+  <textarea class="input-field" id="csvPaste" rows="3" placeholder="スプシからCSVをコピー＆ペースト（URLで読めない場合）"></textarea>
+  <button class="import-btn" style="width:100%;margin-top:8px;background:var(--accent)" onclick="importCSV(document.getElementById('csvPaste').value)">CSVから読込</button>
+  <div class="import-status" id="importStatus"></div>
+  <div class="summary-box" id="summaryBox"></div>
+</div>
+
+<!-- ===== CSVダウンロード ===== -->
+<button class="csv-btn" id="csvDownloadBtn" onclick="downloadCSV()">📥 Ninja Tables用CSVをダウンロード</button>
 
 <!-- ===== 大会基本情報 ===== -->
 <div class="section">
-  <div class="section-title">大会基本情報</div>
+  <div class="section-title">② 大会基本情報</div>
   <div class="input-group">
     <label class="input-label">大会正式名（冒頭テキスト用）</label>
-    <input class="input-field" id="eventTitle" placeholder="例: 第5回宮前公園ナイモルカップ" data-save>
+    <input class="input-field" id="eventTitle" placeholder="例: ナイモルみなとみらい" data-save>
   </div>
   <div class="input-group">
     <label class="input-label">大会スラッグ（WPページ階層用）</label>
-    <input class="input-field" id="eventSlug" placeholder="例: nice_molkky_5" data-save>
+    <input class="input-field" id="eventSlug" placeholder="例: naimol_minatomirai_20260215" data-save>
   </div>
   <div class="input-group">
-    <label class="input-label">Ninja Tables ID</label>
-    <input class="input-field" id="ninjaId" placeholder="例: 3954（CSV import後に控える番号）" data-save>
-  </div>
-  <div class="input-group">
-    <label class="input-label">Ninja Tables タイトル（aria-label用）</label>
-    <input class="input-field" id="ninjaLabel" placeholder="例: 第5回ナイモルカップ大会順位表" data-save>
+    <label class="input-label">Ninja Tables ID（CSV import後に入力）</label>
+    <input class="input-field" id="ninjaId" placeholder="例: 3954" data-save>
   </div>
 </div>
 
 <!-- ===== 上位入賞チーム ===== -->
 <div class="section">
-  <div class="section-title">上位入賞チーム（4チーム）</div>
+  <div class="section-title">③ 上位入賞チーム（自動入力済み）</div>
   <div id="teamCards"></div>
 </div>
 
 <!-- ===== パーフェクトモルック賞 ===== -->
 <div class="section">
-  <div class="section-title">パーフェクトモルック賞</div>
+  <div class="section-title">④ パーフェクトモルック賞（自動入力済み）</div>
   <div id="pmList"></div>
   <button class="add-btn" onclick="addPM()">+ チームを追加</button>
 </div>
 
 <!-- ===== ギャラリー ===== -->
 <div class="section">
-  <div class="section-title">ギャラリー情報</div>
+  <div class="section-title">⑤ ギャラリー情報</div>
   <div class="input-group">
     <label class="input-label">ギャラリーページURL</label>
     <input class="input-field" id="galleryUrl" placeholder="例: https://molkky-hub.com/.../gallery/" data-save>
@@ -167,27 +200,24 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
   </div>
   <div class="input-group">
     <label class="input-label">ギャラリータイトル</label>
-    <input class="input-field" id="galleryTitle" placeholder="例: 第5回宮前公園ナイモルカップギャラリー" data-save>
+    <input class="input-field" id="galleryTitle" placeholder="例: ナイモルみなとみらい ギャラリー" data-save>
   </div>
 </div>
 
-<!-- ===== 生成ボタン ===== -->
-<button class="gen-btn" onclick="generate()">HTML生成</button>
+<!-- ===== 生成 ===== -->
+<button class="gen-btn" onclick="generate()">⚡ HTML生成</button>
 <div class="save-indicator" id="saveIndicator">自動保存済み</div>
 <div class="status" id="status"></div>
 
-<!-- ===== 出力エリア ===== -->
+<!-- ===== 出力 ===== -->
 <div class="output-section" id="outputSection">
-
   <div class="output-tabs">
     <button class="tab-btn active" onclick="switchTab('all',this)">全体HTML</button>
     <button class="tab-btn" onclick="switchTab('podium',this)">上位入賞</button>
     <button class="tab-btn" onclick="switchTab('perfect',this)">パーフェクトモルック</button>
     <button class="tab-btn" onclick="switchTab('preview',this)">プレビュー</button>
   </div>
-
   <button class="copy-btn" id="copyBtn" onclick="copyOutput()">コピー</button>
-
   <div id="tabAll"><div class="code-block" id="codeAll"></div></div>
   <div id="tabPodium" style="display:none"><div class="code-block" id="codePodium"></div></div>
   <div id="tabPerfect" style="display:none"><div class="code-block" id="codePerfect"></div></div>
@@ -197,7 +227,168 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 </div>
 
 <script>
-// ===== Team Cards Setup =====
+// ===== CSV Data Store =====
+let csvRawData = ''; // 読み込んだCSV原文（Ninja Tables用ダウンロード）
+
+// ===== Sheet Import =====
+async function importSheet() {
+  const url = document.getElementById('sheetUrl').value.trim();
+  if (!url) return;
+  const idMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (!idMatch) { setImportStatus('err', 'URLからスプレッドシートIDを取得できません'); return; }
+  const sheetId = idMatch[1];
+
+  setImportStatus('loading', 'スプシを読み込み中...');
+  document.getElementById('importBtn').disabled = true;
+
+  // Try gviz endpoint (CORS-friendly for shared sheets)
+  const endpoints = [
+    `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`,
+    `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=0`
+  ];
+
+  let csvText = null;
+  for (const ep of endpoints) {
+    try {
+      const resp = await fetch(ep, { signal: AbortSignal.timeout(10000) });
+      if (resp.ok) {
+        csvText = await resp.text();
+        if (csvText && csvText.includes(',')) break;
+      }
+    } catch (e) { /* try next */ }
+  }
+
+  document.getElementById('importBtn').disabled = false;
+
+  if (!csvText) {
+    setImportStatus('err', 'スプシの読み込みに失敗。CSVを直接貼り付けてください。');
+    return;
+  }
+
+  importCSV(csvText);
+}
+
+function importCSV(csvText) {
+  if (!csvText || !csvText.trim()) { setImportStatus('err', 'CSVデータが空です'); return; }
+
+  csvRawData = csvText;
+  const rows = parseCSV(csvText);
+  if (rows.length < 2) { setImportStatus('err', 'データ行が見つかりません'); return; }
+
+  // Skip header
+  const header = rows[0];
+  const data = rows.slice(1).filter(r => r.length >= 2 && r[0].trim());
+
+  // Extract teams
+  const teams = data.map(row => {
+    const rank = parseInt(row[0]);
+    const linkCol = row[1] || '';
+    const { name, slug } = parseTeamLink(linkCol);
+    const pmValue = row[6] ? row[6].trim() : '';
+    return { rank, name, slug, pmValue, raw: row };
+  });
+
+  // Top 4 teams (rank 1, 2, 3, 3)
+  const top4 = [];
+  const rank1 = teams.filter(t => t.rank === 1);
+  const rank2 = teams.filter(t => t.rank === 2);
+  const rank3 = teams.filter(t => t.rank === 3);
+  if (rank1[0]) top4.push(rank1[0]);
+  if (rank2[0]) top4.push(rank2[0]);
+  rank3.forEach(t => { if (top4.length < 4) top4.push(t); });
+
+  // Fill team cards
+  for (let i = 0; i < 4; i++) {
+    const t = top4[i] || {};
+    document.getElementById(`team${i}Name`).value = t.name || '';
+    document.getElementById(`team${i}Slug`).value = t.slug || '';
+    document.getElementById(`team${i}Photo`).value = '';
+  }
+
+  // Perfect Molkky teams
+  document.getElementById('pmList').innerHTML = '';
+  pmCount = 0;
+  const pmTeams = teams.filter(t => t.pmValue && t.pmValue !== '0' && t.pmValue !== '');
+  pmTeams.forEach(t => addPM(t.name, t.slug, ''));
+
+  // Show summary
+  const summary = document.getElementById('summaryBox');
+  summary.innerHTML = `
+    <strong>✓ ${teams.length}チーム</strong>を読み込みました<br>
+    上位: ${top4.map(t => t.name).join(' / ')}<br>
+    パーフェクトモルック: ${pmTeams.length > 0 ? pmTeams.map(t => t.name).join(' / ') : 'なし'}
+  `;
+  summary.classList.add('show');
+
+  // Show CSV download
+  document.getElementById('csvDownloadBtn').classList.add('show');
+
+  setImportStatus('ok', `✓ 読み込み完了（${teams.length}チーム）`);
+  saveAll();
+}
+
+function parseTeamLink(html) {
+  // <a href='/nice_molkky_japan_details/.../teams/slug/' class='team-link'>Name</a>
+  const aMatch = html.match(/<a\s+href=['"]([^'"]+)['"]\s+class=['"]team-link['"]>([^<]+)<\/a>/i);
+  if (aMatch) {
+    const href = aMatch[1];
+    const name = aMatch[2].trim();
+    const slugMatch = href.match(/\/teams\/([^/]+)\/?$/);
+    const slug = slugMatch ? slugMatch[1] : '';
+    return { name, slug };
+  }
+  // Plain text (no link = 掲載不可)
+  // Strip any remaining HTML-like content
+  const cleaned = html.replace(/<[^>]*>/g, '').replace(/"/g, '').trim();
+  return { name: cleaned, slug: '' };
+}
+
+function parseCSV(text) {
+  const rows = [];
+  let current = [];
+  let field = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inQuotes) {
+      if (ch === '"' && text[i + 1] === '"') { field += '"'; i++; }
+      else if (ch === '"') { inQuotes = false; }
+      else { field += ch; }
+    } else {
+      if (ch === '"') { inQuotes = true; }
+      else if (ch === ',') { current.push(field); field = ''; }
+      else if (ch === '\n' || (ch === '\r' && text[i + 1] === '\n')) {
+        current.push(field); field = '';
+        if (current.some(c => c.trim())) rows.push(current);
+        current = [];
+        if (ch === '\r') i++;
+      } else { field += ch; }
+    }
+  }
+  if (field || current.length) { current.push(field); rows.push(current); }
+  return rows;
+}
+
+function setImportStatus(type, msg) {
+  const el = document.getElementById('importStatus');
+  el.className = 'import-status ' + type;
+  el.textContent = msg;
+}
+
+// ===== CSV Download =====
+function downloadCSV() {
+  if (!csvRawData) return;
+  const blob = new Blob([csvRawData], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (document.getElementById('eventTitle').value || 'naimol_result') + '_ninja_tables.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ===== Team Cards =====
 const RANKS = [
   { rank: '優勝', medal: '🥇', cls: 'gold' },
   { rank: '準優勝', medal: '🥈', cls: 'silver' },
@@ -210,7 +401,7 @@ function initTeamCards() {
   RANKS.forEach((r, i) => {
     container.innerHTML += `
       <div class="team-card">
-        <div class="team-card-header"><span class="medal">${r.medal}</span> ${r.rank}</div>
+        <div class="team-card-header"><span class="medal">${r.medal}</span> ${r.rank}<span class="auto-tag" style="display:none" id="autoTag${i}">自動入力</span></div>
         <div class="input-group">
           <label class="input-label">チーム名</label>
           <input class="input-field" id="team${i}Name" placeholder="チーム名" data-save>
@@ -237,27 +428,20 @@ function addPM(name, slug, match) {
   div.className = 'pm-item';
   div.id = `pm${id}`;
   div.innerHTML = `
-    <input class="input-field" placeholder="チーム名" value="${name||''}" data-pm="${id}" data-field="name" style="flex:2">
-    <input class="input-field" placeholder="スラッグ" value="${slug||''}" data-pm="${id}" data-field="slug" style="flex:1.5">
-    <input class="input-field" placeholder="予選リーグ第N試合" value="${match||''}" data-pm="${id}" data-field="match" style="flex:2">
+    <input class="input-field" placeholder="チーム名" value="${name||''}" style="flex:2">
+    <input class="input-field" placeholder="スラッグ" value="${slug||''}" style="flex:1.5">
+    <input class="input-field" placeholder="予選リーグ第N試合" value="${match||''}" style="flex:2">
     <button class="pm-remove" onclick="removePM(${id})">✕</button>`;
   container.appendChild(div);
-  return div;
 }
-function removePM(id) {
-  document.getElementById(`pm${id}`)?.remove();
-  saveAll();
-}
+function removePM(id) { document.getElementById(`pm${id}`)?.remove(); saveAll(); }
 
 // ===== localStorage =====
-const STORAGE_KEY = 'naimol_result_data';
+const STORAGE_KEY = 'naimol_result_data_v2';
 
 function saveAll() {
   const data = {};
-  document.querySelectorAll('[data-save]').forEach(el => {
-    data[el.id] = el.value;
-  });
-  // PM items
+  document.querySelectorAll('[data-save]').forEach(el => { data[el.id] = el.value; });
   const pms = [];
   document.querySelectorAll('.pm-item').forEach(item => {
     const inputs = item.querySelectorAll('input');
@@ -277,14 +461,13 @@ function loadSaved() {
     document.querySelectorAll('[data-save]').forEach(el => {
       if (data[el.id] !== undefined) el.value = data[el.id];
     });
-    if (data._pm) {
+    if (data._pm && data._pm.length) {
       data._pm.forEach(pm => addPM(pm.name, pm.slug, pm.match));
     }
   } catch (e) {}
 }
 loadSaved();
 
-// Auto-save on input
 document.addEventListener('input', (e) => {
   if (e.target.matches('[data-save], .pm-item input')) saveAll();
 });
@@ -294,14 +477,13 @@ function generate() {
   const title = document.getElementById('eventTitle').value.trim();
   const slug = document.getElementById('eventSlug').value.trim();
   const ninjaId = document.getElementById('ninjaId').value.trim();
-  const ninjaLabel = document.getElementById('ninjaLabel').value.trim();
   const galleryUrl = document.getElementById('galleryUrl').value.trim();
   const galleryThumb = document.getElementById('galleryThumb').value.trim();
   const galleryTitle = document.getElementById('galleryTitle').value.trim();
 
   if (!title) { showStatus('error', '大会正式名を入力してください'); return; }
+  if (!slug) { showStatus('error', '大会スラッグを入力してください'); return; }
 
-  // Teams
   const teams = [];
   for (let i = 0; i < 4; i++) {
     teams.push({
@@ -312,7 +494,6 @@ function generate() {
     });
   }
 
-  // PM
   const pms = [];
   document.querySelectorAll('.pm-item').forEach(item => {
     const inputs = item.querySelectorAll('input');
@@ -320,12 +501,10 @@ function generate() {
     if (name) pms.push({ name, slug: inputs[1].value.trim(), match: inputs[2].value.trim() });
   });
 
-  // Build HTML parts
   const podiumHTML = buildPodium(teams, slug);
   const perfectHTML = buildPerfect(pms, slug);
-  const fullHTML = buildFull(title, podiumHTML, ninjaId, ninjaLabel, perfectHTML, galleryUrl, galleryThumb, galleryTitle);
+  const fullHTML = buildFull(title, podiumHTML, ninjaId, perfectHTML, galleryUrl, galleryThumb, galleryTitle);
 
-  // Output
   document.getElementById('codeAll').textContent = fullHTML;
   document.getElementById('codePodium').textContent = podiumHTML;
   document.getElementById('codePerfect').textContent = perfectHTML;
@@ -341,12 +520,8 @@ function buildPodium(teams, eventSlug) {
   let items = '';
   teams.forEach(t => {
     if (!t.name) return;
-    const photoTag = t.photo
-      ? `<img decoding="async" src="${t.photo}" alt="${t.name}の写真" onclick="openModal(this)">`
-      : '';
-    const nameTag = t.slug
-      ? `<a href="${teamBase}/${t.slug}/" class="team-link">${t.name}</a>`
-      : t.name;
+    const photoTag = t.photo ? `<img decoding="async" src="${t.photo}" alt="${t.name}の写真" onclick="openModal(this)">` : '';
+    const nameTag = t.slug ? `<a href="${teamBase}/${t.slug}/" class="team-link">${t.name}</a>` : t.name;
     items += `
     <div class="podium-item ${t.cls}">
       <div class="rank-icon">${t.medal}</div>
@@ -367,7 +542,6 @@ function buildPodium(teams, eventSlug) {
   </div>
 </div>
 
-<!-- モーダル -->
 <div id="photoModal" class="photo-modal" onclick="closeModal()">
   <span class="photo-modal-close" onclick="closeModal()">&times;</span>
   <img class="photo-modal-content" id="modalImg" alt="">
@@ -394,12 +568,12 @@ function buildPodium(teams, eventSlug) {
 .photo-modal-content{max-width:90vw;max-height:80vh;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.3)}
 .photo-modal-close{position:absolute;top:20px;right:30px;color:#fff;font-size:2rem;font-weight:bold;cursor:pointer;z-index:10000;text-shadow:0 2px 8px #000}
 @media(min-width:769px){
-  .podium-list{align-items:flex-start!important;margin-left:0!important;margin-right:auto!important}
-  .podium-item{min-height:84px!important;padding-top:0.6rem!important;padding-bottom:0.6rem!important;margin-left:0!important;margin-right:auto!important;text-align:left!important}
-  .podium-photo{width:84px!important;height:84px!important;border-radius:10px!important}
-  .rank-icon{font-size:1.65rem!important}
-  .position{font-size:1.2rem!important}
-  .team-name{font-size:1.3rem!important}
+.podium-list{align-items:flex-start!important;margin-left:0!important;margin-right:auto!important}
+.podium-item{min-height:84px!important;padding-top:0.6rem!important;padding-bottom:0.6rem!important;margin-left:0!important;margin-right:auto!important;text-align:left!important}
+.podium-photo{width:84px!important;height:84px!important;border-radius:10px!important}
+.rank-icon{font-size:1.65rem!important}
+.position{font-size:1.2rem!important}
+.team-name{font-size:1.3rem!important}
 }
 </style>
 
@@ -445,37 +619,25 @@ function buildPerfect(pms, eventSlug) {
 a.perfect-team-link:hover{color:#3498db;text-decoration:underline}
 .perfect-target{color:#888;font-size:1rem;margin-left:1.2rem;flex-shrink:0;white-space:nowrap}
 @media(min-width:769px){
-  .perfect-molkky-teams,.perfect-teams-list{margin-left:0!important;margin-right:auto!important;align-items:flex-start!important;text-align:left!important}
+.perfect-molkky-teams,.perfect-teams-list{margin-left:0!important;margin-right:auto!important;align-items:flex-start!important;text-align:left!important}
 }
 @media(max-width:768px){
-  .perfect-teams-list{max-width:99vw}
-  .perfect-team-item{padding:0.7rem 0.7rem}
-  .perfect-icon{font-size:1rem;margin-right:0.7rem}
-  .perfect-team-link{font-size:0.98rem;line-height:1.2}
-  .perfect-target{font-size:0.93rem;margin-left:0.7rem}
+.perfect-teams-list{max-width:99vw}
+.perfect-team-item{padding:0.7rem 0.7rem}
+.perfect-icon{font-size:1rem;margin-right:0.7rem}
+.perfect-team-link{font-size:0.98rem;line-height:1.2}
+.perfect-target{font-size:0.93rem;margin-left:0.7rem}
 }
 </style>`;
 }
 
-function buildFull(title, podiumHTML, ninjaId, ninjaLabel, perfectHTML, galleryUrl, galleryThumb, galleryTitle) {
+function buildFull(title, podiumHTML, ninjaId, perfectHTML, galleryUrl, galleryThumb, galleryTitle) {
   let html = `<p>${title}の大会結果をお知らせいたします。</p>\n\n`;
   html += podiumHTML + '\n\n';
-
-  // Ninja Tables
   html += `<h3 class="wp-block-heading">📊 全順位表</h3>\n\n`;
   html += `<p>大会参加チーム全ての順位・成績を掲載しています。</p>\n\n`;
-  if (ninjaId) {
-    html += `[ninja_tables id="${ninjaId}"]\n\n`;
-  } else {
-    html += `<!-- Ninja Tables ID未設定。CSV import後にショートコードを挿入: [ninja_tables id="XXX"] -->\n\n`;
-  }
-
-  // Perfect Molkky
-  if (perfectHTML) {
-    html += perfectHTML + '\n\n';
-  }
-
-  // Gallery
+  html += ninjaId ? `[ninja_tables id="${ninjaId}"]\n\n` : `<!-- Ninja Tables ID未設定 [ninja_tables id="XXX"] -->\n\n`;
+  if (perfectHTML) html += perfectHTML + '\n\n';
   if (galleryUrl) {
     html += `<div class="swell-block-postLink">
   <div class="p-blogCard -external" data-type="type3" data-onclick="clickLink">
@@ -494,39 +656,34 @@ function buildFull(title, podiumHTML, ninjaId, ninjaLabel, perfectHTML, galleryU
   </div>
 </div>\n`;
   }
-
   return html;
 }
 
-// ===== Tab Switching =====
+// ===== Tabs / Copy / Status =====
 let currentTab = 'all';
 function switchTab(tab, btn) {
   currentTab = tab;
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  ['all', 'podium', 'perfect', 'preview'].forEach(t => {
+  ['all','podium','perfect','preview'].forEach(t => {
     const el = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
     if (el) el.style.display = t === tab ? 'block' : 'none';
   });
   document.getElementById('copyBtn').style.display = tab === 'preview' ? 'none' : 'block';
 }
 
-// ===== Copy =====
 function copyOutput() {
   let text = '';
   if (currentTab === 'all') text = document.getElementById('codeAll').textContent;
   else if (currentTab === 'podium') text = document.getElementById('codePodium').textContent;
   else if (currentTab === 'perfect') text = document.getElementById('codePerfect').textContent;
-
   navigator.clipboard.writeText(text).then(() => {
     const btn = document.getElementById('copyBtn');
-    btn.textContent = 'コピー完了！';
-    btn.classList.add('copied');
+    btn.textContent = 'コピー完了！'; btn.classList.add('copied');
     setTimeout(() => { btn.textContent = 'コピー'; btn.classList.remove('copied'); }, 2000);
   });
 }
 
-// ===== Status =====
 function showStatus(type, msg) {
   const el = document.getElementById('status');
   el.className = `status show ${type}`;
@@ -534,6 +691,5 @@ function showStatus(type, msg) {
   if (type === 'success') setTimeout(() => el.classList.remove('show'), 3000);
 }
 </script>
-
 </body>
 </html>
