@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ナイモル結果 — 写真管理</title>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --card: #12121a;
+  --border: #2a2a3a;
+  --text: #e0e0e0;
+  --text-dim: #888;
+  --accent: #6366f1;
+  --gold: #ffd700;
+  --silver: #c0c0c0;
+  --bronze: #cd7f32;
+  --success: #22c55e;
+  --error: #ef4444;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 1.5rem;
+}
+h1 {
+  font-size: 1.3rem;
+  margin-bottom: 0.3rem;
+}
+.subtitle {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+/* Auth section */
+.auth-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+.auth-section.connected {
+  border-color: var(--success);
+}
+.auth-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.auth-row input {
+  flex: 1;
+  min-width: 120px;
+  padding: 0.5rem 0.8rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.85rem;
+}
+.auth-status {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-top: 0.5rem;
+}
+.auth-status.ok { color: var(--success); }
+.auth-status.err { color: var(--error); }
+
+/* Page selector */
+.page-selector {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+.page-selector select {
+  width: 100%;
+  padding: 0.5rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+.page-selector label {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+/* Photo grid */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.photo-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+}
+.photo-card.gold { border-top: 3px solid var(--gold); }
+.photo-card.silver { border-top: 3px solid var(--silver); }
+.photo-card.bronze { border-top: 3px solid var(--bronze); }
+
+.rank-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.3rem;
+}
+.team-name {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.8rem;
+}
+
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  padding: 1.5rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  overflow: hidden;
+}
+.drop-zone:hover, .drop-zone.dragover {
+  border-color: var(--accent);
+  background: rgba(99,102,241,0.05);
+}
+.drop-zone input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.drop-zone .placeholder {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+.drop-zone .placeholder-icon {
+  font-size: 2rem;
+  margin-bottom: 0.3rem;
+}
+.drop-zone img {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+.photo-status {
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  color: var(--text-dim);
+}
+.photo-status.uploaded { color: var(--success); }
+.photo-status.uploading { color: var(--accent); }
+.photo-status.error { color: var(--error); }
+
+/* Buttons */
+.btn {
+  padding: 0.6rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover:not(:disabled) {
+  background: #4f46e5;
+}
+.btn-secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--text-dim);
+}
+.actions {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+/* Log */
+.log-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+}
+.log-section h3 {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-bottom: 0.5rem;
+}
+#log {
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  max-height: 200px;
+  overflow-y: auto;
+  color: var(--text-dim);
+}
+#log .ok { color: var(--success); }
+#log .err { color: var(--error); }
+#log .info { color: var(--accent); }
+
+.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<h1>ナイモル結果 — 写真管理</h1>
+<p class="subtitle">上位チームの写真をアップロードしてWPページに反映</p>
+
+<!-- Auth -->
+<div class="auth-section" id="authSection">
+  <div class="auth-row">
+    <input type="text" id="wpUser" placeholder="WP ユーザー名">
+    <input type="password" id="wpPass" placeholder="アプリケーションパスワード">
+    <button class="btn btn-primary" id="connectBtn" onclick="connect()">接続</button>
+  </div>
+  <div class="auth-status" id="authStatus"></div>
+</div>
+
+<!-- Page selector -->
+<div class="page-selector hidden" id="pageSelectorSection">
+  <label>結果ページ</label>
+  <select id="pageSelect" onchange="loadPage()">
+    <option value="">選択してください</option>
+  </select>
+</div>
+
+<!-- Photo grid -->
+<div class="photo-grid hidden" id="photoGrid"></div>
+
+<!-- Actions -->
+<div class="actions hidden" id="actionsSection">
+  <button class="btn btn-primary" id="uploadAllBtn" onclick="uploadAll()" disabled>
+    写真をアップロード & ページ更新
+  </button>
+  <button class="btn btn-secondary" onclick="publishPage()">公開する</button>
+</div>
+
+<!-- Log -->
+<div class="log-section">
+  <h3>ログ</h3>
+  <div id="log"></div>
+</div>
+
+<script>
+const WP_SITE = 'https://molkky-hub.com';
+const NAIMOL_PARENT_ID = 484; // ナイモルジャパンのトップページ
+
+let wpAuth = '';
+let currentPage = null;
+let currentContent = '';
+let podiumTeams = []; // [{rank, cls, name, photoUrl, file, mediaId}]
+
+// -- Logging --
+function log(msg, cls = '') {
+  const el = document.getElementById('log');
+  const line = document.createElement('div');
+  line.className = cls;
+  line.textContent = `${new Date().toLocaleTimeString()} ${msg}`;
+  el.prepend(line);
+}
+
+// -- Auth --
+function connect() {
+  const user = document.getElementById('wpUser').value.trim();
+  const pass = document.getElementById('wpPass').value.trim();
+  if (!user || !pass) return;
+
+  wpAuth = btoa(`${user}:${pass}`);
+  localStorage.setItem('naimol_wp_auth', JSON.stringify({ user, pass }));
+
+  log('接続テスト中...', 'info');
+  fetch(`${WP_SITE}/wp-json/wp/v2/pages?per_page=1`, {
+    headers: { 'Authorization': `Basic ${wpAuth}` }
+  })
+    .then(r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    })
+    .then(() => {
+      document.getElementById('authStatus').textContent = '接続OK';
+      document.getElementById('authStatus').className = 'auth-status ok';
+      document.getElementById('authSection').classList.add('connected');
+      log('WP接続成功', 'ok');
+      loadResultPages();
+    })
+    .catch(e => {
+      document.getElementById('authStatus').textContent = `接続失敗: ${e.message}`;
+      document.getElementById('authStatus').className = 'auth-status err';
+      log(`接続失敗: ${e.message}`, 'err');
+    });
+}
+
+// -- Load result pages --
+async function loadResultPages() {
+  log('結果ページを検索中...', 'info');
+
+  // Get all naimol event pages (children of 484)
+  const eventPages = await wpFetch(`/wp-json/wp/v2/pages?parent=${NAIMOL_PARENT_ID}&per_page=50&orderby=date&order=desc`);
+  if (!eventPages) return;
+
+  // For each event, find result child pages
+  const select = document.getElementById('pageSelect');
+  select.innerHTML = '<option value="">選択してください</option>';
+
+  let found = 0;
+  for (const event of eventPages) {
+    const children = await wpFetch(`/wp-json/wp/v2/pages?parent=${event.id}&slug=result&per_page=5`);
+    if (children && children.length > 0) {
+      for (const child of children) {
+        const opt = document.createElement('option');
+        opt.value = child.id;
+        opt.textContent = `${event.title.rendered} — ${child.status === 'draft' ? '下書き' : '公開'}`;
+        opt.dataset.parentTitle = event.title.rendered;
+        select.appendChild(opt);
+        found++;
+      }
+    }
+  }
+
+  // Also search for any result pages more broadly
+  const resultPages = await wpFetch(`/wp-json/wp/v2/pages?slug=result&per_page=20&status=draft,publish`);
+  if (resultPages) {
+    for (const rp of resultPages) {
+      if (!select.querySelector(`option[value="${rp.id}"]`)) {
+        const opt = document.createElement('option');
+        opt.value = rp.id;
+        opt.textContent = `${rp.title.rendered} (ID: ${rp.id}) — ${rp.status === 'draft' ? '下書き' : '公開'}`;
+        select.appendChild(opt);
+        found++;
+      }
+    }
+  }
+
+  log(`${found}件の結果ページを発見`, 'ok');
+  document.getElementById('pageSelectorSection').classList.remove('hidden');
+}
+
+// -- Load specific page --
+async function loadPage() {
+  const pageId = document.getElementById('pageSelect').value;
+  if (!pageId) return;
+
+  log(`ページ ${pageId} を読み込み中...`, 'info');
+  const page = await wpFetch(`/wp-json/wp/v2/pages/${pageId}`);
+  if (!page) return;
+
+  currentPage = page;
+  currentContent = page.content.rendered;
+  log(`ページ読み込み完了: ${page.title.rendered} (${currentContent.length} chars)`, 'ok');
+
+  parsePodium();
+  renderPhotoGrid();
+
+  document.getElementById('photoGrid').classList.remove('hidden');
+  document.getElementById('actionsSection').classList.remove('hidden');
+}
+
+// -- Parse podium teams from HTML --
+function parsePodium() {
+  podiumTeams = [];
+  const labels = { gold: '優勝', silver: '準優勝', bronze: '3位' };
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(currentContent, 'text/html');
+
+  doc.querySelectorAll('.podium-item').forEach(item => {
+    const cls = ['gold', 'silver', 'bronze'].find(c => item.classList.contains(c)) || 'bronze';
+    const nameEl = item.querySelector('.team-name');
+    const name = nameEl ? nameEl.textContent.trim() : '不明';
+    const posEl = item.querySelector('.position');
+    const rank = posEl ? posEl.textContent.trim() : labels[cls];
+
+    // Check if already has a photo
+    const img = item.querySelector('.podium-photo img');
+    const photoUrl = img ? img.src : '';
+
+    podiumTeams.push({ rank, cls, name, photoUrl, file: null, mediaId: null, preview: '' });
+  });
+
+  log(`表彰台チーム: ${podiumTeams.map(t => t.name).join(', ')}`, 'info');
+}
+
+// -- Render photo grid --
+function renderPhotoGrid() {
+  const grid = document.getElementById('photoGrid');
+  grid.innerHTML = '';
+
+  podiumTeams.forEach((team, i) => {
+    const card = document.createElement('div');
+    card.className = `photo-card ${team.cls}`;
+    card.innerHTML = `
+      <div class="rank-label">${team.rank}</div>
+      <div class="team-name">${team.name}</div>
+      <div class="drop-zone" id="drop-${i}"
+        ondragover="handleDragOver(event, ${i})"
+        ondragleave="handleDragLeave(event, ${i})"
+        ondrop="handleDrop(event, ${i})">
+        <input type="file" accept="image/*" onchange="handleFileSelect(event, ${i})">
+        ${team.photoUrl
+          ? `<img src="${team.photoUrl}" alt="${team.name}">`
+          : team.preview
+            ? `<img src="${team.preview}" alt="${team.name}">`
+            : `<div class="placeholder"><div class="placeholder-icon">📷</div>写真をドラッグ or クリック</div>`
+        }
+      </div>
+      <div class="photo-status" id="status-${i}">
+        ${team.photoUrl ? '既存の写真あり' : '未選択'}
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  checkUploadReady();
+}
+
+// -- Drag & Drop handlers --
+function handleDragOver(e, idx) {
+  e.preventDefault();
+  document.getElementById(`drop-${idx}`).classList.add('dragover');
+}
+function handleDragLeave(e, idx) {
+  document.getElementById(`drop-${idx}`).classList.remove('dragover');
+}
+function handleDrop(e, idx) {
+  e.preventDefault();
+  document.getElementById(`drop-${idx}`).classList.remove('dragover');
+  const files = e.dataTransfer.files;
+  if (files.length > 0) setFile(idx, files[0]);
+}
+function handleFileSelect(e, idx) {
+  if (e.target.files.length > 0) setFile(idx, e.target.files[0]);
+}
+
+function setFile(idx, file) {
+  if (!file.type.startsWith('image/')) {
+    log(`${file.name} は画像ファイルではありません`, 'err');
+    return;
+  }
+  podiumTeams[idx].file = file;
+  podiumTeams[idx].mediaId = null;
+
+  // Generate preview
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    podiumTeams[idx].preview = e.target.result;
+    renderPhotoGrid();
+    document.getElementById(`status-${idx}`).textContent = `選択: ${file.name}`;
+  };
+  reader.readAsDataURL(file);
+
+  log(`${podiumTeams[idx].name}: ${file.name} を選択`, 'info');
+  checkUploadReady();
+}
+
+function checkUploadReady() {
+  const hasNewFiles = podiumTeams.some(t => t.file);
+  document.getElementById('uploadAllBtn').disabled = !hasNewFiles;
+}
+
+// -- Upload all photos and update page --
+async function uploadAll() {
+  const btn = document.getElementById('uploadAllBtn');
+  btn.disabled = true;
+  btn.textContent = 'アップロード中...';
+
+  try {
+    // Upload each photo
+    for (let i = 0; i < podiumTeams.length; i++) {
+      const team = podiumTeams[i];
+      if (!team.file) continue;
+
+      const statusEl = document.getElementById(`status-${i}`);
+      statusEl.textContent = 'アップロード中...';
+      statusEl.className = 'photo-status uploading';
+
+      log(`${team.name}: アップロード中...`, 'info');
+
+      try {
+        const formData = new FormData();
+        formData.append('file', team.file, team.file.name);
+        formData.append('title', `naimol-${team.cls}-${team.name}`);
+        formData.append('alt_text', `${team.rank} ${team.name}`);
+
+        const res = await fetch(`${WP_SITE}/wp-json/wp/v2/media`, {
+          method: 'POST',
+          headers: { 'Authorization': `Basic ${wpAuth}` },
+          body: formData
+        });
+
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`HTTP ${res.status}: ${text.substring(0, 100)}`);
+        }
+
+        const media = await res.json();
+        team.mediaId = media.id;
+        team.photoUrl = media.source_url;
+        team.file = null;
+
+        statusEl.textContent = `アップロード完了 (ID: ${media.id})`;
+        statusEl.className = 'photo-status uploaded';
+        log(`${team.name}: アップロード成功 → ${media.source_url}`, 'ok');
+      } catch (e) {
+        statusEl.textContent = `エラー: ${e.message}`;
+        statusEl.className = 'photo-status error';
+        log(`${team.name}: アップロード失敗 — ${e.message}`, 'err');
+      }
+    }
+
+    // Update page content with new photo URLs
+    await updatePageContent();
+
+    renderPhotoGrid();
+  } finally {
+    btn.textContent = '写真をアップロード & ページ更新';
+    checkUploadReady();
+  }
+}
+
+// -- Update WP page content with new photos --
+async function updatePageContent() {
+  if (!currentPage) return;
+
+  log('ページコンテンツを更新中...', 'info');
+
+  // Re-fetch the raw content (not rendered) to preserve WP block comments
+  const page = await wpFetch(`/wp-json/wp/v2/pages/${currentPage.id}?context=edit`);
+  if (!page) return;
+
+  let content = page.content.raw;
+  let updated = 0;
+
+  // String-based replacement: find each podium-item block, identify by team name, replace photo
+  // Structure: <div class="podium-item ...">...<div class="podium-photo" ...>...</div>...<team-name>...</div>
+  content = content.replace(
+    /(<div class="podium-item \w+">\s*<div class="rank-icon">[^<]*<\/div>\s*)<div class="podium-photo"[^>]*>(?:<img[^>]*\/?>|[^<]*)<\/div>([\s\S]*?<div class="team-name">[\s\S]*?<\/div>)/g,
+    (match, before, after) => {
+      for (const team of podiumTeams) {
+        if (!team.photoUrl) continue;
+        if (after.includes(team.name)) {
+          updated++;
+          log(`${team.name}: 写真を更新`, 'ok');
+          return `${before}<div class="podium-photo"><img src="${team.photoUrl}" alt="${team.rank} ${team.name}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;"></div>${after}`;
+        }
+      }
+      return match;
+    }
+  );
+
+  if (updated === 0) {
+    log('写真の置換パターンに一致するものがありませんでした', 'err');
+    return;
+  }
+
+  // POST to update (workaround for PUT being blocked by SiteGuard WAF)
+  try {
+    const res = await fetch(`${WP_SITE}/wp-json/wp/v2/pages/${currentPage.id}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${wpAuth}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ content })
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`HTTP ${res.status}: ${text.substring(0, 200)}`);
+    }
+
+    const result = await res.json();
+    currentContent = result.content.rendered;
+    log(`ページ更新完了 — ${updated}件の写真を反映 (ID: ${result.id})`, 'ok');
+  } catch (e) {
+    log(`ページ更新失敗: ${e.message}`, 'err');
+  }
+}
+
+// -- Publish page --
+async function publishPage() {
+  if (!currentPage) return;
+
+  if (!confirm('このページを公開しますか？')) return;
+
+  log('ページを公開中...', 'info');
+  try {
+    const res = await fetch(`${WP_SITE}/wp-json/wp/v2/pages/${currentPage.id}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${wpAuth}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ status: 'publish' })
+    });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const updated = await res.json();
+    log(`公開完了: ${updated.link}`, 'ok');
+    alert(`公開しました！\n${updated.link}`);
+
+    // Reload page list to update status
+    loadResultPages();
+  } catch (e) {
+    log(`公開失敗: ${e.message}`, 'err');
+  }
+}
+
+// -- Helper: WP API fetch --
+async function wpFetch(endpoint) {
+  try {
+    const res = await fetch(`${WP_SITE}${endpoint}`, {
+      headers: { 'Authorization': `Basic ${wpAuth}` }
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (e) {
+    log(`API エラー (${endpoint}): ${e.message}`, 'err');
+    return null;
+  }
+}
+
+// -- Init: restore saved credentials --
+(function init() {
+  const saved = localStorage.getItem('naimol_wp_auth');
+  if (saved) {
+    try {
+      const { user, pass } = JSON.parse(saved);
+      document.getElementById('wpUser').value = user;
+      document.getElementById('wpPass').value = pass;
+      log('保存済みの認証情報を復元', 'info');
+    } catch (e) {}
+  }
+})();
+</script>
+</body>
+</html>
