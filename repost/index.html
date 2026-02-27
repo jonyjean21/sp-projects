@@ -203,39 +203,46 @@ tweetInput.addEventListener('input', async () => {
   if (urlMatch && !tweetInput._fetching) {
     const username = urlMatch[2];
     const tweetId = urlMatch[3];
-    const tweetUrl = val.match(/https?:\/\/(x\.com|twitter\.com)\/\w+\/status\/\d+/)[0];
     const fetchStatus = document.getElementById('fetchStatus');
     fetchStatus.style.display = 'block';
     fetchStatus.textContent = 'ポストを取得中...';
     tweetInput._fetching = true;
     let found = null;
+    let foundAuthor = null;
 
-    // Method 1: oEmbed API (most reliable for single tweets)
+    // Method 1: FxTwitter API (CORS-friendly, most reliable)
     if (!found) {
       try {
-        const oembedUrl = `https://publish.twitter.com/oembed?url=${encodeURIComponent(tweetUrl)}&omit_script=true&lang=ja`;
-        const resp = await fetch(oembedUrl);
+        const resp = await fetch(`https://api.fxtwitter.com/status/${tweetId}`, { signal: AbortSignal.timeout(8000) });
         if (resp.ok) {
           const data = await resp.json();
-          if (data.html) {
-            // Parse tweet text from the HTML blockquote
-            const doc = new DOMParser().parseFromString(data.html, 'text/html');
-            const p = doc.querySelector('blockquote p');
-            if (p) {
-              found = p.textContent.trim();
-              if (!authorInput.value && data.author_name) authorInput.value = data.author_name;
-            }
+          if (data.tweet?.text) {
+            found = data.tweet.text;
+            foundAuthor = data.tweet.author?.name || data.tweet.author?.screen_name;
           }
         }
-      } catch (e) { /* try next method */ }
+      } catch (e) { /* try next */ }
     }
 
-    // Method 2: Syndication timeline (fallback)
+    // Method 2: VxTwitter API (backup)
     if (!found) {
       try {
-        const resp = await fetch(`https://syndication.twitter.com/srv/timeline-profile/screen-name/${username}`);
+        const resp = await fetch(`https://api.vxtwitter.com/Twitter/status/${tweetId}`, { signal: AbortSignal.timeout(8000) });
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data.text) {
+            found = data.text;
+            foundAuthor = data.user_name;
+          }
+        }
+      } catch (e) { /* try next */ }
+    }
+
+    // Method 3: Syndication timeline (last resort)
+    if (!found) {
+      try {
+        const resp = await fetch(`https://syndication.twitter.com/srv/timeline-profile/screen-name/${username}`, { signal: AbortSignal.timeout(8000) });
         const html = await resp.text();
-        // Find tweet by ID proximity
         const idIdx = html.indexOf(tweetId);
         if (idIdx > -1) {
           const region = html.substring(Math.max(0, idIdx - 3000), Math.min(html.length, idIdx + 3000));
@@ -249,21 +256,20 @@ tweetInput.addEventListener('input', async () => {
 
     if (found && found.length > 5) {
       tweetInput.value = found;
-      if (!authorInput.value) authorInput.value = `@${username}`;
-      fetchStatus.textContent = `@${username} のポストを取得しました`;
+      if (!authorInput.value) authorInput.value = foundAuthor || `@${username}`;
+      fetchStatus.textContent = `${foundAuthor || '@' + username} のポストを取得しました ✓`;
       fetchStatus.style.color = '#2ea043';
       generateBtn.disabled = false;
     } else {
-      // Clear URL so user replaces with actual text
       tweetInput.value = '';
       tweetInput.placeholder = 'ポストの内容をここに貼り付けてください';
       if (!authorInput.value) authorInput.value = `@${username}`;
-      fetchStatus.innerHTML = '⚠️ ポストを自動取得できませんでした。<br>Xアプリで「ポストのテキストをコピー」してここに貼り付けてください';
+      fetchStatus.innerHTML = '⚠️ 自動取得できませんでした。ポスト内容を手動で貼り付けてください';
       fetchStatus.style.color = '#f85149';
       generateBtn.disabled = true;
     }
     tweetInput._fetching = false;
-    setTimeout(() => { fetchStatus.style.display = 'none'; fetchStatus.style.color = '#4a9eff'; }, 8000);
+    setTimeout(() => { fetchStatus.style.display = 'none'; fetchStatus.style.color = '#4a9eff'; }, 6000);
   }
 });
 
