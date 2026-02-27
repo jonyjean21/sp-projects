@@ -880,6 +880,10 @@ body {
 
       <div style="font-weight:700;color:var(--text);font-size:14px;margin:16px 0 8px">レシピを追加する</div>
       <div style="background:var(--bg-warm);border-radius:10px;padding:12px;margin-bottom:12px">
+        <div style="margin-bottom:6px"><strong>🔗 URLから取り込み</strong></div>
+        レシピサイトのURLを貼り付けると、AIがページを解析してレシピを自動抽出します。サムネイル画像も自動取得されます。
+      </div>
+      <div style="background:var(--bg-warm);border-radius:10px;padding:12px;margin-bottom:12px">
         <div style="margin-bottom:6px"><strong>📋 テキストから取り込み</strong></div>
         レシピサイトからテキストをコピペすると、AIが自動で「材料」「手順」に整理してくれます。
       </div>
@@ -892,6 +896,13 @@ body {
         自分でレシピ名・材料・手順を入力できます。
       </div>
 
+      <div style="font-weight:700;color:var(--text);font-size:14px;margin:16px 0 8px">レシピ詳細で使える機能</div>
+      <div style="background:var(--accent-light);border-radius:10px;padding:12px;margin-bottom:12px">
+        <strong>分量調整</strong> — ×0.5 / ×1 / ×2 / ×3 のボタンで人数分の分量に自動換算<br>
+        <strong>共有</strong> — レシピをテキストで共有（LINE等に送れます）<br>
+        <strong>タイマー</strong> — 手順内の「○分」をタップするとクイックタイマーが起動
+      </div>
+
       <div style="font-weight:700;color:var(--text);font-size:14px;margin:16px 0 8px">フォルダで整理する</div>
       <p>「フォルダ」タブでフォルダを作成できます。1つのレシピを複数フォルダに入れることも可能です。</p>
 
@@ -899,10 +910,30 @@ body {
       <p>レシピ詳細画面の「&#9734;」をタップするとお気に入りに登録。ホームの上部に表示されます。</p>
 
       <div style="font-weight:700;color:var(--text);font-size:14px;margin:16px 0 8px">家族と共有する</div>
-      <p>「設定」タブの「招待コード」を家族に教えると、同じレシピを共有できます。追加・編集は全員がリアルタイムで見れます。</p>
+      <div style="background:var(--green-light);border-radius:10px;padding:12px;margin-bottom:8px">
+        <strong>初回セットアップ（最初の人）</strong>
+        <ol style="margin:6px 0 0 18px">
+          <li>Googleアカウントでログイン</li>
+          <li>「新しく始める」を選択</li>
+          <li>設定タブに表示される<strong>招待コード（6文字）</strong>を家族に教える</li>
+        </ol>
+      </div>
+      <div style="background:var(--green-light);border-radius:10px;padding:12px;margin-bottom:8px">
+        <strong>家族が参加するとき</strong>
+        <ol style="margin:6px 0 0 18px">
+          <li>共有されたURLを開く</li>
+          <li>自分のGoogleアカウントでログイン</li>
+          <li>「コードで参加する」に招待コードを入力</li>
+          <li>同じ家族グループに参加完了！</li>
+        </ol>
+      </div>
+      <p>参加後は追加・編集がリアルタイムで全員に反映されます。</p>
 
       <div style="font-weight:700;color:var(--text);font-size:14px;margin:16px 0 8px">検索する</div>
       <p>ホーム画面上部の検索バーで、レシピ名・材料名で検索できます。</p>
+
+      <div style="font-weight:700;color:var(--text);font-size:14px;margin:16px 0 8px">操作のヒント</div>
+      <p>モーダル画面は上のバーを下にスワイプして閉じることもできます。</p>
     </div>
     <button class="form-submit" onclick="closeModal('guideModal')" style="margin-top:16px">閉じる</button>
   </div>
