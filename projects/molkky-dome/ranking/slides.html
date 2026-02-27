@@ -39,15 +39,18 @@ body {
 .slides {
   width: 100vw;
   height: 100vh;
-  overflow-y: scroll;
-  scroll-snap-type: y mandatory;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
+  display: flex;
 }
 
 /* ===== Slide Base ===== */
 .slide {
   width: 100vw;
+  min-width: 100vw;
   height: 100vh;
   scroll-snap-align: start;
   scroll-snap-stop: always;
@@ -57,10 +60,11 @@ body {
   position: relative;
   counter-increment: slide-counter;
   overflow: hidden;
-  padding: 3rem 2rem;
+  padding: 3rem 4rem;
+  flex-shrink: 0;
 }
 .slide::after {
-  content: counter(slide-counter);
+  content: counter(slide-counter) " / 20";
   position: absolute;
   bottom: 1.5rem;
   right: 2rem;
@@ -74,7 +78,7 @@ body {
 
 /* ===== Slide Inner ===== */
 .slide__inner {
-  max-width: 900px;
+  max-width: 1100px;
   width: 100%;
   text-align: center;
 }
@@ -1065,9 +1069,93 @@ body {
   justify-content: flex-start;
 }
 
-/* ===== Mobile Responsive ===== */
-@media (max-width: 768px) {
+/* ===== Landscape Rotation Hint Overlay (mobile portrait) ===== */
+.rotate-hint {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(26, 54, 93, 0.92);
+  color: #fff;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  font-family: 'Noto Sans JP', sans-serif;
+  text-align: center;
+  padding: 2rem;
+}
+.rotate-hint__icon {
+  width: 64px;
+  height: 64px;
+  animation: rotate-hint-pulse 2s ease-in-out infinite;
+}
+@keyframes rotate-hint-pulse {
+  0%, 100% { opacity: 0.6; transform: rotate(0deg); }
+  50% { opacity: 1; transform: rotate(-90deg); }
+}
+.rotate-hint__text {
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.6;
+  max-width: 280px;
+}
+.rotate-hint__dismiss {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.5);
+  margin-top: 0.5rem;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 0.4rem 1.2rem;
+  border-radius: 2rem;
+  background: none;
+  font-family: inherit;
+}
+.rotate-hint__dismiss:hover { background: rgba(255,255,255,0.1); }
+
+/* Show rotate hint on mobile portrait */
+@media (orientation: portrait) and (max-width: 768px) {
+  .rotate-hint { display: flex; }
+  .rotate-hint.dismissed { display: none; }
+}
+
+/* ===== Mobile Landscape (small screens in landscape) ===== */
+@media (orientation: landscape) and (max-height: 500px) {
+  .slide { padding: 1.5rem 3rem; }
+  .slide__inner { max-width: 90vw; }
+  .t-title { font-size: clamp(1.6rem, 4vw, 2.4rem); }
+  .t-heading { font-size: clamp(1.2rem, 3vw, 1.8rem); }
+  .t-body { font-size: clamp(0.85rem, 1.8vw, 1rem); }
+  .t-small { font-size: clamp(0.75rem, 1.4vw, 0.9rem); }
+  .stats-grid { gap: 0.8rem; }
+  .stat-ring { width: 60px; height: 60px; }
+  .stat-number { font-size: clamp(1.2rem, 2.5vw, 1.6rem); }
+  .stat-label { font-size: clamp(0.7rem, 1.3vw, 0.85rem); }
+  .stat-card { padding: 1rem 0.8rem; }
+  .season-card { padding: 1rem 0.8rem; }
+  .sim-card__body { padding: 0.5rem 0.8rem; }
+  .flow-step { padding: 0.4rem 0; }
+  .accent-bar { margin: 0.6rem auto; }
+  .info-box { padding: 0.6rem 1rem; margin-top: 0.8rem; }
+  .cover-badge { margin-bottom: 0.8rem; }
+  .slide-icon { width: 36px; height: 36px; }
+  .corner-accent { width: 30px; height: 30px; }
+  .divider-number { font-size: clamp(4rem, 12vw, 8rem); }
+  .s-table td { padding: 0.5rem 0.8rem; }
+  .s-table th { padding: 0.5rem 0.8rem; }
+  .checklist li { padding: 0.5rem 0; font-size: clamp(0.8rem, 1.6vw, 0.95rem); }
+  .overview-card { padding: 0.8rem 1.5rem; }
+  .final-quals { gap: 0.8rem; }
+  .final-qual { padding: 1rem 0.8rem; }
+  .timeline__item { padding: 0.3rem 0 0.3rem 1.5rem; }
+  .match-card { padding: 1.2rem 1rem; }
+  .match-card__format { font-size: clamp(1.5rem, 3vw, 2.2rem); }
+}
+
+/* ===== Mobile Portrait Responsive (when hint is dismissed) ===== */
+@media (orientation: portrait) and (max-width: 768px) {
   .slide { padding: 2rem 1.5rem; }
+  .slide__inner { max-width: 100%; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
   .cards-row { grid-template-columns: 1fr; }
   .season-grid { grid-template-columns: repeat(2, 1fr); }
@@ -1081,9 +1169,11 @@ body {
   .slide-icon { width: 40px; height: 40px; }
   .stat-ring { width: 72px; height: 72px; }
   .corner-accent { width: 40px; height: 40px; }
+  .t-title { font-size: clamp(1.6rem, 5vw, 2.4rem); }
+  .t-heading { font-size: clamp(1.2rem, 3.5vw, 1.8rem); }
 }
 
-@media (max-width: 480px) {
+@media (orientation: portrait) and (max-width: 480px) {
   .slide { padding: 1.5rem 1rem; }
   .season-grid { grid-template-columns: 1fr; }
 }
@@ -1091,15 +1181,18 @@ body {
 /* ===== Print / PDF ===== */
 @media print {
   html, body, .slides { height: auto; overflow: visible; }
-  .slides { scroll-snap-type: none; }
+  .slides { scroll-snap-type: none; display: block; }
   .slide {
     scroll-snap-align: none;
     page-break-after: always;
     page-break-inside: avoid;
     height: 100vh;
     min-height: 100vh;
+    min-width: auto;
+    width: 100%;
   }
   .slide::after { display: none; }
+  .rotate-hint { display: none !important; }
 }
 </style>
 </head>
@@ -1928,6 +2021,34 @@ body {
   </section>
 
 </div><!-- /.slides -->
+
+<!-- Rotate hint overlay for mobile portrait -->
+<div class="rotate-hint" id="rotateHint">
+  <svg class="rotate-hint__icon" viewBox="0 0 64 64" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="16" y="4" width="32" height="56" rx="4"/>
+    <path d="M16 12h32M16 52h32"/>
+    <circle cx="32" cy="56" r="2" fill="#fff"/>
+    <path d="M52 28l8-4v16l-8-4" stroke="var(--orange)" stroke-width="2.5"/>
+  </svg>
+  <div class="rotate-hint__text">横向きでの閲覧を推奨します<br>スマホを横に回転してください</div>
+  <button class="rotate-hint__dismiss" onclick="document.getElementById('rotateHint').classList.add('dismissed')">このまま閲覧する</button>
+</div>
+
+<script>
+// Keyboard navigation for horizontal slides
+document.addEventListener('keydown', function(e) {
+  var slides = document.querySelector('.slides');
+  if (!slides) return;
+  var w = window.innerWidth;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    slides.scrollBy({ left: w, behavior: 'smooth' });
+  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    slides.scrollBy({ left: -w, behavior: 'smooth' });
+  }
+});
+</script>
 
 </body>
 </html>
