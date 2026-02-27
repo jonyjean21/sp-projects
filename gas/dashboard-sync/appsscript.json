@@ -18,7 +18,8 @@
     "https://www.googleapis.com/auth/script.external_request",
     "https://www.googleapis.com/auth/webmasters.readonly",
     "https://www.googleapis.com/auth/analytics.readonly",
-    "https://www.googleapis.com/auth/analytics.edit"
+    "https://www.googleapis.com/auth/analytics.edit",
+    "https://www.googleapis.com/auth/script.scriptapp"
   ],
   "webapp": {
     "executeAs": "USER_DEPLOYING",
