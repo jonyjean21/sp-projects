@@ -12,23 +12,26 @@
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { height: 100%; overflow: hidden; }
 :root {
-  --navy: #1a365d;
-  --gray: #4a5568;
+  --navy: #7eb8da;
+  --gray: #c0c8d4;
   --orange: #ed8936;
-  --bg-white: #ffffff;
-  --bg-light: #f7fafc;
+  --bg-white: #1a1a2e;
+  --bg-light: #0f0f1a;
   --gold: #d69e2e;
-  --green: #38a169;
-  --red: #e53e3e;
-  --blue-light: #ebf8ff;
-  --green-light: #f0fff4;
-  --orange-light: #fffaf0;
-  --purple: #805ad5;
+  --green: #48bb78;
+  --red: #fc8181;
+  --blue-light: rgba(49,130,206,0.12);
+  --green-light: rgba(56,161,105,0.12);
+  --orange-light: rgba(237,137,54,0.12);
+  --purple: #b794f4;
+  --text: #e0e6ed;
+  --border: #2d2d44;
   counter-reset: slide-counter;
 }
 body {
   font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
-  color: var(--gray);
+  color: var(--text);
+  background: #0a0a14;
   line-height: 1.85;
   font-feature-settings: "palt";
   -webkit-font-smoothing: antialiased;
@@ -69,7 +72,7 @@ body {
   bottom: 1.5rem;
   right: 2rem;
   font-size: 0.9rem;
-  color: #a0aec0;
+  color: rgba(255,255,255,0.25);
   font-weight: 700;
 }
 
@@ -89,25 +92,25 @@ body {
   font-weight: 900;
   font-size: clamp(2.4rem, 5vw, 3.6rem);
   line-height: 1.35;
-  color: var(--navy);
+  color: #ffffff;
 }
 .t-heading {
   font-weight: 700;
   font-size: clamp(1.6rem, 3.5vw, 2.4rem);
   line-height: 1.4;
-  color: var(--navy);
+  color: #f0f4f8;
 }
 .t-subheading {
   font-weight: 700;
   font-size: clamp(1.2rem, 2.5vw, 1.6rem);
   line-height: 1.5;
-  color: var(--navy);
+  color: #e2e8f0;
 }
 .t-body {
   font-weight: 400;
   font-size: clamp(1rem, 2vw, 1.2rem);
   line-height: 1.85;
-  color: var(--gray);
+  color: var(--text);
 }
 .t-small {
   font-weight: 400;
@@ -203,11 +206,11 @@ body {
   margin-top: 2rem;
 }
 .stat-card {
-  background: var(--bg-white);
-  border: 1px solid #e2e8f0;
+  background: #1e1e32;
+  border: 1px solid var(--border);
   border-radius: 1rem;
   padding: 2rem 1rem;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
   position: relative;
   overflow: hidden;
   transition: transform 0.2s ease;
@@ -241,12 +244,12 @@ body {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 3px solid #e2e8f0;
+  border: 3px solid var(--border);
 }
-.stat-ring--orange::before { border-color: rgba(237,137,54,0.3); background: rgba(237,137,54,0.05); }
-.stat-ring--navy::before { border-color: rgba(26,54,93,0.2); background: rgba(26,54,93,0.04); }
-.stat-ring--gold::before { border-color: rgba(214,158,46,0.3); background: rgba(214,158,46,0.05); }
-.stat-ring--green::before { border-color: rgba(56,161,105,0.3); background: rgba(56,161,105,0.05); }
+.stat-ring--orange::before { border-color: rgba(237,137,54,0.4); background: rgba(237,137,54,0.1); }
+.stat-ring--navy::before { border-color: rgba(126,184,218,0.3); background: rgba(126,184,218,0.08); }
+.stat-ring--gold::before { border-color: rgba(214,158,46,0.4); background: rgba(214,158,46,0.1); }
+.stat-ring--green::before { border-color: rgba(72,187,120,0.4); background: rgba(72,187,120,0.1); }
 
 .stat-number {
   font-weight: 900;
@@ -272,14 +275,14 @@ body {
   position: absolute;
   inset: 0;
   background-image:
-    radial-gradient(circle, rgba(26,54,93,0.04) 1.5px, transparent 1.5px);
+    radial-gradient(circle, rgba(255,255,255,0.03) 1.5px, transparent 1.5px);
   background-size: 24px 24px;
   pointer-events: none;
 }
 .divider-number {
   font-weight: 900;
   font-size: clamp(6rem, 15vw, 12rem);
-  color: rgba(26,54,93,0.06);
+  color: rgba(255,255,255,0.04);
   line-height: 1;
   position: absolute;
   top: 50%;
@@ -299,13 +302,13 @@ body {
 }
 .divider-label--fire {
   color: var(--orange);
-  background: var(--orange-light);
-  border: 1px solid #fbd38d;
+  background: rgba(237,137,54,0.15);
+  border: 1px solid rgba(237,137,54,0.35);
 }
 .divider-label--green {
   color: var(--green);
-  background: var(--green-light);
-  border: 1px solid #9ae6b4;
+  background: rgba(72,187,120,0.15);
+  border: 1px solid rgba(72,187,120,0.35);
 }
 
 /* ===== Tables ===== */
@@ -318,17 +321,18 @@ body {
 .s-table th {
   font-size: clamp(0.7rem, 1.3vw, 0.85rem);
   font-weight: 700;
-  color: var(--gray);
+  color: #a0aec0;
   text-transform: uppercase;
   letter-spacing: 1px;
   padding: 0.75rem 1rem;
-  border-bottom: 2px solid #e2e8f0;
-  background: var(--bg-light);
+  border-bottom: 2px solid var(--border);
+  background: rgba(255,255,255,0.03);
 }
 .s-table td {
   font-size: clamp(0.9rem, 1.8vw, 1.05rem);
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid #edf2f7;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
 }
 .s-table tbody tr:last-child td { border-bottom: none; }
 /* Point bar visualisation in table */
@@ -355,15 +359,15 @@ body {
 }
 .pt-unit { font-weight: 400; font-size: 0.8em; color: var(--gray); }
 .rank-gold { color: var(--gold); }
-.rank-silver { color: #718096; }
+.rank-silver { color: #a0b0c0; }
 .rank-bronze { color: #b7791f; }
 .rank-red { color: var(--red); }
 
 /* Row border accent for point table */
 .s-table tbody tr { position: relative; }
-.s-table tbody tr.row-gold { background: linear-gradient(90deg, rgba(214,158,46,0.06), transparent); }
-.s-table tbody tr.row-silver { background: linear-gradient(90deg, rgba(113,128,150,0.05), transparent); }
-.s-table tbody tr.row-bronze { background: linear-gradient(90deg, rgba(183,121,31,0.05), transparent); }
+.s-table tbody tr.row-gold { background: linear-gradient(90deg, rgba(214,158,46,0.1), transparent); }
+.s-table tbody tr.row-silver { background: linear-gradient(90deg, rgba(113,128,150,0.08), transparent); }
+.s-table tbody tr.row-bronze { background: linear-gradient(90deg, rgba(183,121,31,0.08), transparent); }
 .s-table tbody tr.row-gold td:first-child { border-left: 3px solid var(--gold); }
 .s-table tbody tr.row-silver td:first-child { border-left: 3px solid #a0aec0; }
 .s-table tbody tr.row-bronze td:first-child { border-left: 3px solid #b7791f; }
@@ -379,9 +383,9 @@ body {
   vertical-align: middle;
   margin-right: 0.5rem;
 }
-.badge--main { background: var(--orange-light); color: var(--orange); border: 1px solid #fbd38d; }
-.badge--regular { background: var(--blue-light); color: #3182ce; border: 1px solid #90cdf4; }
-.badge--rookie { background: var(--green-light); color: var(--green); border: 1px solid #9ae6b4; }
+.badge--main { background: rgba(237,137,54,0.15); color: var(--orange); border: 1px solid rgba(237,137,54,0.35); }
+.badge--regular { background: rgba(49,130,206,0.15); color: #63b3ed; border: 1px solid rgba(99,179,237,0.35); }
+.badge--rookie { background: rgba(72,187,120,0.15); color: var(--green); border: 1px solid rgba(72,187,120,0.35); }
 .badge--final { background: rgba(214,158,46,0.15); color: var(--gold); border: 1px solid rgba(214,158,46,0.4); }
 
 /* ===== Cards Grid ===== */
@@ -392,22 +396,23 @@ body {
   margin-top: 1.5rem;
 }
 .sim-card {
-  background: var(--bg-white);
-  border: 1px solid #e2e8f0;
+  background: #1e1e32;
+  border: 1px solid var(--border);
   border-radius: 1rem;
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
   text-align: left;
 }
 .sim-card__header {
   padding: 1rem 1.2rem;
-  border-bottom: 1px solid #edf2f7;
+  border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-weight: 700;
   font-size: clamp(0.8rem, 1.5vw, 0.95rem);
-  background: var(--bg-light);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
 }
 .sim-card__total {
   font-weight: 900;
@@ -422,10 +427,10 @@ body {
   padding: 0.4rem 0;
   font-size: clamp(0.7rem, 1.3vw, 0.85rem);
   color: var(--gray);
-  border-bottom: 1px solid #edf2f7;
+  border-bottom: 1px solid var(--border);
 }
 .sim-row:last-child { border-bottom: none; }
-.sim-val { font-weight: 700; color: var(--navy); white-space: nowrap; margin-left: 0.5rem; }
+.sim-val { font-weight: 700; color: #e2e8f0; white-space: nowrap; margin-left: 0.5rem; }
 .sim-val--red { color: var(--red); }
 .sim-val--green { color: var(--green); }
 
@@ -437,7 +442,7 @@ body {
 .sim-progress-bar {
   height: 10px;
   border-radius: 5px;
-  background: #edf2f7;
+  background: rgba(255,255,255,0.08);
   overflow: hidden;
   position: relative;
 }
@@ -472,11 +477,11 @@ body {
   opacity: 0.2;
 }
 .season-card {
-  background: var(--bg-white);
-  border: 1px solid #e2e8f0;
+  background: #1e1e32;
+  border: 1px solid var(--border);
   border-radius: 1rem;
   padding: 1.5rem 1rem;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
   text-align: left;
   position: relative;
   z-index: 1;
@@ -492,7 +497,7 @@ body {
 .season-card h4 {
   font-size: clamp(0.85rem, 1.6vw, 1rem);
   font-weight: 700;
-  color: var(--navy);
+  color: #e2e8f0;
   margin-bottom: 0.5rem;
 }
 .season-card p {
@@ -501,7 +506,7 @@ body {
   line-height: 1.65;
 }
 .season-card .date-main {
-  color: var(--navy);
+  color: #e2e8f0;
   font-weight: 700;
 }
 /* Season icon dot */
@@ -514,8 +519,8 @@ body {
   left: 50%;
   transform: translateX(-50%);
   z-index: 2;
-  border: 2px solid var(--bg-white);
-  box-shadow: 0 0 0 2px rgba(0,0,0,0.08);
+  border: 2px solid #1e1e32;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.1);
 }
 
 /* ===== Flow Steps ===== */
@@ -551,7 +556,7 @@ body {
 .flow-title {
   font-size: clamp(0.95rem, 1.8vw, 1.15rem);
   font-weight: 700;
-  color: var(--navy);
+  color: #e2e8f0;
   margin-bottom: 0.25rem;
 }
 .flow-desc {
@@ -576,17 +581,17 @@ body {
   margin-top: 1rem;
 }
 .block-card {
-  background: var(--bg-white);
-  border: 1px solid #e2e8f0;
+  background: #1e1e32;
+  border: 1px solid var(--border);
   border-radius: 1rem;
   padding: 1.2rem;
   text-align: center;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
 }
 .block-label {
   font-size: clamp(0.75rem, 1.4vw, 0.9rem);
   font-weight: 900;
-  color: var(--navy);
+  color: #e2e8f0;
   margin-bottom: 0.8rem;
   letter-spacing: 1px;
 }
@@ -594,26 +599,27 @@ body {
   font-size: clamp(0.7rem, 1.3vw, 0.85rem);
   padding: 0.4rem 0.6rem;
   border-radius: 0.4rem;
-  background: var(--bg-light);
-  border: 1px solid #e2e8f0;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
   margin-bottom: 0.3rem;
+  color: var(--gray);
 }
 .slot--pass {
   border-color: var(--green);
   color: var(--green);
   font-weight: 700;
-  background: rgba(56,161,105,0.06);
+  background: rgba(72,187,120,0.1);
 }
 .slot--wc {
   border-color: var(--purple);
   color: var(--purple);
   font-weight: 700;
-  background: rgba(128,90,213,0.06);
+  background: rgba(183,148,244,0.1);
 }
 .slot--out {
-  border-color: #cbd5e0;
-  color: #a0aec0;
-  background: #f7fafc;
+  border-color: rgba(255,255,255,0.1);
+  color: #718096;
+  background: rgba(255,255,255,0.02);
 }
 
 /* Bracket connecting arrows */
@@ -628,21 +634,21 @@ body {
 }
 
 .bracket-center-card {
-  background: var(--bg-white);
-  border: 1px solid #e2e8f0;
+  background: #1e1e32;
+  border: 1px solid var(--border);
   border-radius: 1rem;
   padding: 1rem 1.5rem;
   text-align: center;
   margin-top: 0.8rem;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
 }
 .bracket-label {
   display: inline-block;
   font-size: clamp(0.7rem, 1.3vw, 0.85rem);
   font-weight: 700;
-  color: var(--navy);
-  background: var(--bg-light);
-  border: 1px solid #e2e8f0;
+  color: #e2e8f0;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
   padding: 0.3rem 1rem;
   border-radius: 0.5rem;
   margin-bottom: 0.5rem;
@@ -650,24 +656,24 @@ body {
 
 /* ===== Info Box ===== */
 .info-box {
-  background: var(--blue-light);
+  background: rgba(126,184,218,0.08);
   border-left: 4px solid var(--navy);
   border-radius: 0.5rem;
   padding: 1rem 1.5rem;
   margin-top: 1rem;
   text-align: left;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 .info-box p {
   font-size: clamp(0.8rem, 1.5vw, 0.95rem);
-  color: #2a4365;
+  color: #c0d0e0;
   line-height: 1.75;
 }
 .info-box--green {
-  background: var(--green-light);
+  background: rgba(72,187,120,0.08);
   border-left-color: var(--green);
 }
-.info-box--green p { color: #276749; }
+.info-box--green p { color: #9ae6b4; }
 
 /* ===== Checklist ===== */
 .checklist {
@@ -678,18 +684,18 @@ body {
 .checklist li {
   font-size: clamp(0.9rem, 1.8vw, 1.05rem);
   padding: 0.8rem 0;
-  border-bottom: 1px solid #edf2f7;
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   gap: 0.8rem;
-  color: var(--gray);
+  color: var(--text);
 }
 .checklist li:last-child { border-bottom: none; }
 .check-box {
   width: 1.3rem;
   height: 1.3rem;
   border-radius: 0.25rem;
-  border: 2px solid #cbd5e0;
+  border: 2px solid rgba(255,255,255,0.2);
   flex-shrink: 0;
 }
 
@@ -705,8 +711,8 @@ body {
   display: flex;
   align-items: center;
   gap: 0.8rem;
-  color: var(--gray);
-  border-bottom: 1px solid #edf2f7;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
 }
 .qual-list li:last-child { border-bottom: none; }
 .qual-icon {
@@ -720,8 +726,8 @@ body {
   font-weight: 900;
   flex-shrink: 0;
 }
-.qual-pass { background: var(--green-light); color: var(--green); border: 1px solid #9ae6b4; }
-.qual-sub { background: #faf5ff; color: #805ad5; border: 1px solid #d6bcfa; }
+.qual-pass { background: rgba(72,187,120,0.15); color: var(--green); border: 1px solid rgba(72,187,120,0.35); }
+.qual-sub { background: rgba(183,148,244,0.12); color: var(--purple); border: 1px solid rgba(183,148,244,0.35); }
 
 /* ===== Closing Slide ===== */
 .slide--closing {
@@ -780,13 +786,13 @@ body {
   flex-wrap: wrap;
 }
 .h-flow__step {
-  background: var(--bg-white);
+  background: #1e1e32;
   border: 2px solid var(--navy);
   border-radius: 1rem;
   padding: 1rem 1.5rem;
   text-align: center;
   min-width: 140px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   position: relative;
 }
 .h-flow__step--active {
@@ -808,7 +814,7 @@ body {
 .h-flow__label {
   font-weight: 700;
   font-size: clamp(0.9rem, 1.8vw, 1.1rem);
-  color: var(--navy);
+  color: #e2e8f0;
 }
 .h-flow__sub {
   font-size: clamp(0.7rem, 1.3vw, 0.8rem);
@@ -830,15 +836,15 @@ body {
   text-align: left;
 }
 .ranking-item {
-  background: var(--bg-white);
-  border: 1px solid #e2e8f0;
+  background: #1e1e32;
+  border: 1px solid var(--border);
   border-radius: 0.75rem;
   padding: 0.8rem 1rem;
   font-size: clamp(0.8rem, 1.5vw, 0.9rem);
   color: var(--gray);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
-.ranking-item strong { color: var(--navy); }
+.ranking-item strong { color: #e2e8f0; }
 
 /* ===== Match Format ===== */
 .match-grid {
@@ -848,12 +854,12 @@ body {
   margin-top: 1.5rem;
 }
 .match-card {
-  background: var(--bg-white);
-  border: 1px solid #e2e8f0;
+  background: #1e1e32;
+  border: 1px solid var(--border);
   border-radius: 1rem;
   padding: 2rem 1.5rem;
   text-align: center;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
   position: relative;
   overflow: hidden;
 }
@@ -877,7 +883,7 @@ body {
 .match-card__format {
   font-weight: 900;
   font-size: clamp(2rem, 4vw, 3rem);
-  color: var(--navy);
+  color: #ffffff;
   line-height: 1.2;
 }
 .match-card__desc {
@@ -903,7 +909,7 @@ body {
   top: 0;
   bottom: 0;
   width: 2px;
-  background: #e2e8f0;
+  background: var(--border);
 }
 .timeline__item {
   position: relative;
@@ -926,7 +932,7 @@ body {
 .timeline__month {
   font-weight: 900;
   font-size: clamp(0.85rem, 1.6vw, 1rem);
-  color: var(--navy);
+  color: #e2e8f0;
 }
 .timeline__desc {
   font-size: clamp(0.8rem, 1.5vw, 0.9rem);
@@ -942,8 +948,8 @@ body {
   margin-top: 1.5rem;
 }
 .overview-card {
-  background: var(--bg-white);
-  border: 1px solid #e2e8f0;
+  background: #1e1e32;
+  border: 1px solid var(--border);
   border-radius: 1rem;
   padding: 1.2rem 2rem;
   width: 100%;
@@ -951,7 +957,7 @@ body {
   text-align: center;
   font-size: clamp(0.95rem, 1.8vw, 1.1rem);
   font-weight: 700;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
   position: relative;
 }
 /* Pyramid styling: each card gets progressively narrower toward top */
@@ -969,7 +975,7 @@ body {
 .overview-plus {
   font-size: 1.2rem;
   font-weight: 900;
-  color: #cbd5e0;
+  color: rgba(255,255,255,0.3);
 }
 .overview-arrow {
   font-size: 1.5rem;
@@ -990,12 +996,12 @@ body {
   margin-top: 1.5rem;
 }
 .final-qual {
-  background: var(--bg-white);
-  border: 1px solid #e2e8f0;
+  background: #1e1e32;
+  border: 1px solid var(--border);
   border-radius: 1rem;
   padding: 1.5rem 1rem;
   text-align: center;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
 }
 .final-qual__num {
   font-weight: 900;
@@ -1017,12 +1023,12 @@ body {
   margin-top: 1.5rem;
 }
 .app-feature {
-  background: var(--bg-white);
-  border: 1px solid #e2e8f0;
+  background: #1e1e32;
+  border: 1px solid var(--border);
   border-radius: 1rem;
   padding: 1.2rem;
   text-align: left;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
 }
 .app-feature__icon {
   font-size: 1.5rem;
@@ -1031,7 +1037,7 @@ body {
 .app-feature__title {
   font-weight: 700;
   font-size: clamp(0.85rem, 1.6vw, 1rem);
-  color: var(--navy);
+  color: #e2e8f0;
   margin-bottom: 0.3rem;
 }
 .app-feature__desc {
@@ -1055,7 +1061,7 @@ body {
   height: 1px;
   margin: 1rem 0;
   border: none;
-  background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
 }
 
 /* ===== Heading with Icon ===== */
@@ -1288,7 +1294,7 @@ body {
   </section>
 
   <!-- ==================== Slide 4: Concept ==================== -->
-  <section class="slide" style="background: linear-gradient(180deg, var(--bg-white) 0%, var(--bg-light) 100%);">
+  <section class="slide" style="background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%);">
     <div class="slide__inner slide__inner--left">
       <div class="heading-with-icon heading-with-icon--left">
         <svg class="slide-icon--inline" viewBox="0 0 36 36" fill="none" stroke="var(--navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1467,7 +1473,7 @@ body {
       <div class="season-grid">
         <div class="season-card">
           <div class="season-dot" style="background: var(--green);"></div>
-          <div class="season-tag" style="background: var(--green-light); color: var(--green); border: 1px solid #9ae6b4;">S1</div>
+          <div class="season-tag" style="background: rgba(72,187,120,0.15); color: var(--green); border: 1px solid rgba(72,187,120,0.35);">S1</div>
           <h4>Season 1 — Spring</h4>
           <p>
             <span class="date-main">レース: 3月〜5月</span><br>
@@ -1478,7 +1484,7 @@ body {
         </div>
         <div class="season-card">
           <div class="season-dot" style="background: var(--orange);"></div>
-          <div class="season-tag" style="background: var(--orange-light); color: var(--orange); border: 1px solid #fbd38d;">S2</div>
+          <div class="season-tag" style="background: rgba(237,137,54,0.15); color: var(--orange); border: 1px solid rgba(237,137,54,0.35);">S2</div>
           <h4>Season 2 — Summer</h4>
           <p>
             <span class="date-main">レース: 6月〜8月</span><br>
@@ -1489,7 +1495,7 @@ body {
         </div>
         <div class="season-card">
           <div class="season-dot" style="background: #b7791f;"></div>
-          <div class="season-tag" style="background: #fffaf0; color: #b7791f; border: 1px solid #f6e05e;">S3</div>
+          <div class="season-tag" style="background: rgba(214,158,46,0.15); color: #ecc94b; border: 1px solid rgba(214,158,46,0.35);">S3</div>
           <h4>Season 3 — Autumn</h4>
           <p>
             <span class="date-main">レース: 9月〜11月</span><br>
@@ -1500,7 +1506,7 @@ body {
         </div>
         <div class="season-card">
           <div class="season-dot" style="background: #3182ce;"></div>
-          <div class="season-tag" style="background: var(--blue-light); color: #3182ce; border: 1px solid #90cdf4;">S4</div>
+          <div class="season-tag" style="background: rgba(49,130,206,0.15); color: #63b3ed; border: 1px solid rgba(99,179,237,0.35);">S4</div>
           <h4>Season 4 — Winter</h4>
           <p>
             <span class="date-main">レース: 12月〜2月</span><br>
@@ -1617,7 +1623,7 @@ body {
 
       <div class="bracket-center-card" style="border-left: 3px solid var(--purple);">
         <div style="font-size: clamp(0.8rem, 1.5vw, 0.95rem); color: var(--gray);">
-          WC: 3位 x 3名 → <strong style="color: #805ad5;">2名</strong>が決勝T進出
+          WC: 3位 x 3名 → <strong style="color: #b794f4;">2名</strong>が決勝T進出
         </div>
       </div>
 
@@ -1793,7 +1799,7 @@ body {
   </section>
 
   <!-- ==================== Slide 15: 新人年間王 Format ==================== -->
-  <section class="slide" style="background: linear-gradient(180deg, var(--bg-white) 0%, var(--green-light) 50%, var(--bg-white) 100%);">
+  <section class="slide" style="background: linear-gradient(180deg, #1a1a2e 0%, rgba(72,187,120,0.06) 50%, #1a1a2e 100%);">
     <div class="slide__inner">
       <div class="heading-with-icon">
         <svg class="slide-icon--inline" viewBox="0 0 36 36" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
