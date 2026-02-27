@@ -823,8 +823,6 @@ body {
         <input type="text" id="shopAddInput" placeholder="買うもの" onkeydown="if(event.key==='Enter')addShoppingItemManual()">
         <button onclick="addShoppingItemManual()">追加</button>
       </div>
-      <div style="font-size:12px;font-weight:600;color:var(--text-sub);margin:14px 0 8px 0">レシピから追加</div>
-      <div class="shopping-recipe-btns" id="shopRecipeBtns"></div>
     </div>
   </div>
 
@@ -2347,12 +2345,11 @@ function showToast(msg) {
 // ===== Shopping List =====
 function renderShoppingList() {
   const listEl = document.getElementById('shoppingList');
-  const btnsEl = document.getElementById('shopRecipeBtns');
   if (!listEl) return;
 
   const entries = Object.entries(shoppingData);
   if (entries.length === 0) {
-    listEl.innerHTML = '<div class="empty-state"><div class="empty-icon">🛒</div><div class="empty-text">買い物リストは空です<br>レシピから材料を追加しましょう</div></div>';
+    listEl.innerHTML = '<div class="empty-state"><div class="empty-icon">🛒</div><div class="empty-text">買い物リストは空です<br>レシピ詳細の +🛒 で材料を追加できます</div></div>';
   } else {
     // Sort: unchecked first, then checked
     entries.sort((a, b) => (a[1].checked ? 1 : 0) - (b[1].checked ? 1 : 0));
@@ -2367,14 +2364,6 @@ function renderShoppingList() {
         <button class="shopping-item-del" onclick="deleteShoppingItem('${id}')">×</button>
       </div>
     `).join('');
-  }
-
-  // Recipe buttons for quick add
-  if (btnsEl) {
-    const recipes = Object.entries(itemsData);
-    btnsEl.innerHTML = recipes.slice(0, 10).map(([id, r]) =>
-      `<button class="shopping-recipe-btn" onclick="addRecipeToShopping('${id}')">+ ${esc(r.title)}</button>`
-    ).join('');
   }
 }
 
