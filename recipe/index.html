@@ -289,6 +289,14 @@ body {
 .btn-edit { background: var(--accent-light); color: var(--accent); }
 .btn-delete { background: var(--red-light); color: var(--red); }
 
+.timer-btn {
+  padding: 8px 16px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--bg-warm);
+  color: var(--text); font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: inherit;
+}
+.timer-btn:active { background: var(--accent-light); border-color: var(--accent); }
+
 .detail-section { margin-top: 20px; }
 .detail-section-title {
   font-size: 14px; font-weight: 700; color: var(--accent);
@@ -356,13 +364,23 @@ body {
 .modal-header {
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 20px;
+  position: sticky; top: 0; z-index: 10;
+  background: var(--bg-card); padding-top: 4px; margin-top: -4px;
 }
 .modal-header .modal-title { margin-bottom: 0; flex: 1; }
 .modal-close {
   background: none; border: none; font-size: 20px; color: var(--text-sub);
-  cursor: pointer; padding: 4px 8px; margin-left: 8px; border-radius: 8px;
+  cursor: pointer; padding: 8px 12px; margin: -8px -12px -8px 0; border-radius: 8px;
+  min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center;
 }
 .modal-close:active { background: var(--border); }
+.modal-cancel {
+  display: block; width: 100%; padding: 14px; margin-top: 12px;
+  background: none; border: 1px solid var(--border); border-radius: 12px;
+  color: var(--text-sub); font-size: 15px; font-weight: 600; cursor: pointer;
+  font-family: inherit;
+}
+.modal-cancel:active { background: var(--bg-warm); }
 .modal-title {
   font-size: 17px; font-weight: 700; text-align: center;
   margin-bottom: 20px;
@@ -758,6 +776,7 @@ body {
     </div>
     <div id="aiStatus" class="ai-status hidden"></div>
     <button class="form-submit" id="aiExtractBtn" onclick="runAIExtract()">AIで解析する</button>
+    <button class="modal-cancel" onclick="closeModal('aiExtractModal')">キャンセル</button>
   </div>
 </div>
 
@@ -816,6 +835,7 @@ body {
       <textarea class="form-textarea" id="entryMemo" placeholder="ちょっとしたコツやメモ" style="min-height:60px"></textarea>
     </div>
     <button class="form-submit" id="entrySaveBtn" onclick="saveRecipe()">保存する</button>
+    <button class="modal-cancel" onclick="closeModal('entryModal')">キャンセル</button>
   </div>
 </div>
 
@@ -1316,19 +1336,28 @@ function renderDetail(id) {
     <div class="detail-actions">
       <button class="btn-fav ${r.favorite ? 'active' : ''}" onclick="toggleFav('${id}')">${r.favorite ? '★ お気に入り' : '☆ お気に入り'}</button>
       <button class="btn-edit" onclick="editRecipe('${id}')">編集</button>
+      <button class="btn-edit" onclick="shareRecipe('${id}')">共有</button>
       <button class="btn-delete" onclick="deleteRecipe('${id}')">削除</button>
     </div>
   `;
 
-  // Ingredients
+  // Ingredients with portion scaling
   if (r.ingredients && r.ingredients.length) {
     html += `<div class="detail-section">
-      <div class="detail-section-title">🥕 材料</div>
-      <ul class="ingredient-list">
-        ${r.ingredients.map(ing => `
+      <div class="detail-section-title" style="display:flex;align-items:center;justify-content:space-between">
+        <span>🥕 材料</span>
+        <div class="portion-btns" style="display:flex;gap:4px;font-size:11px">
+          <button onclick="scaleIngredients(0.5)" style="padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text-sub);cursor:pointer;font-family:inherit">×0.5</button>
+          <button onclick="scaleIngredients(1)" style="padding:4px 10px;border-radius:8px;border:1px solid var(--accent);background:var(--accent-light);color:var(--accent);cursor:pointer;font-weight:700;font-family:inherit">×1</button>
+          <button onclick="scaleIngredients(2)" style="padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text-sub);cursor:pointer;font-family:inherit">×2</button>
+          <button onclick="scaleIngredients(3)" style="padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text-sub);cursor:pointer;font-family:inherit">×3</button>
+        </div>
+      </div>
+      <ul class="ingredient-list" id="ingredientDisplay">
+        ${r.ingredients.map((ing, i) => `
           <li class="ingredient-item">
             <label><input type="checkbox"> ${esc(ing.name)}</label>
-            <span class="ingredient-amount">${esc(ing.amount || '')}</span>
+            <span class="ingredient-amount" data-orig="${esc(ing.amount || '')}">${esc(ing.amount || '')}</span>
           </li>
         `).join('')}
       </ul>
@@ -1353,12 +1382,101 @@ function renderDetail(id) {
     </div>`;
   }
 
+  // Quick Timer
+  html += `<div class="detail-section">
+    <div class="detail-section-title">⏱ クイックタイマー</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+      <button onclick="startTimer(60)" class="timer-btn">1分</button>
+      <button onclick="startTimer(180)" class="timer-btn">3分</button>
+      <button onclick="startTimer(300)" class="timer-btn">5分</button>
+      <button onclick="startTimer(600)" class="timer-btn">10分</button>
+      <button onclick="startTimer(900)" class="timer-btn">15分</button>
+      <button onclick="startTimer(1800)" class="timer-btn">30分</button>
+    </div>
+    <div id="timerDisplay" class="hidden" style="margin-top:12px;text-align:center">
+      <div id="timerTime" style="font-size:32px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums"></div>
+      <button onclick="stopTimer()" style="margin-top:8px;padding:8px 20px;border-radius:8px;border:1px solid var(--red);background:none;color:var(--red);cursor:pointer;font-family:inherit;font-size:13px">停止</button>
+    </div>
+  </div>`;
+
   document.getElementById('detailContent').innerHTML = html;
 }
 
 function closeDetail() {
   currentDetailId = null;
   showPage('home');
+}
+
+function scaleIngredients(factor) {
+  document.querySelectorAll('.portion-btns button').forEach(b => {
+    b.style.border = '1px solid var(--border)';
+    b.style.background = 'none';
+    b.style.color = 'var(--text-sub)';
+    b.style.fontWeight = '400';
+  });
+  event.target.style.border = '1px solid var(--accent)';
+  event.target.style.background = 'var(--accent-light)';
+  event.target.style.color = 'var(--accent)';
+  event.target.style.fontWeight = '700';
+
+  document.querySelectorAll('#ingredientDisplay .ingredient-amount').forEach(el => {
+    const orig = el.dataset.orig;
+    if (factor === 1) { el.textContent = orig; return; }
+    el.textContent = orig.replace(/[\d.]+/g, m => {
+      const n = parseFloat(m) * factor;
+      return n % 1 === 0 ? n.toString() : n.toFixed(1).replace(/\.0$/, '');
+    });
+  });
+}
+
+let timerInterval = null;
+function startTimer(seconds) {
+  if (timerInterval) clearInterval(timerInterval);
+  let remaining = seconds;
+  const display = document.getElementById('timerDisplay');
+  const timeEl = document.getElementById('timerTime');
+  display.classList.remove('hidden');
+  const update = () => {
+    const m = Math.floor(remaining / 60);
+    const s = remaining % 60;
+    timeEl.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+    if (remaining <= 0) {
+      clearInterval(timerInterval); timerInterval = null;
+      timeEl.textContent = '完了！';
+      timeEl.style.color = 'var(--green)';
+      if ('vibrate' in navigator) navigator.vibrate([200, 100, 200, 100, 200]);
+      try { new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=').play(); } catch(e) {}
+      showToast('タイマー完了！');
+      return;
+    }
+    remaining--;
+  };
+  timeEl.style.color = 'var(--accent)';
+  update();
+  timerInterval = setInterval(update, 1000);
+}
+function stopTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  document.getElementById('timerDisplay').classList.add('hidden');
+}
+
+function shareRecipe(id) {
+  const r = itemsData[id];
+  if (!r) return;
+  let text = `📋 ${r.title}\n`;
+  if (r.servings) text += `👤 ${r.servings}`;
+  if (r.prepTime) text += ` ⏱ ${r.prepTime}`;
+  text += '\n\n🥕 材料\n';
+  (r.ingredients || []).forEach(ing => { text += `・${ing.name} ${ing.amount || ''}\n`; });
+  text += '\n📝 作り方\n';
+  (r.steps || []).forEach((s, i) => { text += `${i + 1}. ${s}\n`; });
+  if (r.sourceUrl) text += `\n🔗 ${r.sourceUrl}`;
+
+  if (navigator.share) {
+    navigator.share({ title: r.title, text }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text).then(() => showToast('レシピをコピーしました'));
+  }
 }
 
 function toggleFav(id) {
