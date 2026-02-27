@@ -135,6 +135,11 @@ body {
     <div id="postCards"></div>
   </div>
 
+  <div style="margin-top:20px;padding:14px 16px;background:#111;border:1px solid #222;border-radius:12px;font-size:12px;color:#666;line-height:1.6">
+    <strong style="color:#888">モルハブ人格設定:</strong> メディア × ハブ × 裏方<br>
+    完全敬語 / 相手を主役に / つながりを示す / 自己主張控えめ
+  </div>
+
   <div class="footer-note">
     <a href="https://molkky-hub.com" target="_blank">MOLKKY HUB</a> プロモーションツール
   </div>
@@ -280,8 +285,18 @@ async function generatePosts(article, originalUrl) {
   const slug = article.slug || 'article';
   const utmUrl = buildUtmUrl(originalUrl, slug);
 
-  const prompt = `あなたはモルック（フィンランド発祥の投擲スポーツ）の情報メディア「MOLKKY HUB」のSNS担当です。
-以下の記事をX（Twitter）で宣伝するポスト文面を3パターン生成してください。
+  const prompt = `あなたはモルック（フィンランド発祥の投擲スポーツ）の情報メディア「MOLKKY HUB（モルハブ）」のX（Twitter）アカウント @molkkyhub の運用担当です。
+以下の記事をXで宣伝するポスト文面を3パターン生成してください。
+
+## モルハブの人格設定（厳守）
+- **立場**: モルック界の情報ハブ。つなぎ役の黒子メディア
+- **3つの柱**: メディア（正確・丁寧な情報発信）/ ハブ（人と情報をつなぐ）/ 裏方（自分を前に出さず相手を持ち上げる）
+- **文体**: 完全敬語（です・ます調）。タメ口・カジュアル表現は一切使わない
+- **距離感**: 丁寧で誠実。馴れ馴れしくない。品のある文体
+- **温度感**: 冷たくはないが、過度にテンション高くしない。静かな熱量
+- **自己主張**: 控えめ。自画自賛は絶対にしない
+- **関西弁禁止**: 標準語の敬語で統一。「〜やん」「〜やで」「めっちゃ」「ほんま」等は絶対に使わない
+- **NG表現**: 「〜だよね」「〜じゃん」「嬉しい！」「すごい！」「やばい」等のカジュアル表現は禁止。「嬉しく思います」「幸いです」等の敬語に置き換えること
 
 ## 記事情報
 - タイトル: ${title}
@@ -294,15 +309,15 @@ ${catInfo.author ? `- 著者: ${catInfo.author}` : ''}
 ## 記事本文（抜粋）
 ${content}
 
-## ルール
-1. 各ポストは200〜260文字程度（URL・ハッシュタグ込みで280文字以内）
-2. 標準語で書くこと（関西弁は使わない）
+## 生成ルール
+1. 各ポストの本文は100〜160文字以内（URL・ハッシュタグを除く）。URL+ハッシュタグ込みで絶対に280文字を超えないこと
+2. 完全敬語。誰からもツッコミが入らない品のある文体
 3. 構成: フック（1行目で興味を引く）→ 要約 → URL → ハッシュタグ
-4. 3パターンは切り口を変える: A=問いかけ型、B=要約型、C=引用型
-5. URLは必ず「${utmUrl}」を使うこと
+4. 3パターンは切り口を変える: A=問いかけ型、B=要約型、C=つながり型
+5. URLは必ず「${utmUrl}」をそのまま使うこと
 6. ハッシュタグは必ず「${catInfo.tags}」を末尾に入れること
 7. 改行を適度に入れて読みやすくすること
-8. 絵文字は控えめに（0〜2個程度）
+8. 絵文字は控えめに（0〜2個程度。✨📝🪵🎉📊あたり）
 
 ## 出力形式（JSON）
 [
@@ -318,7 +333,7 @@ ${content}
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7, responseMimeType: 'application/json' }
+        generationConfig: { temperature: 0.4, responseMimeType: 'application/json' }
       })
     }
   );
