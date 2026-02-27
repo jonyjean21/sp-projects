@@ -23,6 +23,7 @@ html, body { height: 100%; overflow: hidden; }
   --blue-light: #ebf8ff;
   --green-light: #f0fff4;
   --orange-light: #fffaf0;
+  --purple: #805ad5;
   counter-reset: slide-counter;
 }
 body {
@@ -111,14 +112,64 @@ body {
   color: var(--gray);
 }
 
+/* ===== Inline SVG Icons ===== */
+.slide-icon {
+  width: 52px;
+  height: 52px;
+  display: block;
+  margin: 0 auto 1rem;
+}
+.slide-icon--left {
+  margin: 0 0 1rem 0;
+}
+.slide-icon--inline {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 0.5rem 0 0;
+  width: 36px;
+  height: 36px;
+}
+.slide-icon--small {
+  width: 28px;
+  height: 28px;
+}
+
 /* ===== Cover Slide ===== */
 .slide--cover {
   background: linear-gradient(135deg, #1a365d 0%, #2d3748 50%, #1a365d 100%);
   color: #fff;
 }
+/* Cover geometric pattern overlay */
+.slide--cover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(237,137,54,0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(214,158,46,0.06) 0%, transparent 50%),
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 40px,
+      rgba(255,255,255,0.015) 40px,
+      rgba(255,255,255,0.015) 42px
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+.slide--cover .slide__inner { position: relative; z-index: 1; }
 .slide--cover .t-title {
   color: #fff;
   margin-bottom: 1rem;
+}
+/* Cover bottom wave */
+.cover-wave {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  z-index: 0;
 }
 .cover-subtitle {
   color: rgba(255,255,255,0.7);
@@ -152,12 +203,53 @@ body {
   border: 1px solid #e2e8f0;
   border-radius: 1rem;
   padding: 2rem 1rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease;
 }
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: 1rem 1rem 0 0;
+}
+.stat-card:nth-child(1)::before { background: linear-gradient(90deg, var(--orange), #f6ad55); }
+.stat-card:nth-child(2)::before { background: linear-gradient(90deg, var(--navy), #4a6fa5); }
+.stat-card:nth-child(3)::before { background: linear-gradient(90deg, var(--gold), #ecc94b); }
+.stat-card:nth-child(4)::before { background: linear-gradient(90deg, var(--green), #68d391); }
+/* Circular ring around stat number */
+.stat-ring {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 0.8rem;
+  position: relative;
+}
+.stat-ring::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid #e2e8f0;
+}
+.stat-ring--orange::before { border-color: rgba(237,137,54,0.3); background: rgba(237,137,54,0.05); }
+.stat-ring--navy::before { border-color: rgba(26,54,93,0.2); background: rgba(26,54,93,0.04); }
+.stat-ring--gold::before { border-color: rgba(214,158,46,0.3); background: rgba(214,158,46,0.05); }
+.stat-ring--green::before { border-color: rgba(56,161,105,0.3); background: rgba(56,161,105,0.05); }
+
 .stat-number {
   font-weight: 900;
-  font-size: clamp(2rem, 4vw, 3rem);
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
   line-height: 1.2;
+  position: relative;
+  z-index: 1;
 }
 .stat-label {
   font-size: clamp(0.8rem, 1.5vw, 1rem);
@@ -169,6 +261,16 @@ body {
 /* ===== Section Divider ===== */
 .slide--divider {
   background: var(--bg-light);
+}
+/* Decorative dot pattern for dividers */
+.slide--divider::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(26,54,93,0.04) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+  pointer-events: none;
 }
 .divider-number {
   font-weight: 900;
@@ -225,6 +327,24 @@ body {
   border-bottom: 1px solid #edf2f7;
 }
 .s-table tbody tr:last-child td { border-bottom: none; }
+/* Point bar visualisation in table */
+.pt-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+.pt-bar {
+  height: 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  min-width: 0;
+}
+.pt-bar--gold { background: linear-gradient(90deg, var(--gold), #ecc94b); }
+.pt-bar--silver { background: linear-gradient(90deg, #a0aec0, #cbd5e0); }
+.pt-bar--bronze { background: linear-gradient(90deg, #b7791f, #d69e2e); }
+.pt-bar--default { background: linear-gradient(90deg, var(--navy), #4a6fa5); }
+.pt-bar--red { background: linear-gradient(90deg, var(--red), #fc8181); }
+
 .pt-val {
   font-weight: 900;
   font-size: clamp(1.1rem, 2vw, 1.3rem);
@@ -234,6 +354,15 @@ body {
 .rank-silver { color: #718096; }
 .rank-bronze { color: #b7791f; }
 .rank-red { color: var(--red); }
+
+/* Row border accent for point table */
+.s-table tbody tr { position: relative; }
+.s-table tbody tr.row-gold { background: linear-gradient(90deg, rgba(214,158,46,0.06), transparent); }
+.s-table tbody tr.row-silver { background: linear-gradient(90deg, rgba(113,128,150,0.05), transparent); }
+.s-table tbody tr.row-bronze { background: linear-gradient(90deg, rgba(183,121,31,0.05), transparent); }
+.s-table tbody tr.row-gold td:first-child { border-left: 3px solid var(--gold); }
+.s-table tbody tr.row-silver td:first-child { border-left: 3px solid #a0aec0; }
+.s-table tbody tr.row-bronze td:first-child { border-left: 3px solid #b7791f; }
 
 /* ===== Badge ===== */
 .badge {
@@ -263,7 +392,7 @@ body {
   border: 1px solid #e2e8f0;
   border-radius: 1rem;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
   text-align: left;
 }
 .sim-card__header {
@@ -296,20 +425,57 @@ body {
 .sim-val--red { color: var(--red); }
 .sim-val--green { color: var(--green); }
 
+/* Simulation progress bars */
+.sim-progress {
+  margin-top: 0.5rem;
+  padding: 0 1.2rem 1rem;
+}
+.sim-progress-bar {
+  height: 10px;
+  border-radius: 5px;
+  background: #edf2f7;
+  overflow: hidden;
+  position: relative;
+}
+.sim-progress-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.3s ease;
+}
+.sim-progress-fill--green { background: linear-gradient(90deg, var(--green), #68d391); }
+.sim-progress-fill--gold { background: linear-gradient(90deg, var(--gold), #ecc94b); }
+.sim-progress-fill--red { background: linear-gradient(90deg, var(--red), #fc8181); }
+
 /* ===== Season Cards ===== */
 .season-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
   margin-top: 1.5rem;
+  position: relative;
+}
+/* Timeline connector between season cards */
+.season-grid::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 5%;
+  right: 5%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--green), var(--orange), #b7791f, #3182ce);
+  border-radius: 2px;
+  z-index: 0;
+  opacity: 0.2;
 }
 .season-card {
   background: var(--bg-white);
   border: 1px solid #e2e8f0;
   border-radius: 1rem;
   padding: 1.5rem 1rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
   text-align: left;
+  position: relative;
+  z-index: 1;
 }
 .season-tag {
   display: inline-block;
@@ -333,6 +499,19 @@ body {
 .season-card .date-main {
   color: var(--navy);
   font-weight: 700;
+}
+/* Season icon dot */
+.season-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  border: 2px solid var(--bg-white);
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.08);
 }
 
 /* ===== Flow Steps ===== */
@@ -398,7 +577,7 @@ body {
   border-radius: 1rem;
   padding: 1.2rem;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
 }
 .block-label {
   font-size: clamp(0.75rem, 1.4vw, 0.9rem);
@@ -415,8 +594,34 @@ body {
   border: 1px solid #e2e8f0;
   margin-bottom: 0.3rem;
 }
-.slot--pass { border-color: var(--green); color: var(--green); font-weight: 700; }
-.slot--wc { border-color: #805ad5; color: #805ad5; font-weight: 700; }
+.slot--pass {
+  border-color: var(--green);
+  color: var(--green);
+  font-weight: 700;
+  background: rgba(56,161,105,0.06);
+}
+.slot--wc {
+  border-color: var(--purple);
+  color: var(--purple);
+  font-weight: 700;
+  background: rgba(128,90,213,0.06);
+}
+.slot--out {
+  border-color: #cbd5e0;
+  color: #a0aec0;
+  background: #f7fafc;
+}
+
+/* Bracket connecting arrows */
+.bracket-arrows {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin: 0.3rem 0;
+  color: var(--navy);
+  opacity: 0.3;
+  font-size: 1.2rem;
+}
 
 .bracket-center-card {
   background: var(--bg-white);
@@ -425,7 +630,7 @@ body {
   padding: 1rem 1.5rem;
   text-align: center;
   margin-top: 0.8rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
 }
 .bracket-label {
   display: inline-block;
@@ -447,6 +652,7 @@ body {
   padding: 1rem 1.5rem;
   margin-top: 1rem;
   text-align: left;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
 .info-box p {
   font-size: clamp(0.8rem, 1.5vw, 0.95rem);
@@ -518,6 +724,25 @@ body {
   background: linear-gradient(135deg, #1a365d 0%, #2d3748 50%, #1a365d 100%);
   color: #fff;
 }
+/* Closing decorative pattern */
+.slide--closing::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 30% 40%, rgba(237,137,54,0.06) 0%, transparent 40%),
+    radial-gradient(circle at 70% 60%, rgba(214,158,46,0.05) 0%, transparent 40%),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 60px,
+      rgba(255,255,255,0.01) 60px,
+      rgba(255,255,255,0.01) 62px
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+.slide--closing .slide__inner { position: relative; z-index: 1; }
 .closing-title {
   font-weight: 900;
   font-size: clamp(1.6rem, 3.5vw, 2.4rem);
@@ -557,10 +782,13 @@ body {
   padding: 1rem 1.5rem;
   text-align: center;
   min-width: 140px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  position: relative;
 }
 .h-flow__step--active {
   background: var(--navy);
   color: #fff;
+  box-shadow: 0 6px 20px rgba(26,54,93,0.3);
 }
 .h-flow__step--active .h-flow__label { color: #fff; }
 .h-flow__step--active .h-flow__sub { color: rgba(255,255,255,0.7); }
@@ -568,6 +796,10 @@ body {
   font-size: 1.5rem;
   color: var(--navy);
   font-weight: 900;
+  background: linear-gradient(90deg, var(--navy), var(--orange));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 .h-flow__label {
   font-weight: 700;
@@ -578,6 +810,11 @@ body {
   font-size: clamp(0.7rem, 1.3vw, 0.8rem);
   color: var(--gray);
   margin-top: 0.2rem;
+}
+/* Flow step icon */
+.h-flow__icon {
+  display: block;
+  margin: 0 auto 0.3rem;
 }
 
 /* ===== Ranking Info ===== */
@@ -595,7 +832,7 @@ body {
   padding: 0.8rem 1rem;
   font-size: clamp(0.8rem, 1.5vw, 0.9rem);
   color: var(--gray);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 .ranking-item strong { color: var(--navy); }
 
@@ -612,7 +849,18 @@ body {
   border-radius: 1rem;
   padding: 2rem 1.5rem;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  position: relative;
+  overflow: hidden;
+}
+.match-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--navy), var(--orange));
 }
 .match-card__stage {
   font-size: clamp(0.75rem, 1.4vw, 0.9rem);
@@ -681,7 +929,7 @@ body {
   color: var(--gray);
 }
 
-/* ===== Overview Cards ===== */
+/* ===== Overview Cards — Pyramid ===== */
 .overview-stack {
   display: flex;
   flex-direction: column;
@@ -699,7 +947,20 @@ body {
   text-align: center;
   font-size: clamp(0.95rem, 1.8vw, 1.1rem);
   font-weight: 700;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  position: relative;
+}
+/* Pyramid styling: each card gets progressively narrower toward top */
+.overview-card--top {
+  max-width: 400px;
+  border-top: 4px solid var(--gold);
+  box-shadow: 0 8px 24px rgba(214,158,46,0.15);
+}
+.overview-card--mid {
+  max-width: 500px;
+}
+.overview-card--base {
+  max-width: 600px;
 }
 .overview-plus {
   font-size: 1.2rem;
@@ -730,7 +991,7 @@ body {
   border-radius: 1rem;
   padding: 1.5rem 1rem;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
 }
 .final-qual__num {
   font-weight: 900;
@@ -757,7 +1018,7 @@ body {
   border-radius: 1rem;
   padding: 1.2rem;
   text-align: left;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
 }
 .app-feature__icon {
   font-size: 1.5rem;
@@ -774,6 +1035,36 @@ body {
   color: var(--gray);
 }
 
+/* ===== Corner Accent (decorative) ===== */
+.corner-accent {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  pointer-events: none;
+  opacity: 0.1;
+}
+.corner-accent--tl { top: 2rem; left: 2rem; border-top: 3px solid; border-left: 3px solid; }
+.corner-accent--br { bottom: 3rem; right: 2rem; border-bottom: 3px solid; border-right: 3px solid; }
+
+/* ===== Thin Accent Line Separator ===== */
+.thin-line {
+  height: 1px;
+  margin: 1rem 0;
+  border: none;
+  background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+}
+
+/* ===== Heading with Icon ===== */
+.heading-with-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+}
+.heading-with-icon--left {
+  justify-content: flex-start;
+}
+
 /* ===== Mobile Responsive ===== */
 @media (max-width: 768px) {
   .slide { padding: 2rem 1.5rem; }
@@ -787,6 +1078,9 @@ body {
   .ranking-grid { grid-template-columns: 1fr; }
   .final-quals { grid-template-columns: 1fr; }
   .app-features { grid-template-columns: 1fr; }
+  .slide-icon { width: 40px; height: 40px; }
+  .stat-ring { width: 72px; height: 72px; }
+  .corner-accent { width: 40px; height: 40px; }
 }
 
 @media (max-width: 480px) {
@@ -816,6 +1110,15 @@ body {
   <!-- ==================== Slide 1: Cover ==================== -->
   <section class="slide slide--dark slide--cover">
     <div class="slide__inner">
+      <svg class="slide-icon" viewBox="0 0 48 48" fill="none" stroke="#ed8936" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:64px;height:64px;margin-bottom:1.5rem;">
+        <!-- Trophy icon -->
+        <path d="M16 6h16v14c0 4.4-3.6 8-8 8s-8-3.6-8-8V6z"/>
+        <path d="M16 10H9v4c0 3.3 2.7 6 6 6h1"/>
+        <path d="M32 10h7v4c0 3.3-2.7 6-6 6h-1"/>
+        <path d="M20 28h8v4H20z"/>
+        <path d="M16 32h16v3H16z"/>
+        <circle cx="24" cy="16" r="3" stroke="#d69e2e" fill="none"/>
+      </svg>
       <div class="cover-badge">NEW PROJECT</div>
       <h1 class="t-title">川西モルックの会<br>シーズン大会 &amp; 新人年間王</h1>
       <div class="accent-bar accent-bar--orange"></div>
@@ -824,38 +1127,67 @@ body {
         新人戦の1年を締めくくる「新人年間王決定戦」
       </p>
     </div>
+    <!-- Decorative bottom wave -->
+    <svg class="cover-wave" viewBox="0 0 1440 80" preserveAspectRatio="none">
+      <path d="M0,40 C360,80 720,0 1080,40 C1260,60 1380,50 1440,40 L1440,80 L0,80 Z" fill="rgba(255,255,255,0.03)"/>
+      <path d="M0,50 C480,80 960,20 1440,50 L1440,80 L0,80 Z" fill="rgba(255,255,255,0.02)"/>
+    </svg>
   </section>
 
   <!-- ==================== Slide 2: Stats Overview ==================== -->
   <section class="slide">
     <div class="slide__inner">
-      <p class="t-heading" style="color: var(--navy);">一目でわかる全体像</p>
+      <div class="heading-with-icon">
+        <svg class="slide-icon--inline" viewBox="0 0 36 36" fill="none" stroke="var(--navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Eye/overview icon -->
+          <circle cx="18" cy="18" r="7"/>
+          <path d="M3 18c3-7 9-12 15-12s12 5 15 12c-3 7-9 12-15 12S6 25 3 18z"/>
+          <circle cx="18" cy="18" r="3" fill="var(--navy)"/>
+        </svg>
+        <p class="t-heading" style="color: var(--navy);">一目でわかる全体像</p>
+      </div>
       <div class="accent-bar accent-bar--navy"></div>
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-number" style="color: var(--orange);">年4回</div>
+          <div class="stat-ring stat-ring--orange">
+            <div class="stat-number" style="color: var(--orange);">年4回</div>
+          </div>
           <div class="stat-label">シーズン大会</div>
         </div>
         <div class="stat-card">
-          <div class="stat-number" style="color: var(--navy);">12名</div>
+          <div class="stat-ring stat-ring--navy">
+            <div class="stat-number" style="color: var(--navy);">12名</div>
+          </div>
           <div class="stat-label">出場枠</div>
         </div>
         <div class="stat-card">
-          <div class="stat-number" style="color: var(--gold);">全順位</div>
+          <div class="stat-ring stat-ring--gold">
+            <div class="stat-number" style="color: var(--gold);">全順位</div>
+          </div>
           <div class="stat-label">1位〜12位 確定</div>
         </div>
         <div class="stat-card">
-          <div class="stat-number" style="color: var(--green);">掲示</div>
+          <div class="stat-ring stat-ring--green">
+            <div class="stat-number" style="color: var(--green);">掲示</div>
+          </div>
           <div class="stat-label">ドーム内に掲出</div>
         </div>
       </div>
     </div>
+    <!-- Corner accents -->
+    <div class="corner-accent corner-accent--tl" style="color: var(--navy);"></div>
+    <div class="corner-accent corner-accent--br" style="color: var(--navy);"></div>
   </section>
 
   <!-- ==================== Slide 3: Part 1 Divider ==================== -->
   <section class="slide slide--divider">
     <div class="divider-number">01</div>
     <div class="slide__inner">
+      <svg class="slide-icon" viewBox="0 0 48 48" fill="none" stroke="var(--orange)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.7;">
+        <!-- Fire/flame icon -->
+        <path d="M24 4c0 8-8 12-8 20a12 12 0 0024 0c0-8-8-12-8-20z"/>
+        <path d="M24 44c-3 0-5-2-5-5 0-4 5-7 5-12 0 5 5 8 5 12 0 3-2 5-5 5z" fill="var(--orange)" opacity="0.3"/>
+      </svg>
       <div class="divider-label divider-label--fire">PART 1</div>
       <h2 class="t-heading" style="color: var(--orange);">川西モルックの会<br>最強は誰だ！？シーズン大会</h2>
       <div class="accent-bar accent-bar--orange"></div>
@@ -863,9 +1195,18 @@ body {
   </section>
 
   <!-- ==================== Slide 4: Concept ==================== -->
-  <section class="slide">
+  <section class="slide" style="background: linear-gradient(180deg, var(--bg-white) 0%, var(--bg-light) 100%);">
     <div class="slide__inner slide__inner--left">
-      <p class="t-heading">3ヶ月のポイントレース →<br>上位12名の頂上決戦</p>
+      <div class="heading-with-icon heading-with-icon--left">
+        <svg class="slide-icon--inline" viewBox="0 0 36 36" fill="none" stroke="var(--navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Target icon -->
+          <circle cx="18" cy="18" r="14"/>
+          <circle cx="18" cy="18" r="9"/>
+          <circle cx="18" cy="18" r="4"/>
+          <circle cx="18" cy="18" r="1.5" fill="var(--orange)"/>
+        </svg>
+        <p class="t-heading">3ヶ月のポイントレース →<br>上位12名の頂上決戦</p>
+      </div>
       <div class="accent-bar accent-bar--orange" style="margin: 1.2rem 0;"></div>
       <p class="t-body" style="max-width: 700px;">
         毎月の合戦・定期大会の成績をポイント化。
@@ -881,52 +1222,67 @@ body {
         </p>
       </div>
     </div>
+    <div class="corner-accent corner-accent--br" style="color: var(--orange);"></div>
   </section>
 
   <!-- ==================== Slide 5: Point System — MAIN ==================== -->
   <section class="slide">
     <div class="slide__inner slide__inner--left">
-      <p class="t-heading">
-        <span class="badge badge--main">MAIN</span>
-        モルック合戦のポイント
-      </p>
+      <div class="heading-with-icon heading-with-icon--left">
+        <svg class="slide-icon--inline" viewBox="0 0 36 36" fill="none" stroke="var(--orange)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Medal icon -->
+          <circle cx="18" cy="14" r="10"/>
+          <path d="M13 22l-3 12 8-4 8 4-3-12"/>
+          <path d="M18 8v4M15 12h6" stroke-width="1.5"/>
+        </svg>
+        <p class="t-heading">
+          <span class="badge badge--main">MAIN</span>
+          モルック合戦のポイント
+        </p>
+      </div>
       <p class="t-small" style="margin-top: 0.5rem;">月1回 / 48名参加</p>
       <table class="s-table">
         <thead>
-          <tr><th>順位</th><th>ポイント</th></tr>
+          <tr><th>順位</th><th>ポイント</th><th style="width:40%;">スケール</th></tr>
         </thead>
         <tbody>
-          <tr><td>優勝</td><td><span class="pt-val rank-gold">10 <span class="pt-unit">pt</span></span></td></tr>
-          <tr><td>準優勝</td><td><span class="pt-val rank-silver">7 <span class="pt-unit">pt</span></span></td></tr>
-          <tr><td>3位</td><td><span class="pt-val rank-bronze">5 <span class="pt-unit">pt</span></span></td></tr>
-          <tr><td>ベスト4</td><td><span class="pt-val">4 <span class="pt-unit">pt</span></span></td></tr>
-          <tr><td>ベスト8</td><td><span class="pt-val">3 <span class="pt-unit">pt</span></span></td></tr>
-          <tr><td>ベスト16</td><td><span class="pt-val">2 <span class="pt-unit">pt</span></span></td></tr>
-          <tr><td>ベスト24</td><td><span class="pt-val">1 <span class="pt-unit">pt</span></span></td></tr>
-          <tr><td style="color: var(--red);">予選落ち</td><td><span class="pt-val rank-red">-1 <span class="pt-unit">pt</span></span></td></tr>
+          <tr class="row-gold"><td>優勝</td><td><span class="pt-val rank-gold">10 <span class="pt-unit">pt</span></span></td><td><div class="pt-bar pt-bar--gold" style="width:100%;"></div></td></tr>
+          <tr class="row-silver"><td>準優勝</td><td><span class="pt-val rank-silver">7 <span class="pt-unit">pt</span></span></td><td><div class="pt-bar pt-bar--silver" style="width:70%;"></div></td></tr>
+          <tr class="row-bronze"><td>3位</td><td><span class="pt-val rank-bronze">5 <span class="pt-unit">pt</span></span></td><td><div class="pt-bar pt-bar--bronze" style="width:50%;"></div></td></tr>
+          <tr><td>ベスト4</td><td><span class="pt-val">4 <span class="pt-unit">pt</span></span></td><td><div class="pt-bar pt-bar--default" style="width:40%;"></div></td></tr>
+          <tr><td>ベスト8</td><td><span class="pt-val">3 <span class="pt-unit">pt</span></span></td><td><div class="pt-bar pt-bar--default" style="width:30%;"></div></td></tr>
+          <tr><td>ベスト16</td><td><span class="pt-val">2 <span class="pt-unit">pt</span></span></td><td><div class="pt-bar pt-bar--default" style="width:20%;"></div></td></tr>
+          <tr><td>ベスト24</td><td><span class="pt-val">1 <span class="pt-unit">pt</span></span></td><td><div class="pt-bar pt-bar--default" style="width:10%;"></div></td></tr>
+          <tr><td style="color: var(--red);">予選落ち</td><td><span class="pt-val rank-red">-1 <span class="pt-unit">pt</span></span></td><td><div class="pt-bar pt-bar--red" style="width:10%;"></div></td></tr>
         </tbody>
       </table>
     </div>
   </section>
 
   <!-- ==================== Slide 6: Point System — REGULAR ==================== -->
-  <section class="slide">
+  <section class="slide" style="background: var(--bg-light);">
     <div class="slide__inner slide__inner--left">
-      <p class="t-heading">
-        <span class="badge badge--regular">REGULAR</span>
-        定期大会のポイント
-      </p>
+      <div class="heading-with-icon heading-with-icon--left">
+        <svg class="slide-icon--inline" viewBox="0 0 36 36" fill="none" stroke="#3182ce" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Star icon -->
+          <path d="M18 3l4.5 9.2 10.1 1.5-7.3 7.1 1.7 10.1L18 26l-9 4.9 1.7-10.1-7.3-7.1 10.1-1.5z"/>
+        </svg>
+        <p class="t-heading">
+          <span class="badge badge--regular">REGULAR</span>
+          定期大会のポイント
+        </p>
+      </div>
       <p class="t-small" style="margin-top: 0.5rem;">各月1回 / 〜20名程度参加（モルックナイト / 平日カップ / 早朝カップ）</p>
       <table class="s-table">
         <thead>
-          <tr><th>順位</th><th>ポイント</th></tr>
+          <tr><th>順位</th><th>ポイント</th><th style="width:40%;">スケール</th></tr>
         </thead>
         <tbody>
-          <tr><td>優勝</td><td><span class="pt-val rank-gold">4 <span class="pt-unit">pt</span></span></td></tr>
-          <tr><td>準優勝</td><td><span class="pt-val rank-silver">3 <span class="pt-unit">pt</span></span></td></tr>
-          <tr><td>3位</td><td><span class="pt-val rank-bronze">2 <span class="pt-unit">pt</span></span></td></tr>
-          <tr><td>準決勝進出</td><td><span class="pt-val">1 <span class="pt-unit">pt</span></span></td></tr>
-          <tr><td style="color: var(--red);">予選落ち</td><td><span class="pt-val rank-red">-1 <span class="pt-unit">pt</span></span></td></tr>
+          <tr class="row-gold"><td>優勝</td><td><span class="pt-val rank-gold">4 <span class="pt-unit">pt</span></span></td><td><div class="pt-bar pt-bar--gold" style="width:100%;"></div></td></tr>
+          <tr class="row-silver"><td>準優勝</td><td><span class="pt-val rank-silver">3 <span class="pt-unit">pt</span></span></td><td><div class="pt-bar pt-bar--silver" style="width:75%;"></div></td></tr>
+          <tr class="row-bronze"><td>3位</td><td><span class="pt-val rank-bronze">2 <span class="pt-unit">pt</span></span></td><td><div class="pt-bar pt-bar--bronze" style="width:50%;"></div></td></tr>
+          <tr><td>準決勝進出</td><td><span class="pt-val">1 <span class="pt-unit">pt</span></span></td><td><div class="pt-bar pt-bar--default" style="width:25%;"></div></td></tr>
+          <tr><td style="color: var(--red);">予選落ち</td><td><span class="pt-val rank-red">-1 <span class="pt-unit">pt</span></span></td><td><div class="pt-bar pt-bar--red" style="width:25%;"></div></td></tr>
         </tbody>
       </table>
       <div class="info-box" style="margin-top: 1.5rem;">
@@ -939,7 +1295,14 @@ body {
   <!-- ==================== Slide 7: Point Simulation ==================== -->
   <section class="slide">
     <div class="slide__inner">
-      <p class="t-heading">ポイントシミュレーション</p>
+      <div class="heading-with-icon">
+        <svg class="slide-icon--inline" viewBox="0 0 36 36" fill="none" stroke="var(--navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Chart/simulation icon -->
+          <rect x="4" y="4" width="28" height="28" rx="3"/>
+          <path d="M10 26V18M16 26V12M22 26V16M28 26V10" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        <p class="t-heading">ポイントシミュレーション</p>
+      </div>
       <p class="t-small">1シーズン / 3ヶ月分</p>
       <div class="cards-row">
         <!-- 合戦特化型 -->
@@ -953,6 +1316,9 @@ body {
             <div class="sim-row"><span>2月: 合戦3位</span><span class="sim-val">5 pt</span></div>
             <div class="sim-row"><span>3月: 合戦優勝 / 早朝予選落ち</span><span class="sim-val">8 pt</span></div>
           </div>
+          <div class="sim-progress">
+            <div class="sim-progress-bar"><div class="sim-progress-fill sim-progress-fill--gold" style="width:63%;"></div></div>
+          </div>
         </div>
         <!-- 安定型 -->
         <div class="sim-card" style="border-top: 3px solid var(--green);">
@@ -964,6 +1330,9 @@ body {
             <div class="sim-row"><span>1月: 合戦B8 + ナイト優勝 + 平日準優勝 + 早朝優勝</span><span class="sim-val">14 pt</span></div>
             <div class="sim-row"><span>2月: 合戦B4 + ナイト準優勝 + 平日優勝 + 早朝3位</span><span class="sim-val">12 pt</span></div>
             <div class="sim-row"><span>3月: 合戦B8 + ナイト優勝 + 平日予選落ち + 早朝優勝</span><span class="sim-val">10 pt</span></div>
+          </div>
+          <div class="sim-progress">
+            <div class="sim-progress-bar"><div class="sim-progress-fill sim-progress-fill--green" style="width:100%;"></div></div>
           </div>
         </div>
         <!-- 参加だけ -->
@@ -977,18 +1346,34 @@ body {
             <div class="sim-row"><span>2月: 合戦予選落ち + 平日予選落ち</span><span class="sim-val sim-val--red">-2 pt</span></div>
             <div class="sim-row"><span>3月: 合戦予選落ち + 早朝予選落ち</span><span class="sim-val sim-val--red">-2 pt</span></div>
           </div>
+          <div class="sim-progress">
+            <div class="sim-progress-bar"><div class="sim-progress-fill sim-progress-fill--red" style="width:17%;"></div></div>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
   <!-- ==================== Slide 8: Season Schedule ==================== -->
-  <section class="slide">
+  <section class="slide" style="background: linear-gradient(180deg, var(--bg-white) 0%, var(--bg-light) 100%);">
     <div class="slide__inner">
-      <p class="t-heading">シーズンスケジュール</p>
+      <div class="heading-with-icon">
+        <svg class="slide-icon--inline" viewBox="0 0 36 36" fill="none" stroke="var(--navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Calendar icon -->
+          <rect x="4" y="6" width="28" height="26" rx="3"/>
+          <path d="M4 14h28"/>
+          <path d="M12 4v4M24 4v4"/>
+          <rect x="9" y="18" width="4" height="4" rx="0.5" fill="var(--green)" stroke="none"/>
+          <rect x="16" y="18" width="4" height="4" rx="0.5" fill="var(--orange)" stroke="none"/>
+          <rect x="23" y="18" width="4" height="4" rx="0.5" fill="var(--navy)" stroke="none"/>
+          <rect x="9" y="25" width="4" height="4" rx="0.5" fill="#3182ce" stroke="none"/>
+        </svg>
+        <p class="t-heading">シーズンスケジュール</p>
+      </div>
       <p class="t-small">年4シーズン制</p>
       <div class="season-grid">
         <div class="season-card">
+          <div class="season-dot" style="background: var(--green);"></div>
           <div class="season-tag" style="background: var(--green-light); color: var(--green); border: 1px solid #9ae6b4;">S1</div>
           <h4>Season 1 — Spring</h4>
           <p>
@@ -999,6 +1384,7 @@ body {
           </p>
         </div>
         <div class="season-card">
+          <div class="season-dot" style="background: var(--orange);"></div>
           <div class="season-tag" style="background: var(--orange-light); color: var(--orange); border: 1px solid #fbd38d;">S2</div>
           <h4>Season 2 — Summer</h4>
           <p>
@@ -1009,6 +1395,7 @@ body {
           </p>
         </div>
         <div class="season-card">
+          <div class="season-dot" style="background: #b7791f;"></div>
           <div class="season-tag" style="background: #fffaf0; color: #b7791f; border: 1px solid #f6e05e;">S3</div>
           <h4>Season 3 — Autumn</h4>
           <p>
@@ -1019,6 +1406,7 @@ body {
           </p>
         </div>
         <div class="season-card">
+          <div class="season-dot" style="background: #3182ce;"></div>
           <div class="season-tag" style="background: var(--blue-light); color: #3182ce; border: 1px solid #90cdf4;">S4</div>
           <h4>Season 4 — Winter</h4>
           <p>
@@ -1038,25 +1426,48 @@ body {
   <!-- ==================== Slide 9: Tournament Format Flow ==================== -->
   <section class="slide">
     <div class="slide__inner">
-      <p class="t-heading">シーズン大会フォーマット</p>
+      <div class="heading-with-icon">
+        <svg class="slide-icon--inline" viewBox="0 0 36 36" fill="none" stroke="var(--navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Tournament bracket icon -->
+          <path d="M4 8h8v6H4zM4 22h8v6H4z"/>
+          <path d="M12 11h4v17h-4" fill="none"/>
+          <path d="M16 19.5h6"/>
+          <path d="M22 16h10v7H22z"/>
+        </svg>
+        <p class="t-heading">シーズン大会フォーマット</p>
+      </div>
       <div class="accent-bar accent-bar--orange" style="margin: 1rem auto;"></div>
       <div class="h-flow">
         <div class="h-flow__step">
+          <svg class="h-flow__icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--navy)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
           <div class="h-flow__label">予選</div>
           <div class="h-flow__sub">3ブロック x 4名<br>総当たり</div>
         </div>
         <div class="h-flow__arrow">→</div>
         <div class="h-flow__step">
+          <svg class="h-flow__icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2l3 6h6l-5 4 2 6-6-4-6 4 2-6-5-4h6z"/>
+          </svg>
           <div class="h-flow__label">通過</div>
           <div class="h-flow__sub">各ブロック<br>上位2名 = 6名</div>
         </div>
         <div class="h-flow__arrow">→</div>
         <div class="h-flow__step">
+          <svg class="h-flow__icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--purple)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v6M6 8l4 4M18 8l-4 4M12 12v10"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
           <div class="h-flow__label">WC戦</div>
           <div class="h-flow__sub">3位 x 3名から<br>2名が復活</div>
         </div>
         <div class="h-flow__arrow">→</div>
         <div class="h-flow__step h-flow__step--active">
+          <svg class="h-flow__icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 2h8v8c0 3.3-2.7 6-4 6s-4-2.7-4-6V2z"/>
+            <path d="M10 18h4v4h-4z"/>
+          </svg>
           <div class="h-flow__label">決勝T</div>
           <div class="h-flow__sub">8名による<br>トーナメント</div>
         </div>
@@ -1068,9 +1479,17 @@ body {
   </section>
 
   <!-- ==================== Slide 10: Bracket Visualization ==================== -->
-  <section class="slide">
+  <section class="slide" style="background: var(--bg-light);">
     <div class="slide__inner">
-      <p class="t-heading">ブラケット構成</p>
+      <div class="heading-with-icon">
+        <svg class="slide-icon--inline" viewBox="0 0 36 36" fill="none" stroke="var(--navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Bracket tree icon -->
+          <path d="M6 6v8h8M6 30v-8h8M22 14h8v8h-8"/>
+          <path d="M14 10h4v16h-4" fill="none"/>
+          <path d="M18 18h4"/>
+        </svg>
+        <p class="t-heading">ブラケット構成</p>
+      </div>
       <div class="accent-bar accent-bar--navy" style="margin: 0.8rem auto;"></div>
 
       <div class="bracket-label">予選ブロック</div>
@@ -1080,31 +1499,38 @@ body {
           <div class="slot slot--pass">1位 → 通過</div>
           <div class="slot slot--pass">2位 → 通過</div>
           <div class="slot slot--wc">3位 → WC戦</div>
-          <div class="slot">4位 → 敗退</div>
+          <div class="slot slot--out">4位 → 敗退</div>
         </div>
         <div class="block-card">
           <div class="block-label">BLOCK B</div>
           <div class="slot slot--pass">1位 → 通過</div>
           <div class="slot slot--pass">2位 → 通過</div>
           <div class="slot slot--wc">3位 → WC戦</div>
-          <div class="slot">4位 → 敗退</div>
+          <div class="slot slot--out">4位 → 敗退</div>
         </div>
         <div class="block-card">
           <div class="block-label">BLOCK C</div>
           <div class="slot slot--pass">1位 → 通過</div>
           <div class="slot slot--pass">2位 → 通過</div>
           <div class="slot slot--wc">3位 → WC戦</div>
-          <div class="slot">4位 → 敗退</div>
+          <div class="slot slot--out">4位 → 敗退</div>
         </div>
       </div>
 
-      <div class="bracket-center-card">
+      <!-- Bracket connecting arrows -->
+      <div class="bracket-arrows">
+        <span>↓</span><span>↓</span><span>↓</span>
+      </div>
+
+      <div class="bracket-center-card" style="border-left: 3px solid var(--purple);">
         <div style="font-size: clamp(0.8rem, 1.5vw, 0.95rem); color: var(--gray);">
           WC: 3位 x 3名 → <strong style="color: #805ad5;">2名</strong>が決勝T進出
         </div>
       </div>
 
-      <div class="bracket-center-card">
+      <div class="bracket-arrows"><span>↓</span></div>
+
+      <div class="bracket-center-card" style="border-left: 3px solid var(--gold);">
         <div class="bracket-label">決勝トーナメント 8名</div>
         <div style="font-size: clamp(0.85rem, 1.6vw, 1rem); color: var(--gray); line-height: 2;">
           準々決勝（4試合） → 準決勝（2試合） → 3位決定戦 + <strong style="color: var(--gold);">決 勝</strong>
@@ -1112,10 +1538,10 @@ body {
       </div>
 
       <div class="ranking-grid">
-        <div class="ranking-item"><strong>1〜4位:</strong> 決勝T結果で確定（3位決定戦あり）</div>
-        <div class="ranking-item"><strong>5〜8位:</strong> 準々決勝敗退者（予選ポイント順）</div>
-        <div class="ranking-item"><strong>9位:</strong> WC戦敗退者</div>
-        <div class="ranking-item"><strong>10〜12位:</strong> 予選ブロック最下位（予選成績順）</div>
+        <div class="ranking-item" style="border-left: 3px solid var(--gold);"><strong>1〜4位:</strong> 決勝T結果で確定（3位決定戦あり）</div>
+        <div class="ranking-item" style="border-left: 3px solid var(--navy);"><strong>5〜8位:</strong> 準々決勝敗退者（予選ポイント順）</div>
+        <div class="ranking-item" style="border-left: 3px solid var(--purple);"><strong>9位:</strong> WC戦敗退者</div>
+        <div class="ranking-item" style="border-left: 3px solid #a0aec0;"><strong>10〜12位:</strong> 予選ブロック最下位（予選成績順）</div>
       </div>
     </div>
   </section>
@@ -1123,7 +1549,15 @@ body {
   <!-- ==================== Slide 11: Match Format ==================== -->
   <section class="slide">
     <div class="slide__inner">
-      <p class="t-heading">試合形式 — オールタイマン</p>
+      <div class="heading-with-icon">
+        <svg class="slide-icon--inline" viewBox="0 0 36 36" fill="none" stroke="var(--navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Crossed swords / VS icon -->
+          <path d="M8 6l20 24M28 6L8 30"/>
+          <circle cx="18" cy="18" r="5" fill="var(--bg-white)" stroke="var(--orange)"/>
+          <text x="18" y="21" font-size="7" font-weight="900" fill="var(--orange)" text-anchor="middle" font-family="sans-serif">VS</text>
+        </svg>
+        <p class="t-heading">試合形式 — オールタイマン</p>
+      </div>
       <p class="t-body" style="margin-top: 0.5rem;">全試合が1対1の真剣勝負。チーム戦なし。</p>
       <div class="accent-bar accent-bar--navy" style="margin: 1rem auto;"></div>
       <div class="match-grid">
@@ -1142,12 +1576,26 @@ body {
         <p>ステージが上がるほどガチ度UP。予選はテンポ良く、決勝Tはじっくり戦える設計。</p>
       </div>
     </div>
+    <div class="corner-accent corner-accent--tl" style="color: var(--navy);"></div>
+    <div class="corner-accent corner-accent--br" style="color: var(--navy);"></div>
   </section>
 
   <!-- ==================== Slide 12: Scoring System App ==================== -->
-  <section class="slide">
+  <section class="slide" style="background: linear-gradient(180deg, var(--bg-light) 0%, var(--bg-white) 100%);">
     <div class="slide__inner">
-      <p class="t-heading">集計システム</p>
+      <div class="heading-with-icon">
+        <svg class="slide-icon--inline" viewBox="0 0 36 36" fill="none" stroke="var(--navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Phone/dashboard icon -->
+          <rect x="9" y="2" width="18" height="32" rx="3"/>
+          <path d="M9 7h18M9 28h18"/>
+          <circle cx="18" cy="31" r="1.5" fill="var(--navy)"/>
+          <rect x="13" y="11" width="4" height="6" rx="0.5" fill="var(--green)" stroke="none"/>
+          <rect x="19" y="13" width="4" height="4" rx="0.5" fill="var(--orange)" stroke="none"/>
+          <rect x="13" y="19" width="10" height="2" rx="0.5" fill="#e2e8f0" stroke="none"/>
+          <rect x="13" y="23" width="7" height="2" rx="0.5" fill="#e2e8f0" stroke="none"/>
+        </svg>
+        <p class="t-heading">集計システム</p>
+      </div>
       <p class="t-body" style="margin-top: 0.5rem;">専用アプリで自動集計</p>
       <div class="accent-bar accent-bar--navy" style="margin: 1rem auto;"></div>
       <p class="t-small" style="max-width: 600px; margin: 0 auto;">
@@ -1156,22 +1604,30 @@ body {
       </p>
       <div class="app-features">
         <div class="app-feature">
-          <div class="app-feature__icon">&#x1F4CA;</div>
+          <svg viewBox="0 0 28 28" width="28" height="28" fill="none" stroke="var(--navy)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:0.5rem;">
+            <rect x="3" y="3" width="22" height="22" rx="3"/><path d="M8 18V12M12 18V8M16 18V14M20 18V10"/>
+          </svg>
           <div class="app-feature__title">大会結果入力</div>
           <div class="app-feature__desc">各大会の結果をかんたんに入力</div>
         </div>
         <div class="app-feature">
-          <div class="app-feature__icon">&#x26A1;</div>
+          <svg viewBox="0 0 28 28" width="28" height="28" fill="none" stroke="var(--orange)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:0.5rem;">
+            <circle cx="14" cy="14" r="11"/><path d="M14 7v7l5 3"/>
+          </svg>
           <div class="app-feature__title">ポイント自動計算</div>
           <div class="app-feature__desc">順位に応じたポイントを自動算出</div>
         </div>
         <div class="app-feature">
-          <div class="app-feature__icon">&#x1F3C6;</div>
+          <svg viewBox="0 0 28 28" width="28" height="28" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:0.5rem;">
+            <path d="M10 4h8v8c0 2.8-1.8 5-4 5s-4-2.2-4-5V4z"/><path d="M12 17h4v3h-4z"/><path d="M9 20h10v2H9z"/>
+          </svg>
           <div class="app-feature__title">リアルタイムランキング</div>
           <div class="app-feature__desc">ランキング変動をいつでも確認</div>
         </div>
         <div class="app-feature">
-          <div class="app-feature__icon">&#x1F4C5;</div>
+          <svg viewBox="0 0 28 28" width="28" height="28" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:0.5rem;">
+            <rect x="3" y="5" width="22" height="20" rx="3"/><path d="M3 11h22"/><path d="M9 3v4M19 3v4"/><path d="M8 16h4M16 16h4M8 20h4"/>
+          </svg>
           <div class="app-feature__title">シーズン別履歴</div>
           <div class="app-feature__desc">過去のシーズン結果も閲覧可能</div>
         </div>
@@ -1186,6 +1642,14 @@ body {
   <section class="slide slide--divider">
     <div class="divider-number" style="color: rgba(56,161,105,0.08);">02</div>
     <div class="slide__inner">
+      <svg class="slide-icon" viewBox="0 0 48 48" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.7;">
+        <!-- Crown icon for new player king -->
+        <path d="M8 36h32v4H8z"/>
+        <path d="M8 36l4-16 8 8 4-12 4 12 8-8 4 16"/>
+        <circle cx="12" cy="18" r="2" fill="var(--green)" opacity="0.4"/>
+        <circle cx="24" cy="14" r="2" fill="var(--green)" opacity="0.4"/>
+        <circle cx="36" cy="18" r="2" fill="var(--green)" opacity="0.4"/>
+      </svg>
       <div class="divider-label divider-label--green">PART 2</div>
       <h2 class="t-heading" style="color: var(--green);">新人年間王決定戦</h2>
       <div class="accent-bar accent-bar--green"></div>
@@ -1195,7 +1659,15 @@ body {
   <!-- ==================== Slide 14: 新人年間王 Concept ==================== -->
   <section class="slide">
     <div class="slide__inner slide__inner--left">
-      <p class="t-heading" style="color: var(--green);">新人の中で最強は誰だ？<br>1年の集大成</p>
+      <div class="heading-with-icon heading-with-icon--left">
+        <svg class="slide-icon--inline" viewBox="0 0 36 36" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Crown + star icon -->
+          <path d="M6 28h24v3H6z"/>
+          <path d="M6 28l3-12 6 6 3-10 3 10 6-6 3 12"/>
+          <path d="M18 4l2 4h4l-3 3 1 4-4-2-4 2 1-4-3-3h4z" fill="var(--green)" opacity="0.2"/>
+        </svg>
+        <p class="t-heading" style="color: var(--green);">新人の中で最強は誰だ？<br>1年の集大成</p>
+      </div>
       <div class="accent-bar accent-bar--green" style="margin: 1.2rem 0;"></div>
       <p class="t-body" style="max-width: 700px;">
         毎月の新人戦で結果を残した選手が年末に集結。
@@ -1224,15 +1696,23 @@ body {
         <p>最大<strong>24名</strong>が出場権を獲得（重複出場者がいれば実人数は減少）</p>
       </div>
     </div>
+    <div class="corner-accent corner-accent--br" style="color: var(--green);"></div>
   </section>
 
   <!-- ==================== Slide 15: 新人年間王 Format ==================== -->
-  <section class="slide">
+  <section class="slide" style="background: linear-gradient(180deg, var(--bg-white) 0%, var(--green-light) 50%, var(--bg-white) 100%);">
     <div class="slide__inner">
-      <p class="t-heading" style="color: var(--green);">
-        <span class="badge badge--rookie">個人戦</span>
-        新人年間王 フォーマット
-      </p>
+      <div class="heading-with-icon">
+        <svg class="slide-icon--inline" viewBox="0 0 36 36" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Flow/steps icon -->
+          <circle cx="8" cy="8" r="4"/><circle cx="28" cy="8" r="4"/><circle cx="18" cy="28" r="4"/>
+          <path d="M12 8h12M10 11l6 14M26 11l-6 14"/>
+        </svg>
+        <p class="t-heading" style="color: var(--green);">
+          <span class="badge badge--rookie">個人戦</span>
+          新人年間王 フォーマット
+        </p>
+      </div>
       <div class="accent-bar accent-bar--green" style="margin: 1rem auto;"></div>
       <div class="flow-steps" style="max-width: 700px; margin: 1.5rem auto 0;">
         <div class="flow-step">
@@ -1265,7 +1745,16 @@ body {
   <!-- ==================== Slide 16: Annual Schedule ==================== -->
   <section class="slide">
     <div class="slide__inner">
-      <p class="t-heading" style="color: var(--green);">年間スケジュール</p>
+      <div class="heading-with-icon">
+        <svg class="slide-icon--inline" viewBox="0 0 36 36" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Calendar/year icon -->
+          <rect x="4" y="6" width="28" height="26" rx="3"/>
+          <path d="M4 14h28"/>
+          <path d="M12 4v4M24 4v4"/>
+          <path d="M10 20l4 4 8-8" stroke-width="2.5"/>
+        </svg>
+        <p class="t-heading" style="color: var(--green);">年間スケジュール</p>
+      </div>
       <div class="accent-bar accent-bar--green" style="margin: 1rem auto;"></div>
       <div class="timeline" style="max-width: 600px; margin: 1.5rem auto 0;">
         <div class="timeline__item timeline__item--green">
@@ -1290,26 +1779,42 @@ body {
         </div>
       </div>
     </div>
+    <div class="corner-accent corner-accent--tl" style="color: var(--green);"></div>
   </section>
 
   <!-- ==================== Slide 17: Overview ==================== -->
-  <section class="slide">
+  <section class="slide" style="background: linear-gradient(180deg, var(--bg-light) 0%, var(--bg-white) 100%);">
     <div class="slide__inner">
-      <p class="t-heading">年間の全体像</p>
+      <div class="heading-with-icon">
+        <svg class="slide-icon--inline" viewBox="0 0 36 36" fill="none" stroke="var(--navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Pyramid/layers icon -->
+          <path d="M18 4L4 32h28L18 4z"/>
+          <path d="M10 20h16"/>
+          <path d="M7 26h22"/>
+        </svg>
+        <p class="t-heading">年間の全体像</p>
+      </div>
       <div class="accent-bar accent-bar--navy" style="margin: 1rem auto;"></div>
       <div class="overview-stack">
-        <div class="overview-card" style="color: var(--orange); border-top: 3px solid var(--orange);">
+        <div class="overview-card overview-card--top" style="color: var(--gold); border-top: 4px solid var(--gold);">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--gold)" stroke-width="1.5" style="display:inline-block;vertical-align:middle;margin-right:0.3rem;">
+            <path d="M12 2l2 4h4l-3 3 1 4-4-2-4 2 1-4-3-3h4z"/>
+          </svg>
+          合戦FINAL x 年1回<br><span style="font-weight: 400; font-size: 0.85em; color: var(--gray);">翌年1月 / 合戦決勝進出者 + シーズン大会優勝者 + 新人年間王</span>
+        </div>
+        <div class="overview-arrow">&#x2191;</div>
+        <div class="overview-card overview-card--mid" style="color: var(--orange); border-top: 3px solid var(--orange);">
           シーズン大会 x 年4回<br><span style="font-weight: 400; font-size: 0.85em; color: var(--gray);">3ヶ月ごと / 満願寺</span>
         </div>
         <div class="overview-plus">+</div>
-        <div class="overview-card" style="color: var(--green); border-top: 3px solid var(--green);">
+        <div class="overview-card overview-card--mid" style="color: var(--green); border-top: 3px solid var(--green);">
           新人年間王決定戦 x 年1回<br><span style="font-weight: 400; font-size: 0.85em; color: var(--gray);">12月開催</span>
         </div>
-        <div class="overview-plus">+</div>
-        <div class="overview-card" style="color: var(--gold); border-top: 3px solid var(--gold);">
-          合戦FINAL x 年1回<br><span style="font-weight: 400; font-size: 0.85em; color: var(--gray);">翌年1月 / 合戦決勝進出者 + シーズン大会優勝者 + 新人年間王</span>
+        <div class="overview-arrow">&#x2191;</div>
+        <div class="overview-card overview-card--base" style="color: var(--navy); border-top: 3px solid var(--navy);">
+          毎月の合戦 / 定期大会 / 新人戦<br><span style="font-weight: 400; font-size: 0.85em; color: var(--gray);">月4回のポイント対象大会がベース</span>
         </div>
-        <div class="overview-arrow">&#x2193;</div>
+        <hr class="thin-line" style="width:100%;max-width:600px;">
         <div class="overview-result">川西モルックの会の1年を彩る大会体系</div>
       </div>
       <div class="info-box" style="margin-top: 1rem;">
@@ -1322,10 +1827,20 @@ body {
   <!-- ==================== Slide 18: 合戦FINAL ==================== -->
   <section class="slide">
     <div class="slide__inner">
-      <p class="t-heading">
-        <span class="badge badge--final">FINAL</span>
-        合戦FINAL
-      </p>
+      <div class="heading-with-icon">
+        <svg class="slide-icon--inline" viewBox="0 0 36 36" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Crown icon -->
+          <path d="M5 28h26v3H5z"/>
+          <path d="M5 28l4-14 5 7 4-10 4 10 5-7 4 14"/>
+          <circle cx="9" cy="12" r="2" fill="var(--gold)" opacity="0.3"/>
+          <circle cx="18" cy="9" r="2" fill="var(--gold)" opacity="0.3"/>
+          <circle cx="27" cy="12" r="2" fill="var(--gold)" opacity="0.3"/>
+        </svg>
+        <p class="t-heading">
+          <span class="badge badge--final">FINAL</span>
+          合戦FINAL
+        </p>
+      </div>
       <p class="t-body" style="margin-top: 0.5rem;">年間を通じた実績者による頂上決戦</p>
       <div class="accent-bar accent-bar--orange" style="margin: 1rem auto;"></div>
       <p class="t-small" style="max-width: 650px; margin: 0 auto;">
@@ -1334,14 +1849,26 @@ body {
       </p>
       <div class="final-quals">
         <div class="final-qual">
+          <svg viewBox="0 0 28 28" width="28" height="28" fill="none" stroke="var(--gold)" stroke-width="1.5" style="display:block;margin:0 auto 0.5rem;">
+            <path d="M8 4l6 6 6-6M14 10v14"/>
+            <path d="M8 24h12"/>
+          </svg>
           <div class="final-qual__num">&#9312;</div>
           <div class="final-qual__text">3月〜12月のモルック合戦で<strong>決勝に進出</strong></div>
         </div>
         <div class="final-qual">
+          <svg viewBox="0 0 28 28" width="28" height="28" fill="none" stroke="var(--gold)" stroke-width="1.5" style="display:block;margin:0 auto 0.5rem;">
+            <path d="M8 4h12v10c0 3.3-2.7 6-6 6s-6-2.7-6-6V4z"/>
+            <path d="M10 22h8v3H10z"/>
+          </svg>
           <div class="final-qual__num">&#9313;</div>
           <div class="final-qual__text">シーズン大会で<strong>優勝</strong><br>（年4回チャンスあり）</div>
         </div>
         <div class="final-qual">
+          <svg viewBox="0 0 28 28" width="28" height="28" fill="none" stroke="var(--gold)" stroke-width="1.5" style="display:block;margin:0 auto 0.5rem;">
+            <path d="M4 22h20v3H4z"/>
+            <path d="M4 22l3-10 4 5 3-8 3 8 4-5 3 10"/>
+          </svg>
           <div class="final-qual__num">&#9314;</div>
           <div class="final-qual__text">新人年間王決定戦で<strong>優勝</strong></div>
         </div>
@@ -1350,12 +1877,23 @@ body {
         <p><strong>開催時期:</strong> 翌年1月<br><strong>開催場所:</strong> 満願寺（雨天時は予備日に延期）</p>
       </div>
     </div>
+    <div class="corner-accent corner-accent--tl" style="color: var(--gold);"></div>
+    <div class="corner-accent corner-accent--br" style="color: var(--gold);"></div>
   </section>
 
   <!-- ==================== Slide 19: 決めておくこと ==================== -->
-  <section class="slide">
+  <section class="slide" style="background: var(--bg-light);">
     <div class="slide__inner slide__inner--left">
-      <p class="t-heading">決めておくこと</p>
+      <div class="heading-with-icon heading-with-icon--left">
+        <svg class="slide-icon--inline" viewBox="0 0 36 36" fill="none" stroke="var(--navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Clipboard icon -->
+          <rect x="6" y="6" width="24" height="28" rx="3"/>
+          <path d="M14 2h8v6h-8z"/>
+          <path d="M12 16h12M12 21h12M12 26h8"/>
+          <rect x="14" y="2" width="8" height="6" rx="1.5" fill="var(--bg-light)"/>
+        </svg>
+        <p class="t-heading">決めておくこと</p>
+      </div>
       <div class="accent-bar accent-bar--navy" style="margin: 1rem 0;"></div>
       <ul class="checklist">
         <li><span class="check-box"></span>シーズン大会の具体的な日程（各シーズンの本戦日 + 予備日）</li>
@@ -1367,11 +1905,20 @@ body {
         <li><span class="check-box"></span>出場権獲得者の辞退時の対応</li>
       </ul>
     </div>
+    <div class="corner-accent corner-accent--br" style="color: var(--navy);"></div>
   </section>
 
   <!-- ==================== Slide 20: Closing ==================== -->
   <section class="slide slide--dark slide--closing">
     <div class="slide__inner">
+      <svg class="slide-icon" viewBox="0 0 48 48" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:56px;height:56px;margin-bottom:1.5rem;">
+        <!-- Trophy icon (closing) -->
+        <path d="M16 6h16v14c0 4.4-3.6 8-8 8s-8-3.6-8-8V6z" stroke="var(--orange)"/>
+        <path d="M16 10H9v4c0 3.3 2.7 6 6 6h1" stroke="rgba(255,255,255,0.3)"/>
+        <path d="M32 10h7v4c0 3.3-2.7 6-6 6h-1" stroke="rgba(255,255,255,0.3)"/>
+        <path d="M20 28h8v4H20z" stroke="var(--orange)" opacity="0.6"/>
+        <path d="M16 32h16v3H16z" stroke="var(--orange)" opacity="0.6"/>
+      </svg>
       <div class="closing-title">
         川西モルックの会<br>シーズン大会 &amp; 新人年間王<br>企画書
       </div>
