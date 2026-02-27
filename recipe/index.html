@@ -63,7 +63,7 @@ body {
 .login-btn svg { width: 20px; height: 20px; }
 
 /* ===== App Shell ===== */
-.app-shell { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+.app-shell { padding-bottom: calc(90px + env(safe-area-inset-bottom)); }
 .app-header {
   display: flex; align-items: center; justify-content: space-between;
   padding: 16px 16px 8px; position: sticky; top: 0;
@@ -102,7 +102,7 @@ body {
   background: var(--bg-card); border-top: 1px solid var(--border);
   display: flex; justify-content: center;
   max-width: 480px; margin: 0 auto; z-index: 100;
-  padding-bottom: max(env(safe-area-inset-bottom), 8px);
+  padding-bottom: max(env(safe-area-inset-bottom), 16px);
 }
 .nav-btn {
   flex: 1; display: flex; flex-direction: column;
@@ -251,7 +251,7 @@ body {
 
 /* ===== Recipe Detail ===== */
 .detail-hero-wrap {
-  position: relative; width: 100%;
+  position: relative; width: calc(100% + 32px); margin-left: -16px; margin-right: -16px;
 }
 .detail-hero {
   width: 100%; height: 250px; object-fit: cover; background: var(--brown-light); display: block;
@@ -286,7 +286,7 @@ body {
 }
 .detail-source:hover { text-decoration: underline; }
 .detail-actions {
-  display: flex; gap: 8px; margin: 12px 0; padding: 0 16px;
+  display: flex; gap: 8px; margin: 12px 0;
   flex-wrap: wrap;
 }
 .detail-actions button {
@@ -317,7 +317,7 @@ body {
 }
 .timer-btn:active { background: var(--accent-light); border-color: var(--accent); }
 
-.detail-section { margin-top: 20px; padding: 0 16px; }
+.detail-section { margin-top: 20px; }
 .detail-section-title {
   font-size: 14px; font-weight: 700; color: var(--accent);
   margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
@@ -570,6 +570,7 @@ body {
   overflow-y: auto; -webkit-overflow-scrolling: touch;
   padding: 0 !important;
   animation: slideInFromRight 0.25s ease;
+  display: flex; flex-direction: column;
 }
 #pageDetail.closing {
   animation: slideOutToRight 0.2s ease forwards;
@@ -583,17 +584,19 @@ body {
   to { transform: translateX(40%); opacity: 0; }
 }
 #pageDetail > #detailContent {
-  max-width: 480px; margin: 0 auto;
-  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  max-width: 480px; margin: 0 auto; width: 100%;
+  padding: 0 16px calc(24px + env(safe-area-inset-bottom));
+  overflow-x: hidden;
 }
 .detail-top-bar {
   position: sticky; top: 0; z-index: 10;
   display: flex; align-items: center;
-  padding: calc(env(safe-area-inset-top, 8px) + 8px) 16px 10px;
-  background: rgba(253,248,243,0.92);
+  padding: calc(max(env(safe-area-inset-top, 12px), 12px) + 8px) 16px 10px;
+  background: rgba(253,248,243,0.95);
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
   gap: 12px; min-height: 48px;
+  flex-shrink: 0;
 }
 .detail-top-bar .back-link {
   display: flex; align-items: center; gap: 2px;
@@ -1605,7 +1608,7 @@ function renderDetail(id) {
   html += `</div>`;
 
   html += `
-    <div class="detail-header" style="padding:16px 16px 0">
+    <div class="detail-header" style="padding:16px 0 0">
       <div class="detail-title">${esc(r.title)}</div>
       <div class="detail-meta">
         ${r.prepTime ? `<span class="detail-meta-item">⏱ ${esc(r.prepTime)}</span>` : ''}
