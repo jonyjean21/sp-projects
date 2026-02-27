@@ -28,6 +28,14 @@
   --brown: #8b6f47;
   --brown-light: #f0e6d4;
   --border: #ece3d7;
+  --meal-morning: #4DABF7;
+  --meal-morning-light: #e7f5ff;
+  --meal-lunch: #FFA94D;
+  --meal-lunch-light: #fff4e6;
+  --meal-dinner: #9775FA;
+  --meal-dinner-light: #f3f0ff;
+  --meal-snack: #F783AC;
+  --meal-snack-light: #fff0f6;
   --shadow: 0 2px 8px rgba(60,40,10,0.06);
   --radius: 14px;
 }
@@ -563,6 +571,123 @@ body {
 }
 .color-dot.selected { border-color: var(--text); }
 
+/* ===== Meal Picker ===== */
+.meal-picker {
+  display: flex; gap: 8px; justify-content: center;
+  margin-top: 10px; animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+.meal-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 10px 14px; border-radius: 12px; border: 2px solid var(--border);
+  background: var(--bg-card); cursor: pointer; font-family: inherit;
+  font-size: 11px; font-weight: 600; transition: all 0.15s; min-width: 60px;
+}
+.meal-btn:active { transform: scale(0.95); }
+.meal-btn[data-meal="morning"] { color: var(--meal-morning); }
+.meal-btn[data-meal="morning"]:active { background: var(--meal-morning-light); border-color: var(--meal-morning); }
+.meal-btn[data-meal="lunch"] { color: var(--meal-lunch); }
+.meal-btn[data-meal="lunch"]:active { background: var(--meal-lunch-light); border-color: var(--meal-lunch); }
+.meal-btn[data-meal="dinner"] { color: var(--meal-dinner); }
+.meal-btn[data-meal="dinner"]:active { background: var(--meal-dinner-light); border-color: var(--meal-dinner); }
+.meal-btn[data-meal="snack"] { color: var(--meal-snack); }
+.meal-btn[data-meal="snack"]:active { background: var(--meal-snack-light); border-color: var(--meal-snack); }
+.meal-btn-icon { font-size: 20px; }
+
+/* ===== Cooking Log ===== */
+.cook-log { margin-top: 8px; }
+.cook-log-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px;
+}
+.cook-log-item:last-child { border-bottom: none; }
+.cook-log-date { color: var(--text-sub); font-size: 12px; min-width: 50px; }
+.cook-log-meal {
+  font-size: 10px; font-weight: 700; padding: 2px 10px;
+  border-radius: 10px; white-space: nowrap;
+}
+.cook-log-meal.morning { background: var(--meal-morning-light); color: var(--meal-morning); }
+.cook-log-meal.lunch { background: var(--meal-lunch-light); color: var(--meal-lunch); }
+.cook-log-meal.dinner { background: var(--meal-dinner-light); color: var(--meal-dinner); }
+.cook-log-meal.snack { background: var(--meal-snack-light); color: var(--meal-snack); }
+.cook-log-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cook-log-del {
+  background: none; border: none; color: var(--text-light); font-size: 16px;
+  cursor: pointer; padding: 4px 6px; flex-shrink: 0; border-radius: 6px;
+}
+.cook-log-del:active { background: var(--red-light); color: var(--red); }
+
+/* ===== Calendar Page ===== */
+.cal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.cal-nav-btn {
+  background: none; border: 1px solid var(--border); border-radius: 10px;
+  padding: 8px 14px; cursor: pointer; font-size: 16px; color: var(--text-sub);
+  font-family: inherit;
+}
+.cal-nav-btn:active { background: var(--bg-warm); }
+.cal-month-label { font-size: 16px; font-weight: 700; }
+.cal-weekdays {
+  display: grid; grid-template-columns: repeat(7, 1fr); text-align: center;
+  font-size: 11px; font-weight: 600; color: var(--text-light); margin-bottom: 4px;
+}
+.cal-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
+}
+.cal-cell {
+  aspect-ratio: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-start;
+  padding: 4px 2px; border-radius: 10px; cursor: pointer;
+  transition: background 0.15s; position: relative; min-height: 48px;
+}
+.cal-cell:active { background: var(--bg-warm); }
+.cal-cell.today { background: var(--accent-light); }
+.cal-cell.selected { background: var(--accent); color: #fff; }
+.cal-cell.selected .cal-day { color: #fff; }
+.cal-cell.other-month { opacity: 0.3; }
+.cal-day { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+.cal-dots {
+  display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; max-width: 100%;
+}
+.cal-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+}
+.cal-dot.morning { background: var(--meal-morning); }
+.cal-dot.lunch { background: var(--meal-lunch); }
+.cal-dot.dinner { background: var(--meal-dinner); }
+.cal-dot.snack { background: var(--meal-snack); }
+.cal-day-detail {
+  margin-top: 16px; background: var(--bg-card); border-radius: var(--radius);
+  box-shadow: var(--shadow); overflow: hidden;
+}
+.cal-day-detail-header {
+  padding: 12px 16px; font-size: 14px; font-weight: 700;
+  border-bottom: 1px solid var(--border);
+}
+.cal-day-detail-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background 0.15s;
+}
+.cal-day-detail-item:last-child { border-bottom: none; }
+.cal-day-detail-item:active { background: var(--bg-warm); }
+.cal-day-detail-empty {
+  padding: 24px 16px; text-align: center;
+  font-size: 13px; color: var(--text-light);
+}
+.cal-legend {
+  display: flex; gap: 12px; justify-content: center; margin: 16px 0 8px;
+  flex-wrap: wrap;
+}
+.cal-legend-item {
+  display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-sub);
+}
+.cal-legend-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+}
+
 /* ===== Detail Page Full-Screen Overlay ===== */
 #pageDetail.active {
   position: fixed; top: 0; bottom: 0; left: 0; right: 0;
@@ -745,6 +870,7 @@ body {
     </div>
     <div id="userMenu" class="user-menu">
       <button class="user-menu-item" onclick="toggleUserMenu();openModal('guideModal')">使い方ガイド</button>
+      <button class="user-menu-item" onclick="toggleUserMenu();showPage('settings')">家族の共有・設定</button>
       <button class="user-menu-item" onclick="exportData()">データエクスポート</button>
       <button class="user-menu-item danger" onclick="signOut()">ログアウト</button>
     </div>
@@ -826,6 +952,26 @@ body {
     </div>
   </div>
 
+  <!-- Page: Calendar -->
+  <div id="pageCalendar" class="page">
+    <div class="cal-header">
+      <button class="cal-nav-btn" onclick="calNavigate(-1)">‹</button>
+      <div class="cal-month-label" id="calMonthLabel"></div>
+      <button class="cal-nav-btn" onclick="calNavigate(1)">›</button>
+    </div>
+    <div class="cal-legend">
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--meal-morning)"></div>朝</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--meal-lunch)"></div>昼</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--meal-dinner)"></div>晩</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--meal-snack)"></div>おやつ</div>
+    </div>
+    <div class="cal-weekdays">
+      <div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div>土</div><div>日</div>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div id="calDayDetail"></div>
+  </div>
+
   <!-- Page: Settings -->
   <div id="pageSettings" class="page">
     <div class="section-title">設定</div>
@@ -860,7 +1006,7 @@ body {
       </div>
     </div>
     <div style="text-align:center;margin-top:24px;font-size:11px;color:var(--text-light)">
-      レシピBOX v2.0
+      レシピBOX v3.0
     </div>
   </div>
 
@@ -881,9 +1027,9 @@ body {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
       買い物
     </button>
-    <button class="nav-btn" data-page="settings" onclick="showPage('settings')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-      設定
+    <button class="nav-btn" data-page="calendar" onclick="showPage('calendar')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      カレンダー
     </button>
   </nav>
 </div>
@@ -1115,11 +1261,21 @@ body {
       </div>
       <p>参加後は追加・編集がリアルタイムで全員に反映されます。</p>
 
+      <div style="font-weight:700;color:var(--text);font-size:14px;margin:16px 0 8px">作った！記録</div>
+      <div style="background:var(--green-light);border-radius:10px;padding:12px;margin-bottom:12px">
+        レシピ詳細の「作った！」ボタンをタップすると、朝・昼・晩・おやつから選んで記録できます。押しすぎた場合は調理記録の×で削除可能。
+      </div>
+
+      <div style="font-weight:700;color:var(--text);font-size:14px;margin:16px 0 8px">カレンダー</div>
+      <div style="background:var(--meal-morning-light);border-radius:10px;padding:12px;margin-bottom:12px">
+        下のカレンダータブで月間の調理記録を確認。<span style="color:var(--meal-morning)">●朝</span> <span style="color:var(--meal-lunch)">●昼</span> <span style="color:var(--meal-dinner)">●晩</span> <span style="color:var(--meal-snack)">●おやつ</span> で色分け表示。日付をタップすると詳細が見えます。
+      </div>
+
       <div style="font-weight:700;color:var(--text);font-size:14px;margin:16px 0 8px">検索する</div>
       <p>ホーム画面上部の検索バーで、レシピ名・材料名で検索できます。</p>
 
       <div style="font-weight:700;color:var(--text);font-size:14px;margin:16px 0 8px">操作のヒント</div>
-      <p>モーダル画面は上のバーを下にスワイプして閉じることもできます。</p>
+      <p>モーダル画面は上のバーを下にスワイプして閉じることもできます。設定はアバターメニューから。</p>
     </div>
     <button class="form-submit" onclick="closeModal('guideModal')" style="margin-top:16px">閉じる</button>
   </div>
@@ -1321,7 +1477,7 @@ function startListening() {
 function showPage(page) {
   currentPage = page;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  const pageMap = { home: 'pageHome', folders: 'pageFolders', detail: 'pageDetail', shop: 'pageShop', settings: 'pageSettings' };
+  const pageMap = { home: 'pageHome', folders: 'pageFolders', detail: 'pageDetail', shop: 'pageShop', settings: 'pageSettings', calendar: 'pageCalendar' };
   const pageEl = document.getElementById(pageMap[page]);
   if (pageEl) pageEl.classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b => {
@@ -1334,6 +1490,9 @@ function showPage(page) {
   if (page === 'shop') {
     renderShoppingList();
   }
+  if (page === 'calendar') {
+    renderCalendar();
+  }
 }
 
 // ===== Render =====
@@ -1341,6 +1500,7 @@ function renderAll() {
   renderHome();
   renderFolders();
   renderShoppingList();
+  if (currentPage === 'calendar') renderCalendar();
   if (currentPage === 'detail' && currentDetailId) renderDetail(currentDetailId);
   if (currentPage === 'folders' && currentFolderViewId) renderFolderDetail(currentFolderViewId);
 }
@@ -1665,11 +1825,20 @@ function renderDetail(id) {
       ${r.sourceUrl ? `<a class="detail-source" href="${esc(r.sourceUrl)}" target="_blank">🔗 元のレシピを見る</a>` : ''}
     </div>
     <div style="margin:16px 0 8px;text-align:center">
-      <button onclick="markCooked('${id}')" style="padding:12px 28px;border-radius:50px;border:2px solid var(--green);background:var(--green-light);color:var(--green);font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.2s">
+      <button onclick="showMealPicker('${id}')" style="padding:12px 28px;border-radius:50px;border:2px solid var(--green);background:var(--green-light);color:var(--green);font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.2s">
         🍳 作った！${r.cookedCount ? `<span style="font-size:12px;font-weight:400;margin-left:4px">(${r.cookedCount}回)</span>` : ''}
       </button>
+      <div id="mealPickerArea" class="hidden">
+        <div class="meal-picker">
+          <button class="meal-btn" data-meal="morning" onclick="markCooked('${id}','morning')"><span class="meal-btn-icon">🌅</span>朝</button>
+          <button class="meal-btn" data-meal="lunch" onclick="markCooked('${id}','lunch')"><span class="meal-btn-icon">☀️</span>昼</button>
+          <button class="meal-btn" data-meal="dinner" onclick="markCooked('${id}','dinner')"><span class="meal-btn-icon">🌙</span>晩</button>
+          <button class="meal-btn" data-meal="snack" onclick="markCooked('${id}','snack')"><span class="meal-btn-icon">🍰</span>おやつ</button>
+        </div>
+      </div>
       ${r.lastCooked ? `<div style="font-size:11px;color:var(--text-light);margin-top:4px">最後に作った日: ${new Date(r.lastCooked).toLocaleDateString('ja-JP')}</div>` : ''}
     </div>
+    ${renderCookLog(id, r)}
     <div class="detail-actions">
       <button class="btn-fav ${r.favorite ? 'active' : ''}" onclick="toggleFav('${id}')">${r.favorite ? '★' : '☆'}</button>
       <button class="btn-edit" onclick="shareRecipe('${id}')">共有</button>
@@ -1895,13 +2064,42 @@ function toggleFav(id) {
   familyRef(`items/${id}/favorite`).set(!r.favorite);
 }
 
-function markCooked(id) {
+function showMealPicker(id) {
+  const el = document.getElementById('mealPickerArea');
+  if (el.classList.contains('hidden')) {
+    el.classList.remove('hidden');
+  } else {
+    el.classList.add('hidden');
+  }
+}
+
+const MEAL_LABELS = { morning: '朝ごはん', lunch: '昼ごはん', dinner: '晩ごはん', snack: 'おやつ' };
+const MEAL_ICONS = { morning: '🌅', lunch: '☀️', dinner: '🌙', snack: '🍰' };
+
+function markCooked(id, meal) {
   const r = itemsData[id];
   if (!r) return;
   const count = (r.cookedCount || 0) + 1;
-  familyRef(`items/${id}`).update({ cookedCount: count, lastCooked: Date.now() });
-  showToast(`🍳 ${count}回目！`);
+  const ts = Date.now();
+  const logEntry = { ts, meal };
+  const updates = { cookedCount: count, lastCooked: ts };
+  familyRef(`items/${id}`).update(updates);
+  familyRef(`items/${id}/cookedLog`).push(logEntry);
+  showToast(`${MEAL_ICONS[meal]} ${MEAL_LABELS[meal]}に記録！（${count}回目）`);
+  document.getElementById('mealPickerArea')?.classList.add('hidden');
   renderDetail(id);
+}
+
+function deleteCookLog(recipeId, logKey) {
+  const r = itemsData[recipeId];
+  if (!r) return;
+  familyRef(`items/${recipeId}/cookedLog/${logKey}`).remove();
+  const newCount = Math.max(0, (r.cookedCount || 1) - 1);
+  const remaining = r.cookedLog ? Object.entries(r.cookedLog).filter(([k]) => k !== logKey) : [];
+  const lastTs = remaining.length ? Math.max(...remaining.map(([,v]) => v.ts)) : null;
+  familyRef(`items/${recipeId}`).update({ cookedCount: newCount, lastCooked: lastTs });
+  showToast('記録を削除しました');
+  renderDetail(recipeId);
 }
 
 function deleteRecipe(id) {
@@ -2530,6 +2728,187 @@ function importData(e) {
     e.target.value = '';
   };
   reader.readAsText(file);
+}
+
+// ===== Cooking Log Render =====
+function renderCookLog(id, r) {
+  if (!r.cookedLog) return '';
+  const entries = Object.entries(r.cookedLog).sort((a, b) => b[1].ts - a[1].ts);
+  if (!entries.length) return '';
+  const shown = entries.slice(0, 10);
+  let html = '<div class="cook-log" style="padding:0 16px">';
+  html += '<div style="font-size:13px;font-weight:700;color:var(--text-sub);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between"><span>📋 調理記録</span><span style="font-size:11px;font-weight:400">' + entries.length + '回</span></div>';
+  shown.forEach(([key, log]) => {
+    const d = new Date(log.ts);
+    const dateStr = `${d.getMonth() + 1}/${d.getDate()}`;
+    const mealClass = log.meal || 'dinner';
+    const mealLabel = MEAL_LABELS[mealClass] || '晩ごはん';
+    html += `<div class="cook-log-item">
+      <span class="cook-log-date">${dateStr}</span>
+      <span class="cook-log-meal ${mealClass}">${mealLabel}</span>
+      <span style="flex:1"></span>
+      <button class="cook-log-del" onclick="event.stopPropagation();deleteCookLog('${id}','${key}')" title="削除">×</button>
+    </div>`;
+  });
+  if (entries.length > 10) {
+    html += '<div style="text-align:center;font-size:11px;color:var(--text-light);padding:8px 0">他 ' + (entries.length - 10) + ' 件</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+// ===== Calendar =====
+let calYear, calMonth, calSelectedDate = null;
+(function initCal() {
+  const now = new Date();
+  calYear = now.getFullYear();
+  calMonth = now.getMonth();
+})();
+
+function calNavigate(delta) {
+  calMonth += delta;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  calSelectedDate = null;
+  renderCalendar();
+}
+
+function getAllCookLogs() {
+  const logs = [];
+  Object.entries(itemsData).forEach(([id, r]) => {
+    if (r.cookedLog) {
+      Object.entries(r.cookedLog).forEach(([key, log]) => {
+        logs.push({ recipeId: id, logKey: key, title: r.title, image: r.image, ...log });
+      });
+    }
+  });
+  return logs;
+}
+
+function renderCalendar() {
+  const label = document.getElementById('calMonthLabel');
+  label.textContent = `${calYear}年${calMonth + 1}月`;
+
+  const allLogs = getAllCookLogs();
+
+  // Build map: "YYYY-MM-DD" → [logs]
+  const dayMap = {};
+  allLogs.forEach(log => {
+    const d = new Date(log.ts);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    if (!dayMap[key]) dayMap[key] = [];
+    dayMap[key].push(log);
+  });
+
+  const firstDay = new Date(calYear, calMonth, 1);
+  const lastDay = new Date(calYear, calMonth + 1, 0);
+  const startDow = (firstDay.getDay() + 6) % 7; // Monday=0
+  const daysInMonth = lastDay.getDate();
+
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+  let html = '';
+
+  // Previous month fill
+  const prevLast = new Date(calYear, calMonth, 0).getDate();
+  for (let i = startDow - 1; i >= 0; i--) {
+    const day = prevLast - i;
+    html += `<div class="cal-cell other-month"><div class="cal-day">${day}</div></div>`;
+  }
+
+  // Current month
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const isToday = dateStr === todayStr;
+    const isSelected = calSelectedDate === dateStr;
+    const logs = dayMap[dateStr] || [];
+
+    // Unique meals for dots
+    const meals = [...new Set(logs.map(l => l.meal || 'dinner'))];
+    const dots = meals.map(m => `<div class="cal-dot ${m}"></div>`).join('');
+
+    html += `<div class="cal-cell${isToday ? ' today' : ''}${isSelected ? ' selected' : ''}" onclick="selectCalDay('${dateStr}')">
+      <div class="cal-day">${d}</div>
+      ${dots ? `<div class="cal-dots">${dots}</div>` : ''}
+    </div>`;
+  }
+
+  // Next month fill
+  const totalCells = startDow + daysInMonth;
+  const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+  for (let d = 1; d <= remaining; d++) {
+    html += `<div class="cal-cell other-month"><div class="cal-day">${d}</div></div>`;
+  }
+
+  document.getElementById('calGrid').innerHTML = html;
+  renderCalDayDetail(dayMap);
+}
+
+function selectCalDay(dateStr) {
+  calSelectedDate = calSelectedDate === dateStr ? null : dateStr;
+  renderCalendar();
+}
+
+function renderCalDayDetail(dayMap) {
+  const el = document.getElementById('calDayDetail');
+  if (!calSelectedDate) {
+    // Show this month's summary
+    const monthLogs = getAllCookLogs().filter(log => {
+      const d = new Date(log.ts);
+      return d.getFullYear() === calYear && d.getMonth() === calMonth;
+    }).sort((a, b) => b.ts - a.ts);
+
+    if (!monthLogs.length) {
+      el.innerHTML = '<div style="text-align:center;padding:32px 16px;color:var(--text-light);font-size:13px">この月の調理記録はありません</div>';
+      return;
+    }
+
+    el.innerHTML = `<div class="cal-day-detail">
+      <div class="cal-day-detail-header">今月の記録（${monthLogs.length}件）</div>
+      ${monthLogs.slice(0, 15).map(log => calLogItemHTML(log)).join('')}
+      ${monthLogs.length > 15 ? '<div style="text-align:center;padding:8px;font-size:11px;color:var(--text-light)">他 ' + (monthLogs.length - 15) + ' 件</div>' : ''}
+    </div>`;
+    return;
+  }
+
+  const logs = dayMap ? dayMap[calSelectedDate] : [];
+  const d = new Date(calSelectedDate + 'T00:00:00');
+  const dateLabel = `${d.getMonth() + 1}月${d.getDate()}日（${'日月火水木金土'[d.getDay()]}）`;
+
+  if (!logs || !logs.length) {
+    el.innerHTML = `<div class="cal-day-detail">
+      <div class="cal-day-detail-header">${dateLabel}</div>
+      <div class="cal-day-detail-empty">この日の調理記録はありません</div>
+    </div>`;
+    return;
+  }
+
+  // Sort by meal order
+  const mealOrder = { morning: 0, lunch: 1, dinner: 2, snack: 3 };
+  logs.sort((a, b) => (mealOrder[a.meal] || 2) - (mealOrder[b.meal] || 2));
+
+  el.innerHTML = `<div class="cal-day-detail">
+    <div class="cal-day-detail-header">${dateLabel}</div>
+    ${logs.map(log => calLogItemHTML(log)).join('')}
+  </div>`;
+}
+
+function calLogItemHTML(log) {
+  const mealClass = log.meal || 'dinner';
+  const mealLabel = MEAL_LABELS[mealClass] || '晩ごはん';
+  const d = new Date(log.ts);
+  const dateStr = `${d.getMonth() + 1}/${d.getDate()}`;
+  return `<div class="cal-day-detail-item" onclick="openDetail('${log.recipeId}')">
+    ${log.image ? `<img src="${esc(log.image)}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0" alt="">` : `<div style="width:40px;height:40px;border-radius:8px;background:var(--brown-light);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🍽</div>`}
+    <div style="flex:1;min-width:0">
+      <div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(log.title)}</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
+        <span class="cook-log-meal ${mealClass}" style="font-size:10px">${mealLabel}</span>
+        <span style="font-size:11px;color:var(--text-light)">${dateStr}</span>
+      </div>
+    </div>
+  </div>`;
 }
 </script>
 </body>
