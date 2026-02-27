@@ -221,25 +221,19 @@ body {
 
 /* ===== Folder Grid ===== */
 .folder-grid {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 10px; margin-bottom: 16px;
+  margin-bottom: 16px;
 }
-.folder-item {
-  background: var(--bg-card); border-radius: var(--radius);
-  padding: 16px; cursor: pointer; box-shadow: var(--shadow);
-  transition: transform 0.15s; text-align: center;
-}
-.folder-item:active { transform: scale(0.96); }
-.folder-icon { font-size: 28px; margin-bottom: 6px; }
 .folder-name { font-size: 13px; font-weight: 600; }
 .folder-count { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
-.folder-add {
+.folder-add-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; padding: 14px; margin-top: 12px;
   background: var(--bg-warm); border: 2px dashed var(--border);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
+  border-radius: var(--radius); cursor: pointer;
   color: var(--accent); font-weight: 600; font-size: 13px;
+  font-family: inherit; transition: background 0.15s;
 }
-.folder-add-icon { font-size: 28px; margin-bottom: 4px; }
+.folder-add-btn:active { background: var(--accent-light); }
 
 /* Folder drag & drop */
 .folder-list { list-style: none; }
@@ -1675,7 +1669,7 @@ function renderFolders() {
     `;
   }).join('');
   html += '</div>';
-  html += `<div class="folder-item folder-add" onclick="openFolderCreate()" style="margin-top:8px"><div class="folder-add-icon">＋</div>新しいフォルダ</div>`;
+  html += `<button class="folder-add-btn" onclick="openFolderCreate()">＋ 新しいフォルダ</button>`;
   document.getElementById('folderGrid').innerHTML = html;
 }
 
