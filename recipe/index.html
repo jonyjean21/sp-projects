@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#fdf8f3">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>レシピBOX</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+:root {
+  --bg: #fdf8f3;
+  --bg-card: #ffffff;
+  --bg-warm: #fff5eb;
+  --text: #3d2e1f;
+  --text-sub: #8a7560;
+  --text-light: #c0ad98;
+  --accent: #e07c4a;
+  --accent-light: #fde4d4;
+  --green: #6a9f5b;
+  --green-light: #e5f2df;
+  --red: #d45d5d;
+  --red-light: #fde0e0;
+  --yellow: #daa520;
+  --yellow-light: #fdf5d6;
+  --brown: #8b6f47;
+  --brown-light: #f0e6d4;
+  --border: #ece3d7;
+  --shadow: 0 2px 8px rgba(60,40,10,0.06);
+  --radius: 14px;
+}
+body {
+  font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg); color: var(--text);
+  max-width: 480px; margin: 0 auto;
+  min-height: 100vh; min-height: 100dvh;
+  position: relative; overflow-x: hidden;
+}
+.hidden { display: none !important; }
+
+/* ===== Login ===== */
+.login-screen {
+  min-height: 100vh; min-height: 100dvh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 32px; text-align: center;
+  background: linear-gradient(160deg, #fdf8f3 0%, #fff5eb 50%, #fde4d4 100%);
+}
+.login-logo { font-size: 64px; margin-bottom: 16px; }
+.login-title { font-size: 28px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.login-sub { font-size: 14px; color: var(--text-sub); margin-bottom: 40px; line-height: 1.6; }
+.login-btn {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 32px; border-radius: 50px;
+  background: var(--bg-card); border: 2px solid var(--border);
+  font-size: 15px; font-weight: 600; color: var(--text);
+  cursor: pointer; transition: all 0.2s;
+  box-shadow: var(--shadow);
+}
+.login-btn:active { transform: scale(0.97); }
+.login-btn svg { width: 20px; height: 20px; }
+
+/* ===== App Shell ===== */
+.app-shell { padding-bottom: 80px; }
+.app-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 16px 8px; position: sticky; top: 0;
+  background: var(--bg); z-index: 50;
+}
+.app-header h1 { font-size: 20px; font-weight: 700; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.user-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 2px solid var(--border); cursor: pointer;
+  object-fit: cover;
+}
+.user-menu {
+  position: absolute; top: 56px; right: 16px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  display: none; z-index: 60; min-width: 160px;
+}
+.user-menu.open { display: block; }
+.user-menu-item {
+  display: block; width: 100%; padding: 10px 14px;
+  font-size: 13px; color: var(--text); background: none;
+  border: none; border-radius: 8px; text-align: left;
+  cursor: pointer;
+}
+.user-menu-item:hover { background: var(--bg-warm); }
+.user-menu-item.danger { color: var(--red); }
+
+/* ===== Pages ===== */
+.page { display: none; padding: 0 16px 16px; }
+.page.active { display: block; }
+
+/* ===== Bottom Nav ===== */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--bg-card); border-top: 1px solid var(--border);
+  display: flex; justify-content: center;
+  max-width: 480px; margin: 0 auto; z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.nav-btn {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; gap: 2px; padding: 10px 0 8px;
+  background: none; border: none; cursor: pointer;
+  color: var(--text-light); font-size: 10px; font-weight: 600;
+  transition: color 0.2s;
+}
+.nav-btn.active { color: var(--accent); }
+.nav-btn svg { width: 22px; height: 22px; }
+.nav-btn.add-btn {
+  position: relative; top: -12px;
+  background: var(--accent); color: #fff;
+  width: 52px; height: 52px; border-radius: 50%;
+  flex: none; padding: 0; justify-content: center;
+  box-shadow: 0 4px 12px rgba(224,124,74,0.3);
+  font-size: 0;
+}
+.nav-btn.add-btn svg { width: 26px; height: 26px; }
+.nav-btn.add-btn.active { color: #fff; }
+
+/* ===== Search Bar ===== */
+.search-bar {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg-card); border: 1.5px solid var(--border);
+  border-radius: 12px; padding: 10px 14px; margin-bottom: 16px;
+}
+.search-bar svg { width: 18px; height: 18px; color: var(--text-light); flex-shrink: 0; }
+.search-bar input {
+  flex: 1; border: none; outline: none; font-size: 14px;
+  color: var(--text); background: transparent;
+  font-family: inherit;
+}
+.search-bar input::placeholder { color: var(--text-light); }
+
+/* ===== Section ===== */
+.section-title {
+  font-size: 13px; font-weight: 700; color: var(--text-sub);
+  margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+}
+
+/* ===== Favorites Scroll ===== */
+.fav-scroll {
+  display: flex; gap: 12px; overflow-x: auto;
+  padding-bottom: 8px; margin-bottom: 20px;
+  scrollbar-width: none;
+}
+.fav-scroll::-webkit-scrollbar { display: none; }
+.fav-card {
+  flex-shrink: 0; width: 120px; cursor: pointer;
+  transition: transform 0.15s;
+}
+.fav-card:active { transform: scale(0.96); }
+.fav-card-img {
+  width: 120px; height: 90px; border-radius: 10px;
+  object-fit: cover; background: var(--brown-light);
+  display: block;
+}
+.fav-card-placeholder {
+  width: 120px; height: 90px; border-radius: 10px;
+  background: var(--brown-light); display: flex;
+  align-items: center; justify-content: center;
+  font-size: 32px;
+}
+.fav-card-name {
+  font-size: 12px; font-weight: 600; margin-top: 6px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ===== Recipe Card ===== */
+.recipe-card {
+  display: flex; gap: 12px; align-items: center;
+  background: var(--bg-card); border-radius: var(--radius);
+  padding: 12px; margin-bottom: 8px; cursor: pointer;
+  box-shadow: var(--shadow); transition: transform 0.15s;
+}
+.recipe-card:active { transform: scale(0.98); }
+.recipe-card-img {
+  width: 64px; height: 64px; border-radius: 10px;
+  object-fit: cover; flex-shrink: 0; background: var(--brown-light);
+}
+.recipe-card-placeholder {
+  width: 64px; height: 64px; border-radius: 10px;
+  background: var(--brown-light); display: flex;
+  align-items: center; justify-content: center;
+  font-size: 24px; flex-shrink: 0;
+}
+.recipe-card-body { flex: 1; min-width: 0; }
+.recipe-card-title {
+  font-size: 14px; font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.recipe-card-meta {
+  font-size: 11px; color: var(--text-sub); margin-top: 2px;
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.recipe-card-folders {
+  display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap;
+}
+.folder-badge {
+  font-size: 10px; padding: 1px 8px; border-radius: 10px;
+  font-weight: 600;
+}
+.recipe-card-fav {
+  flex-shrink: 0; font-size: 18px; padding: 4px;
+  background: none; border: none; cursor: pointer;
+}
+
+/* ===== Folder Grid ===== */
+.folder-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; margin-bottom: 16px;
+}
+.folder-item {
+  background: var(--bg-card); border-radius: var(--radius);
+  padding: 16px; cursor: pointer; box-shadow: var(--shadow);
+  transition: transform 0.15s; text-align: center;
+}
+.folder-item:active { transform: scale(0.96); }
+.folder-icon { font-size: 28px; margin-bottom: 6px; }
+.folder-name { font-size: 13px; font-weight: 600; }
+.folder-count { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+.folder-add {
+  background: var(--bg-warm); border: 2px dashed var(--border);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  color: var(--accent); font-weight: 600; font-size: 13px;
+}
+.folder-add-icon { font-size: 28px; margin-bottom: 4px; }
+
+/* ===== Folder Detail ===== */
+.folder-detail-header {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 16px;
+}
+.back-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 20px; color: var(--text-sub); padding: 4px;
+}
+.folder-detail-title { font-size: 18px; font-weight: 700; }
+.folder-detail-actions { margin-left: auto; display: flex; gap: 8px; }
+.folder-detail-actions button {
+  background: none; border: none; cursor: pointer;
+  font-size: 16px; padding: 4px; color: var(--text-sub);
+}
+
+/* ===== Recipe Detail ===== */
+.detail-hero {
+  width: calc(100% + 32px); margin: -16px -16px 0;
+  height: 220px; object-fit: cover; background: var(--brown-light);
+}
+.detail-hero-placeholder {
+  width: calc(100% + 32px); margin: -16px -16px 0;
+  height: 160px; background: linear-gradient(135deg, var(--accent-light), var(--brown-light));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 64px;
+}
+.detail-header { padding: 16px 0 12px; }
+.detail-title { font-size: 20px; font-weight: 700; line-height: 1.4; }
+.detail-meta {
+  display: flex; gap: 12px; margin-top: 6px; flex-wrap: wrap;
+}
+.detail-meta-item {
+  font-size: 12px; color: var(--text-sub);
+  display: flex; align-items: center; gap: 4px;
+}
+.detail-source {
+  display: inline-block; margin-top: 8px;
+  font-size: 12px; color: var(--accent);
+  text-decoration: none;
+}
+.detail-source:hover { text-decoration: underline; }
+.detail-actions {
+  display: flex; gap: 8px; margin: 12px 0;
+}
+.detail-actions button {
+  flex: 1; padding: 10px; border-radius: 10px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  border: none; transition: opacity 0.2s;
+}
+.detail-actions button:active { opacity: 0.7; }
+.btn-fav { background: var(--yellow-light); color: var(--yellow); }
+.btn-fav.active { background: var(--yellow); color: #fff; }
+.btn-edit { background: var(--accent-light); color: var(--accent); }
+.btn-delete { background: var(--red-light); color: var(--red); }
+
+.detail-section { margin-top: 20px; }
+.detail-section-title {
+  font-size: 14px; font-weight: 700; color: var(--accent);
+  margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+}
+.ingredient-list { list-style: none; }
+.ingredient-item {
+  display: flex; justify-content: space-between;
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.ingredient-item label {
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+}
+.ingredient-item input[type="checkbox"] {
+  accent-color: var(--accent); width: 18px; height: 18px;
+}
+.ingredient-amount { color: var(--text-sub); white-space: nowrap; }
+.step-list { list-style: none; counter-reset: step; }
+.step-item {
+  position: relative; padding: 12px 0 12px 40px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px; line-height: 1.7;
+  counter-increment: step;
+}
+.step-item::before {
+  content: counter(step);
+  position: absolute; left: 0; top: 12px;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.detail-memo {
+  background: var(--bg-warm); border-radius: 10px;
+  padding: 12px 14px; font-size: 13px; line-height: 1.6;
+  color: var(--text-sub);
+}
+
+/* ===== Modal ===== */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.3); display: none;
+  align-items: flex-end; justify-content: center;
+  z-index: 200;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg-card);
+  border-radius: 20px 20px 0 0;
+  width: 100%; max-width: 480px;
+  max-height: 90vh; overflow-y: auto;
+  padding: 20px 16px;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  animation: slideUp 0.25s ease;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.modal-handle {
+  width: 36px; height: 4px; border-radius: 2px;
+  background: var(--border); margin: 0 auto 16px;
+}
+.modal-title {
+  font-size: 17px; font-weight: 700; text-align: center;
+  margin-bottom: 20px;
+}
+
+/* ===== Add Choice ===== */
+.add-choice {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.add-choice-btn {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px; border-radius: 14px;
+  background: var(--bg-warm); border: 1.5px solid var(--border);
+  cursor: pointer; transition: all 0.2s;
+}
+.add-choice-btn:active { transform: scale(0.98); }
+.add-choice-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+}
+.add-choice-text { text-align: left; }
+.add-choice-label { font-size: 14px; font-weight: 600; }
+.add-choice-desc { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+
+/* ===== Form ===== */
+.form-group { margin-bottom: 16px; }
+.form-label {
+  display: block; font-size: 12px; font-weight: 600;
+  color: var(--text-sub); margin-bottom: 6px;
+}
+.form-input, .form-textarea {
+  width: 100%; padding: 12px 14px;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  font-size: 15px; color: var(--text);
+  background: var(--bg); outline: none;
+  transition: border-color 0.2s; font-family: inherit;
+}
+.form-input:focus, .form-textarea:focus { border-color: var(--accent); }
+.form-input::placeholder, .form-textarea::placeholder { color: var(--text-light); }
+.form-textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+
+.dynamic-list { margin-bottom: 8px; }
+.dynamic-row {
+  display: flex; gap: 8px; align-items: center; margin-bottom: 6px;
+}
+.dynamic-row input {
+  flex: 1; padding: 10px 12px;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  font-size: 14px; color: var(--text);
+  background: var(--bg); outline: none; font-family: inherit;
+}
+.dynamic-row input:focus { border-color: var(--accent); }
+.dynamic-row .amount-input { max-width: 100px; }
+.dynamic-row .remove-row {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--red-light); border: none; color: var(--red);
+  font-size: 16px; cursor: pointer; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.add-row-btn {
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px; width: 100%; padding: 10px;
+  background: var(--accent-light); border: none;
+  border-radius: 10px; color: var(--accent);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.add-row-btn:active { opacity: 0.7; }
+
+.folder-select {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.folder-chip {
+  padding: 6px 14px; border-radius: 20px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  border: 1.5px solid var(--border); background: var(--bg);
+  transition: all 0.2s;
+}
+.folder-chip.selected {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+}
+
+.form-submit {
+  width: 100%; padding: 14px; border-radius: 12px;
+  background: var(--accent); color: #fff;
+  font-size: 15px; font-weight: 700; border: none;
+  cursor: pointer; transition: opacity 0.2s;
+}
+.form-submit:active { opacity: 0.8; }
+.form-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.form-image-preview {
+  width: 100%; max-height: 200px; object-fit: cover;
+  border-radius: 10px; margin-bottom: 8px;
+}
+.form-image-upload {
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px; width: 100%; padding: 24px;
+  border: 2px dashed var(--border); border-radius: 12px;
+  background: var(--bg-warm); cursor: pointer;
+  color: var(--text-sub); font-size: 13px;
+}
+.form-image-upload:active { opacity: 0.7; }
+
+/* ===== AI Extraction ===== */
+.ai-status {
+  padding: 12px 16px; border-radius: 12px;
+  font-size: 13px; text-align: center; margin-bottom: 16px;
+}
+.ai-status.loading { background: var(--accent-light); color: var(--accent); }
+.ai-status.error { background: var(--red-light); color: var(--red); }
+.ai-status.success { background: var(--green-light); color: var(--green); }
+
+/* ===== Settings ===== */
+.settings-section {
+  background: var(--bg-card); border-radius: var(--radius);
+  box-shadow: var(--shadow); margin-bottom: 12px; overflow: hidden;
+}
+.settings-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.settings-item:last-child { border-bottom: none; }
+.settings-item-label { display: flex; align-items: center; gap: 10px; }
+.settings-item button {
+  padding: 6px 14px; border-radius: 8px;
+  background: var(--accent-light); color: var(--accent);
+  font-size: 12px; font-weight: 600; border: none; cursor: pointer;
+}
+.settings-item button.danger { background: var(--red-light); color: var(--red); }
+
+/* ===== Empty State ===== */
+.empty-state {
+  text-align: center; padding: 40px 20px;
+  color: var(--text-sub);
+}
+.empty-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-text { font-size: 14px; line-height: 1.6; }
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed; bottom: 100px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--text); color: #fff;
+  padding: 10px 20px; border-radius: 20px;
+  font-size: 13px; font-weight: 600;
+  opacity: 0; transition: all 0.3s;
+  z-index: 300; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ===== Color Dots (folder colors) ===== */
+.color-picker { display: flex; gap: 10px; flex-wrap: wrap; }
+.color-dot {
+  width: 32px; height: 32px; border-radius: 50%;
+  cursor: pointer; border: 3px solid transparent;
+  transition: border-color 0.2s;
+}
+.color-dot.selected { border-color: var(--text); }
+</style>
+</head>
+<body>
+
+<!-- ===== Login Screen ===== -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-logo">🍳</div>
+  <div class="login-title">レシピBOX</div>
+  <div class="login-sub">おうちレシピを<br>かんたん保存・管理</div>
+  <button class="login-btn" onclick="signIn()">
+    <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+    Googleでログイン
+  </button>
+</div>
+
+<!-- ===== App Shell ===== -->
+<div id="appShell" class="app-shell hidden">
+  <div class="app-header">
+    <h1>レシピBOX</h1>
+    <div class="header-right">
+      <img id="userAvatar" class="user-avatar" src="" alt="" onclick="toggleUserMenu()">
+    </div>
+    <div id="userMenu" class="user-menu">
+      <button class="user-menu-item" onclick="exportData()">データエクスポート</button>
+      <button class="user-menu-item" onclick="manageGeminiKey()">Gemini APIキー設定</button>
+      <button class="user-menu-item danger" onclick="signOut()">ログアウト</button>
+    </div>
+  </div>
+
+  <!-- Page: Home -->
+  <div id="pageHome" class="page active">
+    <div class="search-bar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="レシピを検索..." oninput="handleSearch()">
+    </div>
+    <div id="favSection">
+      <div class="section-title">&#9733; お気に入り</div>
+      <div class="fav-scroll" id="favScroll"></div>
+    </div>
+    <div class="section-title">&#128338; 最近追加</div>
+    <div id="recentList"></div>
+    <div id="searchResults" class="hidden">
+      <div class="section-title">検索結果</div>
+      <div id="searchResultsList"></div>
+    </div>
+    <div id="homeEmpty" class="empty-state hidden">
+      <div class="empty-icon">🍳</div>
+      <div class="empty-text">まだレシピがありません<br>下の＋ボタンから追加しましょう</div>
+    </div>
+  </div>
+
+  <!-- Page: Folders -->
+  <div id="pageFolders" class="page">
+    <div id="folderListView">
+      <div class="section-title">フォルダ一覧</div>
+      <div class="folder-grid" id="folderGrid"></div>
+    </div>
+    <div id="folderDetailView" class="hidden">
+      <div class="folder-detail-header">
+        <button class="back-btn" onclick="closeFolderDetail()">&#8249;</button>
+        <div class="folder-detail-title" id="folderDetailTitle"></div>
+        <div class="folder-detail-actions">
+          <button onclick="editCurrentFolder()" title="編集">&#9998;</button>
+          <button onclick="deleteCurrentFolder()" title="削除">&#128465;</button>
+        </div>
+      </div>
+      <div id="folderDetailList"></div>
+      <div id="folderDetailEmpty" class="empty-state hidden">
+        <div class="empty-icon">📁</div>
+        <div class="empty-text">このフォルダにはまだレシピがありません</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page: Detail -->
+  <div id="pageDetail" class="page">
+    <div class="folder-detail-header" style="margin-bottom:0">
+      <button class="back-btn" onclick="closeDetail()">&#8249;</button>
+      <span style="font-size:14px;color:var(--text-sub)">レシピ詳細</span>
+    </div>
+    <div id="detailContent"></div>
+  </div>
+
+  <!-- Page: Settings -->
+  <div id="pageSettings" class="page">
+    <div class="section-title">設定</div>
+    <div class="settings-section">
+      <div class="settings-item">
+        <div class="settings-item-label">&#128273; Gemini APIキー</div>
+        <button onclick="manageGeminiKey()">設定</button>
+      </div>
+      <div class="settings-item">
+        <div class="settings-item-label">&#128190; データエクスポート</div>
+        <button onclick="exportData()">JSON保存</button>
+      </div>
+      <div class="settings-item">
+        <div class="settings-item-label">&#128100; アカウント</div>
+        <button class="danger" onclick="signOut()">ログアウト</button>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:24px;font-size:11px;color:var(--text-light)">
+      レシピBOX v1.0
+    </div>
+  </div>
+
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-page="home" onclick="showPage('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      ホーム
+    </button>
+    <button class="nav-btn" data-page="folders" onclick="showPage('folders')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+      フォルダ
+    </button>
+    <button class="nav-btn add-btn" onclick="openAddChoice()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+    <button class="nav-btn" data-page="settings" onclick="showPage('settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      設定
+    </button>
+  </nav>
+</div>
+
+<!-- ===== Modal: Add Choice ===== -->
+<div id="addChoiceModal" class="modal-overlay" onclick="if(event.target===this)closeModal('addChoiceModal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">レシピを追加</div>
+    <div class="add-choice">
+      <div class="add-choice-btn" onclick="closeModal('addChoiceModal');openAIExtract('text')">
+        <div class="add-choice-icon" style="background:var(--accent-light)">📋</div>
+        <div class="add-choice-text">
+          <div class="add-choice-label">テキストから取り込み</div>
+          <div class="add-choice-desc">レシピのテキストを貼り付けてAIが自動整理</div>
+        </div>
+      </div>
+      <div class="add-choice-btn" onclick="closeModal('addChoiceModal');openAIExtract('image')">
+        <div class="add-choice-icon" style="background:var(--green-light)">📷</div>
+        <div class="add-choice-text">
+          <div class="add-choice-label">写真から読み取り</div>
+          <div class="add-choice-desc">料理本やスクショをAIが読み取り</div>
+        </div>
+      </div>
+      <div class="add-choice-btn" onclick="closeModal('addChoiceModal');openManualEntry()">
+        <div class="add-choice-icon" style="background:var(--yellow-light)">&#9998;</div>
+        <div class="add-choice-text">
+          <div class="add-choice-label">手入力</div>
+          <div class="add-choice-desc">自分でレシピを入力</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Modal: AI Extract ===== -->
+<div id="aiExtractModal" class="modal-overlay" onclick="if(event.target===this)closeModal('aiExtractModal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="aiExtractTitle">テキストから取り込み</div>
+    <div id="aiTextSection">
+      <div class="form-group">
+        <label class="form-label">レシピURL（参照用）</label>
+        <input class="form-input" id="aiUrlInput" placeholder="https://cookpad.com/recipe/...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">レシピの内容（コピペ）</label>
+        <textarea class="form-textarea" id="aiTextInput" placeholder="サイトからレシピのテキストをコピーして貼り付けてください" style="min-height:150px"></textarea>
+      </div>
+    </div>
+    <div id="aiImageSection" class="hidden">
+      <div class="form-group">
+        <label class="form-label">レシピ画像をアップロード</label>
+        <input type="file" id="aiImageInput" accept="image/*" style="display:none" onchange="handleImageSelect(event)">
+        <div id="aiImagePreviewArea">
+          <div class="form-image-upload" onclick="document.getElementById('aiImageInput').click()">
+            📷 タップして画像を選択
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="aiStatus" class="ai-status hidden"></div>
+    <button class="form-submit" id="aiExtractBtn" onclick="runAIExtract()">AIで解析する</button>
+  </div>
+</div>
+
+<!-- ===== Modal: Manual Entry / Edit ===== -->
+<div id="entryModal" class="modal-overlay" onclick="if(event.target===this)closeModal('entryModal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="entryModalTitle">レシピを入力</div>
+    <div class="form-group">
+      <label class="form-label">レシピ名 *</label>
+      <input class="form-input" id="entryTitle" placeholder="例: 肉じゃが">
+    </div>
+    <div class="form-group">
+      <label class="form-label">レシピURL（任意）</label>
+      <input class="form-input" id="entryUrl" placeholder="https://...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">写真</label>
+      <input type="file" id="entryImageInput" accept="image/*" style="display:none" onchange="handleEntryImage(event)">
+      <div id="entryImageArea">
+        <div class="form-image-upload" onclick="document.getElementById('entryImageInput').click()">
+          📷 タップして写真を追加
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <div class="form-group" style="flex:1">
+        <label class="form-label">分量</label>
+        <input class="form-input" id="entryServings" placeholder="2人分">
+      </div>
+      <div class="form-group" style="flex:1">
+        <label class="form-label">調理時間</label>
+        <input class="form-input" id="entryPrepTime" placeholder="30分">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">材料</label>
+      <div class="dynamic-list" id="ingredientsList"></div>
+      <button class="add-row-btn" onclick="addIngredientRow()">＋ 材料を追加</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">作り方</label>
+      <div class="dynamic-list" id="stepsList"></div>
+      <button class="add-row-btn" onclick="addStepRow()">＋ 手順を追加</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">フォルダ</label>
+      <div class="folder-select" id="entryFolderSelect"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">メモ</label>
+      <textarea class="form-textarea" id="entryMemo" placeholder="ちょっとしたコツやメモ" style="min-height:60px"></textarea>
+    </div>
+    <button class="form-submit" id="entrySaveBtn" onclick="saveRecipe()">保存する</button>
+  </div>
+</div>
+
+<!-- ===== Modal: Folder Create/Edit ===== -->
+<div id="folderModal" class="modal-overlay" onclick="if(event.target===this)closeModal('folderModal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="folderModalTitle">フォルダを作成</div>
+    <div class="form-group">
+      <label class="form-label">フォルダ名</label>
+      <input class="form-input" id="folderNameInput" placeholder="例: 和食、お弁当">
+    </div>
+    <div class="form-group">
+      <label class="form-label">カラー</label>
+      <div class="color-picker" id="colorPicker"></div>
+    </div>
+    <button class="form-submit" onclick="saveFolder()">保存</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+
+<script>
+// ===== Config =====
+const firebaseConfig = {
+  apiKey: "AIzaSyBusmxO-ZA6K6QDpMpWjShPiz02U9_v8lk",
+  authDomain: "meguri-cho.firebaseapp.com",
+  databaseURL: "https://meguri-cho-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "meguri-cho",
+  storageBucket: "meguri-cho.firebasestorage.app",
+  messagingSenderId: "13914145999",
+  appId: "1:13914145999:web:e62fe52ce56564b78de3ba"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+let uid = null;
+let itemsData = {};
+let foldersData = {};
+let currentPage = 'home';
+let editingRecipeId = null;
+let editingFolderId = null;
+let currentFolderViewId = null;
+let currentDetailId = null;
+let selectedEntryImage = null;
+let aiExtractMode = 'text';
+let selectedAIImage = null;
+
+const FOLDER_COLORS = [
+  '#e07c4a', '#6a9f5b', '#5b8fb9', '#9a85b0',
+  '#d45d5d', '#daa520', '#8b6f47', '#e88ca5',
+  '#5bbfbf', '#7a7a7a'
+];
+
+// ===== Auth =====
+const provider = new firebase.auth.GoogleAuthProvider();
+
+function signIn() {
+  auth.signInWithPopup(provider).catch(() => {
+    auth.signInWithRedirect(provider);
+  });
+}
+function signOut() {
+  auth.signOut();
+  toggleUserMenu();
+}
+function toggleUserMenu() {
+  document.getElementById('userMenu').classList.toggle('open');
+}
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('userMenu');
+  const avatar = document.getElementById('userAvatar');
+  if (!menu.contains(e.target) && e.target !== avatar) {
+    menu.classList.remove('open');
+  }
+});
+
+auth.onAuthStateChanged(user => {
+  if (user) {
+    uid = user.uid;
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('appShell').classList.remove('hidden');
+    document.getElementById('userAvatar').src = user.photoURL || '';
+    startListening();
+  } else {
+    uid = null;
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('appShell').classList.add('hidden');
+  }
+});
+
+// ===== Data =====
+function startListening() {
+  db.ref(`recipes/${uid}/items`).on('value', snap => {
+    itemsData = snap.val() || {};
+    renderAll();
+  });
+  db.ref(`recipes/${uid}/folders`).on('value', snap => {
+    foldersData = snap.val() || {};
+    renderAll();
+  });
+}
+
+// ===== Navigation =====
+function showPage(page) {
+  currentPage = page;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const pageEl = document.getElementById('page' + page.charAt(0).toUpperCase() + page.slice(1));
+  if (pageEl) pageEl.classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.page === page);
+  });
+  if (page === 'folders') {
+    document.getElementById('folderListView').classList.remove('hidden');
+    document.getElementById('folderDetailView').classList.add('hidden');
+  }
+}
+
+// ===== Render =====
+function renderAll() {
+  renderHome();
+  renderFolders();
+  if (currentPage === 'detail' && currentDetailId) renderDetail(currentDetailId);
+  if (currentPage === 'folders' && currentFolderViewId) renderFolderDetail(currentFolderViewId);
+}
+
+function renderHome() {
+  const entries = Object.entries(itemsData);
+  const searchVal = document.getElementById('searchInput').value.trim();
+
+  if (entries.length === 0) {
+    document.getElementById('homeEmpty').classList.remove('hidden');
+    document.getElementById('favSection').classList.add('hidden');
+    document.getElementById('recentList').innerHTML = '';
+    return;
+  }
+  document.getElementById('homeEmpty').classList.add('hidden');
+
+  // Favorites
+  const favs = entries.filter(([,r]) => r.favorite);
+  if (favs.length > 0 && !searchVal) {
+    document.getElementById('favSection').classList.remove('hidden');
+    document.getElementById('favScroll').innerHTML = favs.map(([id, r]) => `
+      <div class="fav-card" onclick="openDetail('${id}')">
+        ${r.image ? `<img class="fav-card-img" src="${esc(r.image)}" alt="">` :
+          `<div class="fav-card-placeholder">🍽</div>`}
+        <div class="fav-card-name">${esc(r.title)}</div>
+      </div>
+    `).join('');
+  } else {
+    document.getElementById('favSection').classList.add('hidden');
+  }
+
+  // Search
+  if (searchVal) {
+    document.getElementById('searchResults').classList.remove('hidden');
+    document.getElementById('recentList').parentElement.querySelector('.section-title:last-of-type').classList.add('hidden');
+    const results = searchRecipes(searchVal);
+    document.getElementById('searchResultsList').innerHTML = results.length ?
+      results.map(([id, r]) => recipeCardHTML(id, r)).join('') :
+      '<div class="empty-state"><div class="empty-text">見つかりませんでした</div></div>';
+    document.getElementById('recentList').innerHTML = '';
+    return;
+  }
+
+  document.getElementById('searchResults').classList.add('hidden');
+
+  // Recent
+  const recent = entries.sort((a, b) => (b[1].createdAt || 0) - (a[1].createdAt || 0)).slice(0, 20);
+  document.getElementById('recentList').innerHTML = recent.map(([id, r]) => recipeCardHTML(id, r)).join('');
+}
+
+function recipeCardHTML(id, r) {
+  const folderNames = r.folders ? Object.keys(r.folders).map(fid =>
+    foldersData[fid] ? `<span class="folder-badge" style="background:${foldersData[fid].color || 'var(--brown-light)'}20;color:${foldersData[fid].color || 'var(--brown)'}">${esc(foldersData[fid].name)}</span>` : ''
+  ).join('') : '';
+  return `
+    <div class="recipe-card" onclick="openDetail('${id}')">
+      ${r.image ? `<img class="recipe-card-img" src="${esc(r.image)}" alt="">` :
+        `<div class="recipe-card-placeholder">🍽</div>`}
+      <div class="recipe-card-body">
+        <div class="recipe-card-title">${esc(r.title)}</div>
+        <div class="recipe-card-meta">
+          ${r.prepTime ? `<span>⏱ ${esc(r.prepTime)}</span>` : ''}
+          ${r.servings ? `<span>👤 ${esc(r.servings)}</span>` : ''}
+        </div>
+        ${folderNames ? `<div class="recipe-card-folders">${folderNames}</div>` : ''}
+      </div>
+      <button class="recipe-card-fav" onclick="event.stopPropagation();toggleFav('${id}')">${r.favorite ? '★' : '☆'}</button>
+    </div>
+  `;
+}
+
+function searchRecipes(q) {
+  q = q.toLowerCase();
+  return Object.entries(itemsData).filter(([, r]) => {
+    if (r.title && r.title.toLowerCase().includes(q)) return true;
+    if (r.ingredients) {
+      for (const ing of r.ingredients) {
+        if (ing.name && ing.name.toLowerCase().includes(q)) return true;
+      }
+    }
+    if (r.tags) {
+      for (const t of r.tags) {
+        if (t.toLowerCase().includes(q)) return true;
+      }
+    }
+    if (r.memo && r.memo.toLowerCase().includes(q)) return true;
+    return false;
+  });
+}
+
+function handleSearch() {
+  renderHome();
+}
+
+// ===== Folders =====
+function renderFolders() {
+  const entries = Object.entries(foldersData);
+  let html = entries.map(([id, f]) => {
+    const count = Object.values(itemsData).filter(r => r.folders && r.folders[id]).length;
+    return `
+      <div class="folder-item" onclick="openFolderDetail('${id}')" style="border-left:4px solid ${f.color || 'var(--accent)'}">
+        <div class="folder-name">${esc(f.name)}</div>
+        <div class="folder-count">${count}レシピ</div>
+      </div>
+    `;
+  }).join('');
+  html += `<div class="folder-item folder-add" onclick="openFolderCreate()"><div class="folder-add-icon">＋</div>新しいフォルダ</div>`;
+  document.getElementById('folderGrid').innerHTML = html;
+}
+
+function openFolderDetail(fid) {
+  currentFolderViewId = fid;
+  document.getElementById('folderListView').classList.add('hidden');
+  document.getElementById('folderDetailView').classList.remove('hidden');
+  renderFolderDetail(fid);
+}
+
+function renderFolderDetail(fid) {
+  const f = foldersData[fid];
+  if (!f) return;
+  document.getElementById('folderDetailTitle').textContent = f.name;
+  const recipes = Object.entries(itemsData).filter(([,r]) => r.folders && r.folders[fid]);
+  if (recipes.length === 0) {
+    document.getElementById('folderDetailList').innerHTML = '';
+    document.getElementById('folderDetailEmpty').classList.remove('hidden');
+  } else {
+    document.getElementById('folderDetailEmpty').classList.add('hidden');
+    document.getElementById('folderDetailList').innerHTML = recipes.map(([id, r]) => recipeCardHTML(id, r)).join('');
+  }
+}
+
+function closeFolderDetail() {
+  currentFolderViewId = null;
+  document.getElementById('folderListView').classList.remove('hidden');
+  document.getElementById('folderDetailView').classList.add('hidden');
+}
+
+function openFolderCreate() {
+  editingFolderId = null;
+  document.getElementById('folderModalTitle').textContent = 'フォルダを作成';
+  document.getElementById('folderNameInput').value = '';
+  renderColorPicker();
+  openModal('folderModal');
+}
+
+function editCurrentFolder() {
+  if (!currentFolderViewId || !foldersData[currentFolderViewId]) return;
+  editingFolderId = currentFolderViewId;
+  const f = foldersData[currentFolderViewId];
+  document.getElementById('folderModalTitle').textContent = 'フォルダを編集';
+  document.getElementById('folderNameInput').value = f.name;
+  renderColorPicker(f.color);
+  openModal('folderModal');
+}
+
+function deleteCurrentFolder() {
+  if (!currentFolderViewId) return;
+  if (!confirm('このフォルダを削除しますか？（レシピは残ります）')) return;
+  db.ref(`recipes/${uid}/folders/${currentFolderViewId}`).remove();
+  // Remove folder reference from all recipes
+  Object.entries(itemsData).forEach(([rid, r]) => {
+    if (r.folders && r.folders[currentFolderViewId]) {
+      db.ref(`recipes/${uid}/items/${rid}/folders/${currentFolderViewId}`).remove();
+    }
+  });
+  closeFolderDetail();
+  showToast('フォルダを削除しました');
+}
+
+function renderColorPicker(selected) {
+  document.getElementById('colorPicker').innerHTML = FOLDER_COLORS.map(c =>
+    `<div class="color-dot ${c === selected ? 'selected' : ''}" style="background:${c}" onclick="selectColor(this, '${c}')"></div>`
+  ).join('');
+}
+
+function selectColor(el, color) {
+  document.querySelectorAll('#colorPicker .color-dot').forEach(d => d.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function saveFolder() {
+  const name = document.getElementById('folderNameInput').value.trim();
+  if (!name) return showToast('フォルダ名を入力してください');
+  const selectedDot = document.querySelector('#colorPicker .color-dot.selected');
+  const color = selectedDot ? selectedDot.style.backgroundColor : FOLDER_COLORS[0];
+
+  if (editingFolderId) {
+    db.ref(`recipes/${uid}/folders/${editingFolderId}`).update({ name, color });
+  } else {
+    db.ref(`recipes/${uid}/folders`).push({ name, color, createdAt: Date.now() });
+  }
+  closeModal('folderModal');
+  showToast('フォルダを保存しました');
+}
+
+// ===== Recipe Detail =====
+function openDetail(id) {
+  currentDetailId = id;
+  showPage('detail');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  renderDetail(id);
+}
+
+function renderDetail(id) {
+  const r = itemsData[id];
+  if (!r) return;
+  const folderBadges = r.folders ? Object.keys(r.folders).map(fid =>
+    foldersData[fid] ? `<span class="folder-badge" style="background:${foldersData[fid].color || 'var(--brown-light)'}20;color:${foldersData[fid].color || 'var(--brown)'}; padding:3px 10px; border-radius:10px; font-size:11px; font-weight:600;">${esc(foldersData[fid].name)}</span>` : ''
+  ).join(' ') : '';
+
+  let html = '';
+  // Hero
+  if (r.image) {
+    html += `<img class="detail-hero" src="${esc(r.image)}" alt="">`;
+  } else {
+    html += `<div class="detail-hero-placeholder">🍽</div>`;
+  }
+
+  html += `
+    <div class="detail-header">
+      <div class="detail-title">${esc(r.title)}</div>
+      <div class="detail-meta">
+        ${r.prepTime ? `<span class="detail-meta-item">⏱ ${esc(r.prepTime)}</span>` : ''}
+        ${r.servings ? `<span class="detail-meta-item">👤 ${esc(r.servings)}</span>` : ''}
+      </div>
+      ${folderBadges ? `<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">${folderBadges}</div>` : ''}
+      ${r.sourceUrl ? `<a class="detail-source" href="${esc(r.sourceUrl)}" target="_blank">🔗 元のレシピを見る</a>` : ''}
+    </div>
+    <div class="detail-actions">
+      <button class="btn-fav ${r.favorite ? 'active' : ''}" onclick="toggleFav('${id}')">${r.favorite ? '★ お気に入り' : '☆ お気に入り'}</button>
+      <button class="btn-edit" onclick="editRecipe('${id}')">編集</button>
+      <button class="btn-delete" onclick="deleteRecipe('${id}')">削除</button>
+    </div>
+  `;
+
+  // Ingredients
+  if (r.ingredients && r.ingredients.length) {
+    html += `<div class="detail-section">
+      <div class="detail-section-title">🥕 材料</div>
+      <ul class="ingredient-list">
+        ${r.ingredients.map(ing => `
+          <li class="ingredient-item">
+            <label><input type="checkbox"> ${esc(ing.name)}</label>
+            <span class="ingredient-amount">${esc(ing.amount || '')}</span>
+          </li>
+        `).join('')}
+      </ul>
+    </div>`;
+  }
+
+  // Steps
+  if (r.steps && r.steps.length) {
+    html += `<div class="detail-section">
+      <div class="detail-section-title">📝 作り方</div>
+      <ol class="step-list">
+        ${r.steps.map(s => `<li class="step-item">${esc(s)}</li>`).join('')}
+      </ol>
+    </div>`;
+  }
+
+  // Memo
+  if (r.memo) {
+    html += `<div class="detail-section">
+      <div class="detail-section-title">💬 メモ</div>
+      <div class="detail-memo">${esc(r.memo)}</div>
+    </div>`;
+  }
+
+  document.getElementById('detailContent').innerHTML = html;
+}
+
+function closeDetail() {
+  currentDetailId = null;
+  showPage('home');
+}
+
+function toggleFav(id) {
+  const r = itemsData[id];
+  if (!r) return;
+  db.ref(`recipes/${uid}/items/${id}/favorite`).set(!r.favorite);
+}
+
+function deleteRecipe(id) {
+  if (!confirm('このレシピを削除しますか？')) return;
+  db.ref(`recipes/${uid}/items/${id}`).remove();
+  closeDetail();
+  showToast('レシピを削除しました');
+}
+
+// ===== Manual Entry / Edit =====
+function openManualEntry() {
+  editingRecipeId = null;
+  selectedEntryImage = null;
+  document.getElementById('entryModalTitle').textContent = 'レシピを入力';
+  document.getElementById('entryTitle').value = '';
+  document.getElementById('entryUrl').value = '';
+  document.getElementById('entryServings').value = '';
+  document.getElementById('entryPrepTime').value = '';
+  document.getElementById('entryMemo').value = '';
+  document.getElementById('entryImageArea').innerHTML = '<div class="form-image-upload" onclick="document.getElementById(\'entryImageInput\').click()">📷 タップして写真を追加</div>';
+  document.getElementById('ingredientsList').innerHTML = '';
+  document.getElementById('stepsList').innerHTML = '';
+  addIngredientRow(); addIngredientRow(); addIngredientRow();
+  addStepRow(); addStepRow();
+  renderEntryFolderSelect({});
+  openModal('entryModal');
+}
+
+function editRecipe(id) {
+  const r = itemsData[id];
+  if (!r) return;
+  editingRecipeId = id;
+  selectedEntryImage = r.image || null;
+  document.getElementById('entryModalTitle').textContent = 'レシピを編集';
+  document.getElementById('entryTitle').value = r.title || '';
+  document.getElementById('entryUrl').value = r.sourceUrl || '';
+  document.getElementById('entryServings').value = r.servings || '';
+  document.getElementById('entryPrepTime').value = r.prepTime || '';
+  document.getElementById('entryMemo').value = r.memo || '';
+
+  if (r.image) {
+    document.getElementById('entryImageArea').innerHTML = `<img class="form-image-preview" src="${esc(r.image)}"><div class="form-image-upload" onclick="document.getElementById('entryImageInput').click()">📷 写真を変更</div>`;
+  } else {
+    document.getElementById('entryImageArea').innerHTML = '<div class="form-image-upload" onclick="document.getElementById(\'entryImageInput\').click()">📷 タップして写真を追加</div>';
+  }
+
+  document.getElementById('ingredientsList').innerHTML = '';
+  (r.ingredients || []).forEach(ing => addIngredientRow(ing.name, ing.amount));
+  if (!r.ingredients || !r.ingredients.length) { addIngredientRow(); }
+
+  document.getElementById('stepsList').innerHTML = '';
+  (r.steps || []).forEach(s => addStepRow(s));
+  if (!r.steps || !r.steps.length) { addStepRow(); }
+
+  renderEntryFolderSelect(r.folders || {});
+  openModal('entryModal');
+}
+
+function addIngredientRow(name, amount) {
+  const div = document.createElement('div');
+  div.className = 'dynamic-row';
+  div.innerHTML = `<input placeholder="材料名" value="${esc(name || '')}"><input class="amount-input" placeholder="分量" value="${esc(amount || '')}"><button class="remove-row" onclick="this.parentElement.remove()">×</button>`;
+  document.getElementById('ingredientsList').appendChild(div);
+}
+
+function addStepRow(text) {
+  const div = document.createElement('div');
+  div.className = 'dynamic-row';
+  div.innerHTML = `<input placeholder="手順を入力" value="${esc(text || '')}"><button class="remove-row" onclick="this.parentElement.remove()">×</button>`;
+  document.getElementById('stepsList').appendChild(div);
+}
+
+function renderEntryFolderSelect(selected) {
+  const el = document.getElementById('entryFolderSelect');
+  el.innerHTML = Object.entries(foldersData).map(([id, f]) =>
+    `<div class="folder-chip ${selected[id] ? 'selected' : ''}" data-fid="${id}" onclick="this.classList.toggle('selected')" style="--c:${f.color}">${esc(f.name)}</div>`
+  ).join('');
+}
+
+function handleEntryImage(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  compressImage(file).then(dataUrl => {
+    selectedEntryImage = dataUrl;
+    document.getElementById('entryImageArea').innerHTML = `<img class="form-image-preview" src="${dataUrl}"><div class="form-image-upload" onclick="document.getElementById('entryImageInput').click()">📷 写真を変更</div>`;
+  });
+}
+
+function saveRecipe() {
+  const title = document.getElementById('entryTitle').value.trim();
+  if (!title) return showToast('レシピ名を入力してください');
+
+  const ingredients = [];
+  document.querySelectorAll('#ingredientsList .dynamic-row').forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    const name = inputs[0].value.trim();
+    if (name) ingredients.push({ name, amount: inputs[1].value.trim() });
+  });
+
+  const steps = [];
+  document.querySelectorAll('#stepsList .dynamic-row').forEach(row => {
+    const val = row.querySelector('input').value.trim();
+    if (val) steps.push(val);
+  });
+
+  const folders = {};
+  document.querySelectorAll('#entryFolderSelect .folder-chip.selected').forEach(chip => {
+    folders[chip.dataset.fid] = true;
+  });
+
+  const data = {
+    title,
+    sourceUrl: document.getElementById('entryUrl').value.trim() || null,
+    image: selectedEntryImage || null,
+    servings: document.getElementById('entryServings').value.trim() || null,
+    prepTime: document.getElementById('entryPrepTime').value.trim() || null,
+    ingredients,
+    steps,
+    folders,
+    memo: document.getElementById('entryMemo').value.trim() || null,
+    updatedAt: Date.now()
+  };
+
+  if (editingRecipeId) {
+    db.ref(`recipes/${uid}/items/${editingRecipeId}`).update(data);
+    showToast('レシピを更新しました');
+  } else {
+    data.createdAt = Date.now();
+    data.favorite = false;
+    db.ref(`recipes/${uid}/items`).push(data);
+    showToast('レシピを保存しました');
+  }
+  closeModal('entryModal');
+  if (editingRecipeId && currentDetailId === editingRecipeId) {
+    renderDetail(editingRecipeId);
+  }
+}
+
+// ===== AI Extract =====
+function openAIExtract(mode) {
+  aiExtractMode = mode;
+  selectedAIImage = null;
+  document.getElementById('aiStatus').classList.add('hidden');
+  if (mode === 'text') {
+    document.getElementById('aiExtractTitle').textContent = 'テキストから取り込み';
+    document.getElementById('aiTextSection').classList.remove('hidden');
+    document.getElementById('aiImageSection').classList.add('hidden');
+    document.getElementById('aiUrlInput').value = '';
+    document.getElementById('aiTextInput').value = '';
+  } else {
+    document.getElementById('aiExtractTitle').textContent = '写真から読み取り';
+    document.getElementById('aiTextSection').classList.add('hidden');
+    document.getElementById('aiImageSection').classList.remove('hidden');
+    document.getElementById('aiImagePreviewArea').innerHTML = '<div class="form-image-upload" onclick="document.getElementById(\'aiImageInput\').click()">📷 タップして画像を選択</div>';
+  }
+  openModal('aiExtractModal');
+}
+
+function handleImageSelect(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    selectedAIImage = { data: ev.target.result.split(',')[1], mimeType: file.type };
+    document.getElementById('aiImagePreviewArea').innerHTML = `<img class="form-image-preview" src="${ev.target.result}"><div class="form-image-upload" onclick="document.getElementById('aiImageInput').click()">📷 画像を変更</div>`;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function runAIExtract() {
+  const key = getGeminiKey();
+  if (!key) return;
+
+  const statusEl = document.getElementById('aiStatus');
+  const btn = document.getElementById('aiExtractBtn');
+  statusEl.className = 'ai-status loading';
+  statusEl.textContent = 'AIが解析中...';
+  statusEl.classList.remove('hidden');
+  btn.disabled = true;
+
+  try {
+    let result;
+    if (aiExtractMode === 'text') {
+      const text = document.getElementById('aiTextInput').value.trim();
+      if (!text) throw new Error('テキストを入力してください');
+      result = await extractFromText(text);
+    } else {
+      if (!selectedAIImage) throw new Error('画像を選択してください');
+      result = await extractFromImage(selectedAIImage);
+    }
+
+    // Fill entry form with extracted data
+    closeModal('aiExtractModal');
+    editingRecipeId = null;
+    selectedEntryImage = null;
+    document.getElementById('entryModalTitle').textContent = 'レシピを確認・保存';
+    document.getElementById('entryTitle').value = result.title || '';
+    document.getElementById('entryUrl').value = document.getElementById('aiUrlInput')?.value || '';
+    document.getElementById('entryServings').value = result.servings || '';
+    document.getElementById('entryPrepTime').value = result.prepTime || '';
+    document.getElementById('entryMemo').value = '';
+    document.getElementById('entryImageArea').innerHTML = '<div class="form-image-upload" onclick="document.getElementById(\'entryImageInput\').click()">📷 タップして写真を追加</div>';
+
+    document.getElementById('ingredientsList').innerHTML = '';
+    (result.ingredients || []).forEach(ing => addIngredientRow(ing.name, ing.amount));
+    if (!result.ingredients || !result.ingredients.length) addIngredientRow();
+
+    document.getElementById('stepsList').innerHTML = '';
+    (result.steps || []).forEach(s => addStepRow(s));
+    if (!result.steps || !result.steps.length) addStepRow();
+
+    renderEntryFolderSelect({});
+    openModal('entryModal');
+    showToast('AIが解析しました！内容を確認してください');
+
+  } catch (e) {
+    statusEl.className = 'ai-status error';
+    statusEl.textContent = e.message;
+    statusEl.classList.remove('hidden');
+  }
+  btn.disabled = false;
+}
+
+async function extractFromText(text) {
+  const prompt = `以下のレシピテキストから構造化されたレシピ情報を抽出してください。
+
+## 入力テキスト
+${text.substring(0, 8000)}
+
+## 出力JSON
+{
+  "title": "レシピのタイトル",
+  "servings": "○人分",
+  "prepTime": "○分",
+  "ingredients": [{"name": "材料名", "amount": "分量"}],
+  "steps": ["手順1", "手順2"],
+  "tags": ["カテゴリ"]
+}
+
+ルール: 材料は全て抽出。分量不明なら「適量」。手順は簡潔に。`;
+
+  return await callGemini([{ text: prompt }]);
+}
+
+async function extractFromImage(imageData) {
+  const prompt = `この画像はレシピ本やレシピサイトのスクリーンショットです。
+画像からレシピ情報を読み取り、以下のJSON形式で出力してください。
+
+{
+  "title": "レシピのタイトル",
+  "servings": "○人分",
+  "prepTime": "○分",
+  "ingredients": [{"name": "材料名", "amount": "分量"}],
+  "steps": ["手順1", "手順2"],
+  "tags": ["カテゴリ"]
+}
+
+読み取れない部分は空にしてください。`;
+
+  return await callGemini([
+    { text: prompt },
+    { inlineData: { mimeType: imageData.mimeType, data: imageData.data } }
+  ]);
+}
+
+async function callGemini(parts) {
+  const key = getGeminiKey();
+  const resp = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts }],
+        generationConfig: { temperature: 0.2, responseMimeType: 'application/json' }
+      })
+    }
+  );
+  const result = await resp.json();
+  if (result.error) throw new Error('Gemini: ' + result.error.message);
+  const text = result.candidates[0].content.parts[0].text;
+  return JSON.parse(text);
+}
+
+// ===== Gemini Key =====
+function getGeminiKey() {
+  let key = localStorage.getItem('GEMINI_API_KEY');
+  if (!key) {
+    key = prompt('Gemini APIキーを入力してください（初回のみ）\n\nレシピの自動読み取りに使用します');
+    if (key) localStorage.setItem('GEMINI_API_KEY', key.trim());
+  }
+  return key;
+}
+
+function manageGeminiKey() {
+  toggleUserMenu();
+  const current = localStorage.getItem('GEMINI_API_KEY');
+  const msg = current ? `現在のキー: ${current.substring(0, 10)}...\n\n新しいキーを入力（空欄でクリア）:` : 'Gemini APIキーを入力:';
+  const key = prompt(msg);
+  if (key === null) return;
+  if (key.trim()) {
+    localStorage.setItem('GEMINI_API_KEY', key.trim());
+    showToast('APIキーを保存しました');
+  } else {
+    localStorage.removeItem('GEMINI_API_KEY');
+    showToast('APIキーをクリアしました');
+  }
+}
+
+// ===== Image Compression =====
+function compressImage(file, maxWidth = 400, quality = 0.7) {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ratio = Math.min(maxWidth / img.width, 1);
+        canvas.width = img.width * ratio;
+        canvas.height = img.height * ratio;
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// ===== Export =====
+function exportData() {
+  toggleUserMenu();
+  const data = { folders: foldersData, items: itemsData, exportedAt: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `recipe-box-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  showToast('エクスポートしました');
+}
+
+// ===== Modal =====
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openAddChoice() { openModal('addChoiceModal'); }
+
+// ===== Helpers =====
+function esc(s) {
+  if (!s) return '';
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
