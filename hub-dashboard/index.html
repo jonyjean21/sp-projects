@@ -251,19 +251,26 @@ body {
 <!-- ========== SNS ========== -->
 <div class="section">
   <div class="section-header">
-    <span class="section-icon">🐦</span> SNS（X / @molkkyhub）
+    <span class="section-icon">🐦</span> SNS（<a href="https://x.com/molkkyhub" target="_blank" style="color:var(--accent);text-decoration:none;">@molkkyhub</a>）
+    <button class="refresh-btn" onclick="editSNS()" style="margin-left:auto;font-size:10px;padding:3px 8px;">数値更新</button>
   </div>
   <div class="kpi-grid">
     <div class="kpi-card">
       <div class="kpi-label">フォロワー</div>
       <div class="kpi-value" id="kpiFollowers">-</div>
       <div class="kpi-change" id="kpiFollowersChange"></div>
+      <div class="kpi-source">手動入力（月次）</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">月間インプレッション</div>
       <div class="kpi-value" id="kpiImpressions">-</div>
       <div class="kpi-change" id="kpiImpressionsChange"></div>
+      <div class="kpi-source">X Analytics参照</div>
     </div>
+  </div>
+  <div style="margin-top:12px;border-radius:10px;overflow:hidden;background:var(--card);border:1px solid var(--border);padding:12px;">
+    <a class="twitter-timeline" data-theme="dark" data-height="300" data-chrome="noheader nofooter noborders transparent" href="https://twitter.com/molkkyhub">@molkkyhub</a>
+    <script async src="https://platform.twitter.com/widgets.js"></script>
   </div>
 </div>
 
@@ -528,12 +535,35 @@ function renderSearchConsole() {
 }
 
 function renderSNS() {
-  const sns = analyticsData.sns;
-  if (!sns) return;
-  document.getElementById('kpiFollowers').textContent = fmt(sns.xFollowers || 0);
-  document.getElementById('kpiFollowersChange').innerHTML = changeHTML(sns.xFollowers, sns.xFollowersPrev);
-  document.getElementById('kpiImpressions').textContent = fmt(sns.xImpressions || 0);
-  document.getElementById('kpiImpressionsChange').innerHTML = changeHTML(sns.xImpressions, sns.xImpressionsPrev);
+  // Load from localStorage (user-input values take priority)
+  const stored = JSON.parse(localStorage.getItem('hub_sns_data') || 'null');
+  const sns = stored || analyticsData.sns || {};
+  const followers = sns.xFollowers || 0;
+  const followersPrev = sns.xFollowersPrev || 0;
+  const impressions = sns.xImpressions || 0;
+  const impressionsPrev = sns.xImpressionsPrev || 0;
+
+  document.getElementById('kpiFollowers').textContent = followers ? fmt(followers) : '-';
+  document.getElementById('kpiFollowersChange').innerHTML = followersPrev ? changeHTML(followers, followersPrev) : '';
+  document.getElementById('kpiImpressions').textContent = impressions ? fmt(impressions) : '-';
+  document.getElementById('kpiImpressionsChange').innerHTML = impressionsPrev ? changeHTML(impressions, impressionsPrev) : '';
+}
+
+function editSNS() {
+  const stored = JSON.parse(localStorage.getItem('hub_sns_data') || '{}');
+  const f = prompt('現在のフォロワー数:', stored.xFollowers || '');
+  if (f === null) return;
+  const imp = prompt('月間インプレッション（X Analyticsで確認）:', stored.xImpressions || '');
+  if (imp === null) return;
+
+  const data = {
+    xFollowers: parseInt(f) || 0,
+    xFollowersPrev: stored.xFollowers || 0,
+    xImpressions: parseInt(imp) || 0,
+    xImpressionsPrev: stored.xImpressions || 0
+  };
+  localStorage.setItem('hub_sns_data', JSON.stringify(data));
+  renderSNS();
 }
 
 // ========== WP API ==========

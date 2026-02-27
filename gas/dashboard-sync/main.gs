@@ -227,7 +227,7 @@ function fetchSearchConsoleData_() {
   return { months, topQueries };
 }
 
-// ===== SNS (manual — Script Properties) =====
+// ===== SNS (PropertiesService — 手動 or updateSNS() で更新) =====
 
 function getSNSData_() {
   const p = PropertiesService.getScriptProperties();
