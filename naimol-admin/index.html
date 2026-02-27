@@ -170,6 +170,7 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
 
   <div class="card">
     <h3>上位チーム写真</h3>
+    <p style="font-size:0.78rem;color:var(--dim);margin-bottom:0.8rem">各チームの枠に写真をドラッグ＆ドロップ（またはクリックで選択）してください。</p>
     <div class="photo-grid" id="photoGrid"></div>
     <div class="btn-row">
       <button class="btn btn-primary" id="uploadPhotosBtn" onclick="uploadPhotos()" disabled>写真をアップロード & 反映</button>
@@ -401,6 +402,14 @@ async function loadResultPhotos() {
 function renderPhotoGrid() {
   const grid = document.getElementById('photoGrid');
   grid.innerHTML = '';
+  if (podiumTeams.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--dim);font-size:0.85rem">' +
+      (!wpAuth ? '設定タブでWP接続してください' :
+       !selectedEvent ? '設定タブで大会を選択してください' :
+       !resultPage ? '結果ページが見つかりません（先にClaude Codeで作成してください）' :
+       '読み込み中...') + '</div>';
+    return;
+  }
   podiumTeams.forEach((team, i) => {
     const card = document.createElement('div');
     card.className = 'photo-card ' + team.cls;
@@ -646,13 +655,16 @@ async function publishPage(type) {
 }
 
 // ===== Init =====
-(function init() {
+(async function init() {
   const auth = JSON.parse(localStorage.getItem('naimol_auth') || 'null');
   if (auth) {
     document.getElementById('wpUser').value = auth.user;
     document.getElementById('wpPass').value = auth.pass;
+    // Auto-connect
+    await connect();
   }
   loadSettings();
+  renderPhotoGrid(); // Show guidance message if not connected
 })();
 </script>
 </body>
