@@ -241,6 +241,38 @@ body {
 }
 .folder-add-icon { font-size: 28px; margin-bottom: 4px; }
 
+/* Folder drag & drop */
+.folder-list { list-style: none; }
+.folder-list-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg-card); border-radius: var(--radius);
+  padding: 14px 12px; margin-bottom: 8px;
+  box-shadow: var(--shadow); cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  touch-action: manipulation; position: relative;
+}
+.folder-list-item:active { transform: scale(0.98); }
+.folder-list-item.dragging {
+  opacity: 0.9; box-shadow: 0 8px 24px rgba(60,40,10,0.15);
+  z-index: 10; transform: scale(1.03);
+}
+.folder-drag-handle {
+  display: flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; flex-shrink: 0;
+  color: var(--text-light); font-size: 16px;
+  cursor: grab; touch-action: none;
+  border-radius: 6px; user-select: none;
+}
+.folder-drag-handle:active { color: var(--accent); background: var(--accent-light); cursor: grabbing; }
+.folder-color-bar {
+  width: 4px; height: 32px; border-radius: 2px; flex-shrink: 0;
+}
+.folder-drop-indicator {
+  height: 3px; background: var(--accent); border-radius: 2px;
+  margin: -2px 0 -1px; opacity: 0; transition: opacity 0.15s;
+}
+.folder-drop-indicator.active { opacity: 1; }
+
 /* ===== Folder Detail ===== */
 .folder-detail-header {
   display: flex; align-items: center; gap: 12px;
@@ -1626,67 +1658,112 @@ function setSort(mode) {
 }
 
 // ===== Folders =====
-let folderEditMode = false;
-function toggleFolderEditMode() {
-  folderEditMode = !folderEditMode;
-  renderFolders();
-}
 function renderFolders() {
   const entries = Object.entries(foldersData).sort((a, b) => (a[1].order || 0) - (b[1].order || 0));
-  let html = '';
-  if (entries.length > 1) {
-    html += `<div style="text-align:right;margin-bottom:8px">
-      <button onclick="toggleFolderEditMode()" style="padding:6px 14px;border-radius:8px;border:1px solid ${folderEditMode ? 'var(--accent)' : 'var(--border)'};background:${folderEditMode ? 'var(--accent-light)' : 'none'};color:${folderEditMode ? 'var(--accent)' : 'var(--text-sub)'};font-size:12px;cursor:pointer;font-family:inherit">${folderEditMode ? '完了' : '並び替え'}</button>
-    </div>`;
-  }
-  html += entries.map(([id, f], idx) => {
+  let html = '<div class="folder-list" id="folderSortable">';
+  html += entries.map(([id, f]) => {
     const count = Object.values(itemsData).filter(r => r.folders && r.folders[id]).length;
-    const arrows = folderEditMode ? `
-      <div style="display:flex;flex-direction:column;gap:2px;margin-left:auto;flex-shrink:0" onclick="event.stopPropagation()">
-        <button onclick="moveFolderUp('${id}')" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:none;cursor:pointer;font-size:12px;color:var(--text-sub);${idx === 0 ? 'opacity:0.3;pointer-events:none;' : ''}" ${idx === 0 ? 'disabled' : ''}>▲</button>
-        <button onclick="moveFolderDown('${id}')" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:none;cursor:pointer;font-size:12px;color:var(--text-sub);${idx === entries.length - 1 ? 'opacity:0.3;pointer-events:none;' : ''}" ${idx === entries.length - 1 ? 'disabled' : ''}>▼</button>
-      </div>` : '';
     return `
-      <div class="folder-item" onclick="${folderEditMode ? '' : `openFolderDetail('${id}')`}" style="border-left:4px solid ${f.color || 'var(--accent)'};${folderEditMode ? 'display:flex;align-items:center;gap:8px;' : ''}">
+      <div class="folder-list-item" data-folder-id="${id}" onclick="openFolderDetail('${id}')">
+        <div class="folder-drag-handle" ontouchstart="folderDragStart(event, '${id}')" onmousedown="folderDragStart(event, '${id}')">⠿</div>
+        <div class="folder-color-bar" style="background:${f.color || 'var(--accent)'}"></div>
         <div style="flex:1;min-width:0">
           <div class="folder-name">${esc(f.name)}</div>
           <div class="folder-count">${count}レシピ</div>
         </div>
-        ${arrows}
       </div>
     `;
   }).join('');
-  html += `<div class="folder-item folder-add" onclick="openFolderCreate()"><div class="folder-add-icon">＋</div>新しいフォルダ</div>`;
+  html += '</div>';
+  html += `<div class="folder-item folder-add" onclick="openFolderCreate()" style="margin-top:8px"><div class="folder-add-icon">＋</div>新しいフォルダ</div>`;
   document.getElementById('folderGrid').innerHTML = html;
 }
 
-function moveFolderUp(id) {
-  const entries = Object.entries(foldersData).sort((a, b) => (a[1].order || 0) - (b[1].order || 0));
-  const idx = entries.findIndex(([fid]) => fid === id);
-  if (idx <= 0) return;
-  const updates = {};
-  updates[`folders/${entries[idx][0]}/order`] = entries[idx - 1][1].order || 0;
-  updates[`folders/${entries[idx - 1][0]}/order`] = entries[idx][1].order || 0;
-  // Ensure different values
-  if (updates[`folders/${entries[idx][0]}/order`] === updates[`folders/${entries[idx - 1][0]}/order`]) {
-    updates[`folders/${entries[idx][0]}/order`] = idx - 1;
-    updates[`folders/${entries[idx - 1][0]}/order`] = idx;
-  }
-  familyRef('').update(updates);
+// Folder drag & drop
+let dragFolder = null, dragClone = null, dragStartY = 0, dragOffsetY = 0;
+let folderOrder = [];
+
+function folderDragStart(e, folderId) {
+  e.preventDefault();
+  e.stopPropagation();
+  const touch = e.touches ? e.touches[0] : e;
+  const item = e.target.closest('.folder-list-item');
+  if (!item) return;
+
+  dragFolder = folderId;
+  folderOrder = Object.entries(foldersData).sort((a, b) => (a[1].order || 0) - (b[1].order || 0)).map(([id]) => id);
+  const rect = item.getBoundingClientRect();
+  dragStartY = touch.clientY;
+  dragOffsetY = touch.clientY - rect.top;
+
+  // Create floating clone
+  dragClone = item.cloneNode(true);
+  dragClone.style.cssText = `position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;z-index:1000;pointer-events:none;opacity:0.9;box-shadow:0 8px 24px rgba(60,40,10,0.2);border-radius:14px;transition:none;`;
+  document.body.appendChild(dragClone);
+  item.style.opacity = '0.3';
+
+  const onMove = (ev) => {
+    const t = ev.touches ? ev.touches[0] : ev;
+    const y = t.clientY - dragOffsetY;
+    dragClone.style.top = y + 'px';
+
+    // Find drop target
+    const container = document.getElementById('folderSortable');
+    const items = [...container.querySelectorAll('.folder-list-item')];
+    let newIdx = folderOrder.indexOf(dragFolder);
+    items.forEach((el, i) => {
+      if (el.dataset.folderId === dragFolder) return;
+      const r = el.getBoundingClientRect();
+      const mid = r.top + r.height / 2;
+      if (t.clientY < mid && i < newIdx) newIdx = i;
+      if (t.clientY > mid && i >= newIdx) newIdx = i;
+    });
+
+    // Reorder visually
+    const currentIdx = folderOrder.indexOf(dragFolder);
+    if (newIdx !== currentIdx) {
+      folderOrder.splice(currentIdx, 1);
+      folderOrder.splice(newIdx, 0, dragFolder);
+      reorderFolderDOM();
+    }
+  };
+
+  const onEnd = () => {
+    document.removeEventListener('touchmove', onMove);
+    document.removeEventListener('touchend', onEnd);
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onEnd);
+    if (dragClone) { dragClone.remove(); dragClone = null; }
+
+    // Reset opacity
+    document.querySelectorAll('.folder-list-item').forEach(el => el.style.opacity = '');
+
+    // Save new order to Firebase
+    if (dragFolder) {
+      const updates = {};
+      folderOrder.forEach((fid, i) => {
+        updates[`folders/${fid}/order`] = i;
+      });
+      familyRef('').update(updates);
+      dragFolder = null;
+    }
+  };
+
+  document.addEventListener('touchmove', onMove, { passive: false });
+  document.addEventListener('touchend', onEnd);
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onEnd);
 }
 
-function moveFolderDown(id) {
-  const entries = Object.entries(foldersData).sort((a, b) => (a[1].order || 0) - (b[1].order || 0));
-  const idx = entries.findIndex(([fid]) => fid === id);
-  if (idx < 0 || idx >= entries.length - 1) return;
-  const updates = {};
-  updates[`folders/${entries[idx][0]}/order`] = entries[idx + 1][1].order || 0;
-  updates[`folders/${entries[idx + 1][0]}/order`] = entries[idx][1].order || 0;
-  if (updates[`folders/${entries[idx][0]}/order`] === updates[`folders/${entries[idx + 1][0]}/order`]) {
-    updates[`folders/${entries[idx][0]}/order`] = idx + 1;
-    updates[`folders/${entries[idx + 1][0]}/order`] = idx;
-  }
-  familyRef('').update(updates);
+function reorderFolderDOM() {
+  const container = document.getElementById('folderSortable');
+  folderOrder.forEach(fid => {
+    const item = container.querySelector(`[data-folder-id="${fid}"]`);
+    if (item) {
+      item.style.opacity = fid === dragFolder ? '0.3' : '';
+      container.appendChild(item);
+    }
+  });
 }
 
 function openFolderDetail(fid) {
