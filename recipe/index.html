@@ -351,8 +351,18 @@ body {
 }
 .modal-handle {
   width: 36px; height: 4px; border-radius: 2px;
-  background: var(--border); margin: 0 auto 16px;
+  background: var(--border); margin: 0 auto 12px;
 }
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px;
+}
+.modal-header .modal-title { margin-bottom: 0; flex: 1; }
+.modal-close {
+  background: none; border: none; font-size: 20px; color: var(--text-sub);
+  cursor: pointer; padding: 4px 8px; margin-left: 8px; border-radius: 8px;
+}
+.modal-close:active { background: var(--border); }
 .modal-title {
   font-size: 17px; font-weight: 700; text-align: center;
   margin-bottom: 20px;
@@ -671,7 +681,11 @@ body {
 <div id="addChoiceModal" class="modal-overlay" onclick="if(event.target===this)closeModal('addChoiceModal')">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title">レシピを追加</div>
+    <div class="modal-header">
+      <div style="width:32px"></div>
+      <div class="modal-title">レシピを追加</div>
+      <button class="modal-close" onclick="closeModal('addChoiceModal')">✕</button>
+    </div>
     <div class="add-choice">
       <div class="add-choice-btn" onclick="closeModal('addChoiceModal');openAIExtract('url')">
         <div class="add-choice-icon" style="background:var(--blue-light)">🔗</div>
@@ -709,7 +723,11 @@ body {
 <div id="aiExtractModal" class="modal-overlay" onclick="if(event.target===this)closeModal('aiExtractModal')">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title" id="aiExtractTitle">テキストから取り込み</div>
+    <div class="modal-header">
+      <div style="width:32px"></div>
+      <div class="modal-title" id="aiExtractTitle">テキストから取り込み</div>
+      <button class="modal-close" onclick="closeModal('aiExtractModal')">✕</button>
+    </div>
     <div id="aiUrlSection" class="hidden">
       <div class="form-group">
         <label class="form-label">レシピページのURL</label>
@@ -747,7 +765,11 @@ body {
 <div id="entryModal" class="modal-overlay" onclick="if(event.target===this)closeModal('entryModal')">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title" id="entryModalTitle">レシピを入力</div>
+    <div class="modal-header">
+      <div style="width:32px"></div>
+      <div class="modal-title" id="entryModalTitle">レシピを入力</div>
+      <button class="modal-close" onclick="closeModal('entryModal')">✕</button>
+    </div>
     <div class="form-group">
       <label class="form-label">レシピ名 *</label>
       <input class="form-input" id="entryTitle" placeholder="例: 肉じゃが">
@@ -801,7 +823,11 @@ body {
 <div id="folderModal" class="modal-overlay" onclick="if(event.target===this)closeModal('folderModal')">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title" id="folderModalTitle">フォルダを作成</div>
+    <div class="modal-header">
+      <div style="width:32px"></div>
+      <div class="modal-title" id="folderModalTitle" style="margin-bottom:0">フォルダを作成</div>
+      <button class="modal-close" onclick="closeModal('folderModal')">✕</button>
+    </div>
     <div class="form-group">
       <label class="form-label">フォルダ名</label>
       <input class="form-input" id="folderNameInput" placeholder="例: 和食、お弁当">
@@ -818,7 +844,11 @@ body {
 <div id="guideModal" class="modal-overlay" onclick="if(event.target===this)closeModal('guideModal')">
   <div class="modal" style="max-height:85vh;overflow-y:auto">
     <div class="modal-handle"></div>
-    <div class="modal-title">使い方ガイド</div>
+    <div class="modal-header">
+      <div style="width:32px"></div>
+      <div class="modal-title">使い方ガイド</div>
+      <button class="modal-close" onclick="closeModal('guideModal')">✕</button>
+    </div>
     <div style="font-size:13px;line-height:1.8;color:var(--text-sub)">
 
       <div style="font-weight:700;color:var(--text);font-size:14px;margin:16px 0 8px">レシピを追加する</div>
@@ -1536,6 +1566,8 @@ async function runAIExtract() {
     } else {
       if (!selectedAIImage) throw new Error('画像を選択してください');
       result = await extractFromImage(selectedAIImage);
+      // Use the uploaded image as recipe thumbnail
+      result._imageDataUrl = `data:${selectedAIImage.mimeType};base64,${selectedAIImage.data}`;
     }
 
     // Fill entry form with extracted data
@@ -1548,7 +1580,15 @@ async function runAIExtract() {
     document.getElementById('entryServings').value = result.servings || '';
     document.getElementById('entryPrepTime').value = result.prepTime || '';
     document.getElementById('entryMemo').value = '';
-    document.getElementById('entryImageArea').innerHTML = '<div class="form-image-upload" onclick="document.getElementById(\'entryImageInput\').click()">📷 タップして写真を追加</div>';
+
+    // Auto-set thumbnail from URL og:image or uploaded photo
+    const autoImage = result._thumbnailUrl || result._imageDataUrl || '';
+    if (autoImage) {
+      selectedEntryImage = result._imageDataUrl || result._thumbnailUrl;
+      document.getElementById('entryImageArea').innerHTML = `<img class="form-image-preview" src="${autoImage}" onerror="this.parentElement.innerHTML='<div class=\\'form-image-upload\\' onclick=\\'document.getElementById(\\\\&quot;entryImageInput\\\\&quot;).click()\\'>📷 タップして写真を追加</div>'"><div class="form-image-upload" onclick="document.getElementById('entryImageInput').click()">📷 写真を変更</div>`;
+    } else {
+      document.getElementById('entryImageArea').innerHTML = '<div class="form-image-upload" onclick="document.getElementById(\'entryImageInput\').click()">📷 タップして写真を追加</div>';
+    }
 
     document.getElementById('ingredientsList').innerHTML = '';
     (result.ingredients || []).forEach(ing => addIngredientRow(ing.name, ing.amount));
@@ -1588,8 +1628,19 @@ async function extractFromUrl(url) {
   }
   if (!html) throw new Error('ページを取得できませんでした。テキスト貼り付けモードをお試しください。');
 
-  // Strip HTML tags, scripts, styles to get text content
+  // Parse HTML
   const doc = new DOMParser().parseFromString(html, 'text/html');
+
+  // Extract thumbnail (og:image, recipe image, or first large image)
+  let thumbnailUrl = '';
+  const ogImage = doc.querySelector('meta[property="og:image"]')?.getAttribute('content');
+  const recipeImage = doc.querySelector('[class*="recipe"] img, [class*="Recipe"] img, .main-photo img, .recipe-image img')?.getAttribute('src');
+  thumbnailUrl = ogImage || recipeImage || '';
+  if (thumbnailUrl && !thumbnailUrl.startsWith('http')) {
+    try { thumbnailUrl = new URL(thumbnailUrl, url).href; } catch(e) { thumbnailUrl = ''; }
+  }
+
+  // Strip to text
   doc.querySelectorAll('script,style,nav,footer,header').forEach(el => el.remove());
   const text = doc.body?.textContent?.replace(/\s+/g, ' ').trim() || '';
   if (text.length < 50) throw new Error('ページからテキストを抽出できませんでした。');
@@ -1613,7 +1664,9 @@ ${text.substring(0, 10000)}
 
 ルール: 材料は全て抽出。分量不明なら「適量」。手順は簡潔に。レシピと無関係な広告文等は無視。`;
 
-  return await callGemini([{ text: prompt }]);
+  const result = await callGemini([{ text: prompt }]);
+  result._thumbnailUrl = thumbnailUrl;
+  return result;
 }
 
 async function extractFromText(text) {
