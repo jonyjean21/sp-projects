@@ -3,29 +3,49 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SP Apps</title>
+<title>SP Output Catalog</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
   --bg: #0e1117; --card: #161b22; --border: #30363d;
   --text: #e6edf3; --sub: #8b949e; --accent: #58a6ff;
   --green: #3fb950; --orange: #d29922; --purple: #bc8cff;
+  --red: #f85149; --teal: #39d2c0;
 }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', sans-serif;
   background: var(--bg); color: var(--text);
-  max-width: 600px; margin: 0 auto; padding: 24px 16px;
+  max-width: 640px; margin: 0 auto; padding: 24px 16px;
   min-height: 100vh;
 }
-.header { padding: 20px 0 24px; }
+
+/* Header */
+.header { padding: 20px 0 12px; }
 .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-.header p { font-size: 13px; color: var(--sub); }
-.app-group { margin-bottom: 28px; }
-.group-label {
-  font-size: 11px; font-weight: 600; color: var(--sub);
-  text-transform: uppercase; letter-spacing: 1px;
-  margin-bottom: 10px; padding-left: 2px;
+.header p { font-size: 13px; color: var(--sub); line-height: 1.6; }
+.stats-bar {
+  display: flex; gap: 16px; margin: 16px 0 8px; flex-wrap: wrap;
 }
+.stat { font-size: 12px; color: var(--sub); }
+.stat strong { color: var(--text); font-size: 18px; margin-right: 2px; }
+
+/* Category */
+.category { margin-bottom: 32px; }
+.cat-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0; margin-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer; user-select: none;
+}
+.cat-icon { font-size: 18px; }
+.cat-title { font-size: 15px; font-weight: 700; flex: 1; }
+.cat-count { font-size: 11px; color: var(--sub); background: var(--card); padding: 2px 8px; border-radius: 10px; }
+.cat-toggle { font-size: 14px; color: var(--sub); transition: transform 0.2s; }
+.cat-header.collapsed .cat-toggle { transform: rotate(-90deg); }
+.cat-body { display: block; }
+.cat-header.collapsed + .cat-body { display: none; }
+
+/* App Card */
 .app-card {
   background: var(--card); border: 1px solid var(--border);
   border-radius: 10px; padding: 14px 16px; margin-bottom: 8px;
@@ -42,16 +62,20 @@ body {
 .app-body { flex: 1; min-width: 0; }
 .app-name { font-size: 14px; font-weight: 600; }
 .app-desc { font-size: 12px; color: var(--sub); margin-top: 2px; }
-.app-badges { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+.app-meta { display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap; align-items: center; }
 .badge {
-  font-size: 10px; padding: 2px 8px; border-radius: 12px;
-  font-weight: 600;
+  font-size: 10px; padding: 2px 8px; border-radius: 12px; font-weight: 600;
 }
 .badge-pages { background: #1f2a3d; color: var(--accent); }
 .badge-wp { background: #2a2117; color: var(--orange); }
 .badge-vercel { background: #1a2417; color: var(--green); }
 .badge-firebase { background: #2a1f2d; color: var(--purple); }
+.badge-gas { background: #1a2a2a; color: var(--teal); }
+.badge-cli { background: #2a1a1a; color: var(--red); }
+.badge-date { background: none; color: var(--sub); padding: 0; font-weight: 400; font-size: 10px; }
 .arrow { color: var(--sub); font-size: 18px; flex-shrink: 0; }
+
+/* Sub items */
 .sub-links {
   display: flex; gap: 6px; margin: -2px 0 8px 52px; flex-wrap: wrap;
 }
@@ -62,176 +86,325 @@ body {
   transition: background 0.2s;
 }
 .sub-link:hover { background: #253550; }
-.footer { padding: 20px 0; text-align: center; font-size: 11px; color: var(--sub); }
+
+/* Status dot */
+.status-dot {
+  width: 6px; height: 6px; border-radius: 50%; display: inline-block;
+  margin-right: 4px; vertical-align: middle;
+}
+.status-live { background: var(--green); }
+.status-dev { background: var(--orange); }
+.status-archive { background: var(--sub); }
+
+/* Automation item (no link) */
+.auto-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 12px;
+  color: var(--text);
+}
+
+/* Timeline */
+.timeline { margin-top: 8px; }
+.tl-item {
+  display: flex; gap: 12px; padding: 8px 0;
+  font-size: 12px; color: var(--sub);
+  border-bottom: 1px solid #1e2430;
+}
+.tl-item:last-child { border-bottom: none; }
+.tl-date { width: 70px; flex-shrink: 0; font-weight: 600; color: var(--text); font-size: 11px; }
+.tl-text { flex: 1; }
+
+.footer { padding: 24px 0; text-align: center; font-size: 11px; color: var(--sub); }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>SP Apps</h1>
-  <p>アプリ・ツール一覧</p>
-</div>
-
-<div class="app-group">
-  <div class="group-label">GitHub Pages</div>
-
-  <a class="app-card" href="https://jonyjean21.github.io/sp-projects/viisi-master/" target="_blank">
-    <div class="app-icon" style="background:#1f2a3d">👑</div>
-    <div class="app-body">
-      <div class="app-name">5先王（ヴィーシマスター）</div>
-      <div class="app-desc">結果記録 & X投稿ツール</div>
-      <div class="app-badges">
-        <span class="badge badge-pages">GitHub Pages</span>
-        <span class="badge badge-firebase">Firebase RTDB</span>
-      </div>
-    </div>
-    <span class="arrow">›</span>
-  </a>
-  <div class="sub-links">
-    <a class="sub-link" href="https://jonyjean21.github.io/sp-projects/viisi-master/manual-gatekeeper.html" target="_blank">門番ガイド</a>
+  <h1>SP Output Catalog</h1>
+  <p>SPが作ってきたもの全部。カテゴリ別・時系列で管理。</p>
+  <div class="stats-bar">
+    <div class="stat"><strong>10</strong>公開中</div>
+    <div class="stat"><strong>4</strong>自動化</div>
+    <div class="stat"><strong>1</strong>倉庫</div>
   </div>
+</div>
 
-  <a class="app-card" href="https://jonyjean21.github.io/sp-projects/meguri/" target="_blank">
-    <div class="app-icon" style="background:#1a2417">🍃</div>
-    <div class="app-body">
-      <div class="app-name">めぐり帳</div>
-      <div class="app-desc">恩・約束・貸し借りの記録</div>
-      <div class="app-badges">
-        <span class="badge badge-pages">GitHub Pages</span>
-        <span class="badge badge-firebase">Firebase Auth + RTDB</span>
-      </div>
-    </div>
-    <span class="arrow">›</span>
-  </a>
-
-  <a class="app-card" href="https://jonyjean21.github.io/sp-projects/partner-portal/" target="_blank">
-    <div class="app-icon" style="background:#2a2117">🤝</div>
-    <div class="app-body">
-      <div class="app-name">パートナー循環ポータル</div>
-      <div class="app-desc">MOLKKY HUB パートナー制度の可視化</div>
-      <div class="app-badges">
-        <span class="badge badge-pages">GitHub Pages</span>
-        <span class="badge badge-firebase">Firebase RTDB</span>
-      </div>
-    </div>
-    <span class="arrow">›</span>
-  </a>
-  <div class="sub-links">
-    <a class="sub-link" href="https://jonyjean21.github.io/sp-projects/partner-portal/admin.html" target="_blank">管理画面</a>
+<!-- ==================== Category: MOLKKY HUB メディア ==================== -->
+<div class="category">
+  <div class="cat-header" onclick="this.classList.toggle('collapsed')">
+    <span class="cat-icon">📰</span>
+    <span class="cat-title">MOLKKY HUB メディア</span>
+    <span class="cat-count">4</span>
+    <span class="cat-toggle">▾</span>
   </div>
-
-  <a class="app-card" href="https://jonyjean21.github.io/sp-projects/projects/molkky-dome/ranking/" target="_blank">
-    <div class="app-icon" style="background:#2a1a10">🔥</div>
-    <div class="app-body">
-      <div class="app-name">シーズン大会 & 新人年間王 & 合戦FINAL</div>
-      <div class="app-desc">川西モルックの会 年間大会体系の企画書</div>
-      <div class="app-badges">
-        <span class="badge badge-pages">GitHub Pages</span>
+  <div class="cat-body">
+    <a class="app-card" href="https://molkky-hub.com" target="_blank">
+      <div class="app-icon" style="background:#2a2117">📰</div>
+      <div class="app-body">
+        <div class="app-name"><span class="status-dot status-live"></span>MOLKKY HUB</div>
+        <div class="app-desc">モルック総合情報メディア（月間3Kセッション）</div>
+        <div class="app-meta">
+          <span class="badge badge-wp">WordPress</span>
+          <span class="badge badge-date">2024〜</span>
+        </div>
       </div>
+      <span class="arrow">›</span>
+    </a>
+    <div class="sub-links">
+      <a class="sub-link" href="https://molkky-hub.com/event/tournament/" target="_blank">大会情報（545件）</a>
+      <a class="sub-link" href="https://molkky-hub.com/hubpartner/" target="_blank">パートナー記事</a>
+      <a class="sub-link" href="https://molkky-hub.com/wp-admin/" target="_blank">管理画面</a>
     </div>
-    <span class="arrow">›</span>
-  </a>
 
-  <a class="app-card" href="https://jonyjean21.github.io/sp-projects/promote/" target="_blank">
-    <div class="app-icon" style="background:#101a2a">📱</div>
-    <div class="app-body">
-      <div class="app-name">Xポスト生成ツール</div>
-      <div class="app-desc">記事URLからXポスト案を自動生成（Gemini AI）</div>
-      <div class="app-badges">
-        <span class="badge badge-pages">GitHub Pages</span>
+    <a class="app-card" href="https://jonyjean21.github.io/sp-projects/promote/" target="_blank">
+      <div class="app-icon" style="background:#101a2a">📱</div>
+      <div class="app-body">
+        <div class="app-name"><span class="status-dot status-live"></span>Xポスト生成ツール</div>
+        <div class="app-desc">記事URLからXポスト案を自動生成（Gemini AI）</div>
+        <div class="app-meta">
+          <span class="badge badge-pages">GitHub Pages</span>
+          <span class="badge badge-date">2026.02</span>
+        </div>
       </div>
-    </div>
-    <span class="arrow">›</span>
-  </a>
+      <span class="arrow">›</span>
+    </a>
 
-  <a class="app-card" href="https://jonyjean21.github.io/sp-projects/repost/" target="_blank">
-    <div class="app-icon" style="background:#1a1530">💬</div>
-    <div class="app-body">
-      <div class="app-name">引用リポスト生成ツール</div>
-      <div class="app-desc">モルハブ宛ポストへの引用リポスト案を自動生成</div>
-      <div class="app-badges">
-        <span class="badge badge-pages">GitHub Pages</span>
+    <a class="app-card" href="https://jonyjean21.github.io/sp-projects/repost/" target="_blank">
+      <div class="app-icon" style="background:#1a1530">💬</div>
+      <div class="app-body">
+        <div class="app-name"><span class="status-dot status-live"></span>引用リポスト生成ツール</div>
+        <div class="app-desc">モルハブ宛ポストへの引用リポスト案を自動生成</div>
+        <div class="app-meta">
+          <span class="badge badge-pages">GitHub Pages</span>
+          <span class="badge badge-date">2026.02</span>
+        </div>
       </div>
-    </div>
-    <span class="arrow">›</span>
-  </a>
+      <span class="arrow">›</span>
+    </a>
 
-  <a class="app-card" href="https://jonyjean21.github.io/sp-projects/tournament-submit/" target="_blank">
-    <div class="app-icon" style="background:#1f2a3d">📣</div>
-    <div class="app-body">
-      <div class="app-name">大会情報投稿ツール</div>
-      <div class="app-desc">URLを貼るだけでMOLKKY HUBに大会情報を投稿</div>
-      <div class="app-badges">
-        <span class="badge badge-pages">GitHub Pages</span>
-        <span class="badge badge-firebase">Firebase RTDB</span>
+    <a class="app-card" href="https://jonyjean21.github.io/sp-projects/partner-portal/" target="_blank">
+      <div class="app-icon" style="background:#2a2117">🤝</div>
+      <div class="app-body">
+        <div class="app-name"><span class="status-dot status-live"></span>パートナー循環ポータル</div>
+        <div class="app-desc">パートナー制度の提供品の流れを可視化</div>
+        <div class="app-meta">
+          <span class="badge badge-pages">GitHub Pages</span>
+          <span class="badge badge-firebase">Firebase RTDB</span>
+          <span class="badge badge-date">2026.02</span>
+        </div>
       </div>
+      <span class="arrow">›</span>
+    </a>
+    <div class="sub-links">
+      <a class="sub-link" href="https://jonyjean21.github.io/sp-projects/partner-portal/admin.html" target="_blank">管理画面</a>
     </div>
-    <span class="arrow">›</span>
-  </a>
-
-  <a class="app-card" href="https://jonyjean21.github.io/sp-projects/recipe/" target="_blank">
-    <div class="app-icon" style="background:#2a2117">🍳</div>
-    <div class="app-body">
-      <div class="app-name">レシピBOX</div>
-      <div class="app-desc">レシピ保存・管理アプリ（写真OCR・URL取込対応）</div>
-      <div class="app-badges">
-        <span class="badge badge-pages">GitHub Pages</span>
-        <span class="badge badge-firebase">Firebase Auth + RTDB</span>
-      </div>
-    </div>
-    <span class="arrow">›</span>
-  </a>
-</div>
-
-<div class="app-group">
-  <div class="group-label">External</div>
-
-  <a class="app-card" href="https://molkky-hub.com" target="_blank">
-    <div class="app-icon" style="background:#2a2117">📰</div>
-    <div class="app-body">
-      <div class="app-name">MOLKKY HUB</div>
-      <div class="app-desc">モルック総合情報メディア</div>
-      <div class="app-badges">
-        <span class="badge badge-wp">WordPress</span>
-      </div>
-    </div>
-    <span class="arrow">›</span>
-  </a>
-  <div class="sub-links">
-    <a class="sub-link" href="https://molkky-hub.com/event/tournament/" target="_blank">大会情報</a>
-    <a class="sub-link" href="https://molkky-hub.com/wp-admin/" target="_blank">管理画面</a>
   </div>
-
-  <a class="app-card" href="https://marutamura-bot.vercel.app" target="_blank">
-    <div class="app-icon" style="background:#1a2417">🤖</div>
-    <div class="app-body">
-      <div class="app-name">marutamura-bot</div>
-      <div class="app-desc">マルタ村 LINE Bot（Claude AI）</div>
-      <div class="app-badges">
-        <span class="badge badge-vercel">Vercel</span>
-      </div>
-    </div>
-    <span class="arrow">›</span>
-  </a>
 </div>
 
-<div class="app-group">
-  <div class="group-label">倉庫（Archive）</div>
-
-  <a class="app-card" href="https://jonyjean21.github.io/sp-projects/projects/molkky-dome/ranking/slides.html" target="_blank">
-    <div class="app-icon" style="background:#1e1e2e">📊</div>
-    <div class="app-body">
-      <div class="app-name">シーズン大会 スライド版</div>
-      <div class="app-desc">横型16:9プレゼンテーション（20スライド）</div>
-      <div class="app-badges">
-        <span class="badge badge-pages">GitHub Pages</span>
+<!-- ==================== Category: モルック コミュニティ ==================== -->
+<div class="category">
+  <div class="cat-header" onclick="this.classList.toggle('collapsed')">
+    <span class="cat-icon">🪵</span>
+    <span class="cat-title">モルック コミュニティ</span>
+    <span class="cat-count">3</span>
+    <span class="cat-toggle">▾</span>
+  </div>
+  <div class="cat-body">
+    <a class="app-card" href="https://jonyjean21.github.io/sp-projects/viisi-master/" target="_blank">
+      <div class="app-icon" style="background:#1f2a3d">👑</div>
+      <div class="app-body">
+        <div class="app-name"><span class="status-dot status-live"></span>5先王（ヴィーシマスター）</div>
+        <div class="app-desc">モルック試合結果の記録 & X自動投稿ツール</div>
+        <div class="app-meta">
+          <span class="badge badge-pages">GitHub Pages</span>
+          <span class="badge badge-firebase">Firebase RTDB</span>
+          <span class="badge badge-date">2025〜</span>
+        </div>
       </div>
+      <span class="arrow">›</span>
+    </a>
+    <div class="sub-links">
+      <a class="sub-link" href="https://jonyjean21.github.io/sp-projects/viisi-master/manual-gatekeeper.html" target="_blank">門番ガイド</a>
     </div>
-    <span class="arrow">›</span>
-  </a>
+
+    <a class="app-card" href="https://jonyjean21.github.io/sp-projects/projects/molkky-dome/ranking/" target="_blank">
+      <div class="app-icon" style="background:#2a1a10">🔥</div>
+      <div class="app-body">
+        <div class="app-name"><span class="status-dot status-live"></span>シーズン大会 & 新人年間王</div>
+        <div class="app-desc">川西モルックの会 年間大会体系の企画書</div>
+        <div class="app-meta">
+          <span class="badge badge-pages">GitHub Pages</span>
+          <span class="badge badge-date">2026.02</span>
+        </div>
+      </div>
+      <span class="arrow">›</span>
+    </a>
+
+    <a class="app-card" href="https://jonyjean21.github.io/sp-projects/tournament-submit/" target="_blank">
+      <div class="app-icon" style="background:#1f2a3d">📣</div>
+      <div class="app-body">
+        <div class="app-name"><span class="status-dot status-live"></span>大会情報投稿ツール</div>
+        <div class="app-desc">URLを貼るだけでMOLKKY HUBに大会情報を投稿</div>
+        <div class="app-meta">
+          <span class="badge badge-pages">GitHub Pages</span>
+          <span class="badge badge-firebase">Firebase RTDB</span>
+          <span class="badge badge-date">2026.02</span>
+        </div>
+      </div>
+      <span class="arrow">›</span>
+    </a>
+  </div>
 </div>
 
-<div class="footer">SP Apps Dashboard</div>
+<!-- ==================== Category: ライフツール ==================== -->
+<div class="category">
+  <div class="cat-header" onclick="this.classList.toggle('collapsed')">
+    <span class="cat-icon">🛠</span>
+    <span class="cat-title">ライフツール</span>
+    <span class="cat-count">2</span>
+    <span class="cat-toggle">▾</span>
+  </div>
+  <div class="cat-body">
+    <a class="app-card" href="https://jonyjean21.github.io/sp-projects/meguri/" target="_blank">
+      <div class="app-icon" style="background:#1a2417">🍃</div>
+      <div class="app-body">
+        <div class="app-name"><span class="status-dot status-live"></span>めぐり帳</div>
+        <div class="app-desc">恩・約束・貸し借りの記録アプリ</div>
+        <div class="app-meta">
+          <span class="badge badge-pages">GitHub Pages</span>
+          <span class="badge badge-firebase">Firebase Auth + RTDB</span>
+          <span class="badge badge-date">2026.02</span>
+        </div>
+      </div>
+      <span class="arrow">›</span>
+    </a>
+
+    <a class="app-card" href="https://jonyjean21.github.io/sp-projects/recipe/" target="_blank">
+      <div class="app-icon" style="background:#2a2117">🍳</div>
+      <div class="app-body">
+        <div class="app-name"><span class="status-dot status-live"></span>レシピBOX</div>
+        <div class="app-desc">レシピ保存・管理（URL取込・写真OCR・家族共有）</div>
+        <div class="app-meta">
+          <span class="badge badge-pages">GitHub Pages</span>
+          <span class="badge badge-firebase">Firebase Auth + RTDB</span>
+          <span class="badge badge-date">2026.02</span>
+        </div>
+      </div>
+      <span class="arrow">›</span>
+    </a>
+  </div>
+</div>
+
+<!-- ==================== Category: 自動化基盤 ==================== -->
+<div class="category">
+  <div class="cat-header" onclick="this.classList.toggle('collapsed')">
+    <span class="cat-icon">⚡</span>
+    <span class="cat-title">自動化基盤</span>
+    <span class="cat-count">4</span>
+    <span class="cat-toggle">▾</span>
+  </div>
+  <div class="cat-body">
+    <div class="auto-card">
+      <div class="app-icon" style="background:#1a2a2a">📝</div>
+      <div class="app-body">
+        <div class="app-name"><span class="status-dot status-live"></span>チャプ会議事録 自動化</div>
+        <div class="app-desc">Google Meet文字起こし → 議事録変換 → Notion投稿（全自動）</div>
+        <div class="app-meta">
+          <span class="badge badge-gas">GAS</span>
+          <span class="badge badge-firebase">Firebase</span>
+          <span class="badge badge-cli">Claude Code</span>
+          <span class="badge badge-date">2026.02</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="auto-card">
+      <div class="app-icon" style="background:#1a2a2a">🏆</div>
+      <div class="app-body">
+        <div class="app-name"><span class="status-dot status-live"></span>大会情報 自動投稿</div>
+        <div class="app-desc">X/Web URL → 大会情報抽出 → WordPress直接投稿</div>
+        <div class="app-meta">
+          <span class="badge badge-cli">Claude Code /tournament</span>
+          <span class="badge badge-wp">WP REST API</span>
+          <span class="badge badge-date">2026.02</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="auto-card">
+      <div class="app-icon" style="background:#1a2a2a">💰</div>
+      <div class="app-body">
+        <div class="app-name"><span class="status-dot status-live"></span>月次マネー振り分け</div>
+        <div class="app-desc">家計口座11個+カード7枚の月次振り分け指示を自動生成</div>
+        <div class="app-meta">
+          <span class="badge badge-cli">Claude Code /mm</span>
+          <span class="badge badge-date">2026.02</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="auto-card">
+      <div class="app-icon" style="background:#1a2a2a">🤖</div>
+      <div class="app-body">
+        <div class="app-name"><span class="status-dot status-live"></span>marutamura-bot</div>
+        <div class="app-desc">マルタ村 LINE Bot（Claude AI応答）</div>
+        <div class="app-meta">
+          <span class="badge badge-vercel">Vercel</span>
+          <span class="badge badge-date">2025〜</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Category: 倉庫（Archive） ==================== -->
+<div class="category">
+  <div class="cat-header collapsed" onclick="this.classList.toggle('collapsed')">
+    <span class="cat-icon">📦</span>
+    <span class="cat-title">倉庫（Archive）</span>
+    <span class="cat-count">1</span>
+    <span class="cat-toggle">▾</span>
+  </div>
+  <div class="cat-body" style="display:none">
+    <a class="app-card" href="https://jonyjean21.github.io/sp-projects/projects/molkky-dome/ranking/slides.html" target="_blank">
+      <div class="app-icon" style="background:#1e1e2e">📊</div>
+      <div class="app-body">
+        <div class="app-name"><span class="status-dot status-archive"></span>シーズン大会 スライド版</div>
+        <div class="app-desc">横型16:9プレゼンテーション（20スライド）</div>
+        <div class="app-meta">
+          <span class="badge badge-pages">GitHub Pages</span>
+          <span class="badge badge-date">2026.02</span>
+        </div>
+      </div>
+      <span class="arrow">›</span>
+    </a>
+  </div>
+</div>
+
+<!-- ==================== Build History ==================== -->
+<div class="category">
+  <div class="cat-header" onclick="this.classList.toggle('collapsed')">
+    <span class="cat-icon">📅</span>
+    <span class="cat-title">ビルド履歴</span>
+    <span class="cat-count">直近</span>
+    <span class="cat-toggle">▾</span>
+  </div>
+  <div class="cat-body">
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-date">2026.02.27</div><div class="tl-text">レシピBOX URL取込機能、ダークテーマスライド、パートナー記事投稿</div></div>
+      <div class="tl-item"><div class="tl-date">2026.02.26</div><div class="tl-text">promoteツール文字数緩和、レシピBOX家族共有、Xペルソナ適用</div></div>
+      <div class="tl-item"><div class="tl-date">2026.02.25</div><div class="tl-text">SP Appsダッシュボード整理、スライド倉庫行き</div></div>
+      <div class="tl-item"><div class="tl-date">2026.02.24</div><div class="tl-text">チャプ会議事録 260224分処理、レシピBOX v1.0公開</div></div>
+      <div class="tl-item"><div class="tl-date">2026.02.19</div><div class="tl-text">チャプ会議事録 全自動パイプライン完成、めぐり帳v2改修</div></div>
+      <div class="tl-item"><div class="tl-date">2026.02.12</div><div class="tl-text">パートナー循環ポータル構築、大会自動化スキル構築</div></div>
+      <div class="tl-item"><div class="tl-date">2026.02</div><div class="tl-text">promote/repost/tournament-submit 各ツール構築</div></div>
+      <div class="tl-item"><div class="tl-date">2025</div><div class="tl-text">5先王アプリ、めぐり帳、marutamura-bot、MOLKKY HUB開設</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">SP Output Catalog — Built with Claude Code</div>
 
 </body>
 </html>
