@@ -112,10 +112,11 @@ body {
   </div>
 
   <div class="input-group">
-    <label class="input-label">元ポストの内容（コピペ or 要約）</label>
+    <label class="input-label">XポストのURL or 内容をペースト</label>
     <div class="input-area">
-      <textarea id="tweetInput" placeholder="例: S-möl大阪版にモルハブからモルック棒を協賛いただきました。ありがとうございます！ #モルック @molkkyhub"></textarea>
+      <textarea id="tweetInput" placeholder="https://x.com/username/status/... または ポストの内容をコピペ"></textarea>
     </div>
+    <div id="fetchStatus" style="font-size:12px;color:#4a9eff;margin-top:6px;display:none"></div>
   </div>
 
   <div class="input-group">
@@ -149,10 +150,13 @@ body {
 
 <script>
 function getGeminiKey() {
-  let key = localStorage.getItem('GEMINI_API_KEY_REPOST');
+  let key = localStorage.getItem('GEMINI_API_KEY') || localStorage.getItem('GEMINI_API_KEY_REPOST');
   if (!key) {
     key = prompt('Gemini APIキーを入力してください（初回のみ・Google AI Studioで取得）');
-    if (key) localStorage.setItem('GEMINI_API_KEY_REPOST', key);
+  }
+  if (key) {
+    localStorage.setItem('GEMINI_API_KEY', key);
+    localStorage.setItem('GEMINI_API_KEY_REPOST', key);
   }
   return key;
 }
@@ -165,10 +169,55 @@ const postsArea = document.getElementById('postsArea');
 const postCards = document.getElementById('postCards');
 const statusEl = document.getElementById('status');
 
-tweetInput.addEventListener('input', () => {
-  generateBtn.disabled = tweetInput.value.trim().length < 10;
+// Detect X/Twitter URL and auto-fetch tweet content
+tweetInput.addEventListener('input', async () => {
+  const val = tweetInput.value.trim();
+  generateBtn.disabled = val.length < 10;
   postsArea.classList.remove('show');
   showStatus('', '');
+
+  // Check if it's an X/Twitter URL
+  const urlMatch = val.match(/https?:\/\/(x\.com|twitter\.com)\/(\w+)\/status\/(\d+)/);
+  if (urlMatch && !tweetInput._fetching) {
+    const username = urlMatch[2];
+    const tweetId = urlMatch[3];
+    const fetchStatus = document.getElementById('fetchStatus');
+    fetchStatus.style.display = 'block';
+    fetchStatus.textContent = 'ポストを取得中...';
+    tweetInput._fetching = true;
+    try {
+      const resp = await fetch(`https://syndication.twitter.com/srv/timeline-profile/screen-name/${username}`);
+      const html = await resp.text();
+      const matches = html.match(/"text":"([^"]{10,})"/g);
+      let found = null;
+      if (matches) {
+        // Try to find the specific tweet by ID, or use first matching
+        const idPattern = new RegExp(`"id_str":"${tweetId}"`);
+        // Look for text near the tweet ID
+        const allTweets = html.match(/"text":"((?:[^"\\]|\\.)*)"/g);
+        if (allTweets) {
+          // Get all tweet texts
+          const texts = allTweets.map(m => m.replace(/^"text":"/, '').replace(/"$/, '').replace(/\\n/g, '\n').replace(/\\"/g, '"'));
+          found = texts[0]; // Use first tweet from that user as fallback
+        }
+      }
+      if (found) {
+        tweetInput.value = found;
+        if (!authorInput.value) authorInput.value = `@${username}`;
+        fetchStatus.textContent = `@${username} のポストを取得しました`;
+        fetchStatus.style.color = '#2ea043';
+        generateBtn.disabled = false;
+      } else {
+        fetchStatus.textContent = '取得できませんでした。内容を手動で入力してください';
+        fetchStatus.style.color = '#f85149';
+      }
+    } catch (e) {
+      fetchStatus.textContent = '取得エラー。内容を手動で入力してください';
+      fetchStatus.style.color = '#f85149';
+    }
+    tweetInput._fetching = false;
+    setTimeout(() => { fetchStatus.style.display = 'none'; fetchStatus.style.color = '#4a9eff'; }, 4000);
+  }
 });
 
 generateBtn.addEventListener('click', async () => {

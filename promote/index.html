@@ -147,10 +147,13 @@ body {
 
 <script>
 function getGeminiKey() {
-  let key = localStorage.getItem('GEMINI_API_KEY_PROMOTE');
+  let key = localStorage.getItem('GEMINI_API_KEY') || localStorage.getItem('GEMINI_API_KEY_PROMOTE');
   if (!key) {
     key = prompt('Gemini APIキーを入力してください（初回のみ・Google AI Studioで取得）');
-    if (key) localStorage.setItem('GEMINI_API_KEY_PROMOTE', key);
+  }
+  if (key) {
+    localStorage.setItem('GEMINI_API_KEY', key);
+    localStorage.setItem('GEMINI_API_KEY_PROMOTE', key);
   }
   return key;
 }
