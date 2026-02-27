@@ -146,36 +146,14 @@ body {
 </div>
 
 <script>
-const FIREBASE_API_KEY = 'AIzaSyBusmxO-ZA6K6QDpMpWjShPiz02U9_v8lk';
-const FIREBASE_DB_URL = 'https://meguri-cho-default-rtdb.asia-southeast1.firebasedatabase.app';
-
-async function initGeminiKey() {
-  if (localStorage.getItem('GEMINI_API_KEY')) return;
-  try {
-    const authResp = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ returnSecureToken: true })
-    });
-    const authData = await authResp.json();
-    if (authData.idToken) {
-      const dbResp = await fetch(`${FIREBASE_DB_URL}/config/gemini_key.json?auth=${authData.idToken}`);
-      const key = await dbResp.json();
-      if (key) localStorage.setItem('GEMINI_API_KEY', key);
-    }
-  } catch (e) { /* Firebase unavailable, will use manual input */ }
-}
-
 function getGeminiKey() {
-  let key = localStorage.getItem('GEMINI_API_KEY');
+  let key = localStorage.getItem('GEMINI_API_KEY_PROMOTE');
   if (!key) {
     key = prompt('Gemini APIキーを入力してください（初回のみ・Google AI Studioで取得）');
-    if (key) localStorage.setItem('GEMINI_API_KEY', key);
+    if (key) localStorage.setItem('GEMINI_API_KEY_PROMOTE', key);
   }
   return key;
 }
-
-initGeminiKey();
 const WP_API = 'https://molkky-hub.com/wp-json/wp/v2';
 
 // Category config
