@@ -152,6 +152,7 @@ body {
   <div class="header-sub">
     <span>最終更新: <span class="last-updated" id="lastUpdated">読込中</span></span>
     <button class="refresh-btn" onclick="loadAll()">更新</button>
+    <button class="refresh-btn" onclick="setupGAS()" style="font-size:10px;padding:3px 8px;">GAS設定</button>
   </div>
 </div>
 
@@ -165,19 +166,19 @@ body {
       <div class="kpi-label">月間セッション</div>
       <div class="kpi-value" id="kpiSessions">-</div>
       <div class="kpi-change" id="kpiSessionsChange"></div>
-      <div class="kpi-source">GA4 手動入力</div>
+      <div class="kpi-source" id="srcSessions">GA4 API</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">月間PV</div>
       <div class="kpi-value" id="kpiPV">-</div>
       <div class="kpi-change" id="kpiPVChange"></div>
-      <div class="kpi-source">GA4 手動入力</div>
+      <div class="kpi-source">GA4 API</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">月間ユーザー</div>
       <div class="kpi-value" id="kpiUsers">-</div>
       <div class="kpi-change" id="kpiUsersChange"></div>
-      <div class="kpi-source">GA4 手動入力</div>
+      <div class="kpi-source">GA4 API</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">大会情報数</div>
@@ -365,10 +366,15 @@ body {
 <script>
 // ========== Config ==========
 const WP_API = 'https://molkky-hub.com/wp-json/wp/v2';
+
+// GAS Web App — デプロイ後にURLを設定
+// 未設定の場合は data.json にフォールバック
+const GAS_ENDPOINT = localStorage.getItem('hub_gas_endpoint') || '';
+
 const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyCSS1VZut5z0F_cejPES3JnGVqjurMTwG8",
-  databaseURL: "https://sp-projects-hub-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "sp-projects-hub"
+  apiKey: "AIzaSyALYXDVMecauxwozKtueJBc-6AJXv_CyQc",
+  databaseURL: "https://viisi-master-app-default-rtdb.firebaseio.com",
+  projectId: "viisi-master-app"
 };
 
 // Firebase init
@@ -393,24 +399,77 @@ function shortMonth(m) {
   return parseInt(parts[1]) + '月';
 }
 
-// ========== Data Loading ==========
-let jsonData = null;
+// ========== GAS Endpoint Setup ==========
+function setupGAS() {
+  const url = prompt('GAS Web App のデプロイURLを入力:');
+  if (url && url.startsWith('https://script.google.com/')) {
+    localStorage.setItem('hub_gas_endpoint', url);
+    location.reload();
+  }
+}
 
-async function loadJSON() {
-  try {
-    const res = await fetch('./data.json?t=' + Date.now());
-    jsonData = await res.json();
-    document.getElementById('lastUpdated').textContent = jsonData.lastUpdated;
+// ========== Analytics Data Loading ==========
+let analyticsData = null;
+
+async function loadAnalytics() {
+  const srcEl = document.getElementById('srcSessions');
+
+  // Try GAS Web App first
+  if (GAS_ENDPOINT) {
+    try {
+      srcEl.textContent = 'GAS API 取得中...';
+      const res = await fetch(GAS_ENDPOINT);
+      if (res.ok) {
+        analyticsData = await res.json();
+        if (analyticsData.error) {
+          console.error('GAS error:', analyticsData.error);
+          srcEl.textContent = 'GAS: ' + analyticsData.error;
+          analyticsData = null;
+        }
+      }
+    } catch (e) {
+      console.error('GAS fetch failed:', e);
+    }
+  }
+
+  // Fallback to data.json
+  if (!analyticsData) {
+    try {
+      const res = await fetch('./data.json?t=' + Date.now());
+      analyticsData = await res.json();
+      if (srcEl) srcEl.textContent = GAS_ENDPOINT ? 'GAS失敗 → data.json' : 'data.json (仮)';
+    } catch (e) {
+      console.error('data.json load failed:', e);
+      document.getElementById('trafficChart').innerHTML =
+        '<div style="font-size:12px;color:var(--red);padding:8px;">データ取得に失敗しました</div>';
+      return;
+    }
+  }
+
+  document.getElementById('lastUpdated').textContent = analyticsData.lastUpdated;
+
+  if (analyticsData.traffic && analyticsData.traffic.months && analyticsData.traffic.months.length >= 2) {
     renderTraffic();
+    if (srcEl && GAS_ENDPOINT && !analyticsData.traffic.error) srcEl.textContent = 'GA4 API 自動取得';
+  } else {
+    document.getElementById('trafficChart').innerHTML =
+      '<div style="font-size:12px;color:var(--sub);padding:8px;">トラフィックデータなし</div>';
+  }
+
+  if (analyticsData.searchConsole && analyticsData.searchConsole.months && analyticsData.searchConsole.months.length >= 2) {
     renderSearchConsole();
+  } else {
+    document.getElementById('clicksChart').innerHTML =
+      '<div style="font-size:12px;color:var(--sub);padding:8px;">Search Consoleデータなし</div>';
+  }
+
+  if (analyticsData.sns) {
     renderSNS();
-  } catch (e) {
-    console.error('data.json load failed:', e);
   }
 }
 
 function renderTraffic() {
-  const months = jsonData.traffic.months;
+  const months = analyticsData.traffic.months;
   const latest = months[months.length - 1];
   const prev = months[months.length - 2];
 
@@ -436,7 +495,7 @@ function renderTraffic() {
 }
 
 function renderSearchConsole() {
-  const sc = jsonData.searchConsole;
+  const sc = analyticsData.searchConsole;
   const months = sc.months;
   const latest = months[months.length - 1];
   const prev = months[months.length - 2];
@@ -462,39 +521,36 @@ function renderSearchConsole() {
 
   // Query table
   let tbody = '';
-  sc.topQueries.forEach(q => {
+  (sc.topQueries || []).forEach(q => {
     tbody += `<tr><td>${q.query}</td><td>${fmt(q.clicks)}</td><td>${fmt(q.impressions)}</td></tr>`;
   });
-  document.getElementById('queryBody').innerHTML = tbody;
+  document.getElementById('queryBody').innerHTML = tbody || '<tr><td colspan="3" style="color:var(--sub)">データなし</td></tr>';
 }
 
 function renderSNS() {
-  const sns = jsonData.sns;
-  document.getElementById('kpiFollowers').textContent = fmt(sns.xFollowers);
+  const sns = analyticsData.sns;
+  if (!sns) return;
+  document.getElementById('kpiFollowers').textContent = fmt(sns.xFollowers || 0);
   document.getElementById('kpiFollowersChange').innerHTML = changeHTML(sns.xFollowers, sns.xFollowersPrev);
-  document.getElementById('kpiImpressions').textContent = fmt(sns.xImpressions);
+  document.getElementById('kpiImpressions').textContent = fmt(sns.xImpressions || 0);
   document.getElementById('kpiImpressionsChange').innerHTML = changeHTML(sns.xImpressions, sns.xImpressionsPrev);
 }
 
 // ========== WP API ==========
 async function loadWPData() {
   try {
-    // Total posts
     const postsRes = await fetch(`${WP_API}/posts?per_page=1&_fields=id`, { headers: { 'Accept': 'application/json' } });
     const totalPosts = parseInt(postsRes.headers.get('X-WP-Total')) || 0;
     document.getElementById('kpiArticles').textContent = totalPosts;
 
-    // Tournament count (category 5 = 大会情報)
     const tournRes = await fetch(`${WP_API}/posts?categories=5&per_page=1&_fields=id`, { headers: { 'Accept': 'application/json' } });
     const totalTournaments = parseInt(tournRes.headers.get('X-WP-Total')) || 0;
     document.getElementById('kpiTournaments').textContent = totalTournaments;
     document.getElementById('kpiTournamentsChange').textContent = '大会情報DB';
 
-    // Team introductions (category 37 = チーム紹介)
     const teamRes = await fetch(`${WP_API}/posts?categories=37&per_page=1&_fields=id`, { headers: { 'Accept': 'application/json' } });
     const totalTeams = parseInt(teamRes.headers.get('X-WP-Total')) || 0;
 
-    // Content grid
     document.getElementById('contentGrid').innerHTML = `
       <div class="content-card">
         <div class="content-num" style="color:var(--accent)">${totalPosts}</div>
@@ -514,7 +570,6 @@ async function loadWPData() {
       </div>
     `;
 
-    // Tournament monthly chart (last 6 months)
     await loadTournamentMonthly();
   } catch (e) {
     console.error('WP API error:', e);
@@ -558,10 +613,10 @@ async function loadTournamentMonthly() {
   document.getElementById('tournamentChart').innerHTML = html;
 }
 
-// ========== Firebase ==========
+// ========== Firebase (Partner Data) ==========
 async function loadFirebaseData() {
   try {
-    const snap = await db.ref('partner').once('value');
+    const snap = await db.ref('partner/config/partners').once('value');
     const data = snap.val();
     if (!data) {
       document.getElementById('kpiPartners').textContent = '0';
@@ -569,16 +624,17 @@ async function loadFirebaseData() {
       return;
     }
 
-    const partners = Object.entries(data).filter(([k]) => k !== 'provisions' && k !== 'voices');
+    const partners = Object.entries(data);
     document.getElementById('kpiPartners').textContent = partners.length;
     document.getElementById('kpiPartnersChange').innerHTML = `<span class="kpi-neutral">${partners.length}社</span>`;
 
     let html = '';
     partners.forEach(([key, val]) => {
       const name = val.name || key;
-      const plan = val.plan || 'ライト';
-      const planCls = plan === 'スタンダード' ? 'plan-standard' : 'plan-light';
-      const dotColor = plan === 'スタンダード' ? 'var(--accent)' : 'var(--green)';
+      const plan = val.type || 'ライト';
+      const isStandard = plan === 'スタンダード';
+      const planCls = isStandard ? 'plan-standard' : 'plan-light';
+      const dotColor = isStandard ? 'var(--accent)' : 'var(--green)';
       html += `<div class="partner-item">
         <span class="partner-dot" style="background:${dotColor}"></span>
         <span class="partner-name">${name}</span>
@@ -594,7 +650,7 @@ async function loadFirebaseData() {
 
 // ========== Init ==========
 function loadAll() {
-  loadJSON();
+  loadAnalytics();
   loadWPData();
   loadFirebaseData();
 }
