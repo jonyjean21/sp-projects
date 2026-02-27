@@ -528,6 +528,23 @@ body {
   </button>
 </div>
 
+<!-- ===== Family Setup Screen ===== -->
+<div id="familySetup" class="login-screen hidden">
+  <div class="login-logo">👨‍👩‍👧‍👦</div>
+  <div class="login-title">家族で共有</div>
+  <div class="login-sub">レシピを家族で共有しましょう<br>新しく始めるか、招待コードで参加してください</div>
+  <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:300px">
+    <button class="login-btn" style="justify-content:center" onclick="onCreateFamily()">
+      新しく始める
+    </button>
+    <div style="text-align:center;color:var(--text-light);font-size:13px;margin:4px 0">または</div>
+    <input id="joinCodeInput" class="form-input" placeholder="招待コード（6文字）" style="text-align:center;font-size:18px;letter-spacing:4px;text-transform:uppercase;padding:14px;border-radius:12px;border:2px solid var(--border);background:var(--bg-card)">
+    <button class="login-btn" style="justify-content:center;background:var(--accent);color:#fff;border-color:var(--accent)" onclick="onJoinFamily()">
+      コードで参加する
+    </button>
+  </div>
+</div>
+
 <!-- ===== App Shell ===== -->
 <div id="appShell" class="app-shell hidden">
   <div class="app-header">
@@ -536,6 +553,7 @@ body {
       <img id="userAvatar" class="user-avatar" src="" alt="" onclick="toggleUserMenu()">
     </div>
     <div id="userMenu" class="user-menu">
+      <button class="user-menu-item" onclick="toggleUserMenu();openModal('guideModal')">使い方ガイド</button>
       <button class="user-menu-item" onclick="exportData()">データエクスポート</button>
       <button class="user-menu-item danger" onclick="signOut()">ログアウト</button>
     </div>
@@ -598,6 +616,21 @@ body {
   <!-- Page: Settings -->
   <div id="pageSettings" class="page">
     <div class="section-title">設定</div>
+
+    <!-- Family sharing -->
+    <div class="settings-section">
+      <div style="font-size:13px;font-weight:700;margin-bottom:8px">👨‍👩‍👧 家族の共有</div>
+      <div id="familyInviteSection" style="background:var(--bg-warm);border-radius:12px;padding:14px;margin-bottom:12px">
+        <div style="font-size:12px;color:var(--text-sub);margin-bottom:6px">招待コード（家族に教えてください）</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div id="inviteCodeDisplay" style="font-size:24px;font-weight:700;letter-spacing:4px;color:var(--accent);flex:1;text-align:center"></div>
+          <button onclick="copyInviteCode()" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);font-size:12px;cursor:pointer">コピー</button>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text-sub);margin-bottom:8px">メンバー</div>
+      <div id="familyMembersList"></div>
+    </div>
+
     <div class="settings-section">
       <div class="settings-item">
         <div class="settings-item-label">&#128190; データエクスポート</div>
@@ -609,7 +642,7 @@ body {
       </div>
     </div>
     <div style="text-align:center;margin-top:24px;font-size:11px;color:var(--text-light)">
-      レシピBOX v1.0
+      レシピBOX v1.1
     </div>
   </div>
 
@@ -766,6 +799,43 @@ body {
   </div>
 </div>
 
+<!-- ===== Modal: Guide ===== -->
+<div id="guideModal" class="modal-overlay" onclick="if(event.target===this)closeModal('guideModal')">
+  <div class="modal" style="max-height:85vh;overflow-y:auto">
+    <div class="modal-handle"></div>
+    <div class="modal-title">使い方ガイド</div>
+    <div style="font-size:13px;line-height:1.8;color:var(--text-sub)">
+
+      <div style="font-weight:700;color:var(--text);font-size:14px;margin:16px 0 8px">レシピを追加する</div>
+      <div style="background:var(--bg-warm);border-radius:10px;padding:12px;margin-bottom:12px">
+        <div style="margin-bottom:6px"><strong>📋 テキストから取り込み</strong></div>
+        レシピサイトからテキストをコピペすると、AIが自動で「材料」「手順」に整理してくれます。
+      </div>
+      <div style="background:var(--green-light);border-radius:10px;padding:12px;margin-bottom:12px">
+        <div style="margin-bottom:6px"><strong>📷 写真から読み取り</strong></div>
+        料理本やスクリーンショットの写真を撮ると、AIがレシピを読み取ります。
+      </div>
+      <div style="background:var(--yellow-light);border-radius:10px;padding:12px;margin-bottom:12px">
+        <div style="margin-bottom:6px"><strong>&#9998; 手入力</strong></div>
+        自分でレシピ名・材料・手順を入力できます。
+      </div>
+
+      <div style="font-weight:700;color:var(--text);font-size:14px;margin:16px 0 8px">フォルダで整理する</div>
+      <p>「フォルダ」タブでフォルダを作成できます。1つのレシピを複数フォルダに入れることも可能です。</p>
+
+      <div style="font-weight:700;color:var(--text);font-size:14px;margin:16px 0 8px">お気に入り</div>
+      <p>レシピ詳細画面の「&#9734;」をタップするとお気に入りに登録。ホームの上部に表示されます。</p>
+
+      <div style="font-weight:700;color:var(--text);font-size:14px;margin:16px 0 8px">家族と共有する</div>
+      <p>「設定」タブの「招待コード」を家族に教えると、同じレシピを共有できます。追加・編集は全員がリアルタイムで見れます。</p>
+
+      <div style="font-weight:700;color:var(--text);font-size:14px;margin:16px 0 8px">検索する</div>
+      <p>ホーム画面上部の検索バーで、レシピ名・材料名で検索できます。</p>
+    </div>
+    <button class="form-submit" onclick="closeModal('guideModal')" style="margin-top:16px">閉じる</button>
+  </div>
+</div>
+
 <!-- Toast -->
 <div id="toast" class="toast"></div>
 
@@ -790,8 +860,10 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
 let uid = null;
+let familyId = null;
 let itemsData = {};
 let foldersData = {};
+let membersData = {};
 let currentPage = 'home';
 let editingRecipeId = null;
 let editingFolderId = null;
@@ -800,6 +872,59 @@ let currentDetailId = null;
 let selectedEntryImage = null;
 let aiExtractMode = 'text';
 let selectedAIImage = null;
+
+function familyRef(path) {
+  return db.ref(`recipes/families/${familyId}/${path}`);
+}
+
+function generateInviteCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
+async function resolveFamily(user) {
+  // Check if user already belongs to a family
+  const snap = await db.ref(`recipes/userFamily/${uid}`).once('value');
+  if (snap.val()) {
+    familyId = snap.val();
+    return true;
+  }
+  return false; // No family yet
+}
+
+async function createFamily(user) {
+  const newFamilyId = db.ref('recipes/families').push().key;
+  const code = generateInviteCode();
+  const updates = {};
+  updates[`recipes/families/${newFamilyId}/members/${uid}`] = {
+    name: user.displayName || '',
+    photo: user.photoURL || '',
+    joinedAt: Date.now()
+  };
+  updates[`recipes/families/${newFamilyId}/inviteCode`] = code;
+  updates[`recipes/families/${newFamilyId}/createdAt`] = Date.now();
+  updates[`recipes/userFamily/${uid}`] = newFamilyId;
+  updates[`recipes/invites/${code}`] = newFamilyId;
+  await db.ref().update(updates);
+  familyId = newFamilyId;
+}
+
+async function joinFamily(code, user) {
+  const snap = await db.ref(`recipes/invites/${code.toUpperCase()}`).once('value');
+  if (!snap.val()) throw new Error('コードが見つかりません');
+  const targetFamilyId = snap.val();
+  const updates = {};
+  updates[`recipes/families/${targetFamilyId}/members/${uid}`] = {
+    name: user.displayName || '',
+    photo: user.photoURL || '',
+    joinedAt: Date.now()
+  };
+  updates[`recipes/userFamily/${uid}`] = targetFamilyId;
+  await db.ref().update(updates);
+  familyId = targetFamilyId;
+}
 
 const FOLDER_COLORS = [
   '#e07c4a', '#6a9f5b', '#5b8fb9', '#9a85b0',
@@ -830,30 +955,69 @@ document.addEventListener('click', (e) => {
   }
 });
 
-auth.onAuthStateChanged(user => {
+auth.onAuthStateChanged(async user => {
   if (user) {
     uid = user.uid;
     document.getElementById('loginScreen').classList.add('hidden');
-    document.getElementById('appShell').classList.remove('hidden');
     document.getElementById('userAvatar').src = user.photoURL || '';
-    startListening();
+
+    const hasFamily = await resolveFamily(user);
+    if (hasFamily) {
+      document.getElementById('familySetup').classList.add('hidden');
+      document.getElementById('appShell').classList.remove('hidden');
+      startListening();
+    } else {
+      // Show family setup screen
+      document.getElementById('familySetup').classList.remove('hidden');
+      document.getElementById('appShell').classList.add('hidden');
+    }
   } else {
     uid = null;
+    familyId = null;
     document.getElementById('loginScreen').classList.remove('hidden');
     document.getElementById('appShell').classList.add('hidden');
+    document.getElementById('familySetup').classList.add('hidden');
   }
 });
+
+async function onCreateFamily() {
+  const user = auth.currentUser;
+  await createFamily(user);
+  document.getElementById('familySetup').classList.add('hidden');
+  document.getElementById('appShell').classList.remove('hidden');
+  startListening();
+  showToast('家族グループを作成しました');
+}
+
+async function onJoinFamily() {
+  const code = document.getElementById('joinCodeInput').value.trim();
+  if (!code) return showToast('コードを入力してください');
+  try {
+    const user = auth.currentUser;
+    await joinFamily(code, user);
+    document.getElementById('familySetup').classList.add('hidden');
+    document.getElementById('appShell').classList.remove('hidden');
+    startListening();
+    showToast('家族に参加しました！');
+  } catch (e) {
+    showToast(e.message);
+  }
+}
 
 // ===== Data =====
 function startListening() {
   loadGeminiKey();
-  db.ref(`recipes/${uid}/items`).on('value', snap => {
+  familyRef('items').on('value', snap => {
     itemsData = snap.val() || {};
     renderAll();
   });
-  db.ref(`recipes/${uid}/folders`).on('value', snap => {
+  familyRef('folders').on('value', snap => {
     foldersData = snap.val() || {};
     renderAll();
+  });
+  familyRef('members').on('value', snap => {
+    membersData = snap.val() || {};
+    renderSettings();
   });
 }
 
@@ -1034,11 +1198,11 @@ function editCurrentFolder() {
 function deleteCurrentFolder() {
   if (!currentFolderViewId) return;
   if (!confirm('このフォルダを削除しますか？（レシピは残ります）')) return;
-  db.ref(`recipes/${uid}/folders/${currentFolderViewId}`).remove();
+  familyRef(`folders/${currentFolderViewId}`).remove();
   // Remove folder reference from all recipes
   Object.entries(itemsData).forEach(([rid, r]) => {
     if (r.folders && r.folders[currentFolderViewId]) {
-      db.ref(`recipes/${uid}/items/${rid}/folders/${currentFolderViewId}`).remove();
+      familyRef(`items/${rid}/folders/${currentFolderViewId}`).remove();
     }
   });
   closeFolderDetail();
@@ -1063,9 +1227,9 @@ function saveFolder() {
   const color = selectedDot ? selectedDot.style.backgroundColor : FOLDER_COLORS[0];
 
   if (editingFolderId) {
-    db.ref(`recipes/${uid}/folders/${editingFolderId}`).update({ name, color });
+    familyRef(`folders/${editingFolderId}`).update({ name, color });
   } else {
-    db.ref(`recipes/${uid}/folders`).push({ name, color, createdAt: Date.now() });
+    familyRef('folders').push({ name, color, createdAt: Date.now() });
   }
   closeModal('folderModal');
   showToast('フォルダを保存しました');
@@ -1155,12 +1319,12 @@ function closeDetail() {
 function toggleFav(id) {
   const r = itemsData[id];
   if (!r) return;
-  db.ref(`recipes/${uid}/items/${id}/favorite`).set(!r.favorite);
+  familyRef(`items/${id}/favorite`).set(!r.favorite);
 }
 
 function deleteRecipe(id) {
   if (!confirm('このレシピを削除しますか？')) return;
-  db.ref(`recipes/${uid}/items/${id}`).remove();
+  familyRef(`items/${id}`).remove();
   closeDetail();
   showToast('レシピを削除しました');
 }
@@ -1280,12 +1444,12 @@ function saveRecipe() {
   };
 
   if (editingRecipeId) {
-    db.ref(`recipes/${uid}/items/${editingRecipeId}`).update(data);
+    familyRef(`items/${editingRecipeId}`).update(data);
     showToast('レシピを更新しました');
   } else {
     data.createdAt = Date.now();
     data.favorite = false;
-    db.ref(`recipes/${uid}/items`).push(data);
+    familyRef('items').push(data);
     showToast('レシピを保存しました');
   }
   closeModal('entryModal');
@@ -1472,6 +1636,29 @@ function compressImage(file, maxWidth = 400, quality = 0.7) {
     };
     reader.readAsDataURL(file);
   });
+}
+
+// ===== Settings Render =====
+async function renderSettings() {
+  // Invite code
+  const codeSnap = await familyRef('inviteCode').once('value');
+  const code = codeSnap.val() || '';
+  document.getElementById('inviteCodeDisplay').textContent = code;
+
+  // Members
+  const membersList = document.getElementById('familyMembersList');
+  const members = Object.values(membersData);
+  membersList.innerHTML = members.map(m => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <img src="${esc(m.photo)}" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--border)" onerror="this.style.display='none'">
+      <span style="font-size:13px;font-weight:600">${esc(m.name || '名前なし')}</span>
+    </div>
+  `).join('');
+}
+
+function copyInviteCode() {
+  const code = document.getElementById('inviteCodeDisplay').textContent;
+  navigator.clipboard.writeText(code).then(() => showToast('コードをコピーしました'));
 }
 
 // ===== Export =====
