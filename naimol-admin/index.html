@@ -1764,37 +1764,45 @@ async function uploadGalleryPhotos() {
   loadGalleryMedia();
 }
 
-// ===== Gallery: get attachment IDs from FileBird folder =====
-async function fbGetFolderAttachments(folderId) {
-  // Use gutenberg-get-images endpoint (returns images for Gutenberg gallery block)
+// ===== Gallery: get folder→attachment mapping from FileBird export-csv =====
+async function fbExportMapping() {
+  // export-csv returns the full folder-attachment mapping
   try {
-    const data = await fbFetch('gutenberg-get-images?folder_id=' + folderId);
-    if (Array.isArray(data) && data.length > 0) {
-      return data.map(d => typeof d === 'object' ? (d.id || d.ID) : d).filter(Boolean);
-    }
-    if (data && data.items) return data.items.map(d => d.id || d.ID || d).filter(Boolean);
-    if (data && data.images) return data.images.map(d => d.id || d.ID || d).filter(Boolean);
-  } catch (e) {}
-
-  // Try POST version
-  try {
-    const data = await fbFetch('gutenberg-get-images', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ folder_id: folderId })
+    const res = await fetch(WP + '/wp-json/filebird/v1/export-csv', {
+      headers: { 'Authorization': 'Basic ' + wpAuth }
     });
-    if (Array.isArray(data) && data.length > 0) {
-      return data.map(d => typeof d === 'object' ? (d.id || d.ID) : d).filter(Boolean);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    log('export-csv: ' + text.substring(0, 300), 'info');
+
+    // Try to parse as JSON first (might return JSON with folder→ids mapping)
+    try {
+      const json = JSON.parse(text);
+      // If it's {folderId: [attachmentIds]} or similar
+      if (typeof json === 'object') return json;
+    } catch (e) {}
+
+    // Parse as CSV: expect rows like "folder_id,attachment_id" or "attachment_id,folder_id"
+    const lines = text.trim().split('\n');
+    const mapping = {}; // folderId → [attachmentId]
+    for (const line of lines) {
+      const cols = line.split(',').map(c => c.trim().replace(/"/g, ''));
+      if (cols.length >= 2) {
+        const a = parseInt(cols[0]), b = parseInt(cols[1]);
+        if (!isNaN(a) && !isNaN(b)) {
+          // Guess which is folder and which is attachment based on context
+          // folder IDs are typically small numbers, attachment IDs are large
+          const fid = a < b ? a : b;
+          const aid = a < b ? b : a;
+          if (!mapping[fid]) mapping[fid] = [];
+          mapping[fid].push(aid);
+        }
+      }
     }
-  } catch (e) {}
-
-  // Try fbv-api endpoint
-  try {
-    const data = await fbFetch('fbv-api?folder_id=' + folderId + '&action=get_attachments');
-    if (Array.isArray(data)) return data.map(d => typeof d === 'object' ? (d.id || d.ID) : d).filter(Boolean);
-    if (data && data.data) return data.data;
-  } catch (e) {}
-
+    if (Object.keys(mapping).length > 0) return mapping;
+  } catch (e) {
+    log('export-csv: ' + e.message, 'info');
+  }
   return null;
 }
 
@@ -1848,29 +1856,27 @@ async function loadGalleryMedia() {
     return;
   }
 
-  // Strategy 2: Use FileBird gutenberg-get-images / fbv-api to get folder contents
+  // Strategy 2: Use FileBird export-csv to get folder→attachment mapping
+  updateSummary('\u{1F50D} FileBird\u30DE\u30C3\u30D4\u30F3\u30B0\u3092\u53D6\u5F97\u4E2D...');
+  const csvMapping = await fbExportMapping();
   let fbApiWorked = false;
-  for (let i = 0; i < allFolderIds.length; i++) {
-    const fid = allFolderIds[i];
-    const fname = galleryFolderNames[fid] || fid;
-    updateSummary('\u{1F50D} ' + fname + ' \u3092\u8AAD\u307F\u8FBC\u307F\u4E2D... (' + (i + 1) + '/' + allFolderIds.length + ')');
 
-    const ids = await fbGetFolderAttachments(fid);
-    if (ids && ids.length > 0) {
+  if (csvMapping) {
+    // Check if mapping has our folder IDs
+    for (let i = 0; i < allFolderIds.length; i++) {
+      const fid = allFolderIds[i];
+      const fname = galleryFolderNames[fid] || fid;
+      const ids = csvMapping[fid] || csvMapping[String(fid)] || [];
+      if (ids.length === 0) continue;
       fbApiWorked = true;
+
+      updateSummary('\u{1F50D} ' + fname + ' \u3092\u8AAD\u307F\u8FBC\u307F\u4E2D... (' + (i + 1) + '/' + allFolderIds.length + ')');
       const items = await fetchMediaByIds(ids);
       if (items.length > 0) {
         galleryFolderMedia[fid] = items;
         galleryMediaIds = galleryMediaIds.concat(items);
       }
-      log(fname + ': ' + (items ? items.length : 0) + '\u679A', 'ok');
-    } else if (ids !== null) {
-      // API responded but folder is empty - that's ok
-      log(fname + ': 0\u679A', 'info');
-    } else if (i === 0) {
-      // First folder returned null = API doesn't work
-      log('FileBird API\u304C\u5229\u7528\u4E0D\u53EF', 'info');
-      break;
+      log(fname + ': ' + items.length + '\u679A', 'ok');
     }
   }
 
