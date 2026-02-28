@@ -225,12 +225,21 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
       <input type="url" id="teamSheetUrl" placeholder="https://docs.google.com/spreadsheets/d/...">
     </div>
     <div class="field">
+      <label>表彰台写真 DriveフォルダURL</label>
+      <input type="url" id="podiumDriveUrl" placeholder="https://drive.google.com/drive/folders/...">
+    </div>
+    <div class="field">
       <label>ギャラリー Google DriveフォルダURL</label>
       <input type="url" id="galleryDriveUrl" placeholder="https://drive.google.com/drive/folders/...">
     </div>
     <div class="field">
       <label>除外フォルダ名（カンマ区切り）</label>
       <input type="text" id="excludeFolders" placeholder="インナー記録">
+    </div>
+    <div class="field">
+      <label>Google API Key</label>
+      <input type="text" id="googleApiKey" placeholder="AIza...">
+      <div style="font-size:0.68rem;color:var(--dim);margin-top:0.2rem">Drive API有効化済みのキー。<a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:var(--accent)">Google Cloud Console</a>で発行</div>
     </div>
     <div class="btn-row">
       <button class="btn btn-primary" onclick="saveSettings()">設定を保存</button>
@@ -290,7 +299,11 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
 
   <div class="card">
     <h3>上位チーム写真</h3>
-    <p style="font-size:0.78rem;color:var(--dim);margin-bottom:0.8rem">各チームの枠に写真をドラッグ＆ドロップ、またはWPメディアから選択してください。</p>
+    <p style="font-size:0.78rem;color:var(--dim);margin-bottom:0.8rem">Driveから自動取得、またはD&D / WPメディアから選択できます。</p>
+    <div class="btn-row" style="margin-bottom:0.8rem">
+      <button class="btn btn-outline btn-sm" id="loadDrivePhotosBtn" onclick="loadDrivePhotos()">Driveから写真を読み込む</button>
+    </div>
+    <div id="drivePhotoGrid" style="display:none;margin-bottom:1rem"></div>
     <div class="photo-grid" id="photoGrid"></div>
     <div class="btn-row">
       <button class="btn btn-primary" id="uploadPhotosBtn" onclick="uploadPhotos()" disabled>写真をアップロード & 反映</button>
@@ -739,8 +752,10 @@ function saveSettings() {
     eventId: document.getElementById('eventSelect').value,
     resultSheetUrl: document.getElementById('resultSheetUrl').value,
     teamSheetUrl: document.getElementById('teamSheetUrl').value,
+    podiumDriveUrl: document.getElementById('podiumDriveUrl').value,
     galleryDriveUrl: document.getElementById('galleryDriveUrl').value,
     excludeFolders: document.getElementById('excludeFolders').value,
+    googleApiKey: document.getElementById('googleApiKey').value,
   };
   localStorage.setItem('naimol_settings', JSON.stringify(settings));
   log('設定を保存しました', 'ok');
@@ -751,8 +766,10 @@ function loadSettings() {
   const saved = JSON.parse(localStorage.getItem('naimol_settings') || '{}');
   if (saved.resultSheetUrl) document.getElementById('resultSheetUrl').value = saved.resultSheetUrl;
   if (saved.teamSheetUrl) document.getElementById('teamSheetUrl').value = saved.teamSheetUrl;
+  if (saved.podiumDriveUrl) document.getElementById('podiumDriveUrl').value = saved.podiumDriveUrl;
   if (saved.galleryDriveUrl) document.getElementById('galleryDriveUrl').value = saved.galleryDriveUrl;
   if (saved.excludeFolders) document.getElementById('excludeFolders').value = saved.excludeFolders;
+  if (saved.googleApiKey) document.getElementById('googleApiKey').value = saved.googleApiKey;
   else document.getElementById('excludeFolders').value = 'インナー記録';
   // Drive folder link
   if (saved.galleryDriveUrl) {
@@ -1089,6 +1106,117 @@ async function loadResultPhotos() {
 
   renderPhotoGrid();
   log('表彰台: ' + podiumTeams.map(t => t.name).join(', '), 'info');
+}
+
+// ===== Drive photos =====
+function extractFolderId(url) {
+  const m = url.match(/folders\/([a-zA-Z0-9_-]+)/);
+  return m ? m[1] : null;
+}
+
+async function loadDrivePhotos() {
+  const settings = JSON.parse(localStorage.getItem('naimol_settings') || '{}');
+  const folderUrl = settings.podiumDriveUrl || settings.galleryDriveUrl;
+  const apiKey = settings.googleApiKey;
+  if (!folderUrl || !apiKey) { showToast('設定タブでDrive URLとGoogle API Keyを入力してください'); return; }
+  const folderId = extractFolderId(folderUrl);
+  if (!folderId) { showToast('DriveフォルダURLの形式が正しくありません'); return; }
+
+  const btn = document.getElementById('loadDrivePhotosBtn');
+  btn.disabled = true; btn.textContent = '読み込み中...';
+  log('Drive: フォルダ読み込み中... ' + folderId, 'info');
+
+  try {
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType+contains+'image'&key=${apiKey}&fields=files(id,name,mimeType)&pageSize=100`);
+    if (!res.ok) throw new Error('Drive API: HTTP ' + res.status + ' ' + (await res.text()).substring(0, 100));
+    const data = await res.json();
+    const files = data.files || [];
+    log('Drive: ' + files.length + '枚の画像を検出', 'ok');
+
+    if (files.length === 0) { showToast('フォルダに画像が見つかりません'); return; }
+
+    // Show image grid for selection
+    const grid = document.getElementById('drivePhotoGrid');
+    grid.style.display = 'grid';
+    grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;margin-bottom:1rem';
+    grid.innerHTML = '<div style="grid-column:1/-1;font-size:0.78rem;color:var(--dim);margin-bottom:0.3rem">写真をタップ → チームに割り当て（順番にタップ：優勝→準優勝→3位）</div>';
+
+    let assignIdx = 0; // next podium team to assign
+
+    files.forEach(f => {
+      const thumb = document.createElement('div');
+      thumb.style.cssText = 'position:relative;aspect-ratio:1;border-radius:6px;overflow:hidden;cursor:pointer;border:2px solid var(--border)';
+      const img = document.createElement('img');
+      img.src = `https://lh3.googleusercontent.com/d/${f.id}=s200`;
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block';
+      img.alt = f.name;
+      thumb.appendChild(img);
+
+      const label = document.createElement('div');
+      label.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);color:#fff;font-size:0.6rem;padding:2px 4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis';
+      label.textContent = f.name;
+      thumb.appendChild(label);
+
+      thumb.onclick = async () => {
+        if (assignIdx >= podiumTeams.length) { showToast('全チーム割り当て済み'); return; }
+        const teamIdx = assignIdx;
+        const teamName = podiumTeams[teamIdx].name;
+        thumb.style.border = '2px solid var(--ok)';
+        thumb.style.opacity = '0.6';
+        const badge = document.createElement('div');
+        badge.style.cssText = 'position:absolute;top:2px;right:2px;background:var(--ok);color:#fff;font-size:0.6rem;padding:1px 5px;border-radius:8px';
+        badge.textContent = podiumTeams[teamIdx].rank;
+        thumb.appendChild(badge);
+        thumb.onclick = null;
+        assignIdx++;
+
+        log(teamName + ': Drive画像を取得中... (' + f.name + ')', 'info');
+
+        // Try canvas approach to get blob
+        try {
+          const blob = await driveImageToBlob(`https://lh3.googleusercontent.com/d/${f.id}=s1200`, f.name);
+          const file = new File([blob], f.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' });
+          setPhoto(teamIdx, file);
+          log(teamName + ': Drive → ローカル取得成功 ✓', 'ok');
+        } catch (canvasErr) {
+          log(teamName + ': Canvas取得失敗 → URL直接参照に切替 (' + canvasErr.message + ')', 'info');
+          // Fallback: use Drive URL directly
+          podiumTeams[teamIdx].photoUrl = `https://lh3.googleusercontent.com/d/${f.id}=s1200`;
+          podiumTeams[teamIdx].driveUrl = true;
+          podiumTeams[teamIdx].changed = true;
+          renderPhotoGrid();
+        }
+      };
+      grid.appendChild(thumb);
+    });
+
+  } catch (e) {
+    log('Drive読み込みエラー: ' + e.message, 'err');
+    showToast('Drive読み込みに失敗: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Driveから写真を読み込む';
+  }
+}
+
+function driveImageToBlob(url, name) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        canvas.getContext('2d').drawImage(img, 0, 0);
+        canvas.toBlob(blob => {
+          if (blob) resolve(blob);
+          else reject(new Error('toBlob returned null'));
+        }, 'image/jpeg', 0.92);
+      } catch (e) { reject(e); }
+    };
+    img.onerror = () => reject(new Error('画像読み込み失敗'));
+    img.src = url;
+  });
 }
 
 function renderPhotoGrid() {
