@@ -1814,6 +1814,20 @@ async function loadGalleryMedia() {
 
   log('WP\u30E1\u30C7\u30A3\u30A2\u8AAD\u307F\u8FBC\u307F\u4E2D...', 'info');
 
+  // Debug: check FileBird folder response and media fields
+  try {
+    const fbRaw = await fbFetch('get-folders');
+    const firstFolder = fbRaw.tree ? fbRaw.tree[0] : null;
+    if (firstFolder) log('FB folder keys: ' + Object.keys(firstFolder).join(', '), 'info');
+    const sampleMedia = await wpFetch('/wp-json/wp/v2/media?per_page=1');
+    if (sampleMedia[0]) log('Media keys: ' + Object.keys(sampleMedia[0]).join(', '), 'info');
+    // Check for FileBird taxonomy
+    const taxonomies = await wpFetch('/wp-json/wp/v2/taxonomies');
+    const fbTax = Object.keys(taxonomies).filter(k => k.includes('folder') || k.includes('fbv') || k.includes('nt_wmc'));
+    if (fbTax.length > 0) log('FileBird taxonomy found: ' + fbTax.join(', '), 'ok');
+    else log('FileBird taxonomy: none found. Keys: ' + Object.keys(taxonomies).join(', '), 'info');
+  } catch (e) { log('Debug info error: ' + e.message, 'info'); }
+
   const subFolders = fbFolders.filter(f => f.parent === eventFolderId);
   const allFolderIds = [eventFolderId, ...subFolders.map(f => f.id)];
   galleryMediaIds = [];
