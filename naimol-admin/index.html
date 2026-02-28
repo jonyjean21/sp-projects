@@ -189,11 +189,23 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
               <label>スラッグ</label>
               <input type="text" id="newEventSlug" placeholder="naimol_xxxxx_20260315">
             </div>
+            <div class="field">
+              <label>申込URL（Peatix等）</label>
+              <input type="url" id="newEventTicketUrl" placeholder="https://xxx.peatix.com/view">
+            </div>
           </div>
-          <div style="min-width:140px;text-align:center">
-            <label>アイキャッチ</label>
-            <div class="eyecatch-box" id="newEventEyecatch" onclick="openMediaPicker(-1,'eyecatch-newEvent')">
-              <div class="drop-hint">クリックして選択</div>
+          <div style="display:flex;flex-direction:column;gap:0.5rem">
+            <div style="text-align:center">
+              <label>アイキャッチ</label>
+              <div class="eyecatch-box" id="newEventEyecatch" onclick="openMediaPicker(-1,'eyecatch-newEvent')">
+                <div class="drop-hint">クリックして選択</div>
+              </div>
+            </div>
+            <div style="text-align:center">
+              <label>チラシ画像</label>
+              <div class="eyecatch-box" id="newEventFlyer" onclick="openMediaPicker(-1,'flyer-newEvent')">
+                <div class="drop-hint">クリックして選択</div>
+              </div>
             </div>
           </div>
         </div>
@@ -473,6 +485,128 @@ async function loadEvents() {
 }
 
 // ===== Create new event page =====
+function buildEventContent(slug, flyerImgHtml, ticketUrl) {
+  const baseUrl = WP + '/nice_molkky_japan_details/' + slug;
+
+  let content = '';
+
+  // Flyer image
+  if (flyerImgHtml) {
+    content += flyerImgHtml + '\n\n';
+  }
+
+  // 大会関連ページ
+  content += `<!-- wp:heading {"level":3} -->
+<h3 class="wp-block-heading">大会関連ページ</h3>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>大会に関する詳しい情報は、以下の各専用ページをご覧ください。</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul class="wp-block-list"><!-- wp:list-item -->
+<li>大会結果（準備中）</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>ギャラリー（準備中）</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->
+
+`;
+
+  // 参加申込方法
+  if (ticketUrl) {
+    content += `<!-- wp:heading {"level":3} -->
+<h3 class="wp-block-heading">参加申込方法</h3>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>大会への参加をご希望の方は、下記ページよりチケットをお申し込みください。</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul class="wp-block-list"><!-- wp:list-item -->
+<li>お申し込みにはPeatixアカウントが必要です。</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>クレジットカード、コンビニ払いなど各種決済方法が利用できます。</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>チケット購入後、登録完了のメールが届きますので内容をご確認ください。</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->
+
+<!-- wp:paragraph -->
+<p><a href="${ticketUrl}" target="_blank" rel="noreferrer noopener">チケット購入はこちら</a></p>
+<!-- /wp:paragraph -->
+
+`;
+  }
+
+  // 大会の楽しみ方（共通画像）
+  content += `<!-- wp:heading {"level":3} -->
+<h3 class="wp-block-heading">大会の楽しみ方</h3>
+<!-- /wp:heading -->
+
+<!-- wp:gallery {"columns":4,"linkTo":"none"} -->
+<figure class="wp-block-gallery has-nested-images columns-4 is-cropped"><!-- wp:image {"id":3122,"sizeSlug":"large","linkDestination":"none"} -->
+<figure class="wp-block-image size-large"><img src="https://molkky-hub.com/wp-content/uploads/2025/10/特徴⓪.png" alt="" class="wp-image-3122"/></figure>
+<!-- /wp:image -->
+
+<!-- wp:image {"id":3121,"sizeSlug":"large","linkDestination":"none"} -->
+<figure class="wp-block-image size-large"><img src="https://molkky-hub.com/wp-content/uploads/2025/10/特徴①.png" alt="" class="wp-image-3121"/></figure>
+<!-- /wp:image -->
+
+<!-- wp:image {"id":3116,"sizeSlug":"large","linkDestination":"none"} -->
+<figure class="wp-block-image size-large"><img src="https://molkky-hub.com/wp-content/uploads/2025/10/特徴①-2_★ランクピラミッド-819x1024.jpg" alt="" class="wp-image-3116"/></figure>
+<!-- /wp:image -->
+
+<!-- wp:image {"id":3117,"sizeSlug":"large","linkDestination":"none"} -->
+<figure class="wp-block-image size-large"><img src="https://molkky-hub.com/wp-content/uploads/2025/10/特徴①-1_★Nice-Molkky-Japan-Tournaments-819x1024.jpg" alt="" class="wp-image-3117"/></figure>
+<!-- /wp:image -->
+
+<!-- wp:image {"id":3120,"sizeSlug":"large","linkDestination":"none"} -->
+<figure class="wp-block-image size-large"><img src="https://molkky-hub.com/wp-content/uploads/2025/10/特徴②.png" alt="" class="wp-image-3120"/></figure>
+<!-- /wp:image -->
+
+<!-- wp:image {"id":3119,"sizeSlug":"large","linkDestination":"none"} -->
+<figure class="wp-block-image size-large"><img src="https://molkky-hub.com/wp-content/uploads/2025/10/特徴③.png" alt="" class="wp-image-3119"/></figure>
+<!-- /wp:image -->
+
+<!-- wp:image {"id":3118,"sizeSlug":"large","linkDestination":"none"} -->
+<figure class="wp-block-image size-large"><img src="https://molkky-hub.com/wp-content/uploads/2025/10/特徴④.png" alt="" class="wp-image-3118"/></figure>
+<!-- /wp:image --></figure>
+<!-- /wp:gallery -->
+
+<!-- wp:heading {"level":3} -->
+<h3 class="wp-block-heading">最新情報・お知らせ</h3>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>大会に関する最新情報や注意事項は、ナイモルジャパン公式XやInstagramでも随時発信しています。<br>ぜひフォローして最新情報をチェックしてください。</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul class="wp-block-list"><!-- wp:list-item -->
+<li><a href="https://x.com/nice_molkky_jp" target="_blank" rel="noreferrer noopener">公式X</a></li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li><a href="https://www.instagram.com/nice_molkky_jp/" target="_blank" rel="noreferrer noopener">公式Instagram</a></li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li><a href="https://www.tiktok.com/@nice_molkky_jp" target="_blank" rel="noreferrer noopener">公式TikTok</a></li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->`;
+
+  return content;
+}
+
 async function createEventPage() {
   const title = document.getElementById('newEventTitle').value.trim();
   const slug = document.getElementById('newEventSlug').value.trim();
@@ -482,12 +616,22 @@ async function createEventPage() {
   const eyecatchBox = document.getElementById('newEventEyecatch');
   const mediaId = eyecatchBox.dataset.mediaId ? parseInt(eyecatchBox.dataset.mediaId) : 0;
 
+  const flyerBox = document.getElementById('newEventFlyer');
+  const flyerId = flyerBox.dataset.mediaId ? parseInt(flyerBox.dataset.mediaId) : 0;
+  const flyerUrl = flyerBox.dataset.mediaUrl || '';
+  const flyerImgHtml = flyerId
+    ? `<!-- wp:image {"id":${flyerId},"width":"345px","height":"auto","sizeSlug":"large","linkDestination":"none"} -->\n<figure class="wp-block-image size-large is-resized"><img src="${flyerUrl}" alt="" class="wp-image-${flyerId}" style="width:345px;height:auto"/></figure>\n<!-- /wp:image -->`
+    : '';
+
+  const ticketUrl = document.getElementById('newEventTicketUrl').value.trim();
+  const content = buildEventContent(slug, flyerImgHtml, ticketUrl);
+
   const body = {
     title: title,
     slug: slug,
     status: 'draft',
     parent: NAIMOL_PARENT,
-    content: ''
+    content: content
   };
   if (mediaId) body.featured_media = mediaId;
 
@@ -509,8 +653,12 @@ async function createEventPage() {
     document.getElementById('newEventDetails').removeAttribute('open');
     document.getElementById('newEventTitle').value = '';
     document.getElementById('newEventSlug').value = '';
+    document.getElementById('newEventTicketUrl').value = '';
     eyecatchBox.innerHTML = '<div class="drop-hint">クリックして選択</div>';
     delete eyecatchBox.dataset.mediaId;
+    flyerBox.innerHTML = '<div class="drop-hint">クリックして選択</div>';
+    delete flyerBox.dataset.mediaId;
+    delete flyerBox.dataset.mediaUrl;
   } catch (e) {
     log('大会ページ作成失敗: ' + e.message, 'err');
     showToast('作成に失敗しました');
@@ -736,6 +884,8 @@ function filterMedia() {
     div.onclick = () => {
       if (pickerMode === 'podium') {
         setPhotoFromMedia(pickerTargetIdx, m.source_url);
+      } else if (pickerMode.startsWith('flyer-')) {
+        setFlyer(pickerMode.replace('flyer-', ''), m.id, m.source_url);
       } else {
         setEyecatch(pickerMode.replace('eyecatch-', ''), m.id, thumb);
       }
@@ -751,6 +901,15 @@ function setEyecatch(type, mediaId, thumbUrl) {
   box.innerHTML = '<img src="' + thumbUrl + '">';
   box.dataset.mediaId = mediaId;
   log(type + 'アイキャッチを選択 (ID: ' + mediaId + ')', 'info');
+}
+
+// ===== Flyer image =====
+function setFlyer(type, mediaId, fullUrl) {
+  const box = document.getElementById(type + 'Flyer');
+  box.innerHTML = '<img src="' + fullUrl + '">';
+  box.dataset.mediaId = mediaId;
+  box.dataset.mediaUrl = fullUrl;
+  log('チラシ画像を選択 (ID: ' + mediaId + ')', 'info');
 }
 
 // ===== Page meta save (title, slug, featured image) =====
@@ -1224,6 +1383,49 @@ async function addCrossLinks() {
   showToast('相互リンクを追加しました');
 }
 
+// ===== Update parent page links =====
+async function updateParentLinks() {
+  if (!selectedEvent) return;
+  try {
+    const parent = await wpFetch('/wp-json/wp/v2/pages/' + selectedEvent.id + '?context=edit');
+    let content = parent.content.raw;
+    const slug = selectedEvent.slug;
+    const baseUrl = WP + '/nice_molkky_japan_details/' + slug;
+    let changed = false;
+
+    // Update 大会結果 link
+    if (resultPage) {
+      const resultUrl = baseUrl + '/result/';
+      const oldResult = /<!-- wp:list-item -->\s*<li>大会結果（準備中）<\/li>\s*<!-- \/wp:list-item -->/;
+      if (oldResult.test(content)) {
+        content = content.replace(oldResult, `<!-- wp:list-item -->\n<li><a href="${resultUrl}">大会結果</a></li>\n<!-- /wp:list-item -->`);
+        changed = true;
+      }
+    }
+
+    // Update ギャラリー link
+    if (galleryPage) {
+      const galleryUrl = baseUrl + '/gallery/';
+      const oldGallery = /<!-- wp:list-item -->\s*<li>ギャラリー（準備中）<\/li>\s*<!-- \/wp:list-item -->/;
+      if (oldGallery.test(content)) {
+        content = content.replace(oldGallery, `<!-- wp:list-item -->\n<li><a href="${galleryUrl}">ギャラリー</a></li>\n<!-- /wp:list-item -->`);
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      await wpFetch('/wp-json/wp/v2/pages/' + selectedEvent.id, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content })
+      });
+      log('親ページのリンクを更新しました', 'ok');
+    }
+  } catch (e) {
+    log('親ページリンク更新失敗: ' + e.message, 'err');
+  }
+}
+
 // ===== Publish =====
 async function publishPage(type) {
   const page = type === 'result' ? resultPage : galleryPage;
@@ -1238,6 +1440,9 @@ async function publishPage(type) {
     if (type === 'result') resultPage = updated; else galleryPage = updated;
     updatePageInfo(type, updated);
     log(type + 'ページを公開しました: ' + updated.link, 'ok');
+    showToast(type === 'result' ? '結果ページを公開しました' : 'ギャラリーを公開しました');
+    // Auto-update parent page links
+    await updateParentLinks();
   } catch (e) {
     log('公開失敗: ' + e.message, 'err');
   }
