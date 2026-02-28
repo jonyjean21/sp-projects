@@ -1208,13 +1208,6 @@ function showDriveImageGrid(files) {
     };
     grid.appendChild(thumb);
   });
-
-  } catch (e) {
-    log('Drive読み込みエラー: ' + e.message, 'err');
-    showToast('Drive読み込みに失敗: ' + e.message);
-  } finally {
-    btn.disabled = false; btn.textContent = 'Driveから写真を読み込む';
-  }
 }
 
 function driveImageToBlob(url, name) {
