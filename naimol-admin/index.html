@@ -652,9 +652,14 @@ async function createEventPage() {
     log('大会ページ作成: ' + title + ' (ID:' + created.id + ')', 'ok');
     showToast('大会ページを作成しました');
 
-    // Reload events and select new one
-    await loadEvents();
-    document.getElementById('eventSelect').value = created.id;
+    // Add to event list and select immediately
+    eventPages.unshift(created);
+    const sel = document.getElementById('eventSelect');
+    const opt = document.createElement('option');
+    opt.value = created.id;
+    opt.textContent = created.title.rendered;
+    sel.insertBefore(opt, sel.options[1]); // After "選択してください"
+    sel.value = created.id;
     await onEventChange();
 
     // Close details and clear form
