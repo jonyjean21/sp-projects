@@ -1227,38 +1227,58 @@ async function transferDriveToWP() {
 
     log('Drive→WP転送開始: ' + total + '枚', 'info');
 
-    // Transfer images (3 concurrent)
+    // Transfer single image
+    async function uploadOne(f) {
+      const blob = await driveImageToBlob(`https://lh3.googleusercontent.com/d/${f.id}=s2048`, f.name);
+      const formData = new FormData();
+      const fileName = f.name.replace(/\.[^.]+$/, '') + '.jpg';
+      formData.append('file', new File([blob], fileName, { type: 'image/jpeg' }));
+      formData.append('title', f.name.replace(/\.[^.]+$/, ''));
+      const res = await fetch(WP + '/wp-json/wp/v2/media', {
+        method: 'POST',
+        headers: { 'Authorization': 'Basic ' + wpAuth },
+        body: formData
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const media = await res.json();
+      uploadedIds.push(media.id);
+      const fbFolder = f.folder ? folderMap[f.folder] : eventFolderId;
+      if (fbFolder) await assignToFolder(fbFolder, [media.id]);
+    }
+
+    // Transfer images (2 concurrent, auto-retry failed ones)
+    const failedFiles = [];
     const queue = [...driveAllImages];
-    const concurrent = 3;
     const worker = async () => {
       while (queue.length > 0) {
         const f = queue.shift();
         try {
-          const blob = await driveImageToBlob(`https://lh3.googleusercontent.com/d/${f.id}=s2048`, f.name);
-          const formData = new FormData();
-          const fileName = f.name.replace(/\.[^.]+$/, '') + '.jpg';
-          formData.append('file', new File([blob], fileName, { type: 'image/jpeg' }));
-          formData.append('title', f.name.replace(/\.[^.]+$/, ''));
-          const res = await fetch(WP + '/wp-json/wp/v2/media', {
-            method: 'POST',
-            headers: { 'Authorization': 'Basic ' + wpAuth },
-            body: formData
-          });
-          if (!res.ok) throw new Error('HTTP ' + res.status);
-          const media = await res.json();
-          uploadedIds.push(media.id);
-          // Assign to FileBird subfolder
-          const fbFolder = f.folder ? folderMap[f.folder] : eventFolderId;
-          if (fbFolder) await assignToFolder(fbFolder, [media.id]);
+          await uploadOne(f);
         } catch (e) {
-          failed++;
-          log('転送失敗: ' + f.name + ' (' + e.message + ')', 'err');
+          failedFiles.push(f);
         }
         done++;
         updateProgress();
       }
     };
-    await Promise.all(Array.from({ length: concurrent }, () => worker()));
+    await Promise.all(Array.from({ length: 2 }, () => worker()));
+
+    // Retry failed ones (1 at a time, with delay)
+    if (failedFiles.length > 0) {
+      log('リトライ: ' + failedFiles.length + '枚', 'info');
+      for (const f of failedFiles) {
+        await new Promise(r => setTimeout(r, 1500));
+        try {
+          await uploadOne(f);
+          log('リトライ成功: ' + f.name, 'ok');
+          failed--; // was counted as failed, now succeeded
+        } catch (e) {
+          failed++;
+          log('転送失敗（リトライ後）: ' + f.name, 'err');
+        }
+        updateProgress();
+      }
+    }
 
     log('Drive→WP転送完了: ' + uploadedIds.length + '/' + total + '枚', 'ok');
     showToast(uploadedIds.length + '枚をWPメディアに転送しました！');
