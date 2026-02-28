@@ -914,23 +914,16 @@ function buildResultPodiumHTML(top4) {
 }
 
 function buildRankingTableHTML(teams) {
-  const thStyle = 'background:#f8f9fa;font-weight:700;padding:0.6rem 0.8rem;border-bottom:2px solid #dee2e6;text-align:center';
-  const tdStyle = 'padding:0.5rem 0.8rem;border-bottom:1px solid #eee;text-align:center';
-  const tdNameStyle = tdStyle + ';text-align:left;font-weight:500';
   let rows = '';
   teams.forEach(t => {
-    let bgStyle = '';
-    let rankTdExtra = '';
-    if (t.rank === 1) { bgStyle = ';background:rgba(255,215,0,0.08)'; rankTdExtra = ';font-weight:700;color:#b8860b'; }
-    else if (t.rank === 2) { bgStyle = ';background:rgba(192,192,192,0.08)'; rankTdExtra = ';font-weight:700;color:#808080'; }
-    else if (t.rank === 3) { bgStyle = ';background:rgba(205,127,50,0.08)'; rankTdExtra = ';font-weight:700;color:#8B4513'; }
+    const bg = t.rank <= 3 ? ` style="background:${t.rank===1?'#fffde7':t.rank===2?'#f5f5f5':'#fff3e0'}"` : '';
     const pmDisplay = t.pm && t.pm !== '0' && t.pm !== '' ? t.pm : '';
-    rows += `<tr style="${bgStyle}"><td style="${tdStyle}${rankTdExtra}">${t.rank}</td><td style="${tdNameStyle}">${t.name}</td><td style="${tdStyle}">${t.participation}</td><td style="${tdStyle}">${t.qualifier}</td><td style="${tdStyle}">${t.final}</td><td style="${tdStyle}">${t.bonus}</td><td style="${tdStyle}">${pmDisplay}</td><td style="${tdStyle}">${t.total}</td></tr>\n`;
+    rows += `<tr${bg}><td>${t.rank}</td><td align="left"><b>${t.name}</b></td><td>${t.participation}</td><td>${t.qualifier}</td><td>${t.final}</td><td>${t.bonus}</td><td>${pmDisplay}</td><td><b>${t.total}</b></td></tr>\n`;
   });
 
-  return `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:1rem 0">` +
-    `<table style="width:100%;border-collapse:collapse;font-size:0.9rem;white-space:nowrap;min-width:500px">` +
-    `<thead><tr><th style="${thStyle}">順位</th><th style="${thStyle}">チーム</th><th style="${thStyle}">参加</th><th style="${thStyle}">予選</th><th style="${thStyle}">決勝</th><th style="${thStyle}">ボーナス</th><th style="${thStyle}">PM</th><th style="${thStyle}">合計</th></tr></thead>` +
+  return `<div style="overflow-x:auto;margin:1rem 0">` +
+    `<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-size:0.9rem;white-space:nowrap;min-width:500px;width:100%">` +
+    `<thead><tr style="background:#f8f9fa"><th>順位</th><th>チーム</th><th>参加</th><th>予選</th><th>決勝</th><th>ボーナス</th><th>PM</th><th>合計</th></tr></thead>` +
     `<tbody>\n${rows}</tbody></table></div>`;
 }
 
@@ -1030,21 +1023,27 @@ async function createResultFromData() {
   try {
     const eventTitle = selectedEvent.title.rendered;
     const content = buildResultContent(eventTitle, parsedTop4, parsedAllTeams, parsedPMTeams);
+    const payload = resultPage
+      ? JSON.stringify({ content })
+      : JSON.stringify({ title: '大会結果', slug: 'result', status: 'draft', parent: selectedEvent.id, content });
+    log('送信サイズ: ' + (payload.length / 1024).toFixed(1) + 'KB', 'info');
 
-    if (resultPage) {
-      await wpFetch('/wp-json/wp/v2/pages/' + resultPage.id, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content })
-      });
-      log('結果ページ更新完了 (ID: ' + resultPage.id + ')', 'ok');
-    } else {
-      const created = await wpFetch('/wp-json/wp/v2/pages', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: '大会結果', slug: 'result', status: 'draft', parent: selectedEvent.id, content })
-      });
-      resultPage = created;
-      log('結果ページ作成完了 (ID: ' + created.id + ')', 'ok');
+    const endpoint = resultPage
+      ? '/wp-json/wp/v2/pages/' + resultPage.id
+      : '/wp-json/wp/v2/pages';
+    const res = await fetch(WP + endpoint, {
+      method: 'POST',
+      headers: { 'Authorization': 'Basic ' + wpAuth, 'Content-Type': 'application/json' },
+      body: payload
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error('HTTP ' + res.status + ': ' + errText.substring(0, 200));
     }
+    const created = await res.json();
+    if (!resultPage) resultPage = created;
+    log('結果ページ' + (resultPage === created ? '作成' : '更新') + '完了 (ID: ' + created.id + ')', 'ok');
+
     updatePageInfo('result', resultPage);
     loadPageMeta('result', resultPage);
 
