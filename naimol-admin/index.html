@@ -1766,40 +1766,21 @@ async function uploadGalleryPhotos() {
 
 // ===== Gallery: get folder→attachment mapping from FileBird export-csv =====
 async function fbExportMapping() {
-  // export-csv returns the full folder-attachment mapping
   try {
-    const res = await fetch(WP + '/wp-json/filebird/v1/export-csv', {
-      headers: { 'Authorization': 'Basic ' + wpAuth }
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const text = await res.text();
-    log('export-csv: ' + text.substring(0, 300), 'info');
+    const data = await fbFetch('export-csv');
+    if (!data || !data.folders) return null;
 
-    // Try to parse as JSON first (might return JSON with folder→ids mapping)
-    try {
-      const json = JSON.parse(text);
-      // If it's {folderId: [attachmentIds]} or similar
-      if (typeof json === 'object') return json;
-    } catch (e) {}
-
-    // Parse as CSV: expect rows like "folder_id,attachment_id" or "attachment_id,folder_id"
-    const lines = text.trim().split('\n');
-    const mapping = {}; // folderId → [attachmentId]
-    for (const line of lines) {
-      const cols = line.split(',').map(c => c.trim().replace(/"/g, ''));
-      if (cols.length >= 2) {
-        const a = parseInt(cols[0]), b = parseInt(cols[1]);
-        if (!isNaN(a) && !isNaN(b)) {
-          // Guess which is folder and which is attachment based on context
-          // folder IDs are typically small numbers, attachment IDs are large
-          const fid = a < b ? a : b;
-          const aid = a < b ? b : a;
-          if (!mapping[fid]) mapping[fid] = [];
-          mapping[fid].push(aid);
-        }
-      }
+    const mapping = {};
+    for (const f of data.folders) {
+      const fid = parseInt(f.id);
+      if (isNaN(fid)) continue;
+      const idsStr = f.attachment_ids || '';
+      if (!idsStr.trim()) { mapping[fid] = []; continue; }
+      mapping[fid] = idsStr.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n > 0);
     }
-    if (Object.keys(mapping).length > 0) return mapping;
+    const total = Object.values(mapping).reduce((sum, arr) => sum + arr.length, 0);
+    log('FileBird\u30DE\u30C3\u30D4\u30F3\u30B0: ' + data.folders.length + '\u30D5\u30A9\u30EB\u30C0 / ' + total + '\u4EF6', 'ok');
+    return mapping;
   } catch (e) {
     log('export-csv: ' + e.message, 'info');
   }
