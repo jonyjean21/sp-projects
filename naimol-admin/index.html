@@ -225,11 +225,7 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
       <input type="url" id="teamSheetUrl" placeholder="https://docs.google.com/spreadsheets/d/...">
     </div>
     <div class="field">
-      <label>表彰台写真 DriveフォルダURL</label>
-      <input type="url" id="podiumDriveUrl" placeholder="https://drive.google.com/drive/folders/...">
-    </div>
-    <div class="field">
-      <label>ギャラリー Google DriveフォルダURL</label>
+      <label>Google DriveフォルダURL</label>
       <input type="url" id="galleryDriveUrl" placeholder="https://drive.google.com/drive/folders/...">
     </div>
     <div class="field">
@@ -752,7 +748,6 @@ function saveSettings() {
     eventId: document.getElementById('eventSelect').value,
     resultSheetUrl: document.getElementById('resultSheetUrl').value,
     teamSheetUrl: document.getElementById('teamSheetUrl').value,
-    podiumDriveUrl: document.getElementById('podiumDriveUrl').value,
     galleryDriveUrl: document.getElementById('galleryDriveUrl').value,
     excludeFolders: document.getElementById('excludeFolders').value,
     googleApiKey: document.getElementById('googleApiKey').value,
@@ -766,7 +761,6 @@ function loadSettings() {
   const saved = JSON.parse(localStorage.getItem('naimol_settings') || '{}');
   if (saved.resultSheetUrl) document.getElementById('resultSheetUrl').value = saved.resultSheetUrl;
   if (saved.teamSheetUrl) document.getElementById('teamSheetUrl').value = saved.teamSheetUrl;
-  if (saved.podiumDriveUrl) document.getElementById('podiumDriveUrl').value = saved.podiumDriveUrl;
   if (saved.galleryDriveUrl) document.getElementById('galleryDriveUrl').value = saved.galleryDriveUrl;
   if (saved.excludeFolders) document.getElementById('excludeFolders').value = saved.excludeFolders;
   if (saved.googleApiKey) document.getElementById('googleApiKey').value = saved.googleApiKey;
@@ -1116,7 +1110,7 @@ function extractFolderId(url) {
 
 async function loadDrivePhotos() {
   const settings = JSON.parse(localStorage.getItem('naimol_settings') || '{}');
-  const folderUrl = settings.podiumDriveUrl || settings.galleryDriveUrl;
+  const folderUrl = settings.galleryDriveUrl;
   const apiKey = settings.googleApiKey;
   if (!folderUrl || !apiKey) { showToast('設定タブでDrive URLとGoogle API Keyを入力してください'); return; }
   const folderId = extractFolderId(folderUrl);
