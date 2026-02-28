@@ -429,7 +429,6 @@ let selectedEvent = null;
 let resultPage = null;
 let galleryPage = null;
 let podiumTeams = [];
-let galleryFiles = [];
 let galleryMediaIds = [];
 let galleryFolderMedia = {}; // folderId → [{id, url, thumb, name}]
 let galleryFolderNames = {}; // folderId → name
@@ -1696,73 +1695,6 @@ async function updateResultPhotos() {
   log('結果ページ更新完了', 'ok');
 }
 
-// ===== Gallery: file selection =====
-function galDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('dragover'); }
-function galDragLeave(e) { e.currentTarget.classList.remove('dragover'); }
-function galDrop(e) {
-  e.preventDefault(); e.currentTarget.classList.remove('dragover');
-  addGalleryFiles(e.dataTransfer.files);
-}
-function galFileSelect(e) { addGalleryFiles(e.target.files); }
-
-function addGalleryFiles(fileList) {
-  for (const f of fileList) {
-    if (f.type.startsWith('image/')) galleryFiles.push(f);
-  }
-  document.getElementById('galSelected').textContent = galleryFiles.length + '枚選択中';
-  document.getElementById('galUploadBtn').disabled = galleryFiles.length === 0;
-  log(galleryFiles.length + '枚のギャラリー写真を選択', 'info');
-}
-
-// ===== Gallery: upload =====
-async function uploadGalleryPhotos() {
-  const btn = document.getElementById('galUploadBtn');
-  btn.disabled = true; btn.textContent = 'アップロード中...';
-  const bar = document.getElementById('galProgress');
-  const fill = document.getElementById('galProgressFill');
-  bar.style.display = 'block';
-
-  // Ensure FileBird folder
-  await ensureEventFolder();
-  const galFolderId = eventFolderId ? await getOrCreateFolder('ギャラリー', eventFolderId) : null;
-
-  let done = 0;
-  const total = galleryFiles.length;
-  const newMediaIds = [];
-
-  for (const file of galleryFiles) {
-    try {
-      const fd = new FormData();
-      fd.append('file', file, file.name);
-      fd.append('title', 'naimol-gallery-' + file.name);
-      fd.append('alt_text', 'ナイモルカップ ギャラリー');
-      const media = await wpFetch('/wp-json/wp/v2/media', { method: 'POST', body: fd, headers: {} });
-      galleryMediaIds.push({ id: media.id, url: media.source_url });
-      newMediaIds.push(media.id);
-      done++;
-      fill.style.width = (done / total * 100) + '%';
-      document.getElementById('galStats').innerHTML =
-        '<span class="stat">進捗: <strong>' + done + '/' + total + '</strong></span>';
-      if (done % 10 === 0) log('ギャラリー: ' + done + '/' + total + ' uploaded', 'info');
-    } catch (e) {
-      log('FAIL: ' + file.name + ' — ' + e.message, 'err');
-      done++;
-    }
-  }
-
-  // Assign to FileBird folder
-  if (galFolderId && newMediaIds.length) {
-    await assignToFolder(galFolderId, newMediaIds);
-    log('FileBird: ギャラリーフォルダに' + newMediaIds.length + '件割り当て', 'ok');
-  }
-
-  galleryFiles = [];
-  document.getElementById('galSelected').textContent = '';
-  log('ギャラリーアップロード完了: ' + galleryMediaIds.length + '枚', 'ok');
-  btn.textContent = 'WPにアップロード';
-  document.getElementById('galCreateBtn').disabled = false;
-  loadGalleryMedia();
-}
 
 // ===== Gallery: load media by matching Drive filenames against WP media =====
 async function loadGalleryMedia() {
@@ -1927,32 +1859,37 @@ async function fetchMediaByIds(ids) {
 
 // ===== Gallery: create page =====
 function buildGallerySection(folderName, mediaItems) {
-  let images = '';
-  for (const m of mediaItems) {
-    images += '<!-- wp:image {"id":' + m.id + ',"sizeSlug":"large","linkDestination":"media"} -->\n' +
+  function buildImageBlock(m) {
+    return '<!-- wp:image {"id":' + m.id + ',"sizeSlug":"large","linkDestination":"media"} -->\n' +
       '<figure class="wp-block-image size-large"><a href="' + m.url + '"><img src="' + m.url + '" alt="" class="wp-image-' + m.id + '"/></a></figure>\n' +
       '<!-- /wp:image -->\n\n';
   }
 
-  const gallery = '<!-- wp:gallery {"linkTo":"media","sizeSlug":"large"} -->\n' +
-    '<figure class="wp-block-gallery has-nested-images columns-default is-cropped">' +
-    images + '</figure>\n' +
-    '<!-- /wp:gallery -->';
+  function buildGallery(items) {
+    let imgs = '';
+    for (const m of items) imgs += buildImageBlock(m);
+    return '<!-- wp:gallery {"linkTo":"media","sizeSlug":"large"} -->\n' +
+      '<figure class="wp-block-gallery has-nested-images columns-default is-cropped">' +
+      imgs + '</figure>\n' +
+      '<!-- /wp:gallery -->';
+  }
 
   const heading = '<!-- wp:heading {"level":3} -->\n' +
     '<h3 class="wp-block-heading">' + folderName + '</h3>\n' +
     '<!-- /wp:heading -->\n\n';
 
-  if (mediaItems.length >= 7) {
-    // Collapsible section
-    return heading +
+  const SHOW_COUNT = 6;
+  if (mediaItems.length > SHOW_COUNT) {
+    const visible = mediaItems.slice(0, SHOW_COUNT);
+    const rest = mediaItems.slice(SHOW_COUNT);
+    return heading + buildGallery(visible) + '\n\n' +
       '<!-- wp:details -->\n' +
-      '<details class="wp-block-details"><summary>\u5199\u771F\u3092\u8868\u793A</summary>\n\n' +
-      gallery + '\n\n' +
+      '<details class="wp-block-details"><summary>\u3082\u3063\u3068\u898B\u308B\uFF08\u6B8B\u308A' + rest.length + '\u679A\uFF09</summary>\n\n' +
+      buildGallery(rest) + '\n\n' +
       '</details>\n' +
       '<!-- /wp:details -->\n\n';
   }
-  return heading + gallery + '\n\n';
+  return heading + buildGallery(mediaItems) + '\n\n';
 }
 
 async function createGalleryPage() {
@@ -2055,21 +1992,17 @@ async function loadGallerySections() {
   const page = await wpFetch('/wp-json/wp/v2/pages/' + galleryPage.id + '?context=edit');
   const raw = page.content.raw;
 
-  // Parse sections: each starts with <!-- wp:heading --> ... <!-- /wp:heading --> followed by <!-- wp:gallery --> ... <!-- /wp:gallery -->
+  // Split by h3 headings — each section = heading + content until next heading
   gallerySections = [];
-  const sectionRegex = /(<!-- wp:heading[^>]*-->[\s\S]*?<!-- \/wp:heading -->)\s*(<!-- wp:gallery[\s\S]*?<!-- \/wp:gallery -->)/g;
-  let match;
-  while ((match = sectionRegex.exec(raw)) !== null) {
-    const headingHtml = match[1];
-    const galleryHtml = match[2];
-    // Extract section name from <h3>
+  const parts = raw.split(/(<!-- wp:heading[^>]*-->[\s\S]*?<!-- \/wp:heading -->)/);
+  for (let i = 1; i < parts.length; i += 2) {
+    const headingHtml = parts[i];
+    const bodyHtml = (parts[i + 1] || '').trim();
+    if (!bodyHtml.includes('wp:gallery')) continue; // skip non-gallery headings (preamble etc)
     const nameMatch = headingHtml.match(/<h3[^>]*>(.*?)<\/h3>/);
     let name = nameMatch ? nameMatch[1] : 'Unknown';
-    // Remove count like （47枚）
-    name = name.replace(/[（\(]\d+枚[）\)]/, '').trim();
-    // Count images
-    const imgCount = (galleryHtml.match(/wp:image/g) || []).length;
-    gallerySections.push({ name, headingHtml, galleryHtml, imgCount });
+    const imgCount = (bodyHtml.match(/wp:image/g) || []).length;
+    gallerySections.push({ name, headingHtml, galleryHtml: bodyHtml, imgCount });
   }
 
   renderSectionList();
@@ -2121,9 +2054,12 @@ async function saveSectionOrder() {
     const firstHeadingIdx = raw.indexOf('<!-- wp:heading');
     const preamble = firstHeadingIdx > 0 ? raw.substring(0, firstHeadingIdx) : '';
 
-    // Extract the postamble (everything after last gallery section - cross links etc)
+    // Extract the postamble (everything after last gallery/details section)
+    const lastDetailsEnd = raw.lastIndexOf('<!-- /wp:details -->');
     const lastGalleryEnd = raw.lastIndexOf('<!-- /wp:gallery -->');
-    const postamble = lastGalleryEnd > 0 ? raw.substring(lastGalleryEnd + '<!-- /wp:gallery -->'.length) : '';
+    const lastEnd = Math.max(lastDetailsEnd, lastGalleryEnd);
+    const endTag = lastDetailsEnd > lastGalleryEnd ? '<!-- /wp:details -->' : '<!-- /wp:gallery -->';
+    const postamble = lastEnd > 0 ? raw.substring(lastEnd + endTag.length) : '';
 
     // Rebuild content with reordered sections (without count in heading)
     let newContent = preamble;
