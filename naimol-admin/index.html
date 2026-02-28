@@ -169,13 +169,43 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
   </div>
 
   <div class="card">
-    <h3>大会設定</h3>
+    <h3>大会ページ</h3>
     <div class="field">
-      <label>大会ページ</label>
+      <label>既存の大会を選択</label>
       <select id="eventSelect" onchange="onEventChange()">
         <option value="">接続後に選択</option>
       </select>
     </div>
+    <details id="newEventDetails" style="margin-top:0.8rem">
+      <summary style="font-size:0.8rem;color:var(--accent);cursor:pointer">新しい大会ページを作成</summary>
+      <div style="margin-top:0.8rem">
+        <div style="display:flex;gap:1rem;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px">
+            <div class="field">
+              <label>大会名</label>
+              <input type="text" id="newEventTitle" placeholder="ナイモルカップin○○（2026/3/15）">
+            </div>
+            <div class="field">
+              <label>スラッグ</label>
+              <input type="text" id="newEventSlug" placeholder="naimol_xxxxx_20260315">
+            </div>
+          </div>
+          <div style="min-width:140px;text-align:center">
+            <label>アイキャッチ</label>
+            <div class="eyecatch-box" id="newEventEyecatch" onclick="openMediaPicker(-1,'eyecatch-newEvent')">
+              <div class="drop-hint">クリックして選択</div>
+            </div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary btn-sm" onclick="createEventPage()">大会ページを作成</button>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <div class="card">
+    <h3>データソース</h3>
     <div class="field">
       <label>結果スプレッドシートURL</label>
       <input type="url" id="resultSheetUrl" placeholder="https://docs.google.com/spreadsheets/d/...">
@@ -439,6 +469,51 @@ async function loadEvents() {
   if (saved.eventId) {
     sel.value = saved.eventId;
     onEventChange();
+  }
+}
+
+// ===== Create new event page =====
+async function createEventPage() {
+  const title = document.getElementById('newEventTitle').value.trim();
+  const slug = document.getElementById('newEventSlug').value.trim();
+  if (!title) { showToast('大会名を入力してください'); return; }
+  if (!slug) { showToast('スラッグを入力してください'); return; }
+
+  const eyecatchBox = document.getElementById('newEventEyecatch');
+  const mediaId = eyecatchBox.dataset.mediaId ? parseInt(eyecatchBox.dataset.mediaId) : 0;
+
+  const body = {
+    title: title,
+    slug: slug,
+    status: 'draft',
+    parent: NAIMOL_PARENT,
+    content: ''
+  };
+  if (mediaId) body.featured_media = mediaId;
+
+  try {
+    const created = await wpFetch('/wp-json/wp/v2/pages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    log('大会ページ作成: ' + title + ' (ID:' + created.id + ')', 'ok');
+    showToast('大会ページを作成しました');
+
+    // Reload events and select new one
+    await loadEvents();
+    document.getElementById('eventSelect').value = created.id;
+    await onEventChange();
+
+    // Close details and clear form
+    document.getElementById('newEventDetails').removeAttribute('open');
+    document.getElementById('newEventTitle').value = '';
+    document.getElementById('newEventSlug').value = '';
+    eyecatchBox.innerHTML = '<div class="drop-hint">クリックして選択</div>';
+    delete eyecatchBox.dataset.mediaId;
+  } catch (e) {
+    log('大会ページ作成失敗: ' + e.message, 'err');
+    showToast('作成に失敗しました');
   }
 }
 
