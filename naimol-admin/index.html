@@ -1843,28 +1843,32 @@ async function loadGalleryMedia() {
     page++;
   }
 
-  // Step 3: Build filename→WP media lookup (slug = sanitized filename)
-  const wpBySlug = {};
+  // Step 3: Build filename→WP media lookup (by source_url filename)
+  const wpByFile = {};
   for (const m of allMedia) {
     if (!m.mime_type || !m.mime_type.startsWith('image/')) continue;
-    wpBySlug[m.slug] = {
+    const wpItem = {
       id: m.id, url: m.source_url,
       thumb: m.media_details?.sizes?.medium?.source_url || m.source_url,
       name: m.title.rendered
     };
-    // Also index by title (more lenient matching)
+    // Extract filename from source_url: .../uploads/2026/02/IMG_1234.jpg → IMG_1234.jpg
+    const urlFile = (m.source_url || '').split('/').pop().split('?')[0];
+    if (urlFile) wpByFile[urlFile.toLowerCase()] = wpItem;
+    // Also by slug and title
+    if (m.slug) wpByFile[m.slug] = wpItem;
     const title = (m.title.rendered || '').toLowerCase();
-    if (title && !wpBySlug[title]) wpBySlug[title] = wpBySlug[m.slug];
+    if (title) wpByFile[title] = wpItem;
   }
 
   // Step 4: Match Drive filenames to WP media, grouped by Drive folder
-  const folderGroups = {}; // folderName → [media]
+  const folderGroups = {};
   let matched = 0;
   for (const df of driveImages) {
-    const baseName = df.name.replace(/\.[^.]+$/, '');
-    // WP slugs: lowercase, spaces→hyphens, special chars removed
-    const slug = baseName.toLowerCase().replace(/[^a-z0-9\u3000-\u9fff\uff00-\uffef]+/g, '-').replace(/^-|-$/g, '');
-    const wp = wpBySlug[slug] || wpBySlug[baseName.toLowerCase()];
+    // Drive filename → WP uploaded filename (transfer used: name.replace(ext) + '.jpg')
+    const driveBase = df.name.replace(/\.[^.]+$/, '');
+    const wpFileName = (driveBase + '.jpg').toLowerCase();
+    const wp = wpByFile[wpFileName] || wpByFile[driveBase.toLowerCase()];
     if (wp) {
       const folder = df.folder ? df.folder.split('/').pop() : '\u30EB\u30FC\u30C8';
       if (!folderGroups[folder]) folderGroups[folder] = [];
