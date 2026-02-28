@@ -1757,7 +1757,24 @@ async function loadGalleryMedia() {
   galleryFolderNames[eventFolderId] = '\u30EB\u30FC\u30C8';
   subFolders.forEach(f => { galleryFolderNames[f.id] = f.name; });
 
-  for (const fid of allFolderIds) {
+  const summary = document.getElementById('galMediaSummary');
+  summary.style.display = 'block';
+
+  function updateSummary(scanning) {
+    let html = scanning
+      ? '<div style="font-size:0.82rem;line-height:1.8;color:var(--accent)">' + scanning + '</div>'
+      : '<div style="font-size:0.82rem;line-height:1.8">\u2705 \u8AAD\u307F\u8FBC\u307F\u5B8C\u4E86\uFF1A\u5408\u8A08 <strong>' + galleryMediaIds.length + '</strong>\u679A</div>';
+    for (const [fid, items] of Object.entries(galleryFolderMedia)) {
+      html += '<div style="font-size:0.75rem;color:var(--dim)">\u{1F4C1} ' + (galleryFolderNames[fid] || fid) + ': ' + items.length + '\u679A</div>';
+    }
+    summary.innerHTML = html;
+  }
+
+  for (let i = 0; i < allFolderIds.length; i++) {
+    const fid = allFolderIds[i];
+    const fname = galleryFolderNames[fid] || fid;
+    updateSummary('\u{1F50D} ' + fname + ' \u3092\u8AAD\u307F\u8FBC\u307F\u4E2D... (' + (i + 1) + '/' + allFolderIds.length + ')');
+
     let media = [], page = 1;
     while (true) {
       const batch = await wpFetch('/wp-json/wp/v2/media?per_page=100&page=' + page + '&folder=' + fid);
@@ -1777,16 +1794,8 @@ async function loadGalleryMedia() {
     }
   }
 
-  // Show summary
-  const summary = document.getElementById('galMediaSummary');
-  summary.style.display = 'block';
-  let html = `<div style="font-size:0.82rem;line-height:1.8">合計 <strong>${galleryMediaIds.length}</strong>枚</div>`;
-  for (const [fid, items] of Object.entries(galleryFolderMedia)) {
-    html += `<div style="font-size:0.75rem;color:var(--dim)">\u{1F4C1} ${galleryFolderNames[fid] || fid}: ${items.length}枚</div>`;
-  }
-  summary.innerHTML = html;
-
-  log('WPメディア: ' + galleryMediaIds.length + '枚（' + Object.keys(galleryFolderMedia).length + 'フォルダ）', 'ok');
+  updateSummary(null);
+  log('WP\u30E1\u30C7\u30A3\u30A2: ' + galleryMediaIds.length + '\u679A\uFF08' + Object.keys(galleryFolderMedia).length + '\u30D5\u30A9\u30EB\u30C0\uFF09', 'ok');
   if (galleryMediaIds.length > 0) document.getElementById('galCreateBtn').disabled = false;
 }
 
