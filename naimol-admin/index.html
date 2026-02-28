@@ -1227,7 +1227,7 @@ async function transferDriveToWP() {
 
     log('Drive→WP転送開始: ' + total + '枚', 'info');
 
-    // Transfer single image
+    // Transfer single image → returns media ID
     async function uploadOne(f) {
       const blob = await driveImageToBlob(`https://lh3.googleusercontent.com/d/${f.id}=s2048`, f.name);
       const formData = new FormData();
@@ -1241,9 +1241,12 @@ async function transferDriveToWP() {
       });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const media = await res.json();
-      uploadedIds.push(media.id);
-      const fbFolder = f.folder ? folderMap[f.folder] : eventFolderId;
-      if (fbFolder) await assignToFolder(fbFolder, [media.id]);
+      // Assign to FileBird (non-critical, don't fail the upload)
+      try {
+        const fbFolder = f.folder ? folderMap[f.folder] : eventFolderId;
+        if (fbFolder) await assignToFolder(fbFolder, [media.id]);
+      } catch (e) { log('FileBird割り当てスキップ: ' + f.name, 'info'); }
+      return media.id;
     }
 
     // Transfer images (2 concurrent, auto-retry failed ones)
@@ -1253,9 +1256,11 @@ async function transferDriveToWP() {
       while (queue.length > 0) {
         const f = queue.shift();
         try {
-          await uploadOne(f);
+          const mediaId = await uploadOne(f);
+          uploadedIds.push(mediaId);
         } catch (e) {
           failedFiles.push(f);
+          failed++;
         }
         done++;
         updateProgress();
@@ -1269,11 +1274,11 @@ async function transferDriveToWP() {
       for (const f of failedFiles) {
         await new Promise(r => setTimeout(r, 1500));
         try {
-          await uploadOne(f);
+          const mediaId = await uploadOne(f);
+          uploadedIds.push(mediaId);
+          failed--;
           log('リトライ成功: ' + f.name, 'ok');
-          failed--; // was counted as failed, now succeeded
         } catch (e) {
-          failed++;
           log('転送失敗（リトライ後）: ' + f.name, 'err');
         }
         updateProgress();
