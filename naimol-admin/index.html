@@ -679,6 +679,9 @@ async function createEventPage() {
     sel.value = created.id;
     await onEventChange();
 
+    // Add link to NAIMOL_PARENT page
+    await addEventToParentPage(created.id, title, slug);
+
     // Close details and clear form
     document.getElementById('newEventDetails').removeAttribute('open');
     document.getElementById('newEventTitle').value = '';
@@ -2125,6 +2128,52 @@ async function addCrossLinks() {
   } catch (e) { log('ギャラリー→結果リンク失敗: ' + e.message, 'err'); }
 
   showToast('相互リンクを追加しました');
+}
+
+// ===== Add event link to NAIMOL_PARENT page =====
+async function addEventToParentPage(pageId, title, slug) {
+  try {
+    const parent = await wpFetch('/wp-json/wp/v2/pages/' + NAIMOL_PARENT + '?context=edit');
+    let content = parent.content.raw;
+    const eventUrl = WP + '/nice_molkky_japan_details/' + slug + '/';
+
+    // Already linked?
+    if (content.includes(eventUrl)) {
+      log('親ページに既にリンクあり', 'info');
+      return;
+    }
+
+    // New link block (same style as existing entries)
+    const linkBlock = '\n<!-- wp:paragraph -->\n' +
+      '<p><a href="' + eventUrl + '" data-type="page" data-id="' + pageId + '">' +
+      '<span class="swl-marker mark_yellow"><span class="swl-fz u-fz-l">' + title + '</span></span>' +
+      '</a></p>\n<!-- /wp:paragraph -->';
+
+    // Insert before the NMP spreadsheet section
+    const nmpMarker = 'これまでの大会で付与されたナイモルポイント';
+    const nmpIdx = content.indexOf(nmpMarker);
+    if (nmpIdx > 0) {
+      // Find the start of the paragraph block containing NMP text
+      const beforeNmp = content.lastIndexOf('<!-- wp:paragraph', nmpIdx);
+      if (beforeNmp > 0) {
+        content = content.substring(0, beforeNmp) + linkBlock + '\n\n' + content.substring(beforeNmp);
+      } else {
+        content += linkBlock;
+      }
+    } else {
+      // Fallback: append at end
+      content += linkBlock;
+    }
+
+    await wpFetch('/wp-json/wp/v2/pages/' + NAIMOL_PARENT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content })
+    });
+    log('親ページ(484)に大会リンクを追加しました', 'ok');
+  } catch (e) {
+    log('親ページリンク追加失敗: ' + e.message, 'err');
+  }
 }
 
 // ===== Update parent page links =====
