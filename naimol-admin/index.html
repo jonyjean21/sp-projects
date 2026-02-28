@@ -358,22 +358,15 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
   </div>
 
   <div class="card">
-    <h3>写真アップロード</h3>
-    <p style="font-size:0.8rem;color:var(--dim);margin-bottom:0.8rem">
-      ギャラリー用の写真をまとめてアップロードできます。WPメディアに保存後、ギャラリーページに反映されます。
-      <span id="driveLinkWrap" style="display:none"><br><a id="driveLink" href="#" target="_blank" style="color:var(--accent);text-decoration:none">Driveフォルダを開く</a>（写真をDLしてここにD&D）</span>
+    <h3>ギャラリー写真</h3>
+    <p style="font-size:0.78rem;color:var(--dim);margin-bottom:0.8rem">
+      Drive転送済みのWPメディアからギャラリーページを自動生成します。
+      <span id="driveLinkWrap" style="display:none"><br><a id="driveLink" href="#" target="_blank" style="color:var(--accent);text-decoration:none">Driveフォルダを開く</a></span>
     </p>
-    <div class="drop-zone" id="galleryDropZone"
-      ondragover="galDragOver(event)" ondragleave="galDragLeave(event)" ondrop="galDrop(event)">
-      <input type="file" accept="image/*" multiple onchange="galFileSelect(event)">
-      <div class="drop-hint">写真をドラッグ or クリックで選択（複数可）</div>
-    </div>
-    <div id="galSelected" style="font-size:0.8rem;color:var(--dim);margin-top:0.5rem"></div>
-    <div class="progress-bar" id="galProgress" style="display:none"><div class="progress-fill" id="galProgressFill"></div></div>
-    <div id="galStats" style="margin-top:0.5rem"></div>
+    <div id="galMediaSummary" style="display:none;margin-bottom:0.8rem"></div>
     <div class="btn-row">
-      <button class="btn btn-primary" id="galUploadBtn" onclick="uploadGalleryPhotos()" disabled>WPにアップロード</button>
-      <button class="btn btn-outline" id="galCreateBtn" onclick="createGalleryPage()" disabled>ギャラリーページ作成/更新</button>
+      <button class="btn btn-outline btn-sm" onclick="loadGalleryMedia()">WPメディアを読み込み</button>
+      <button class="btn btn-primary" id="galCreateBtn" onclick="createGalleryPage()" disabled>ギャラリーページ作成</button>
     </div>
   </div>
 
@@ -438,6 +431,8 @@ let galleryPage = null;
 let podiumTeams = [];
 let galleryFiles = [];
 let galleryMediaIds = [];
+let galleryFolderMedia = {}; // folderId → [{id, url, thumb, name}]
+let galleryFolderNames = {}; // folderId → name
 
 // ===== Tabs =====
 document.querySelectorAll('.tab').forEach(tab => {
@@ -1746,59 +1741,139 @@ async function uploadGalleryPhotos() {
 // ===== Gallery: load existing media =====
 async function loadGalleryMedia() {
   if (!selectedEvent) return;
-  // Search for naimol gallery media
-  let media = [];
-  let page = 1;
-  while (true) {
-    const batch = await wpFetch('/wp-json/wp/v2/media?search=naimol&per_page=100&page=' + page);
-    media = media.concat(batch);
-    if (batch.length < 100) break;
-    page++;
-  }
-  const preview = document.getElementById('galleryPreview');
-  preview.innerHTML = '';
-  for (const m of media) {
-    if (m.mime_type && m.mime_type.startsWith('image/')) {
-      const thumb = m.media_details?.sizes?.thumbnail?.source_url || m.source_url;
-      const img = document.createElement('img');
-      img.src = thumb;
-      img.className = 'gallery-thumb';
-      img.title = m.title.rendered;
-      preview.appendChild(img);
+  await ensureEventFolder();
+  if (!eventFolderId) { log('FileBirdフォルダが見つかりません', 'err'); return; }
+
+  log('WPメディア読み込み中（FileBirdフォルダ: ' + eventFolderId + '）...', 'info');
+
+  // Get all subfolders under the event folder
+  const subFolders = fbFolders.filter(f => f.parent === eventFolderId);
+  const allFolderIds = [eventFolderId, ...subFolders.map(f => f.id)];
+
+  // Fetch media from each folder
+  galleryMediaIds = [];
+  galleryFolderMedia = {};
+  galleryFolderNames = {};
+  galleryFolderNames[eventFolderId] = '\u30EB\u30FC\u30C8';
+  subFolders.forEach(f => { galleryFolderNames[f.id] = f.name; });
+
+  for (const fid of allFolderIds) {
+    let media = [], page = 1;
+    while (true) {
+      const batch = await wpFetch('/wp-json/wp/v2/media?per_page=100&page=' + page + '&folder=' + fid);
+      media = media.concat(batch);
+      if (batch.length < 100) break;
+      page++;
+    }
+    const imgs = media.filter(m => m.mime_type && m.mime_type.startsWith('image/'));
+    if (imgs.length > 0) {
+      galleryFolderMedia[fid] = imgs.map(m => ({
+        id: m.id,
+        url: m.source_url,
+        thumb: m.media_details?.sizes?.medium?.source_url || m.source_url,
+        name: m.title.rendered
+      }));
+      galleryMediaIds = galleryMediaIds.concat(galleryFolderMedia[fid]);
     }
   }
-  log('WPメディア: ' + media.length + '件のギャラリー写真', 'info');
-  if (media.length > 0) document.getElementById('galCreateBtn').disabled = false;
-  galleryMediaIds = media.map(m => ({ id: m.id, url: m.source_url }));
+
+  // Show summary
+  const summary = document.getElementById('galMediaSummary');
+  summary.style.display = 'block';
+  let html = `<div style="font-size:0.82rem;line-height:1.8">合計 <strong>${galleryMediaIds.length}</strong>枚</div>`;
+  for (const [fid, items] of Object.entries(galleryFolderMedia)) {
+    html += `<div style="font-size:0.75rem;color:var(--dim)">\u{1F4C1} ${galleryFolderNames[fid] || fid}: ${items.length}枚</div>`;
+  }
+  summary.innerHTML = html;
+
+  log('WPメディア: ' + galleryMediaIds.length + '枚（' + Object.keys(galleryFolderMedia).length + 'フォルダ）', 'ok');
+  if (galleryMediaIds.length > 0) document.getElementById('galCreateBtn').disabled = false;
 }
 
 // ===== Gallery: create page =====
+function buildGallerySection(folderName, mediaItems) {
+  let images = '';
+  for (const m of mediaItems) {
+    images += '<!-- wp:image {"id":' + m.id + ',"sizeSlug":"large","linkDestination":"media"} -->\n' +
+      '<figure class="wp-block-image size-large"><a href="' + m.url + '"><img src="' + m.url + '" alt="" class="wp-image-' + m.id + '"/></a></figure>\n' +
+      '<!-- /wp:image -->\n\n';
+  }
+  return '<!-- wp:heading {"level":3} -->\n' +
+    '<h3 class="wp-block-heading">' + folderName + '\uFF08' + mediaItems.length + '\u679A\uFF09</h3>\n' +
+    '<!-- /wp:heading -->\n\n' +
+    '<!-- wp:gallery {"linkTo":"media","sizeSlug":"large"} -->\n' +
+    '<figure class="wp-block-gallery has-nested-images columns-default is-cropped">' +
+    images + '</figure>\n' +
+    '<!-- /wp:gallery -->\n\n';
+}
+
 async function createGalleryPage() {
   if (!selectedEvent || galleryMediaIds.length === 0) return;
-  log('ギャラリーページ生成中...', 'info');
+  log('\u30AE\u30E3\u30E9\u30EA\u30FC\u30DA\u30FC\u30B8\u751F\u6210\u4E2D...', 'info');
 
-  let images = '';
-  for (const m of galleryMediaIds) {
-    images += '<figure class="wp-block-image size-large"><img src="' + m.url + '" alt="ナイモルカップ ギャラリー" class="wp-image-' + m.id + '"/></figure>\n';
+  // Build preamble
+  const preamble = '<!-- wp:heading -->\n' +
+    '<h2 class="wp-block-heading">' + selectedEvent.title.rendered + ' \u30AE\u30E3\u30E9\u30EA\u30FC</h2>\n' +
+    '<!-- /wp:heading -->\n\n' +
+    '<!-- wp:paragraph -->\n' +
+    '<p>\u5927\u4F1A\u306E\u69D8\u5B50\u3084\u53C2\u52A0\u8005\u306E\u7686\u3055\u3093\u306E\u7B11\u9854\u3092\u30AE\u30E3\u30E9\u30EA\u30FC\u3067\u3054\u7D39\u4ECB\u3057\u307E\u3059\u3002<br>\u304A\u6C17\u306B\u5165\u308A\u306E\u4E00\u679A\u3092\u898B\u3064\u3051\u3066\u304F\u3060\u3055\u3044\uFF01</p>\n' +
+    '<!-- /wp:paragraph -->\n\n' +
+    '<!-- wp:paragraph -->\n' +
+    '<p><strong><span class="swl-marker mark_yellow">\u30B9\u30DE\u30DB\u304B\u3089\u306F\u753B\u50CF\u9577\u62BC\u3057\u3067\u4FDD\u5B58\u53EF\u80FD</span></strong></p>\n' +
+    '<!-- /wp:paragraph -->\n\n';
+
+  // Build sections by folder
+  const folderIds = Object.keys(galleryFolderMedia);
+  const sections = [];
+  for (const fid of folderIds) {
+    const name = galleryFolderNames[fid] || '\u305D\u306E\u4ED6';
+    // Skip root folder if it has no direct images (all images are in subfolders)
+    if (fid == Object.keys(galleryFolderNames)[0] && galleryFolderMedia[fid].length === 0) continue;
+    sections.push({ fid, name, items: galleryFolderMedia[fid] });
   }
 
-  const content = `<!-- wp:heading -->
-<h3 class="wp-block-heading">${selectedEvent.title.rendered} ギャラリー</h3>
-<!-- /wp:heading -->
+  // If only 1 folder (root), don't split into sections
+  if (sections.length === 1 && sections[0].name === '\u30EB\u30FC\u30C8') {
+    const items = sections[0].items;
+    let images = '';
+    for (const m of items) {
+      images += '<!-- wp:image {"id":' + m.id + ',"sizeSlug":"large","linkDestination":"media"} -->\n' +
+        '<figure class="wp-block-image size-large"><a href="' + m.url + '"><img src="' + m.url + '" alt="" class="wp-image-' + m.id + '"/></a></figure>\n' +
+        '<!-- /wp:image -->\n\n';
+    }
+    const content = preamble +
+      '<!-- wp:gallery {"linkTo":"media","sizeSlug":"large"} -->\n' +
+      '<figure class="wp-block-gallery has-nested-images columns-default is-cropped">' +
+      images + '</figure>\n<!-- /wp:gallery -->';
+    return await saveGalleryContent(content);
+  }
 
-<!-- wp:paragraph -->
-<p>大会の様子や参加者の皆さんの笑顔をギャラリーでご紹介します。<br>お気に入りの一枚を見つけてください！</p>
-<!-- /wp:paragraph -->
+  // Multiple folders: chunk API calls to avoid WAF
+  // First call: create page with preamble + first section
+  let content = preamble + buildGallerySection(sections[0].name, sections[0].items);
+  await saveGalleryContent(content);
+  log('\u30BB\u30AF\u30B7\u30E7\u30F3 1/' + sections.length + ': ' + sections[0].name + ' (' + sections[0].items.length + '\u679A)', 'ok');
 
-<!-- wp:paragraph -->
-<p><strong><span class="swl-marker mark_yellow">スマホからは画像長押しで保存可能</span></strong></p>
-<!-- /wp:paragraph -->
+  // Subsequent calls: append remaining sections one by one
+  for (let i = 1; i < sections.length; i++) {
+    const sec = sections[i];
+    const sectionHtml = buildGallerySection(sec.name, sec.items);
+    // Fetch current content and append
+    const current = await wpFetch('/wp-json/wp/v2/pages/' + galleryPage.id + '?context=edit');
+    const updated = current.content.raw + '\n' + sectionHtml;
+    await wpFetch('/wp-json/wp/v2/pages/' + galleryPage.id, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: updated })
+    });
+    log('\u30BB\u30AF\u30B7\u30E7\u30F3 ' + (i + 1) + '/' + sections.length + ': ' + sec.name + ' (' + sec.items.length + '\u679A)', 'ok');
+  }
 
-<!-- wp:gallery {"linkTo":"none","sizeSlug":"large"} -->
-<figure class="wp-block-gallery has-nested-images columns-default is-cropped">
-${images}</figure>
-<!-- /wp:gallery -->`;
+  log('\u30AE\u30E3\u30E9\u30EA\u30FC\u30DA\u30FC\u30B8\u5B8C\u6210\uFF01\u5408\u8A08' + galleryMediaIds.length + '\u679A / ' + sections.length + '\u30BB\u30AF\u30B7\u30E7\u30F3', 'ok');
+  loadGallerySections();
+}
 
+async function saveGalleryContent(content) {
   try {
     if (galleryPage) {
       await wpFetch('/wp-json/wp/v2/pages/' + galleryPage.id, {
@@ -1806,22 +1881,21 @@ ${images}</figure>
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content })
       });
-      log('ギャラリーページ更新完了 (ID: ' + galleryPage.id + ')', 'ok');
     } else {
       const created = await wpFetch('/wp-json/wp/v2/pages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title: 'ギャラリー', slug: 'gallery', status: 'draft',
+          title: '\u30AE\u30E3\u30E9\u30EA\u30FC', slug: 'gallery', status: 'draft',
           parent: selectedEvent.id, content
         })
       });
       galleryPage = created;
-      log('ギャラリーページ作成完了 (ID: ' + created.id + ')', 'ok');
     }
     updatePageInfo('gallery', galleryPage);
   } catch (e) {
-    log('ギャラリーページ作成失敗: ' + e.message, 'err');
+    log('\u30AE\u30E3\u30E9\u30EA\u30FC\u30DA\u30FC\u30B8\u4FDD\u5B58\u5931\u6557: ' + e.message, 'err');
+    throw e;
   }
 }
 
