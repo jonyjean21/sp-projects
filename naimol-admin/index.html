@@ -247,6 +247,16 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
     </div>
   </div>
 
+  <div class="card" id="resultGenCard" style="display:none">
+    <h3>結果ページを生成</h3>
+    <p style="font-size:0.78rem;color:var(--dim);margin-bottom:0.8rem">設定タブのスプシURLからデータを自動取得し、結果ページ（順位表・表彰台・PM賞）を生成します。</p>
+    <div id="resultGenSummary" style="display:none;margin-bottom:0.8rem"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="genResultBtn" onclick="generateResult()">スプシを読み込む</button>
+      <button class="btn btn-success" id="createResultBtn" onclick="createResultFromData()" style="display:none">結果ページを作成</button>
+    </div>
+  </div>
+
   <div class="card">
     <h3>ページ設定</h3>
     <div style="display:flex;gap:1rem;flex-wrap:wrap">
@@ -340,6 +350,7 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
     <h3>写真アップロード</h3>
     <p style="font-size:0.8rem;color:var(--dim);margin-bottom:0.8rem">
       ギャラリー用の写真をまとめてアップロードできます。WPメディアに保存後、ギャラリーページに反映されます。
+      <span id="driveLinkWrap" style="display:none"><br><a id="driveLink" href="#" target="_blank" style="color:var(--accent);text-decoration:none">Driveフォルダを開く</a>（写真をDLしてここにD&D）</span>
     </p>
     <div class="drop-zone" id="galleryDropZone"
       ondragover="galDragOver(event)" ondragleave="galDragLeave(event)" ondrop="galDrop(event)">
@@ -693,6 +704,13 @@ async function onEventChange() {
   loadPageMeta('result', resultPage);
   loadPageMeta('gallery', galleryPage);
 
+  // Show/hide result generation card
+  document.getElementById('resultGenCard').style.display = resultPage ? 'none' : 'block';
+  if (!resultPage) {
+    document.getElementById('resultGenSummary').style.display = 'none';
+    document.getElementById('createResultBtn').style.display = 'none';
+  }
+
   if (resultPage) loadResultPhotos();
   if (galleryPage) loadGallerySections();
 }
@@ -736,6 +754,362 @@ function loadSettings() {
   if (saved.galleryDriveUrl) document.getElementById('galleryDriveUrl').value = saved.galleryDriveUrl;
   if (saved.excludeFolders) document.getElementById('excludeFolders').value = saved.excludeFolders;
   else document.getElementById('excludeFolders').value = 'インナー記録';
+  // Drive folder link
+  if (saved.galleryDriveUrl) {
+    document.getElementById('driveLinkWrap').style.display = '';
+    document.getElementById('driveLink').href = saved.galleryDriveUrl;
+  }
+}
+
+// ===== Spreadsheet parsing & result generation =====
+let parsedAllTeams = [];
+let parsedPMTeams = [];
+let parsedTop4 = [];
+
+function parseCSV(text) {
+  const rows = [];
+  let current = [], field = '', inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inQuotes) {
+      if (ch === '"' && text[i+1] === '"') { field += '"'; i++; }
+      else if (ch === '"') inQuotes = false;
+      else field += ch;
+    } else {
+      if (ch === '"') inQuotes = true;
+      else if (ch === ',') { current.push(field); field = ''; }
+      else if (ch === '\n' || (ch === '\r' && text[i+1] === '\n')) {
+        current.push(field); field = '';
+        if (current.some(c => c.trim())) rows.push(current);
+        current = [];
+        if (ch === '\r') i++;
+      } else field += ch;
+    }
+  }
+  if (field || current.length) { current.push(field); rows.push(current); }
+  return rows;
+}
+
+async function fetchGvizCSV(sheetId, sheetName) {
+  const enc = encodeURIComponent(sheetName);
+  const urls = [
+    `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${enc}`,
+    `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&sheet=${enc}`
+  ];
+  for (const url of urls) {
+    try {
+      const resp = await fetch(url, { signal: AbortSignal.timeout(15000) });
+      if (resp.ok) { const t = await resp.text(); if (t && t.includes(',')) return t; }
+    } catch (e) { /* try next */ }
+  }
+  return null;
+}
+
+function parseResultSheet(csvText) {
+  const rows = parseCSV(csvText);
+  // Find header row by keywords
+  let headerIdx = -1, colMap = {};
+  for (let i = 0; i < Math.min(rows.length, 10); i++) {
+    const joined = rows[i].join('');
+    if (joined.includes('順位') && (joined.includes('チーム') || joined.includes('合計'))) {
+      headerIdx = i;
+      rows[i].forEach((cell, j) => {
+        const c = cell.trim();
+        if (c.includes('総合') && c.includes('順位') || c === '順位') colMap.rank = j;
+        if (c.includes('チーム')) colMap.team = j;
+        if (c.includes('参加')) colMap.participation = j;
+        if (c.includes('予選')) colMap.qualifier = j;
+        if (c.includes('決勝')) colMap.final = j;
+        if (c.includes('ボーナス')) colMap.bonus = j;
+        if (c.includes('パーフェクト') || c === 'PM') colMap.pm = j;
+        if (c.includes('合計')) colMap.total = j;
+      });
+      break;
+    }
+  }
+  if (headerIdx === -1) {
+    colMap = { rank:1, team:2, participation:3, qualifier:4, final:5, bonus:6, pm:7, total:8 };
+    headerIdx = 2;
+  }
+  const teams = [];
+  for (let i = headerIdx + 1; i < rows.length; i++) {
+    const row = rows[i];
+    const rank = parseInt((row[colMap.rank] || '').trim());
+    if (isNaN(rank) || rank <= 0) continue;
+    const rawTeam = (row[colMap.team] || '').trim();
+    const name = rawTeam.replace(/^\d+[_＿]/, '');
+    teams.push({
+      rank, name,
+      participation: (row[colMap.participation] || '').trim(),
+      qualifier: (row[colMap.qualifier] || '').trim(),
+      final: (row[colMap.final] || '').trim(),
+      bonus: (row[colMap.bonus] || '').trim(),
+      pm: (row[colMap.pm] || '').trim(),
+      total: (row[colMap.total] || '').trim()
+    });
+  }
+  return teams;
+}
+
+function parsePMSheet(csvText) {
+  const rows = parseCSV(csvText);
+  let headerIdx = -1, teamCol = 1, matchCol = 2;
+  for (let i = 0; i < Math.min(rows.length, 10); i++) {
+    const joined = rows[i].join('');
+    if (joined.includes('チーム') || joined.includes('達成')) {
+      headerIdx = i;
+      rows[i].forEach((cell, j) => {
+        if (cell.includes('チーム')) teamCol = j;
+        if (cell.includes('達成') || cell.includes('試合')) matchCol = j;
+      });
+      break;
+    }
+  }
+  const start = headerIdx >= 0 ? headerIdx + 1 : 3;
+  const pms = [];
+  for (let i = start; i < rows.length; i++) {
+    const name = (rows[i][teamCol] || '').trim().replace(/^\d+[_＿]/, '');
+    const match = (rows[i][matchCol] || '').trim();
+    if (name) pms.push({ name, match });
+  }
+  return pms;
+}
+
+// ===== Result page HTML builders =====
+function buildResultPodiumHTML(top4) {
+  const RANKS = [
+    { rank: '優勝', medal: '🥇', cls: 'gold' },
+    { rank: '準優勝', medal: '🥈', cls: 'silver' },
+    { rank: '3位', medal: '🥉', cls: 'bronze' },
+    { rank: '3位', medal: '🥉', cls: 'bronze' }
+  ];
+  let items = '';
+  top4.forEach((t, i) => {
+    if (!t.name) return;
+    const r = RANKS[i] || RANKS[3];
+    items += `
+    <div class="podium-item ${r.cls}">
+      <div class="rank-icon">${r.medal}</div>
+      <div class="podium-photo"></div>
+      <div class="team-info">
+        <div class="position">${r.rank}</div>
+        <div class="team-name">${t.name}</div>
+      </div>
+    </div>`;
+  });
+
+  return `<div class="top-results-mobile">
+  <div class="podium-list">${items}
+  </div>
+</div>
+
+<div id="photoModal" class="photo-modal" onclick="this.classList.remove('open')">
+  <span class="photo-modal-close" onclick="event.stopPropagation();this.parentElement.classList.remove('open')">&times;</span>
+  <img class="photo-modal-content" id="modalImg" alt="">
+</div>
+
+<style>
+.top-results-mobile{margin:0.7rem 0}
+.podium-list{display:flex;flex-direction:column;gap:0.3rem;align-items:flex-start;width:100%;max-width:520px;margin:0 auto}
+.podium-item{display:flex;flex-direction:row;align-items:center;width:100%;background:#fff;border-radius:10px;box-shadow:0 1px 2px rgba(0,0,0,0.05);border-left:8px solid;margin:0;padding:0.4rem 0.5rem;min-width:0;min-height:0}
+.podium-item.gold{border-left-color:#FFD700}
+.podium-item.silver{border-left-color:#C0C0C0}
+.podium-item.bronze{border-left-color:#CD7F32}
+.rank-icon{font-size:1.1rem;margin-right:0.5rem;flex-shrink:0}
+.podium-photo{width:56px;height:56px;border-radius:7px;margin-right:0.7rem;flex-shrink:0;overflow:hidden;background:#f4f4f4;display:flex;align-items:center;justify-content:center}
+.podium-photo img{width:100%;height:100%;object-fit:cover;display:block;cursor:pointer}
+.team-info{flex:1;min-width:0;text-align:left;display:flex;flex-direction:column;gap:0.1rem}
+.position{font-size:0.98rem;font-weight:bold;color:#2c3e50;line-height:1.1}
+.team-name{font-size:1.05rem;font-weight:700;word-break:break-word;line-height:1.1}
+.photo-modal{display:none;position:fixed;z-index:9999;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);align-items:center;justify-content:center}
+.photo-modal.open{display:flex}
+.photo-modal-content{max-width:90vw;max-height:80vh;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.3)}
+.photo-modal-close{position:absolute;top:20px;right:30px;color:#fff;font-size:2rem;font-weight:bold;cursor:pointer;z-index:10000}
+@media(min-width:769px){
+.podium-photo{width:84px!important;height:84px!important;border-radius:10px!important}
+.rank-icon{font-size:1.65rem!important}
+.position{font-size:1.2rem!important}
+.team-name{font-size:1.3rem!important}
+}
+</style>`;
+}
+
+function buildRankingTableHTML(teams) {
+  let rows = '';
+  teams.forEach(t => {
+    const cls = t.rank === 1 ? ' class="rank-gold"' : t.rank === 2 ? ' class="rank-silver"' : t.rank === 3 ? ' class="rank-bronze"' : '';
+    const pmDisplay = t.pm && t.pm !== '0' && t.pm !== '' ? t.pm : '';
+    rows += `<tr${cls}><td>${t.rank}</td><td>${t.name}</td><td>${t.participation}</td><td>${t.qualifier}</td><td>${t.final}</td><td>${t.bonus}</td><td>${pmDisplay}</td><td>${t.total}</td></tr>\n`;
+  });
+
+  return `<div class="naimol-ranking-wrap">
+<table class="naimol-ranking">
+<thead><tr><th>順位</th><th>チーム</th><th>参加</th><th>予選</th><th>決勝</th><th>ボーナス</th><th>PM</th><th>合計</th></tr></thead>
+<tbody>
+${rows}</tbody>
+</table>
+</div>
+<style>
+.naimol-ranking-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:1rem 0}
+.naimol-ranking{width:100%;border-collapse:collapse;font-size:0.9rem;white-space:nowrap;min-width:500px}
+.naimol-ranking th{background:#f8f9fa;font-weight:700;padding:0.6rem 0.8rem;border-bottom:2px solid #dee2e6;text-align:center;position:sticky;top:0}
+.naimol-ranking td{padding:0.5rem 0.8rem;border-bottom:1px solid #eee;text-align:center}
+.naimol-ranking td:nth-child(2){text-align:left;font-weight:500}
+.naimol-ranking tr:hover{background:#f8f9fa}
+.naimol-ranking .rank-gold{background:rgba(255,215,0,0.08)}
+.naimol-ranking .rank-gold td:first-child{font-weight:700;color:#b8860b}
+.naimol-ranking .rank-silver{background:rgba(192,192,192,0.08)}
+.naimol-ranking .rank-silver td:first-child{font-weight:700;color:#808080}
+.naimol-ranking .rank-bronze{background:rgba(205,127,50,0.08)}
+.naimol-ranking .rank-bronze td:first-child{font-weight:700;color:#8B4513}
+</style>`;
+}
+
+function buildPMListHTML(pms) {
+  if (!pms.length) return '';
+  let items = '';
+  pms.forEach(pm => {
+    items += `<div class="perfect-team-item"><span class="perfect-icon">⚡</span><span class="perfect-team-link">${pm.name}</span><span class="perfect-target">${pm.match}</span></div>\n`;
+  });
+  return `<div class="perfect-molkky-teams">
+<div class="perfect-teams-list">
+${items}</div>
+</div>
+<style>
+.perfect-molkky-teams{margin:1rem 0}
+.perfect-teams-list{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);overflow:hidden;max-width:480px}
+.perfect-team-item{display:flex;align-items:center;padding:0.8rem 1rem;border-bottom:1px solid #f1f3f4}
+.perfect-team-item:last-child{border-bottom:none}
+.perfect-icon{font-size:1.2rem;margin-right:0.8rem;flex-shrink:0}
+.perfect-team-link{font-weight:500;font-size:1rem;flex:1;min-width:0;word-break:break-word}
+.perfect-target{color:#888;font-size:0.9rem;margin-left:0.8rem;flex-shrink:0;white-space:nowrap}
+@media(max-width:768px){
+.perfect-team-item{padding:0.6rem 0.7rem}
+.perfect-icon{font-size:1rem;margin-right:0.5rem}
+.perfect-team-link{font-size:0.9rem}
+.perfect-target{font-size:0.85rem;margin-left:0.5rem}
+}
+</style>`;
+}
+
+function buildResultContent(eventTitle, top4, allTeams, pmTeams) {
+  let html = '';
+  html += `<!-- wp:paragraph -->\n<p>${eventTitle}の大会結果をお知らせいたします。</p>\n<!-- /wp:paragraph -->\n\n`;
+  html += `<!-- wp:heading {"level":3} -->\n<h3 class="wp-block-heading">大会成績</h3>\n<!-- /wp:heading -->\n\n`;
+  html += `<!-- wp:paragraph -->\n<p>本大会の上位入賞チームです。</p>\n<!-- /wp:paragraph -->\n\n`;
+  html += `<!-- wp:html -->\n${buildResultPodiumHTML(top4)}\n<!-- /wp:html -->\n\n`;
+  html += `<!-- wp:heading {"level":3} -->\n<h3 class="wp-block-heading">全順位表</h3>\n<!-- /wp:heading -->\n\n`;
+  html += `<!-- wp:paragraph -->\n<p>大会参加チーム全ての順位・成績を掲載しています。</p>\n<!-- /wp:paragraph -->\n\n`;
+  html += `<!-- wp:html -->\n${buildRankingTableHTML(allTeams)}\n<!-- /wp:html -->\n\n`;
+  if (pmTeams.length > 0) {
+    html += `<!-- wp:heading {"level":3} -->\n<h3 class="wp-block-heading">パーフェクトモルック賞</h3>\n<!-- /wp:heading -->\n\n`;
+    html += `<!-- wp:paragraph -->\n<p>5ターンで50点獲得（＝パーフェクトモルック）を達成したチームに贈られます。</p>\n<!-- /wp:paragraph -->\n\n`;
+    html += `<!-- wp:html -->\n${buildPMListHTML(pmTeams)}\n<!-- /wp:html -->\n\n`;
+  }
+  return html;
+}
+
+// ===== Generate result page from spreadsheet =====
+async function generateResult() {
+  const sheetUrl = document.getElementById('resultSheetUrl').value.trim();
+  if (!sheetUrl) { showToast('設定タブでスプシURLを入力してください'); return; }
+  const idMatch = sheetUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (!idMatch) { showToast('スプシURLの形式が正しくありません'); return; }
+  const sheetId = idMatch[1];
+
+  const btn = document.getElementById('genResultBtn');
+  btn.disabled = true; btn.textContent = 'スプシを読み込み中...';
+  log('スプシを読み込み中...', 'info');
+
+  try {
+    // Fetch 総合結果
+    const resultCSV = await fetchGvizCSV(sheetId, '総合結果');
+    if (!resultCSV) throw new Error('総合結果シートの読み込みに失敗。シートの共有設定を確認してください。');
+    parsedAllTeams = parseResultSheet(resultCSV);
+    if (parsedAllTeams.length === 0) throw new Error('チームデータが見つかりません');
+
+    // Extract top 4
+    parsedTop4 = [];
+    const r1 = parsedAllTeams.filter(t => t.rank === 1);
+    const r2 = parsedAllTeams.filter(t => t.rank === 2);
+    const r3 = parsedAllTeams.filter(t => t.rank === 3);
+    if (r1[0]) parsedTop4.push(r1[0]);
+    if (r2[0]) parsedTop4.push(r2[0]);
+    r3.forEach(t => { if (parsedTop4.length < 4) parsedTop4.push(t); });
+
+    // Fetch PM sheet
+    parsedPMTeams = [];
+    try {
+      const pmCSV = await fetchGvizCSV(sheetId, 'パーフェクトモルック賞');
+      if (pmCSV) parsedPMTeams = parsePMSheet(pmCSV);
+    } catch (e) { log('PMシートの読み込みスキップ: ' + e.message, 'info'); }
+
+    // Show summary
+    const summary = document.getElementById('resultGenSummary');
+    summary.style.display = 'block';
+    summary.innerHTML = `
+      <div style="background:var(--bg);border:1px solid var(--ok);border-radius:8px;padding:0.8rem;font-size:0.82rem;line-height:1.8">
+        <div style="color:var(--ok);font-weight:700;margin-bottom:0.3rem">読み込み完了</div>
+        <div>チーム数: <strong>${parsedAllTeams.length}</strong></div>
+        <div>優勝: <strong>${parsedTop4[0]?.name || '—'}</strong>（${parsedTop4[0]?.total || '—'}pt）</div>
+        <div>準優勝: <strong>${parsedTop4[1]?.name || '—'}</strong>（${parsedTop4[1]?.total || '—'}pt）</div>
+        <div>3位: <strong>${parsedTop4.slice(2).map(t => t.name).join(' / ') || '—'}</strong></div>
+        <div>PM賞: <strong>${parsedPMTeams.length}件</strong></div>
+      </div>`;
+    document.getElementById('createResultBtn').style.display = '';
+    log('スプシ読み込み完了: ' + parsedAllTeams.length + 'チーム', 'ok');
+    showToast('読み込み完了！確認して「結果ページを作成」を押してください');
+  } catch (e) {
+    log('スプシ読み込みエラー: ' + e.message, 'err');
+    showToast('読み込みに失敗: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'スプシを読み込む';
+  }
+}
+
+async function createResultFromData() {
+  if (!selectedEvent || parsedAllTeams.length === 0) return;
+  const btn = document.getElementById('createResultBtn');
+  btn.disabled = true; btn.textContent = '作成中...';
+
+  try {
+    const eventTitle = selectedEvent.title.rendered;
+    const content = buildResultContent(eventTitle, parsedTop4, parsedAllTeams, parsedPMTeams);
+
+    if (resultPage) {
+      await wpFetch('/wp-json/wp/v2/pages/' + resultPage.id, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content })
+      });
+      log('結果ページ更新完了 (ID: ' + resultPage.id + ')', 'ok');
+    } else {
+      const created = await wpFetch('/wp-json/wp/v2/pages', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: '大会結果', slug: 'result', status: 'draft', parent: selectedEvent.id, content })
+      });
+      resultPage = created;
+      log('結果ページ作成完了 (ID: ' + created.id + ')', 'ok');
+    }
+    updatePageInfo('result', resultPage);
+    loadPageMeta('result', resultPage);
+
+    // Set podium teams for photo grid
+    podiumTeams = parsedTop4.map((t, i) => {
+      const cls = i === 0 ? 'gold' : i === 1 ? 'silver' : 'bronze';
+      const rank = i === 0 ? '優勝' : i === 1 ? '準優勝' : '3位';
+      return { rank, cls, name: t.name, photoUrl: '', file: null, preview: '' };
+    });
+    renderPhotoGrid();
+
+    // Hide generation card
+    document.getElementById('resultGenCard').style.display = 'none';
+    showToast('結果ページを作成しました！次は表彰台写真をアップロード');
+  } catch (e) {
+    log('結果ページ作成失敗: ' + e.message, 'err');
+    showToast('作成に失敗しました');
+  } finally {
+    btn.disabled = false; btn.textContent = '結果ページを作成';
+  }
 }
 
 // ===== Result page: load podium teams =====
@@ -770,7 +1144,7 @@ function renderPhotoGrid() {
     grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--dim);font-size:0.85rem">' +
       (!wpAuth ? '設定タブでWP接続してください' :
        !selectedEvent ? '設定タブで大会を選択してください' :
-       !resultPage ? '結果ページが見つかりません（先にClaude Codeで作成してください）' :
+       !resultPage ? '↑「スプシを読み込む」で結果ページを生成してください' :
        '読み込み中...') + '</div>';
     return;
   }
