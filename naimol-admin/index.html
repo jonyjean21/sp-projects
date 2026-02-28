@@ -1764,27 +1764,30 @@ async function uploadGalleryPhotos() {
   loadGalleryMedia();
 }
 
-// ===== Gallery: get folder→attachment mapping from FileBird export-csv =====
-async function fbExportMapping() {
-  try {
-    const data = await fbFetch('export-csv');
-    if (!data || !data.folders) return null;
+// ===== Gallery: query WP admin-ajax for folder contents (same as WP media library) =====
+async function queryFolderMedia(folderId) {
+  const body = new URLSearchParams();
+  body.append('action', 'query-attachments');
+  body.append('query[posts_per_page]', '500');
+  body.append('query[post_mime_type]', 'image');
+  body.append('query[folder]', String(folderId));
+  body.append('query[orderby]', 'date');
+  body.append('query[order]', 'DESC');
 
-    const mapping = {};
-    for (const f of data.folders) {
-      const fid = parseInt(f.id);
-      if (isNaN(fid)) continue;
-      const idsStr = f.attachment_ids || '';
-      if (!idsStr.trim()) { mapping[fid] = []; continue; }
-      mapping[fid] = idsStr.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n > 0);
-    }
-    const total = Object.values(mapping).reduce((sum, arr) => sum + arr.length, 0);
-    log('FileBird\u30DE\u30C3\u30D4\u30F3\u30B0: ' + data.folders.length + '\u30D5\u30A9\u30EB\u30C0 / ' + total + '\u4EF6', 'ok');
-    return mapping;
-  } catch (e) {
-    log('export-csv: ' + e.message, 'info');
-  }
-  return null;
+  const res = await fetch(WP + '/wp-admin/admin-ajax.php', {
+    method: 'POST',
+    headers: { 'Authorization': 'Basic ' + wpAuth },
+    body: body
+  });
+  if (!res.ok) return null;
+  const json = await res.json();
+  if (!json.success || !json.data) return null;
+  return json.data.map(m => ({
+    id: m.id,
+    url: m.url || m.sizes?.full?.url || '',
+    thumb: m.sizes?.medium?.url || m.sizes?.thumbnail?.url || m.url || '',
+    name: m.title || m.filename || ''
+  }));
 }
 
 // ===== Gallery: load existing media =====
@@ -1837,32 +1840,28 @@ async function loadGalleryMedia() {
     return;
   }
 
-  // Strategy 2: Use FileBird export-csv to get folder→attachment mapping
-  updateSummary('\u{1F50D} FileBird\u30DE\u30C3\u30D4\u30F3\u30B0\u3092\u53D6\u5F97\u4E2D...');
-  const csvMapping = await fbExportMapping();
-  let fbApiWorked = false;
+  // Strategy 2: Use WP admin-ajax query-attachments with folder filter (same as WP media library)
+  let ajaxWorked = false;
+  for (let i = 0; i < allFolderIds.length; i++) {
+    const fid = allFolderIds[i];
+    const fname = galleryFolderNames[fid] || fid;
+    updateSummary('\u{1F50D} ' + fname + ' \u3092\u8AAD\u307F\u8FBC\u307F\u4E2D... (' + (i + 1) + '/' + allFolderIds.length + ')');
 
-  if (csvMapping) {
-    // Check if mapping has our folder IDs
-    for (let i = 0; i < allFolderIds.length; i++) {
-      const fid = allFolderIds[i];
-      const fname = galleryFolderNames[fid] || fid;
-      const ids = csvMapping[fid] || csvMapping[String(fid)] || [];
-      if (ids.length === 0) continue;
-      fbApiWorked = true;
-
-      updateSummary('\u{1F50D} ' + fname + ' \u3092\u8AAD\u307F\u8FBC\u307F\u4E2D... (' + (i + 1) + '/' + allFolderIds.length + ')');
-      const items = await fetchMediaByIds(ids);
-      if (items.length > 0) {
-        galleryFolderMedia[fid] = items;
-        galleryMediaIds = galleryMediaIds.concat(items);
-      }
+    const items = await queryFolderMedia(fid);
+    if (items === null && i === 0) {
+      log('admin-ajax\u304C\u5229\u7528\u4E0D\u53EF', 'info');
+      break;
+    }
+    if (items && items.length > 0) {
+      ajaxWorked = true;
+      galleryFolderMedia[fid] = items;
+      galleryMediaIds = galleryMediaIds.concat(items);
       log(fname + ': ' + items.length + '\u679A', 'ok');
     }
   }
 
-  // Strategy 3: Fallback - fetch all media
-  if (!fbApiWorked) {
+  if (!ajaxWorked) {
+    log('\u30D5\u30A9\u30EB\u30C0\u53D6\u5F97\u4E0D\u53EF\u3002\u5168\u30E1\u30C7\u30A3\u30A2\u3092\u53D6\u5F97\u3057\u307E\u3059', 'info');
     updateSummary('\u{1F50D} \u5168\u30E1\u30C7\u30A3\u30A2\u3092\u8AAD\u307F\u8FBC\u307F\u4E2D...');
     let allMedia = [], page = 1;
     while (true) {
@@ -1880,7 +1879,6 @@ async function loadGalleryMedia() {
     if (items.length > 0) {
       galleryFolderMedia[eventFolderId] = items;
       galleryMediaIds = items;
-      log('\u203B \u30D5\u30A9\u30EB\u30C0\u5206\u985E\u306A\u3057 / \u5168\u753B\u50CF' + items.length + '\u679A', 'info');
     }
   }
 
