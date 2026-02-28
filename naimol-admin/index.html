@@ -288,16 +288,23 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
     </div>
   </div>
 
+  <div class="card" id="driveTransferCard">
+    <h3>Drive → WPメディア転送</h3>
+    <p style="font-size:0.78rem;color:var(--dim);margin-bottom:0.8rem">Driveフォルダの写真をWPメディアライブラリに一括転送します。FileBirdフォルダも自動作成。</p>
+    <div id="drivePhotoGrid" style="display:none;margin-bottom:0.8rem"></div>
+    <div id="driveTransferProgress" style="display:none;margin-bottom:0.8rem"></div>
+    <div class="btn-row">
+      <button class="btn btn-outline btn-sm" id="loadDrivePhotosBtn" onclick="loadDrivePhotos()">Driveから写真を読み込む</button>
+      <button class="btn btn-primary btn-sm" id="driveTransferBtn" onclick="transferDriveToWP()" style="display:none">WPメディアに一括転送</button>
+    </div>
+  </div>
+
   <div class="card">
     <h3>上位チーム写真</h3>
-    <p style="font-size:0.78rem;color:var(--dim);margin-bottom:0.8rem">Driveから自動取得、またはD&D / WPメディアから選択できます。</p>
-    <div class="btn-row" style="margin-bottom:0.8rem">
-      <button class="btn btn-outline btn-sm" id="loadDrivePhotosBtn" onclick="loadDrivePhotos()">Driveから写真を読み込む</button>
-    </div>
-    <div id="drivePhotoGrid" style="display:none;margin-bottom:1rem"></div>
+    <p style="font-size:0.78rem;color:var(--dim);margin-bottom:0.8rem">WPメディアから選択してください。</p>
     <div class="photo-grid" id="photoGrid"></div>
     <div class="btn-row">
-      <button class="btn btn-primary" id="uploadPhotosBtn" onclick="uploadPhotos()" disabled>写真をアップロード & 反映</button>
+      <button class="btn btn-primary" id="uploadPhotosBtn" onclick="uploadPhotos()" disabled>ページに反映</button>
     </div>
   </div>
 
@@ -1159,55 +1166,111 @@ async function loadDrivePhotos() {
 
 function showDriveImageGrid(files) {
   const grid = document.getElementById('drivePhotoGrid');
-  grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;margin-bottom:1rem';
-  grid.innerHTML = '<div style="grid-column:1/-1;font-size:0.78rem;color:var(--dim);margin-bottom:0.3rem">' + files.length + '枚の写真 — タップでチームに割り当て（優勝→準優勝→3位の順）</div>';
+  grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:4px;margin-bottom:0.8rem';
+  // Group by folder
+  const folders = {};
+  files.forEach(f => { const k = f.folder || 'ルート'; if (!folders[k]) folders[k] = []; folders[k].push(f); });
+  grid.innerHTML = '<div style="grid-column:1/-1;font-size:0.78rem;color:var(--dim)">' + files.length + '枚の写真（' + Object.keys(folders).length + 'フォルダ）</div>';
 
-  let assignIdx = 0;
+  for (const [folderName, imgs] of Object.entries(folders)) {
+    const header = document.createElement('div');
+    header.style.cssText = 'grid-column:1/-1;font-size:0.72rem;color:var(--accent);margin-top:0.3rem';
+    header.textContent = '📁 ' + folderName + ' (' + imgs.length + ')';
+    grid.appendChild(header);
+    imgs.forEach(f => {
+      const thumb = document.createElement('div');
+      thumb.style.cssText = 'position:relative;aspect-ratio:1;border-radius:4px;overflow:hidden;border:1px solid var(--border)';
+      const img = document.createElement('img');
+      img.src = `https://lh3.googleusercontent.com/d/${f.id}=s150`;
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block';
+      img.loading = 'lazy';
+      thumb.appendChild(img);
+      grid.appendChild(thumb);
+    });
+  }
+  // Show transfer button
+  document.getElementById('driveTransferBtn').style.display = '';
+}
 
-  files.forEach(f => {
-    const thumb = document.createElement('div');
-    thumb.style.cssText = 'position:relative;aspect-ratio:1;border-radius:6px;overflow:hidden;cursor:pointer;border:2px solid var(--border)';
-    const img = document.createElement('img');
-    img.src = `https://lh3.googleusercontent.com/d/${f.id}=s200`;
-    img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block';
-    img.alt = f.name;
-    thumb.appendChild(img);
+async function transferDriveToWP() {
+  if (driveAllImages.length === 0) { showToast('先にDriveから読み込んでください'); return; }
+  if (!selectedEvent) { showToast('大会を選択してください'); return; }
 
-    const label = document.createElement('div');
-    label.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);color:#fff;font-size:0.6rem;padding:2px 4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis';
-    label.textContent = f.folder ? f.folder : f.name;
-    thumb.appendChild(label);
+  const btn = document.getElementById('driveTransferBtn');
+  btn.disabled = true;
+  const progress = document.getElementById('driveTransferProgress');
+  progress.style.display = 'block';
+  const total = driveAllImages.length;
+  let done = 0, failed = 0;
+  const uploadedIds = [];
 
-    thumb.onclick = async () => {
-      if (assignIdx >= podiumTeams.length) { showToast('全チーム割り当て済み'); return; }
-      const teamIdx = assignIdx;
-      const teamName = podiumTeams[teamIdx].name;
-      thumb.style.border = '2px solid var(--ok)';
-      thumb.style.opacity = '0.6';
-      const badge = document.createElement('div');
-      badge.style.cssText = 'position:absolute;top:2px;right:2px;background:var(--ok);color:#fff;font-size:0.6rem;padding:1px 5px;border-radius:8px';
-      badge.textContent = podiumTeams[teamIdx].rank;
-      thumb.appendChild(badge);
-      thumb.onclick = null;
-      assignIdx++;
+  const updateProgress = () => {
+    btn.textContent = `転送中... ${done}/${total}`;
+    progress.innerHTML = `<div style="background:var(--border);border-radius:4px;height:6px;overflow:hidden"><div style="background:var(--ok);height:100%;width:${(done/total*100).toFixed(1)}%;transition:width 0.3s"></div></div>` +
+      `<div style="font-size:0.72rem;color:var(--dim);margin-top:0.3rem">${done}/${total} 完了` + (failed ? ` / ${failed} 失敗` : '') + `</div>`;
+  };
+  updateProgress();
 
-      log(teamName + ': Drive画像を取得中... (' + f.name + ')', 'info');
+  try {
+    // Create FileBird folder structure: EventName / (subfolder names)
+    await ensureEventFolder();
+    if (!eventFolderId) throw new Error('FileBirdフォルダ作成失敗');
 
-      try {
-        const blob = await driveImageToBlob(`https://lh3.googleusercontent.com/d/${f.id}=s1200`, f.name);
-        const file = new File([blob], f.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' });
-        setPhoto(teamIdx, file);
-        log(teamName + ': Drive → ローカル取得成功', 'ok');
-      } catch (canvasErr) {
-        log(teamName + ': Canvas失敗 → URL直接参照 (' + canvasErr.message + ')', 'info');
-        podiumTeams[teamIdx].photoUrl = `https://lh3.googleusercontent.com/d/${f.id}=s1200`;
-        podiumTeams[teamIdx].driveUrl = true;
-        podiumTeams[teamIdx].changed = true;
-        renderPhotoGrid();
+    // Get unique Drive subfolder names and create FileBird subfolders
+    const folderMap = {}; // driveFolderName → fileBirdFolderId
+    const uniqueFolders = [...new Set(driveAllImages.map(f => f.folder).filter(Boolean))];
+    for (const fname of uniqueFolders) {
+      // Use last part of path for FileBird folder name
+      const shortName = fname.split('/').pop();
+      folderMap[fname] = await getOrCreateFolder(shortName, eventFolderId);
+    }
+
+    log('Drive→WP転送開始: ' + total + '枚', 'info');
+
+    // Transfer images (3 concurrent)
+    const queue = [...driveAllImages];
+    const concurrent = 3;
+    const worker = async () => {
+      while (queue.length > 0) {
+        const f = queue.shift();
+        try {
+          const blob = await driveImageToBlob(`https://lh3.googleusercontent.com/d/${f.id}=s2048`, f.name);
+          const formData = new FormData();
+          const fileName = f.name.replace(/\.[^.]+$/, '') + '.jpg';
+          formData.append('file', new File([blob], fileName, { type: 'image/jpeg' }));
+          formData.append('title', f.name.replace(/\.[^.]+$/, ''));
+          const res = await fetch(WP + '/wp-json/wp/v2/media', {
+            method: 'POST',
+            headers: { 'Authorization': 'Basic ' + wpAuth },
+            body: formData
+          });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const media = await res.json();
+          uploadedIds.push(media.id);
+          // Assign to FileBird subfolder
+          const fbFolder = f.folder ? folderMap[f.folder] : eventFolderId;
+          if (fbFolder) await assignToFolder(fbFolder, [media.id]);
+        } catch (e) {
+          failed++;
+          log('転送失敗: ' + f.name + ' (' + e.message + ')', 'err');
+        }
+        done++;
+        updateProgress();
       }
     };
-    grid.appendChild(thumb);
-  });
+    await Promise.all(Array.from({ length: concurrent }, () => worker()));
+
+    log('Drive→WP転送完了: ' + uploadedIds.length + '/' + total + '枚', 'ok');
+    showToast(uploadedIds.length + '枚をWPメディアに転送しました！');
+    progress.innerHTML += '<div style="color:var(--ok);font-size:0.78rem;margin-top:0.4rem">転送完了！表彰台写真・ギャラリーはWPメディアから選択できます。</div>';
+
+  } catch (e) {
+    log('転送エラー: ' + e.message, 'err');
+    showToast('転送に失敗: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'WPメディアに一括転送';
+  }
 }
 
 function driveImageToBlob(url, name) {
