@@ -106,7 +106,7 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
 .eyecatch-box {
   width: 140px; height: 100px; border: 2px dashed var(--border); border-radius: 8px;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
-  overflow: hidden; margin-top: 0.3rem; transition: border-color 0.15s;
+  overflow: hidden; margin-top: 0.3rem; transition: border-color 0.15s; position: relative;
 }
 .eyecatch-box:hover { border-color: var(--accent); }
 .eyecatch-box img { width: 100%; height: 100%; object-fit: cover; }
@@ -194,19 +194,17 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
               <input type="url" id="newEventTicketUrl" placeholder="https://xxx.peatix.com/view">
             </div>
           </div>
-          <div style="display:flex;flex-direction:column;gap:0.5rem">
-            <div style="text-align:center">
-              <label>アイキャッチ</label>
-              <div class="eyecatch-box" id="newEventEyecatch" onclick="openMediaPicker(-1,'eyecatch-newEvent')">
-                <div class="drop-hint">クリックして選択</div>
-              </div>
+          <div style="min-width:140px;text-align:center">
+            <label>アイキャッチ</label>
+            <div class="eyecatch-box" id="newEventEyecatch"
+              ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+              ondragleave="this.style.borderColor=''"
+              ondrop="event.preventDefault();this.style.borderColor='';uploadEyecatch('newEvent',event.dataTransfer.files[0])">
+              <input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer"
+                onchange="uploadEyecatch('newEvent',this.files[0])">
+              <div class="drop-hint">D&D or クリック<br>でアップロード</div>
             </div>
-            <div style="text-align:center">
-              <label>チラシ画像</label>
-              <div class="eyecatch-box" id="newEventFlyer" onclick="openMediaPicker(-1,'flyer-newEvent')">
-                <div class="drop-hint">クリックして選択</div>
-              </div>
-            </div>
+            <div style="font-size:0.7rem;color:var(--dim);margin-top:0.3rem;cursor:pointer" onclick="openMediaPicker(-1,'eyecatch-newEvent')">WPメディアから選択</div>
           </div>
         </div>
         <div class="btn-row">
@@ -267,9 +265,15 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
       </div>
       <div style="min-width:140px;text-align:center">
         <label>アイキャッチ</label>
-        <div class="eyecatch-box" id="resultEyecatch" onclick="openMediaPicker(-1,'eyecatch-result')">
-          <div class="drop-hint">クリックして選択</div>
+        <div class="eyecatch-box" id="resultEyecatch"
+          ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+          ondragleave="this.style.borderColor=''"
+          ondrop="event.preventDefault();this.style.borderColor='';uploadEyecatch('result',event.dataTransfer.files[0])">
+          <input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer"
+            onchange="uploadEyecatch('result',this.files[0])">
+          <div class="drop-hint">D&D or クリック<br>でアップロード</div>
         </div>
+        <div style="font-size:0.7rem;color:var(--dim);margin-top:0.3rem;cursor:pointer" onclick="openMediaPicker(-1,'eyecatch-result')">WPメディアから選択</div>
       </div>
     </div>
   </div>
@@ -319,9 +323,15 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
       </div>
       <div style="min-width:140px;text-align:center">
         <label>アイキャッチ</label>
-        <div class="eyecatch-box" id="galleryEyecatch" onclick="openMediaPicker(-1,'eyecatch-gallery')">
-          <div class="drop-hint">クリックして選択</div>
+        <div class="eyecatch-box" id="galleryEyecatch"
+          ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+          ondragleave="this.style.borderColor=''"
+          ondrop="event.preventDefault();this.style.borderColor='';uploadEyecatch('gallery',event.dataTransfer.files[0])">
+          <input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer"
+            onchange="uploadEyecatch('gallery',this.files[0])">
+          <div class="drop-hint">D&D or クリック<br>でアップロード</div>
         </div>
+        <div style="font-size:0.7rem;color:var(--dim);margin-top:0.3rem;cursor:pointer" onclick="openMediaPicker(-1,'eyecatch-gallery')">WPメディアから選択</div>
       </div>
     </div>
   </div>
@@ -485,14 +495,14 @@ async function loadEvents() {
 }
 
 // ===== Create new event page =====
-function buildEventContent(slug, flyerImgHtml, ticketUrl) {
+function buildEventContent(slug, eyecatchImgHtml, ticketUrl) {
   const baseUrl = WP + '/nice_molkky_japan_details/' + slug;
 
   let content = '';
 
-  // Flyer image
-  if (flyerImgHtml) {
-    content += flyerImgHtml + '\n\n';
+  // Eyecatch image at top of page
+  if (eyecatchImgHtml) {
+    content += eyecatchImgHtml + '\n\n';
   }
 
   // 大会関連ページ
@@ -616,15 +626,13 @@ async function createEventPage() {
   const eyecatchBox = document.getElementById('newEventEyecatch');
   const mediaId = eyecatchBox.dataset.mediaId ? parseInt(eyecatchBox.dataset.mediaId) : 0;
 
-  const flyerBox = document.getElementById('newEventFlyer');
-  const flyerId = flyerBox.dataset.mediaId ? parseInt(flyerBox.dataset.mediaId) : 0;
-  const flyerUrl = flyerBox.dataset.mediaUrl || '';
-  const flyerImgHtml = flyerId
-    ? `<!-- wp:image {"id":${flyerId},"width":"345px","height":"auto","sizeSlug":"large","linkDestination":"none"} -->\n<figure class="wp-block-image size-large is-resized"><img src="${flyerUrl}" alt="" class="wp-image-${flyerId}" style="width:345px;height:auto"/></figure>\n<!-- /wp:image -->`
+  const eyecatchUrl = eyecatchBox.dataset.mediaUrl || '';
+  const eyecatchImgHtml = mediaId && eyecatchUrl
+    ? `<!-- wp:image {"id":${mediaId},"width":"345px","height":"auto","sizeSlug":"large","linkDestination":"none"} -->\n<figure class="wp-block-image size-large is-resized"><img src="${eyecatchUrl}" alt="" class="wp-image-${mediaId}" style="width:345px;height:auto"/></figure>\n<!-- /wp:image -->`
     : '';
 
   const ticketUrl = document.getElementById('newEventTicketUrl').value.trim();
-  const content = buildEventContent(slug, flyerImgHtml, ticketUrl);
+  const content = buildEventContent(slug, eyecatchImgHtml, ticketUrl);
 
   const body = {
     title: title,
@@ -654,11 +662,9 @@ async function createEventPage() {
     document.getElementById('newEventTitle').value = '';
     document.getElementById('newEventSlug').value = '';
     document.getElementById('newEventTicketUrl').value = '';
-    eyecatchBox.innerHTML = '<div class="drop-hint">クリックして選択</div>';
+    setEyecatchDisplay('newEvent', '');
     delete eyecatchBox.dataset.mediaId;
-    flyerBox.innerHTML = '<div class="drop-hint">クリックして選択</div>';
-    delete flyerBox.dataset.mediaId;
-    delete flyerBox.dataset.mediaUrl;
+    delete eyecatchBox.dataset.mediaUrl;
   } catch (e) {
     log('大会ページ作成失敗: ' + e.message, 'err');
     showToast('作成に失敗しました');
@@ -884,10 +890,8 @@ function filterMedia() {
     div.onclick = () => {
       if (pickerMode === 'podium') {
         setPhotoFromMedia(pickerTargetIdx, m.source_url);
-      } else if (pickerMode.startsWith('flyer-')) {
-        setFlyer(pickerMode.replace('flyer-', ''), m.id, m.source_url);
       } else {
-        setEyecatch(pickerMode.replace('eyecatch-', ''), m.id, thumb);
+        setEyecatch(pickerMode.replace('eyecatch-', ''), m.id, thumb, m.source_url);
       }
       closeMediaPicker();
     };
@@ -896,20 +900,40 @@ function filterMedia() {
 }
 
 // ===== Eyecatch =====
-function setEyecatch(type, mediaId, thumbUrl) {
+function setEyecatchDisplay(type, thumbUrl) {
   const box = document.getElementById(type + 'Eyecatch');
-  box.innerHTML = '<img src="' + thumbUrl + '">';
+  box.innerHTML = (thumbUrl ? '<img src="' + thumbUrl + '">' : '<div class="drop-hint">D&D or クリック<br>でアップロード</div>') +
+    '<input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer" onchange="uploadEyecatch(\'' + type + '\',this.files[0])">';
+}
+
+function setEyecatch(type, mediaId, thumbUrl, fullUrl) {
+  const box = document.getElementById(type + 'Eyecatch');
+  setEyecatchDisplay(type, thumbUrl);
   box.dataset.mediaId = mediaId;
+  box.dataset.mediaUrl = fullUrl || thumbUrl;
   log(type + 'アイキャッチを選択 (ID: ' + mediaId + ')', 'info');
 }
 
-// ===== Flyer image =====
-function setFlyer(type, mediaId, fullUrl) {
-  const box = document.getElementById(type + 'Flyer');
-  box.innerHTML = '<img src="' + fullUrl + '">';
-  box.dataset.mediaId = mediaId;
-  box.dataset.mediaUrl = fullUrl;
-  log('チラシ画像を選択 (ID: ' + mediaId + ')', 'info');
+async function uploadEyecatch(type, file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  if (!wpAuth) { showToast('先にWP接続してください'); return; }
+  const box = document.getElementById(type + 'Eyecatch');
+  box.innerHTML = '<div class="drop-hint" style="font-size:0.65rem">アップロード中...</div>';
+  try {
+    const fd = new FormData();
+    fd.append('file', file, file.name);
+    const media = await wpFetch('/wp-json/wp/v2/media', { method: 'POST', body: fd, headers: {} });
+    const thumb = media.media_details?.sizes?.thumbnail?.source_url || media.source_url;
+    setEyecatchDisplay(type, thumb);
+    box.dataset.mediaId = media.id;
+    box.dataset.mediaUrl = media.source_url;
+    log(type + 'アイキャッチをアップロード (ID: ' + media.id + ')', 'ok');
+    showToast('アイキャッチをアップロードしました');
+  } catch (e) {
+    setEyecatchDisplay(type, '');
+    log('アイキャッチアップロード失敗: ' + e.message, 'err');
+    showToast('アップロードに失敗しました');
+  }
 }
 
 // ===== Page meta save (title, slug, featured image) =====
@@ -956,9 +980,10 @@ function loadPageMeta(type, page) {
     // Load featured image thumbnail
     wpFetch('/wp-json/wp/v2/media/' + page.featured_media).then(m => {
       const thumb = m.media_details?.sizes?.thumbnail?.source_url || m.source_url;
+      setEyecatchDisplay(type, thumb);
       const box = document.getElementById(type + 'Eyecatch');
-      box.innerHTML = '<img src="' + thumb + '">';
       box.dataset.mediaId = page.featured_media;
+      box.dataset.mediaUrl = m.source_url;
     }).catch(() => {});
   }
 }
@@ -1071,12 +1096,12 @@ async function updateResultPhotos() {
   const page = await wpFetch('/wp-json/wp/v2/pages/' + resultPage.id + '?context=edit');
   let content = page.content.raw;
   content = content.replace(
-    /(<div class="podium-item \w+">\s*<div class="rank-icon">[^<]*<\/div>\s*)<div class="podium-photo"[^>]*>(?:<img[^>]*\/?>|[^<]*)<\/div>([\s\S]*?<div class="team-name">[\s\S]*?<\/div>)/g,
+    /(<div class="podium-item \w+">\s*<div class="rank-icon">[^<]*<\/div>\s*)<div class="podium-photo"[^>]*>(?:<a[^>]*>)?(?:<img[^>]*\/?>|[^<]*)(?:<\/a>)?<\/div>([\s\S]*?<div class="team-name">[\s\S]*?<\/div>)/g,
     (match, before, after) => {
       for (const team of podiumTeams) {
         if (!team.photoUrl || !after.includes(team.name)) continue;
         log(team.name + ': ページ反映', 'ok');
-        return before + '<div class="podium-photo"><img src="' + team.photoUrl + '" alt="' + team.rank + ' ' + team.name + '" style="width:100%;height:100%;object-fit:cover;border-radius:8px;"></div>' + after;
+        return before + '<div class="podium-photo"><a href="' + team.photoUrl + '"><img src="' + team.photoUrl + '" alt="' + team.rank + ' ' + team.name + '" style="width:100%;height:100%;object-fit:cover;border-radius:8px;"></a></div>' + after;
       }
       return match;
     }
