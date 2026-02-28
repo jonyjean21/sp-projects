@@ -1163,6 +1163,14 @@ function buildResultContent(eventTitle, top4, allTeams, pmTeams, teamInfoMap) {
     html += `<!-- wp:paragraph -->\n<p>本大会に参加した全${allTeams.length}チームをご紹介します。</p>\n<!-- /wp:paragraph -->\n\n`;
     html += `<!-- wp:html -->\n${buildTeamCardsHTML(allTeams, teamInfoMap)}\n<!-- /wp:html -->\n\n`;
   }
+  // Gallery link (dynamically resolved from event page URL)
+  if (selectedEvent) {
+    const eventUrl = selectedEvent.link.replace(/\/$/, '');
+    const galleryUrl = eventUrl + '/gallery/';
+    html += `<!-- wp:heading {"level":3} -->\n<h3 class="wp-block-heading">\uD83D\uDCF8 大会ギャラリー</h3>\n<!-- /wp:heading -->\n\n`;
+    html += `<!-- wp:paragraph -->\n<p>${galleryUrl}</p>\n<!-- /wp:paragraph -->\n\n`;
+    html += `<!-- wp:paragraph -->\n<p>大会の様子は<a href="${galleryUrl}">ギャラリーページ</a>でご覧いただけます。</p>\n<!-- /wp:paragraph -->\n\n`;
+  }
   return html;
 }
 
