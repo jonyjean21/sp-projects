@@ -1764,46 +1764,34 @@ async function uploadGalleryPhotos() {
   loadGalleryMedia();
 }
 
-// ===== Gallery: get attachment IDs from FileBird folder =====
-async function fbGetAttachmentIds(folderId) {
-  // FileBird stores folder→attachment mapping; try multiple API approaches
-  try {
-    // Approach 1: FileBird REST API folder-content
-    const res = await fetch(WP + '/wp-json/filebird/public/v1/folder-content/' + folderId, {
-      headers: { 'Authorization': 'Basic ' + wpAuth }
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data)) return data.map(d => typeof d === 'number' ? d : d.id);
-      if (data.attachment_ids) return data.attachment_ids;
-      if (data.items) return data.items.map(d => typeof d === 'number' ? d : d.id);
-    }
-  } catch (e) {}
+// ===== Gallery: discover correct folder filter parameter =====
+let folderFilterParam = null; // cached once discovered
 
-  try {
-    // Approach 2: FileBird v1 API
-    const res = await fetch(WP + '/wp-json/filebird/v1/folder-content/' + folderId, {
-      headers: { 'Authorization': 'Basic ' + wpAuth }
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data)) return data.map(d => typeof d === 'number' ? d : d.id);
-    }
-  } catch (e) {}
+async function discoverFolderFilter(testFolderId) {
+  // Get total media count (no filter)
+  const baseRes = await fetch(WP + '/wp-json/wp/v2/media?per_page=1', {
+    headers: { 'Authorization': 'Basic ' + wpAuth }
+  });
+  const totalAll = parseInt(baseRes.headers.get('X-WP-Total') || '0');
+  log('\u5168\u30E1\u30C7\u30A3\u30A2: ' + totalAll + '\u4EF6', 'info');
 
-  try {
-    // Approach 3: FileBird browser-side API (used by plugin's own JS)
-    const res = await fetch(WP + '/wp-json/filebird/v1/get-attachment?folder_id=' + folderId, {
-      headers: { 'Authorization': 'Basic ' + wpAuth }
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data)) return data;
-      if (data.ids) return data.ids;
-    }
-  } catch (e) {}
-
-  return null; // No approach worked
+  // Try different parameter names
+  const candidates = ['folder', 'nt_wmc_folder', 'media_folder', 'fbv', 'in_folder', 'filebird_folder', 'folder_id'];
+  for (const param of candidates) {
+    try {
+      const res = await fetch(WP + '/wp-json/wp/v2/media?per_page=1&' + param + '=' + testFolderId, {
+        headers: { 'Authorization': 'Basic ' + wpAuth }
+      });
+      if (!res.ok) continue;
+      const filtered = parseInt(res.headers.get('X-WP-Total') || '0');
+      if (filtered < totalAll && filtered > 0) {
+        log('\u30D5\u30A3\u30EB\u30BF\u767A\u898B: ?' + param + '=' + testFolderId + ' \u2192 ' + filtered + '\u4EF6', 'ok');
+        return param;
+      }
+    } catch (e) {}
+  }
+  log('\u6A19\u6E96\u30D1\u30E9\u30E1\u30FC\u30BF\u3067\u306F\u30D5\u30A3\u30EB\u30BF\u4E0D\u53EF', 'info');
+  return null;
 }
 
 // ===== Gallery: load existing media =====
@@ -1813,20 +1801,6 @@ async function loadGalleryMedia() {
   if (!eventFolderId) { log('FileBird\u30D5\u30A9\u30EB\u30C0\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093', 'err'); return; }
 
   log('WP\u30E1\u30C7\u30A3\u30A2\u8AAD\u307F\u8FBC\u307F\u4E2D...', 'info');
-
-  // Debug: check FileBird folder response and media fields
-  try {
-    const fbRaw = await fbFetch('get-folders');
-    const firstFolder = fbRaw.tree ? fbRaw.tree[0] : null;
-    if (firstFolder) log('FB folder keys: ' + Object.keys(firstFolder).join(', '), 'info');
-    const sampleMedia = await wpFetch('/wp-json/wp/v2/media?per_page=1');
-    if (sampleMedia[0]) log('Media keys: ' + Object.keys(sampleMedia[0]).join(', '), 'info');
-    // Check for FileBird taxonomy
-    const taxonomies = await wpFetch('/wp-json/wp/v2/taxonomies');
-    const fbTax = Object.keys(taxonomies).filter(k => k.includes('folder') || k.includes('fbv') || k.includes('nt_wmc'));
-    if (fbTax.length > 0) log('FileBird taxonomy found: ' + fbTax.join(', '), 'ok');
-    else log('FileBird taxonomy: none found. Keys: ' + Object.keys(taxonomies).join(', '), 'info');
-  } catch (e) { log('Debug info error: ' + e.message, 'info'); }
 
   const subFolders = fbFolders.filter(f => f.parent === eventFolderId);
   const allFolderIds = [eventFolderId, ...subFolders.map(f => f.id)];
@@ -1849,51 +1823,92 @@ async function loadGalleryMedia() {
     summary.innerHTML = html;
   }
 
-  // Strategy 1: Use saved transfer mapping from localStorage
+  // Strategy 1: Saved transfer mapping
   const savedMap = JSON.parse(localStorage.getItem('naimol_transfer_map') || '{}');
-  const hasSavedData = allFolderIds.some(fid => savedMap[fid] && savedMap[fid].length > 0);
-
-  if (hasSavedData) {
+  if (allFolderIds.some(fid => savedMap[fid] && savedMap[fid].length > 0)) {
     log('\u4FDD\u5B58\u6E08\u307F\u30DE\u30C3\u30D4\u30F3\u30B0\u3092\u4F7F\u7528', 'info');
     for (let i = 0; i < allFolderIds.length; i++) {
       const fid = allFolderIds[i];
-      const fname = galleryFolderNames[fid] || fid;
       const ids = savedMap[fid] || [];
       if (ids.length === 0) continue;
-      updateSummary('\u{1F50D} ' + fname + ' \u3092\u8AAD\u307F\u8FBC\u307F\u4E2D... (' + (i + 1) + '/' + allFolderIds.length + ')');
+      updateSummary('\u{1F50D} ' + (galleryFolderNames[fid] || fid) + ' \u3092\u8AAD\u307F\u8FBC\u307F\u4E2D... (' + (i + 1) + '/' + allFolderIds.length + ')');
       const items = await fetchMediaByIds(ids);
       if (items.length > 0) {
         galleryFolderMedia[fid] = items;
         galleryMediaIds = galleryMediaIds.concat(items);
       }
     }
-  } else {
-    // Strategy 2: Try FileBird API to get attachment IDs per folder
-    log('FileBird API\u3067\u30D5\u30A9\u30EB\u30C0\u5185\u5BB9\u3092\u53D6\u5F97\u4E2D...', 'info');
-    let fbApiWorked = false;
+    updateSummary(null);
+    log('WP\u30E1\u30C7\u30A3\u30A2: ' + galleryMediaIds.length + '\u679A\uFF08' + Object.keys(galleryFolderMedia).length + '\u30D5\u30A9\u30EB\u30C0\uFF09', 'ok');
+    if (galleryMediaIds.length > 0) document.getElementById('galCreateBtn').disabled = false;
+    return;
+  }
 
+  // Strategy 2: Auto-discover the correct WP REST API filter param for FileBird
+  // Pick a subfolder with likely few items to test
+  const testFid = subFolders.length > 0 ? subFolders[0].id : eventFolderId;
+  if (!folderFilterParam) {
+    updateSummary('\u{1F50D} FileBird\u30D5\u30A3\u30EB\u30BF\u3092\u691C\u51FA\u4E2D...');
+    folderFilterParam = await discoverFolderFilter(testFid);
+  }
+
+  if (folderFilterParam) {
+    // Filter works! Fetch each folder
     for (let i = 0; i < allFolderIds.length; i++) {
       const fid = allFolderIds[i];
       const fname = galleryFolderNames[fid] || fid;
       updateSummary('\u{1F50D} ' + fname + ' \u3092\u8AAD\u307F\u8FBC\u307F\u4E2D... (' + (i + 1) + '/' + allFolderIds.length + ')');
+      let media = [], page = 1;
+      while (true) {
+        const batch = await wpFetch('/wp-json/wp/v2/media?per_page=100&page=' + page + '&' + folderFilterParam + '=' + fid);
+        media = media.concat(batch);
+        if (batch.length < 100) break;
+        page++;
+      }
+      const imgs = media.filter(m => m.mime_type && m.mime_type.startsWith('image/'));
+      if (imgs.length > 0) {
+        galleryFolderMedia[fid] = imgs.map(m => ({
+          id: m.id, url: m.source_url,
+          thumb: m.media_details?.sizes?.medium?.source_url || m.source_url,
+          name: m.title.rendered
+        }));
+        galleryMediaIds = galleryMediaIds.concat(galleryFolderMedia[fid]);
+      }
+    }
+  } else {
+    // Strategy 3: No filter found. Fetch all media, try to match by FileBird REST routes
+    log('FileBird REST API\u3067\u30D5\u30A9\u30EB\u30C0\u5185\u5BB9\u3092\u691C\u7D22\u4E2D...', 'info');
 
-      const ids = await fbGetAttachmentIds(fid);
-      if (ids && ids.length > 0) {
-        fbApiWorked = true;
-        const items = await fetchMediaByIds(ids);
-        if (items.length > 0) {
-          galleryFolderMedia[fid] = items;
-          galleryMediaIds = galleryMediaIds.concat(items);
-        }
-      } else if (ids === null && i === 0) {
-        // First folder returned null = API doesn't work, skip rest
-        log('FileBird API\u304C\u5229\u7528\u4E0D\u53EF\u3002\u5168\u30E1\u30C7\u30A3\u30A2\u3092\u53D6\u5F97\u3057\u307E\u3059', 'info');
-        break;
+    // Try to discover available FileBird routes
+    let fbRoutes = [];
+    try {
+      const disc = await fetch(WP + '/wp-json/filebird/v1', { headers: { 'Authorization': 'Basic ' + wpAuth } });
+      if (disc.ok) {
+        const schema = await disc.json();
+        fbRoutes = Object.keys(schema.routes || {});
+        log('FileBird routes: ' + fbRoutes.join(', '), 'info');
+      }
+    } catch (e) {}
+
+    // Try POST-based folder-content endpoints
+    let foundMethod = false;
+    for (const route of fbRoutes) {
+      if (route.includes('attach') || route.includes('content') || route.includes('media')) {
+        const endpoint = route.replace('/wp-json/filebird/v1/', '').replace(/\(\?P<[^>]+>[^)]+\)/g, testFid);
+        try {
+          const r = await fetch(WP + '/wp-json/filebird/v1/' + endpoint, {
+            headers: { 'Authorization': 'Basic ' + wpAuth }
+          });
+          if (r.ok) {
+            const d = await r.json();
+            log('Route ' + endpoint + ': ' + JSON.stringify(d).substring(0, 200), 'info');
+          }
+        } catch (e) {}
       }
     }
 
-    // Strategy 3: Fallback - fetch all media as single group
-    if (!fbApiWorked) {
+    if (!foundMethod) {
+      // Final fallback: fetch all media
       updateSummary('\u{1F50D} \u5168\u30E1\u30C7\u30A3\u30A2\u3092\u8AAD\u307F\u8FBC\u307F\u4E2D...');
       let allMedia = [], page = 1;
       while (true) {
@@ -1911,7 +1926,7 @@ async function loadGalleryMedia() {
       if (items.length > 0) {
         galleryFolderMedia[eventFolderId] = items;
         galleryMediaIds = items;
-        log('\u203B \u30D5\u30A9\u30EB\u30C0\u5206\u985E\u306A\u3057\u3067\u5168\u753B\u50CF\u3092\u8AAD\u307F\u8FBC\u307F\u307E\u3057\u305F', 'info');
+        log('\u203B \u30D5\u30A9\u30EB\u30C0\u5206\u985E\u306A\u3057 / \u5168\u753B\u50CF' + items.length + '\u679A', 'info');
       }
     }
   }
