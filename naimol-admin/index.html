@@ -1933,13 +1933,26 @@ function buildGallerySection(folderName, mediaItems) {
       '<figure class="wp-block-image size-large"><a href="' + m.url + '"><img src="' + m.url + '" alt="" class="wp-image-' + m.id + '"/></a></figure>\n' +
       '<!-- /wp:image -->\n\n';
   }
-  return '<!-- wp:heading {"level":3} -->\n' +
-    '<h3 class="wp-block-heading">' + folderName + '</h3>\n' +
-    '<!-- /wp:heading -->\n\n' +
-    '<!-- wp:gallery {"linkTo":"media","sizeSlug":"large"} -->\n' +
+
+  const gallery = '<!-- wp:gallery {"linkTo":"media","sizeSlug":"large"} -->\n' +
     '<figure class="wp-block-gallery has-nested-images columns-default is-cropped">' +
     images + '</figure>\n' +
-    '<!-- /wp:gallery -->\n\n';
+    '<!-- /wp:gallery -->';
+
+  const heading = '<!-- wp:heading {"level":3} -->\n' +
+    '<h3 class="wp-block-heading">' + folderName + '</h3>\n' +
+    '<!-- /wp:heading -->\n\n';
+
+  if (mediaItems.length >= 7) {
+    // Collapsible section
+    return heading +
+      '<!-- wp:details -->\n' +
+      '<details class="wp-block-details"><summary>\u5199\u771F\u3092\u8868\u793A</summary>\n\n' +
+      gallery + '\n\n' +
+      '</details>\n' +
+      '<!-- /wp:details -->\n\n';
+  }
+  return heading + gallery + '\n\n';
 }
 
 async function createGalleryPage() {
