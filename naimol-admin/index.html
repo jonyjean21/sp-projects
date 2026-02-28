@@ -819,6 +819,7 @@ function loadSettings() {
 let parsedAllTeams = [];
 let parsedPMTeams = [];
 let parsedTop4 = [];
+let parsedTeamInfo = {};
 
 function parseCSV(text) {
   const rows = [];
@@ -944,6 +945,114 @@ function parsePMSheet(csvText) {
   return pms;
 }
 
+function parseTeamInfoSheet(csvText) {
+  const rows = parseCSV(csvText);
+  // Find header row: look for "チーム名" or "メンバー"
+  let headerIdx = -1, colMap = {};
+  for (let i = 0; i < Math.min(rows.length, 10); i++) {
+    const cells = rows[i].map(c => c.trim());
+    const hasTeam = cells.some(c => c.includes('チーム'));
+    const hasMember = cells.some(c => c.includes('メンバー') || c.includes('選手'));
+    if (hasTeam && hasMember) {
+      headerIdx = i;
+      cells.forEach((c, j) => {
+        if (c.includes('No') || c.includes('番号')) colMap.num = j;
+        if (c.includes('チーム')) colMap.name = j;
+        if (c.includes('メンバー') || c.includes('選手')) colMap.members = j;
+        if (c.includes('拠点') || c.includes('活動')) colMap.kiten = j;
+        if (c.includes('つながり') || c.includes('関係')) colMap.tsunagari = j;
+        if (c.includes('始めた') || c.includes('開始')) colMap.hajimeta = j;
+        if (c.includes('SNS') || c.includes('sns')) colMap.sns = j;
+        if (c.includes('ひとこと') || c.includes('一言') || c.includes('意気込み')) colMap.hitokoto = j;
+      });
+      break;
+    }
+  }
+  if (headerIdx === -1) {
+    log('チーム情報ヘッダ未検出 → フォールバック', 'info');
+    colMap = { num:0, name:1, members:2, kiten:3, tsunagari:4, hajimeta:5, sns:6, hitokoto:7 };
+    headerIdx = 0;
+  }
+  log('チーム情報ヘッダ: row=' + headerIdx + ' colMap=' + JSON.stringify(colMap), 'info');
+  // Find how many member columns (consecutive columns after members start)
+  const memberStart = colMap.members || 2;
+  // Detect member columns: they are between name column and kiten/tsunagari column
+  const nextInfoCol = Math.min(
+    colMap.kiten !== undefined ? colMap.kiten : 99,
+    colMap.tsunagari !== undefined ? colMap.tsunagari : 99,
+    colMap.hajimeta !== undefined ? colMap.hajimeta : 99
+  );
+  const memberEnd = nextInfoCol > memberStart ? nextInfoCol : memberStart + 4;
+
+  const teamMap = {};
+  for (let i = headerIdx + 1; i < rows.length; i++) {
+    const row = rows[i];
+    const rawName = (row[colMap.name] || '').trim();
+    if (!rawName) continue;
+    const name = rawName.replace(/^\d+[_＿]/, '');
+    const members = [];
+    for (let j = memberStart; j < memberEnd; j++) {
+      const m = (row[j] || '').trim();
+      if (m && m !== '-') members.push(m);
+    }
+    teamMap[name] = {
+      name,
+      members,
+      kiten: (row[colMap.kiten] || '').trim(),
+      tsunagari: (row[colMap.tsunagari] || '').trim(),
+      sns: (row[colMap.sns] || '').trim(),
+      hitokoto: (row[colMap.hitokoto] || '').trim()
+    };
+  }
+  return teamMap;
+}
+
+function buildTeamCardsHTML(allTeams, teamInfoMap) {
+  const SHOW_COUNT = 10;
+
+  function buildCard(t) {
+    const info = teamInfoMap[t.name] || {};
+    const rank = t.rank;
+    const total = t.total || '0';
+    // Rank badge color
+    let badgeBg, badgeColor;
+    if (rank <= 1) { badgeBg = '#FFD700'; badgeColor = '#7a6200'; }
+    else if (rank <= 2) { badgeBg = '#C0C0C0'; badgeColor = '#555'; }
+    else if (rank <= 4) { badgeBg = '#CD7F32'; badgeColor = '#fff'; }
+    else { badgeBg = '#f0f0f0'; badgeColor = '#666'; }
+
+    let card = `<div style="background:#fff;border-radius:10px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,0.08);border:1px solid #f0f0f0">`;
+    card += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">` +
+      `<span style="background:${badgeBg};color:${badgeColor};font-size:0.75rem;font-weight:bold;padding:2px 8px;border-radius:10px;min-width:32px;text-align:center">${rank}位</span>` +
+      `<span style="font-weight:bold;font-size:1rem;flex:1">${t.name}</span>` +
+      `<span style="color:#d4380d;font-weight:bold;font-size:0.9rem">${Number(String(total).replace(/,/g,'')).toLocaleString()}pt</span></div>`;
+    const members = (info.members || []).filter(m => m && m !== '-');
+    if (members.length) card += `<div style="font-size:0.85rem;color:#555;margin-bottom:4px">\uD83D\uDC65 ${members.join('\u30FB')}</div>`;
+    const infoParts = [];
+    if (info.kiten) infoParts.push('\uD83D\uDCCD ' + info.kiten);
+    if (info.tsunagari) infoParts.push('\uD83E\uDD1D ' + info.tsunagari);
+    if (infoParts.length) card += `<div style="font-size:0.8rem;color:#888;margin-bottom:4px">${infoParts.join(' ｜ ')}</div>`;
+    if (info.hitokoto) card += `<div style="font-size:0.85rem;color:#666;font-style:italic;margin-top:4px">\uD83D\uDCAC ${info.hitokoto}</div>`;
+    const sns = info.sns && info.sns !== 'なし' ? info.sns : '';
+    if (sns) {
+      if (sns.startsWith('http')) card += `<div style="font-size:0.8rem;margin-top:4px"><a href="${sns}" target="_blank" rel="noopener" style="color:#6366f1">\uD83D\uDD17 SNS</a></div>`;
+      else card += `<div style="font-size:0.8rem;color:#888;margin-top:4px">\uD83D\uDD17 ${sns}</div>`;
+    }
+    card += '</div>';
+    return card;
+  }
+
+  const cards = allTeams.map(buildCard);
+  if (cards.length <= SHOW_COUNT) {
+    return `<div style="display:grid;gap:10px;max-width:520px;margin:0 auto">\n${cards.join('\n')}\n</div>`;
+  }
+  const visible = cards.slice(0, SHOW_COUNT);
+  const rest = cards.slice(SHOW_COUNT);
+  return `<div style="display:grid;gap:10px;max-width:520px;margin:0 auto">\n${visible.join('\n')}\n</div>` +
+    `<details style="max-width:520px;margin:0.5rem auto"><summary style="cursor:pointer;color:#6366f1;font-size:0.9rem;padding:0.5rem 0;text-align:center">すべてのチームを表示（残り${rest.length}チーム）</summary>` +
+    `<div style="display:grid;gap:10px;margin-top:8px">\n${rest.join('\n')}\n</div></details>`;
+}
+
 // ===== Result page HTML builders =====
 function buildResultPodiumHTML(top4) {
   const RANKS = [
@@ -1032,7 +1141,7 @@ function buildPMListHTML(pms) {
     `<div style="margin:0.5rem 0">${buildList(rest)}</div></details>`;
 }
 
-function buildResultContent(eventTitle, top4, allTeams, pmTeams) {
+function buildResultContent(eventTitle, top4, allTeams, pmTeams, teamInfoMap) {
   let html = '';
   html += `<!-- wp:paragraph -->\n<p>${eventTitle}の大会結果をお知らせいたします。</p>\n<!-- /wp:paragraph -->\n\n`;
   html += `<!-- wp:heading {"level":3} -->\n<h3 class="wp-block-heading">大会成績</h3>\n<!-- /wp:heading -->\n\n`;
@@ -1045,6 +1154,11 @@ function buildResultContent(eventTitle, top4, allTeams, pmTeams) {
     html += `<!-- wp:heading {"level":3} -->\n<h3 class="wp-block-heading">パーフェクトモルック賞</h3>\n<!-- /wp:heading -->\n\n`;
     html += `<!-- wp:paragraph -->\n<p>5ターンで50点獲得（＝パーフェクトモルック）を達成したチームに贈られます。</p>\n<!-- /wp:paragraph -->\n\n`;
     html += `<!-- wp:html -->\n${buildPMListHTML(pmTeams)}\n<!-- /wp:html -->\n\n`;
+  }
+  if (teamInfoMap && Object.keys(teamInfoMap).length > 0) {
+    html += `<!-- wp:heading {"level":3} -->\n<h3 class="wp-block-heading">参加チーム紹介</h3>\n<!-- /wp:heading -->\n\n`;
+    html += `<!-- wp:paragraph -->\n<p>本大会に参加した全${allTeams.length}チームをご紹介します。</p>\n<!-- /wp:paragraph -->\n\n`;
+    html += `<!-- wp:html -->\n${buildTeamCardsHTML(allTeams, teamInfoMap)}\n<!-- /wp:html -->\n\n`;
   }
   return html;
 }
@@ -1084,6 +1198,20 @@ async function generateResult() {
       if (pmCSV) parsedPMTeams = parsePMSheet(pmCSV);
     } catch (e) { log('PMシートの読み込みスキップ: ' + e.message, 'info'); }
 
+    // Fetch team info sheet (may be in same or different spreadsheet)
+    parsedTeamInfo = {};
+    try {
+      const teamSheetUrl = document.getElementById('teamSheetUrl').value.trim();
+      const teamSheetId = teamSheetUrl ? (teamSheetUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) || [])[1] : sheetId;
+      if (teamSheetId) {
+        const teamCSV = await fetchGvizCSV(teamSheetId, 'チーム情報');
+        if (teamCSV) {
+          parsedTeamInfo = parseTeamInfoSheet(teamCSV);
+          log('チーム情報: ' + Object.keys(parsedTeamInfo).length + 'チーム', 'ok');
+        }
+      }
+    } catch (e) { log('チーム情報の読み込みスキップ: ' + e.message, 'info'); }
+
     // Show summary
     const summary = document.getElementById('resultGenSummary');
     summary.style.display = 'block';
@@ -1095,6 +1223,7 @@ async function generateResult() {
         <div>準優勝: <strong>${parsedTop4[1]?.name || '—'}</strong>（${parsedTop4[1]?.total || '—'}pt）</div>
         <div>3位: <strong>${parsedTop4.slice(2).map(t => t.name).join(' / ') || '—'}</strong></div>
         <div>PM賞: <strong>${parsedPMTeams.length}件</strong></div>
+        <div>チーム紹介: <strong>${Object.keys(parsedTeamInfo).length}件</strong></div>
       </div>`;
     const createBtn = document.getElementById('createResultBtn');
     createBtn.style.display = '';
@@ -1116,7 +1245,7 @@ async function createResultFromData() {
 
   try {
     const eventTitle = selectedEvent.title.rendered;
-    const content = buildResultContent(eventTitle, parsedTop4, parsedAllTeams, parsedPMTeams);
+    const content = buildResultContent(eventTitle, parsedTop4, parsedAllTeams, parsedPMTeams, parsedTeamInfo);
     const payload = resultPage
       ? JSON.stringify({ content })
       : JSON.stringify({ title: '大会結果', slug: 'result', status: 'draft', parent: selectedEvent.id, content });
