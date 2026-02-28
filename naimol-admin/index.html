@@ -947,22 +947,23 @@ function parsePMSheet(csvText) {
 
 function parseTeamInfoSheet(csvText) {
   const rows = parseCSV(csvText);
-  // Find header row: look for "チーム名" or "メンバー"
+  // Find header row: look for "チーム" + ("メンバー" or "モルックネーム" or "選手")
   let headerIdx = -1, colMap = {};
+  let memberCols = []; // member name columns (may be non-consecutive like [2,5,8,11])
   for (let i = 0; i < Math.min(rows.length, 10); i++) {
     const cells = rows[i].map(c => c.trim());
     const hasTeam = cells.some(c => c.includes('チーム'));
-    const hasMember = cells.some(c => c.includes('メンバー') || c.includes('選手'));
+    const hasMember = cells.some(c => c.includes('メンバー') || c.includes('選手') || c.includes('モルックネーム'));
     if (hasTeam && hasMember) {
       headerIdx = i;
       cells.forEach((c, j) => {
         if (c.includes('No') || c.includes('番号')) colMap.num = j;
-        if (c.includes('チーム')) colMap.name = j;
-        if (c.includes('メンバー') || c.includes('選手')) colMap.members = j;
+        if (c.includes('チーム') && !c.includes('拠点') && colMap.name === undefined) colMap.name = j;
+        if (c.includes('メンバー') || c.includes('選手') || c.includes('モルックネーム')) memberCols.push(j);
         if (c.includes('拠点') || c.includes('活動')) colMap.kiten = j;
         if (c.includes('つながり') || c.includes('関係')) colMap.tsunagari = j;
         if (c.includes('始めた') || c.includes('開始')) colMap.hajimeta = j;
-        if (c.includes('SNS') || c.includes('sns')) colMap.sns = j;
+        if ((c.includes('SNS') || c.includes('sns')) && !c.includes('きっかけ')) colMap.sns = j;
         if (c.includes('ひとこと') || c.includes('一言') || c.includes('意気込み')) colMap.hitokoto = j;
       });
       break;
@@ -970,19 +971,21 @@ function parseTeamInfoSheet(csvText) {
   }
   if (headerIdx === -1) {
     log('チーム情報ヘッダ未検出 → フォールバック', 'info');
-    colMap = { num:0, name:1, members:2, kiten:3, tsunagari:4, hajimeta:5, sns:6, hitokoto:7 };
+    colMap = { num:0, name:1, kiten:3, tsunagari:4, hajimeta:5, sns:6, hitokoto:7 };
+    memberCols = [2];
     headerIdx = 0;
   }
-  log('チーム情報ヘッダ: row=' + headerIdx + ' colMap=' + JSON.stringify(colMap), 'info');
-  // Find how many member columns (consecutive columns after members start)
-  const memberStart = colMap.members || 2;
-  // Detect member columns: they are between name column and kiten/tsunagari column
-  const nextInfoCol = Math.min(
-    colMap.kiten !== undefined ? colMap.kiten : 99,
-    colMap.tsunagari !== undefined ? colMap.tsunagari : 99,
-    colMap.hajimeta !== undefined ? colMap.hajimeta : 99
-  );
-  const memberEnd = nextInfoCol > memberStart ? nextInfoCol : memberStart + 4;
+  // If no member columns found, try range between name and next info col
+  if (memberCols.length === 0) {
+    const start = (colMap.name || 0) + 1;
+    const end = Math.min(
+      colMap.kiten !== undefined ? colMap.kiten : 99,
+      colMap.tsunagari !== undefined ? colMap.tsunagari : 99,
+      colMap.hajimeta !== undefined ? colMap.hajimeta : 99
+    );
+    for (let j = start; j < (end > start ? end : start + 4); j++) memberCols.push(j);
+  }
+  log('チーム情報ヘッダ: row=' + headerIdx + ' name=' + colMap.name + ' memberCols=' + JSON.stringify(memberCols), 'info');
 
   const teamMap = {};
   for (let i = headerIdx + 1; i < rows.length; i++) {
@@ -991,17 +994,17 @@ function parseTeamInfoSheet(csvText) {
     if (!rawName) continue;
     const name = rawName.replace(/^\d+[_＿]/, '');
     const members = [];
-    for (let j = memberStart; j < memberEnd; j++) {
+    for (const j of memberCols) {
       const m = (row[j] || '').trim();
       if (m && m !== '-') members.push(m);
     }
     teamMap[name] = {
       name,
       members,
-      kiten: (row[colMap.kiten] || '').trim(),
-      tsunagari: (row[colMap.tsunagari] || '').trim(),
-      sns: (row[colMap.sns] || '').trim(),
-      hitokoto: (row[colMap.hitokoto] || '').trim()
+      kiten: colMap.kiten !== undefined ? (row[colMap.kiten] || '').trim() : '',
+      tsunagari: colMap.tsunagari !== undefined ? (row[colMap.tsunagari] || '').trim() : '',
+      sns: colMap.sns !== undefined ? (row[colMap.sns] || '').trim() : '',
+      hitokoto: colMap.hitokoto !== undefined ? (row[colMap.hitokoto] || '').trim() : ''
     };
   }
   return teamMap;
