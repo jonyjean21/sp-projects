@@ -798,15 +798,24 @@ async function fetchGvizCSV(sheetId, sheetName) {
   ];
   for (const url of urls) {
     try {
+      log('Fetch: ' + sheetName + '...', 'info');
       const resp = await fetch(url, { signal: AbortSignal.timeout(15000) });
-      if (resp.ok) { const t = await resp.text(); if (t && t.includes(',')) return t; }
-    } catch (e) { /* try next */ }
+      if (resp.ok) {
+        const t = await resp.text();
+        log('Response (' + t.length + '文字): ' + t.substring(0, 80).replace(/\n/g, '\\n'), 'info');
+        if (t.trimStart().startsWith('<!') || t.trimStart().startsWith('<html')) continue;
+        if (t && t.includes(',')) return t;
+      } else {
+        log('HTTP ' + resp.status + ' for ' + sheetName, 'err');
+      }
+    } catch (e) { log('Fetch error (' + sheetName + '): ' + e.message, 'err'); }
   }
   return null;
 }
 
 function parseResultSheet(csvText) {
   const rows = parseCSV(csvText);
+  log('CSV parsed: ' + rows.length + '行, 先頭行: ' + (rows[0] || []).slice(0,5).join('|'), 'info');
   // Find header row by keywords
   let headerIdx = -1, colMap = {};
   for (let i = 0; i < Math.min(rows.length, 10); i++) {
@@ -824,12 +833,16 @@ function parseResultSheet(csvText) {
         if (c.includes('パーフェクト') || c === 'PM') colMap.pm = j;
         if (c.includes('合計')) colMap.total = j;
       });
+      log('ヘッダ検出: row=' + i + ' colMap=' + JSON.stringify(colMap), 'info');
       break;
     }
   }
   if (headerIdx === -1) {
+    log('ヘッダ未検出 → フォールバック (rank=1,team=2,...,total=8, dataStart=3)', 'info');
     colMap = { rank:1, team:2, participation:3, qualifier:4, final:5, bonus:6, pm:7, total:8 };
     headerIdx = 2;
+    // Log row 3 to verify
+    if (rows[3]) log('Row3: ' + rows[3].slice(0,9).join('|'), 'info');
   }
   const teams = [];
   for (let i = headerIdx + 1; i < rows.length; i++) {
