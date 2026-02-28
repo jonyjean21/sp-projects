@@ -232,11 +232,6 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
       <label>除外フォルダ名（カンマ区切り）</label>
       <input type="text" id="excludeFolders" placeholder="インナー記録">
     </div>
-    <div class="field">
-      <label>Google API Key</label>
-      <input type="text" id="googleApiKey" placeholder="AIza...">
-      <div style="font-size:0.68rem;color:var(--dim);margin-top:0.2rem">Drive API有効化済みのキー。<a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:var(--accent)">Google Cloud Console</a>で発行</div>
-    </div>
     <div class="btn-row">
       <button class="btn btn-primary" onclick="saveSettings()">設定を保存</button>
     </div>
@@ -426,6 +421,7 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
 <script>
 const WP = 'https://molkky-hub.com';
 const NAIMOL_PARENT = 484;
+const DRIVE_API_KEY = 'AIzaSyB8i2ttzz_RH6OH55DuqJ4AnU6ralrjOOw';
 
 let wpAuth = '';
 let eventPages = [];
@@ -750,7 +746,6 @@ function saveSettings() {
     teamSheetUrl: document.getElementById('teamSheetUrl').value,
     galleryDriveUrl: document.getElementById('galleryDriveUrl').value,
     excludeFolders: document.getElementById('excludeFolders').value,
-    googleApiKey: document.getElementById('googleApiKey').value,
   };
   localStorage.setItem('naimol_settings', JSON.stringify(settings));
   log('設定を保存しました', 'ok');
@@ -763,7 +758,6 @@ function loadSettings() {
   if (saved.teamSheetUrl) document.getElementById('teamSheetUrl').value = saved.teamSheetUrl;
   if (saved.galleryDriveUrl) document.getElementById('galleryDriveUrl').value = saved.galleryDriveUrl;
   if (saved.excludeFolders) document.getElementById('excludeFolders').value = saved.excludeFolders;
-  if (saved.googleApiKey) document.getElementById('googleApiKey').value = saved.googleApiKey;
   else document.getElementById('excludeFolders').value = 'インナー記録';
   // Drive folder link
   if (saved.galleryDriveUrl) {
@@ -1111,8 +1105,7 @@ function extractFolderId(url) {
 async function loadDrivePhotos() {
   const settings = JSON.parse(localStorage.getItem('naimol_settings') || '{}');
   const folderUrl = settings.galleryDriveUrl;
-  const apiKey = settings.googleApiKey;
-  if (!folderUrl || !apiKey) { showToast('設定タブでDrive URLとGoogle API Keyを入力してください'); return; }
+  if (!folderUrl) { showToast('設定タブでDriveフォルダURLを入力してください'); return; }
   const folderId = extractFolderId(folderUrl);
   if (!folderId) { showToast('DriveフォルダURLの形式が正しくありません'); return; }
 
@@ -1121,7 +1114,7 @@ async function loadDrivePhotos() {
   log('Drive: フォルダ読み込み中... ' + folderId, 'info');
 
   try {
-    const res = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType+contains+'image'&key=${apiKey}&fields=files(id,name,mimeType)&pageSize=100`);
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType+contains+'image'&key=${DRIVE_API_KEY}&fields=files(id,name,mimeType)&pageSize=100`);
     if (!res.ok) throw new Error('Drive API: HTTP ' + res.status + ' ' + (await res.text()).substring(0, 100));
     const data = await res.json();
     const files = data.files || [];
