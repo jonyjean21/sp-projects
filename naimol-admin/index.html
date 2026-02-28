@@ -947,19 +947,19 @@ function parsePMSheet(csvText) {
 // ===== Result page HTML builders =====
 function buildResultPodiumHTML(top4) {
   const RANKS = [
-    { rank: '優勝', medal: '\uD83E\uDD47', border: '#FFD700' },
-    { rank: '準優勝', medal: '\uD83E\uDD48', border: '#C0C0C0' },
-    { rank: '3位', medal: '\uD83E\uDD49', border: '#CD7F32' },
-    { rank: '3位', medal: '\uD83E\uDD49', border: '#CD7F32' }
+    { rank: '\u512A\u52DD', medal: '\uD83E\uDD47', border: '#FFD700' },
+    { rank: '\u6E96\u512A\u52DD', medal: '\uD83E\uDD48', border: '#C0C0C0' },
+    { rank: '3\u4F4D', medal: '\uD83E\uDD49', border: '#CD7F32' },
+    { rank: '3\u4F4D', medal: '\uD83E\uDD49', border: '#CD7F32' }
   ];
   const cls = ['gold', 'silver', 'bronze', 'bronze'];
 
-  // CSS-only lightbox style
+  // CSS-only lightbox using checkbox toggle (no JS, no URL hash)
   let css = '<style>' +
-    '.podium-lb{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s}' +
-    '.podium-lb:target{opacity:1;pointer-events:auto}' +
+    '.podium-cb{display:none}' +
+    '.podium-lb{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s;cursor:pointer}' +
     '.podium-lb img{max-width:90vw;max-height:85vh;border-radius:8px;object-fit:contain}' +
-    '.podium-lb-close{position:absolute;inset:0}' +
+    '.podium-cb:checked+.podium-lb{opacity:1;pointer-events:auto}' +
     '</style>';
 
   let items = '';
@@ -967,14 +967,14 @@ function buildResultPodiumHTML(top4) {
   top4.forEach((t, i) => {
     if (!t.name) return;
     const r = RANKS[i] || RANKS[3];
-    const lbId = 'podium-lb-' + i;
+    const cbId = 'podium-cb-' + i;
     items += `<div class="podium-item ${cls[i] || 'bronze'}" style="display:flex;align-items:center;width:100%;background:#fff;border-radius:10px;box-shadow:0 1px 2px rgba(0,0,0,0.05);border-left:8px solid ${r.border};padding:0.4rem 0.5rem">` +
       `<span style="font-size:1.1rem;margin-right:0.5rem">${r.medal}</span>` +
-      `<a href="#${lbId}" class="podium-photo" style="width:56px;height:72px;border-radius:7px;margin-right:0.7rem;overflow:hidden;background:#f4f4f4;display:flex;align-items:center;justify-content:center;flex-shrink:0;text-decoration:none"></a>` +
+      `<label for="${cbId}" class="podium-photo" style="width:56px;height:72px;border-radius:7px;margin-right:0.7rem;overflow:hidden;background:#f4f4f4;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer"></label>` +
       `<div style="flex:1;min-width:0;text-align:left"><div class="position" style="font-size:0.98rem;font-weight:bold;color:#2c3e50;line-height:1.1">${r.rank}</div>` +
       `<div class="team-name" style="font-size:1.05rem;font-weight:700;word-break:break-word;line-height:1.1">${t.name}</div></div></div>\n`;
-    // Lightbox overlay (CSS :target)
-    lightboxes += `<div id="${lbId}" class="podium-lb"><a href="#" class="podium-lb-close"></a></div>\n`;
+    // Checkbox + lightbox overlay (click overlay to close = uncheck)
+    lightboxes += `<input type="checkbox" id="${cbId}" class="podium-cb"><label for="${cbId}" class="podium-lb"></label>\n`;
   });
 
   return css + `<div class="top-results-mobile" style="margin:0.7rem 0"><div class="podium-list" style="display:flex;flex-direction:column;gap:0.3rem;align-items:flex-start;width:100%;max-width:520px;margin:0 auto">\n${items}</div></div>\n` + lightboxes;
@@ -1764,28 +1764,28 @@ async function updateResultPhotos() {
   if (!resultPage) return;
   const page = await wpFetch('/wp-json/wp/v2/pages/' + resultPage.id + '?context=edit');
   let content = page.content.raw;
-  // Update thumbnails in podium items
+  // Update thumbnails in podium items (label for checkbox lightbox)
   let photoIdx = 0;
   content = content.replace(
-    /(<div class="podium-item[^"]*"[^>]*>\s*<span[^>]*>[^<]*<\/span>\s*)<(?:div|a)[^>]*class="podium-photo"[^>]*>(?:<a[^>]*>)?(?:<img[^>]*\/?>|[^<]*)(?:<\/a>)?<\/(?:div|a)>([\s\S]*?<div class="team-name"[\s\S]*?<\/div>)/g,
+    /(<div class="podium-item[^"]*"[^>]*>\s*<span[^>]*>[^<]*<\/span>\s*)<(?:div|a|label)[^>]*class="podium-photo"[^>]*>(?:<a[^>]*>)?(?:<img[^>]*\/?>|[^<]*)(?:<\/a>)?<\/(?:div|a|label)>([\s\S]*?<div class="team-name"[\s\S]*?<\/div>)/g,
     (match, before, after) => {
       const idx = photoIdx++;
       for (const team of podiumTeams) {
         if (!team.photoUrl || !after.includes(team.name)) continue;
         log(team.name + ': ページ反映', 'ok');
-        return before + '<a href="#podium-lb-' + idx + '" class="podium-photo" style="width:56px;height:72px;border-radius:7px;margin-right:0.7rem;overflow:hidden;background:#f4f4f4;display:flex;align-items:center;justify-content:center;flex-shrink:0;text-decoration:none"><img src="' + team.photoUrl + '" alt="' + team.rank + ' ' + team.name + '" style="width:100%;height:100%;object-fit:cover;display:block"></a>' + after;
+        return before + '<label for="podium-cb-' + idx + '" class="podium-photo" style="width:56px;height:72px;border-radius:7px;margin-right:0.7rem;overflow:hidden;background:#f4f4f4;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer"><img src="' + team.photoUrl + '" alt="' + team.rank + ' ' + team.name + '" style="width:100%;height:100%;object-fit:cover;display:block"></label>' + after;
       }
       return match;
     }
   );
-  // Update lightbox overlays with images
+  // Update lightbox overlays with images (checkbox + label pairs)
   content = content.replace(
-    /<div id="(podium-lb-\d+)" class="podium-lb"><a href="#" class="podium-lb-close"><\/a>(?:<img[^>]*>)?<\/div>/g,
-    (match, lbId) => {
-      const idx = parseInt(lbId.replace('podium-lb-', ''));
+    /<input type="checkbox" id="(podium-cb-\d+)" class="podium-cb"><label for="\1" class="podium-lb">(?:<img[^>]*>)?<\/label>/g,
+    (match, cbId) => {
+      const idx = parseInt(cbId.replace('podium-cb-', ''));
       const team = podiumTeams[idx];
       if (team && team.photoUrl) {
-        return '<div id="' + lbId + '" class="podium-lb"><a href="#" class="podium-lb-close"></a><img src="' + team.photoUrl + '" alt="' + team.rank + ' ' + team.name + '"></div>';
+        return '<input type="checkbox" id="' + cbId + '" class="podium-cb"><label for="' + cbId + '" class="podium-lb"><img src="' + team.photoUrl + '" alt="' + team.rank + ' ' + team.name + '"></label>';
       }
       return match;
     }
