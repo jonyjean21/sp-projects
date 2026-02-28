@@ -954,30 +954,30 @@ function buildResultPodiumHTML(top4) {
   ];
   const cls = ['gold', 'silver', 'bronze', 'bronze'];
 
-  // CSS-only lightbox using checkbox toggle (no JS, no URL hash)
+  // Lightbox: details/summary (WP preserves these, no JS needed)
+  // Click thumbnail(summary) → open → overlay appears
+  // Click overlay(also summary) → close → overlay disappears
   let css = '<style>' +
-    '.podium-cb{display:none}' +
-    '.podium-lb{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s;cursor:pointer}' +
+    '.podium-dl{display:inline}' +
+    '.podium-dl>summary{list-style:none;cursor:pointer}' +
+    '.podium-dl>summary::-webkit-details-marker{display:none}' +
+    '.podium-lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center}' +
     '.podium-lb img{max-width:90vw;max-height:85vh;border-radius:8px;object-fit:contain}' +
-    '.podium-cb:checked+.podium-lb{opacity:1;pointer-events:auto}' +
+    '.podium-dl[open] .podium-lb{display:flex}' +
     '</style>';
 
   let items = '';
-  let lightboxes = '';
   top4.forEach((t, i) => {
     if (!t.name) return;
     const r = RANKS[i] || RANKS[3];
-    const cbId = 'podium-cb-' + i;
     items += `<div class="podium-item ${cls[i] || 'bronze'}" style="display:flex;align-items:center;width:100%;background:#fff;border-radius:10px;box-shadow:0 1px 2px rgba(0,0,0,0.05);border-left:8px solid ${r.border};padding:0.4rem 0.5rem">` +
       `<span style="font-size:1.1rem;margin-right:0.5rem">${r.medal}</span>` +
-      `<label for="${cbId}" class="podium-photo" style="width:56px;height:72px;border-radius:7px;margin-right:0.7rem;overflow:hidden;background:#f4f4f4;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer"></label>` +
+      `<details class="podium-dl"><summary class="podium-photo" style="width:56px;height:72px;border-radius:7px;margin-right:0.7rem;overflow:hidden;background:#f4f4f4;display:flex;align-items:center;justify-content:center;flex-shrink:0"><span class="podium-lb"></span></summary></details>` +
       `<div style="flex:1;min-width:0;text-align:left"><div class="position" style="font-size:0.98rem;font-weight:bold;color:#2c3e50;line-height:1.1">${r.rank}</div>` +
       `<div class="team-name" style="font-size:1.05rem;font-weight:700;word-break:break-word;line-height:1.1">${t.name}</div></div></div>\n`;
-    // Checkbox + lightbox overlay (click overlay to close = uncheck)
-    lightboxes += `<input type="checkbox" id="${cbId}" class="podium-cb"><label for="${cbId}" class="podium-lb"></label>\n`;
   });
 
-  return css + `<div class="top-results-mobile" style="margin:0.7rem 0"><div class="podium-list" style="display:flex;flex-direction:column;gap:0.3rem;align-items:flex-start;width:100%;max-width:520px;margin:0 auto">\n${items}</div></div>\n` + lightboxes;
+  return css + `<div class="top-results-mobile" style="margin:0.7rem 0"><div class="podium-list" style="display:flex;flex-direction:column;gap:0.3rem;align-items:flex-start;width:100%;max-width:520px;margin:0 auto">\n${items}</div></div>`;
 }
 
 function buildRankingTableHTML(teams) {
@@ -1764,30 +1764,18 @@ async function updateResultPhotos() {
   if (!resultPage) return;
   const page = await wpFetch('/wp-json/wp/v2/pages/' + resultPage.id + '?context=edit');
   let content = page.content.raw;
-  // Update thumbnails in podium items (label for checkbox lightbox)
-  let photoIdx = 0;
+  // Update thumbnails + lightbox in podium details/summary (in order)
+  let teamIdx = 0;
   content = content.replace(
-    /(<div class="podium-item[^"]*"[^>]*>\s*<span[^>]*>[^<]*<\/span>\s*)<(?:div|a|label)[^>]*class="podium-photo"[^>]*>(?:<a[^>]*>)?(?:<img[^>]*\/?>|[^<]*)(?:<\/a>)?<\/(?:div|a|label)>([\s\S]*?<div class="team-name"[\s\S]*?<\/div>)/g,
-    (match, before, after) => {
-      const idx = photoIdx++;
-      for (const team of podiumTeams) {
-        if (!team.photoUrl || !after.includes(team.name)) continue;
-        log(team.name + ': ページ反映', 'ok');
-        return before + '<label for="podium-cb-' + idx + '" class="podium-photo" style="width:56px;height:72px;border-radius:7px;margin-right:0.7rem;overflow:hidden;background:#f4f4f4;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer"><img src="' + team.photoUrl + '" alt="' + team.rank + ' ' + team.name + '" style="width:100%;height:100%;object-fit:cover;display:block"></label>' + after;
-      }
-      return match;
-    }
-  );
-  // Update lightbox overlays with images (checkbox + label pairs)
-  content = content.replace(
-    /<input type="checkbox" id="(podium-cb-\d+)" class="podium-cb"><label for="\1" class="podium-lb">(?:<img[^>]*>)?<\/label>/g,
-    (match, cbId) => {
-      const idx = parseInt(cbId.replace('podium-cb-', ''));
-      const team = podiumTeams[idx];
-      if (team && team.photoUrl) {
-        return '<input type="checkbox" id="' + cbId + '" class="podium-cb"><label for="' + cbId + '" class="podium-lb"><img src="' + team.photoUrl + '" alt="' + team.rank + ' ' + team.name + '"></label>';
-      }
-      return match;
+    /<details class="podium-dl"><summary class="podium-photo"[^>]*>(?:<img[^>]*\/?>)?<span class="podium-lb">(?:<img[^>]*\/?>)?<\/span><\/summary><\/details>/g,
+    (match) => {
+      const team = podiumTeams[teamIdx++];
+      if (!team || !team.photoUrl) return match;
+      log(team.name + ': \u30DA\u30FC\u30B8\u53CD\u6620', 'ok');
+      return '<details class="podium-dl"><summary class="podium-photo" style="width:56px;height:72px;border-radius:7px;margin-right:0.7rem;overflow:hidden;background:#f4f4f4;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer">' +
+        '<img src="' + team.photoUrl + '" alt="' + team.rank + ' ' + team.name + '" style="width:100%;height:100%;object-fit:cover;display:block">' +
+        '<span class="podium-lb"><img src="' + team.photoUrl + '" alt="' + team.rank + ' ' + team.name + '"></span>' +
+        '</summary></details>';
     }
   );
   await wpFetch('/wp-json/wp/v2/pages/' + resultPage.id, {
