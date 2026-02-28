@@ -1764,30 +1764,38 @@ async function uploadGalleryPhotos() {
   loadGalleryMedia();
 }
 
-// ===== Gallery: query WP admin-ajax for folder contents (same as WP media library) =====
+// ===== Gallery: query WP admin-ajax for folder contents =====
 async function queryFolderMedia(folderId) {
   const body = new URLSearchParams();
   body.append('action', 'query-attachments');
-  body.append('query[posts_per_page]', '500');
+  body.append('query[posts_per_page]', '100');
   body.append('query[post_mime_type]', 'image');
   body.append('query[folder]', String(folderId));
-  body.append('query[orderby]', 'date');
-  body.append('query[order]', 'DESC');
 
-  const res = await fetch(WP + '/wp-admin/admin-ajax.php', {
-    method: 'POST',
-    headers: { 'Authorization': 'Basic ' + wpAuth },
-    body: body
-  });
-  if (!res.ok) return null;
-  const json = await res.json();
-  if (!json.success || !json.data) return null;
-  return json.data.map(m => ({
-    id: m.id,
-    url: m.url || m.sizes?.full?.url || '',
-    thumb: m.sizes?.medium?.url || m.sizes?.thumbnail?.url || m.url || '',
-    name: m.title || m.filename || ''
-  }));
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  try {
+    const res = await fetch(WP + '/wp-admin/admin-ajax.php', {
+      method: 'POST',
+      headers: { 'Authorization': 'Basic ' + wpAuth },
+      body: body,
+      signal: controller.signal
+    });
+    clearTimeout(timer);
+    if (!res.ok) return null;
+    const json = await res.json();
+    if (!json.success || !json.data) return null;
+    return json.data.map(m => ({
+      id: m.id,
+      url: m.url || m.sizes?.full?.url || '',
+      thumb: m.sizes?.medium?.url || m.sizes?.thumbnail?.url || m.url || '',
+      name: m.title || m.filename || ''
+    }));
+  } catch (e) {
+    clearTimeout(timer);
+    log('admin-ajax timeout/error: ' + e.message, 'info');
+    return null;
+  }
 }
 
 // ===== Gallery: load existing media =====
