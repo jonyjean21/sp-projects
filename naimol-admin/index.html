@@ -816,15 +816,17 @@ async function fetchGvizCSV(sheetId, sheetName) {
 function parseResultSheet(csvText) {
   const rows = parseCSV(csvText);
   log('CSV parsed: ' + rows.length + '行, 先頭行: ' + (rows[0] || []).slice(0,5).join('|'), 'info');
-  // Find header row by keywords
+  // Find header row: only short cells (<=15 chars) count to avoid false match on data/notes
   let headerIdx = -1, colMap = {};
   for (let i = 0; i < Math.min(rows.length, 10); i++) {
-    const joined = rows[i].join('');
-    if (joined.includes('順位') && (joined.includes('チーム') || joined.includes('合計'))) {
+    const cells = rows[i].map(c => c.trim());
+    const hasRank = cells.some(c => c.length > 0 && c.length <= 15 && c.includes('順位'));
+    const hasTeam = cells.some(c => c.length > 0 && c.length <= 15 && c.includes('チーム'));
+    if (hasRank && hasTeam) {
       headerIdx = i;
-      rows[i].forEach((cell, j) => {
-        const c = cell.trim();
-        if (c.includes('総合') && c.includes('順位') || c === '順位') colMap.rank = j;
+      cells.forEach((c, j) => {
+        if (c.length > 15) return;
+        if (c.includes('順位') && !c.includes('ボーナス')) colMap.rank = j;
         if (c.includes('チーム')) colMap.team = j;
         if (c.includes('参加')) colMap.participation = j;
         if (c.includes('予選')) colMap.qualifier = j;
