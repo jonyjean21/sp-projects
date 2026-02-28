@@ -148,40 +148,8 @@ body {
   </div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 <script>
-let _geminiKey = null;
-(async function initGeminiKey() {
-  _geminiKey = localStorage.getItem('GEMINI_API_KEY');
-  if (_geminiKey) return;
-  try {
-    const app = firebase.initializeApp({
-      apiKey: "AIzaSyBusmxO-ZA6K6QDpMpWjShPiz02U9_v8lk",
-      authDomain: "meguri-cho.firebaseapp.com",
-      databaseURL: "https://meguri-cho-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "meguri-cho"
-    }, 'config');
-    await firebase.app('config').auth().signInAnonymously();
-    const snap = await firebase.app('config').database().ref('config/gemini_key').once('value');
-    if (snap.val()) {
-      _geminiKey = snap.val();
-      localStorage.setItem('GEMINI_API_KEY', _geminiKey);
-    }
-  } catch (e) {}
-})();
-
-function getGeminiKey() {
-  if (_geminiKey) return _geminiKey;
-  let key = localStorage.getItem('GEMINI_API_KEY');
-  if (!key) {
-    key = prompt('Gemini APIキーを入力してください（自動取得に失敗しました）');
-    if (key) localStorage.setItem('GEMINI_API_KEY', key);
-  }
-  _geminiKey = key;
-  return key;
-}
+const VERCEL_API = 'https://vercel-api-orpin-one.vercel.app';
 
 const tweetInput = document.getElementById('tweetInput');
 const authorInput = document.getElementById('authorInput');
@@ -369,27 +337,18 @@ ${pastPosts ? `## モルハブの過去ポスト（トーン参考）\n${pastPos
   {"type": "つながり型", "text": "文面C"}
 ]`;
 
-  const key = getGeminiKey();
-  if (!key) throw new Error('Gemini APIキーが未設定です。');
-
-  const resp = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.6, responseMimeType: 'application/json' }
-      })
-    }
-  );
+  const resp = await fetch(`${VERCEL_API}/api/gemini`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt, temperature: 0.6 })
+  });
 
   if (!resp.ok) {
     const err = await resp.json().catch(() => ({}));
     throw new Error('Gemini API: ' + (err.error?.message || `HTTP ${resp.status}`));
   }
   const result = await resp.json();
-  if (!result.candidates?.length) throw new Error('Gemini: レスポンスが空です。APIキーを確認してください。');
+  if (!result.candidates?.length) throw new Error('Gemini: レスポンスが空です。');
 
   const text = result.candidates[0].content.parts[0].text;
   return JSON.parse(text);

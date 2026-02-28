@@ -427,7 +427,7 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
 <script>
 const WP = 'https://molkky-hub.com';
 const NAIMOL_PARENT = 484;
-const DRIVE_API_KEY = 'AIzaSyB8i2ttzz_RH6OH55DuqJ4AnU6ralrjOOw';
+const VERCEL_API = 'https://vercel-api-orpin-one.vercel.app';
 
 let wpAuth = '';
 let eventPages = [];
@@ -1332,7 +1332,7 @@ function extractFolderId(url) {
 }
 
 async function driveListFiles(folderId) {
-  const res = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&key=${DRIVE_API_KEY}&fields=files(id,name,mimeType)&pageSize=200&orderBy=name`);
+  const res = await fetch(`${VERCEL_API}/api/drive-proxy?folderId=${encodeURIComponent(folderId)}`);
   if (!res.ok) throw new Error('Drive API: HTTP ' + res.status + ' ' + (await res.text()).substring(0, 100));
   const data = await res.json();
   return data.files || [];

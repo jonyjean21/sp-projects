@@ -32,61 +32,102 @@ function doGet(e) {
   }
 }
 
-// ===== Cache (PropertiesService — persistent) =====
+// ===== Cache (Split into multiple properties for 9KB limit) =====
 
-function getDashboardData_(forceRefresh) {
+function saveToCache_(data) {
   const props = PropertiesService.getScriptProperties();
-
-  if (!forceRefresh) {
-    const cached = props.getProperty('DASHBOARD_CACHE');
-    const ts = parseInt(props.getProperty('DASHBOARD_CACHE_TS') || '0');
-    if (cached && (Date.now() - ts) < CACHE_TTL) {
-      return JSON.parse(cached);
+  const parts = {
+    'DASH_TRAFFIC': JSON.stringify(data.traffic || {}),
+    'DASH_SC': JSON.stringify(data.searchConsole || {}),
+    'DASH_PAGES': JSON.stringify(data.topPages || []),
+    'DASH_SOURCES': JSON.stringify(data.trafficSources || []),
+    'DASH_SNS': JSON.stringify(data.sns || {}),
+    'DASH_SUMMARY': data.weeklySummary || '',
+    'DASH_META_UPDATED': data.lastUpdated || '',
+    'DASH_META_TS': String(Date.now())
+  };
+  for (var key in parts) {
+    var val = parts[key];
+    if (val.length < 9000) {
+      props.setProperty(key, val);
+    } else {
+      Logger.log('WARNING: ' + key + ' exceeds 9KB (' + val.length + ' bytes), skipped');
     }
   }
+}
 
-  const data = buildDashboardData_();
-  const json = JSON.stringify(data);
-
-  // PropertiesService: max 9KB per property
-  if (json.length < 9000) {
-    props.setProperty('DASHBOARD_CACHE', json);
-    props.setProperty('DASHBOARD_CACHE_TS', String(Date.now()));
+function loadFromCache_() {
+  var props = PropertiesService.getScriptProperties();
+  var ts = parseInt(props.getProperty('DASH_META_TS') || '0');
+  if ((Date.now() - ts) >= CACHE_TTL) return null;
+  try {
+    return {
+      lastUpdated: props.getProperty('DASH_META_UPDATED') || '',
+      traffic: JSON.parse(props.getProperty('DASH_TRAFFIC') || '{"months":[]}'),
+      searchConsole: JSON.parse(props.getProperty('DASH_SC') || '{"months":[],"topQueries":[]}'),
+      topPages: JSON.parse(props.getProperty('DASH_PAGES') || '[]'),
+      trafficSources: JSON.parse(props.getProperty('DASH_SOURCES') || '[]'),
+      weeklySummary: props.getProperty('DASH_SUMMARY') || '',
+      sns: JSON.parse(props.getProperty('DASH_SNS') || '{}')
+    };
+  } catch (e) {
+    Logger.log('Cache parse error: ' + e.message);
+    return null;
   }
+}
 
+function getDashboardData_(forceRefresh) {
+  if (!forceRefresh) {
+    var cached = loadFromCache_();
+    if (cached) return cached;
+  }
+  var data = buildDashboardData_();
+  saveToCache_(data);
   return data;
 }
 
 // ===== Timed Trigger (keeps cache warm) =====
 
 function refreshCache() {
-  const data = buildDashboardData_();
-  const json = JSON.stringify(data);
-  const props = PropertiesService.getScriptProperties();
-  if (json.length < 9000) {
-    props.setProperty('DASHBOARD_CACHE', json);
-    props.setProperty('DASHBOARD_CACHE_TS', String(Date.now()));
-  }
-  Logger.log('Cache refreshed: ' + json.length + ' bytes');
+  var data = buildDashboardData_();
+  saveToCache_(data);
+  Logger.log('Cache refreshed');
 }
 
 // ===== Data Builder =====
 
 function buildDashboardData_() {
-  const now = new Date();
-  const result = {
+  var now = new Date();
+  var result = {
     lastUpdated: Utilities.formatDate(now, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm'),
     traffic: { months: [] },
     searchConsole: { months: [], topQueries: [] },
+    topPages: [],
+    trafficSources: [],
+    weeklySummary: '',
     sns: getSNSData_()
   };
 
-  // GA4
+  // GA4 Monthly Traffic
   try {
     result.traffic = fetchGA4Traffic_();
   } catch (err) {
-    Logger.log('GA4 error: ' + err.message);
+    Logger.log('GA4 traffic error: ' + err.message);
     result.traffic.error = err.message;
+  }
+
+  // GA4 Top Pages
+  try {
+    result.topPages = fetchGA4TopPages_();
+  } catch (err) {
+    Logger.log('GA4 top pages error: ' + err.message);
+  }
+
+  // GA4 Traffic Sources
+  try {
+    result.trafficSources = fetchGA4TrafficSources_();
+  } catch (err) {
+    Logger.log('GA4 sources error: ' + err.message);
   }
 
   // Search Console
@@ -97,20 +138,24 @@ function buildDashboardData_() {
     result.searchConsole.error = err.message;
   }
 
+  // Weekly summary (read from stored, don't regenerate every time)
+  var props = PropertiesService.getScriptProperties();
+  result.weeklySummary = props.getProperty('DASH_SUMMARY') || '';
+
   return result;
 }
 
-// ===== GA4 Data API =====
+// ===== GA4 Data API: Monthly Traffic =====
 
 function fetchGA4Traffic_() {
-  const propertyId = getPropertyId_();
+  var propertyId = getPropertyId_();
 
-  const now = new Date();
-  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
-  const startDate = Utilities.formatDate(sixMonthsAgo, 'Asia/Tokyo', 'yyyy-MM-dd');
-  const endDate = Utilities.formatDate(now, 'Asia/Tokyo', 'yyyy-MM-dd');
+  var now = new Date();
+  var sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+  var startDate = Utilities.formatDate(sixMonthsAgo, 'Asia/Tokyo', 'yyyy-MM-dd');
+  var endDate = Utilities.formatDate(now, 'Asia/Tokyo', 'yyyy-MM-dd');
 
-  const request = AnalyticsData.newRunReportRequest();
+  var request = AnalyticsData.newRunReportRequest();
   request.dateRanges = [AnalyticsData.newDateRange()];
   request.dateRanges[0].startDate = startDate;
   request.dateRanges[0].endDate = endDate;
@@ -121,51 +166,128 @@ function fetchGA4Traffic_() {
   request.metrics = [
     Object.assign(AnalyticsData.newMetric(), { name: 'sessions' }),
     Object.assign(AnalyticsData.newMetric(), { name: 'screenPageViews' }),
-    Object.assign(AnalyticsData.newMetric(), { name: 'totalUsers' })
+    Object.assign(AnalyticsData.newMetric(), { name: 'totalUsers' }),
+    Object.assign(AnalyticsData.newMetric(), { name: 'bounceRate' }),
+    Object.assign(AnalyticsData.newMetric(), { name: 'averageSessionDuration' })
   ];
 
   request.orderBys = [AnalyticsData.newOrderBy()];
   request.orderBys[0].dimension = AnalyticsData.newDimensionOrderBy();
   request.orderBys[0].dimension.dimensionName = 'yearMonth';
 
-  const response = AnalyticsData.Properties.runReport(
+  var response = AnalyticsData.Properties.runReport(
     request, 'properties/' + propertyId
   );
 
-  const months = [];
+  var months = [];
   if (response.rows) {
-    response.rows.forEach(row => {
-      const ym = row.dimensionValues[0].value; // "202602"
+    response.rows.forEach(function(row) {
+      var ym = row.dimensionValues[0].value;
       months.push({
         month: ym.substring(0, 4) + '-' + ym.substring(4, 6),
         sessions: parseInt(row.metricValues[0].value),
         pv: parseInt(row.metricValues[1].value),
-        users: parseInt(row.metricValues[2].value)
+        users: parseInt(row.metricValues[2].value),
+        bounceRate: parseFloat(parseFloat(row.metricValues[3].value).toFixed(1)),
+        avgDuration: parseInt(parseFloat(row.metricValues[4].value))
       });
     });
   }
 
-  return { months };
+  return { months: months };
+}
+
+// ===== GA4 Data API: Top 10 Pages (last 30 days) =====
+
+function fetchGA4TopPages_() {
+  var propertyId = getPropertyId_();
+
+  var request = AnalyticsData.newRunReportRequest();
+  request.dateRanges = [AnalyticsData.newDateRange()];
+  request.dateRanges[0].startDate = '30daysAgo';
+  request.dateRanges[0].endDate = 'today';
+
+  request.dimensions = [AnalyticsData.newDimension()];
+  request.dimensions[0].name = 'pagePath';
+
+  request.metrics = [
+    Object.assign(AnalyticsData.newMetric(), { name: 'screenPageViews' }),
+    Object.assign(AnalyticsData.newMetric(), { name: 'totalUsers' })
+  ];
+
+  request.orderBys = [AnalyticsData.newOrderBy()];
+  request.orderBys[0].metric = AnalyticsData.newMetricOrderBy();
+  request.orderBys[0].metric.metricName = 'screenPageViews';
+  request.orderBys[0].desc = true;
+
+  request.limit = 15;
+
+  var response = AnalyticsData.Properties.runReport(
+    request, 'properties/' + propertyId
+  );
+
+  return (response.rows || []).map(function(row) {
+    return {
+      path: row.dimensionValues[0].value,
+      pv: parseInt(row.metricValues[0].value),
+      users: parseInt(row.metricValues[1].value)
+    };
+  });
+}
+
+// ===== GA4 Data API: Traffic Sources (current month) =====
+
+function fetchGA4TrafficSources_() {
+  var propertyId = getPropertyId_();
+  var now = new Date();
+  var firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  var request = AnalyticsData.newRunReportRequest();
+  request.dateRanges = [AnalyticsData.newDateRange()];
+  request.dateRanges[0].startDate = Utilities.formatDate(firstOfMonth, 'Asia/Tokyo', 'yyyy-MM-dd');
+  request.dateRanges[0].endDate = Utilities.formatDate(now, 'Asia/Tokyo', 'yyyy-MM-dd');
+
+  request.dimensions = [AnalyticsData.newDimension()];
+  request.dimensions[0].name = 'sessionDefaultChannelGroup';
+
+  request.metrics = [
+    Object.assign(AnalyticsData.newMetric(), { name: 'sessions' })
+  ];
+
+  request.orderBys = [AnalyticsData.newOrderBy()];
+  request.orderBys[0].metric = AnalyticsData.newMetricOrderBy();
+  request.orderBys[0].metric.metricName = 'sessions';
+  request.orderBys[0].desc = true;
+
+  var response = AnalyticsData.Properties.runReport(
+    request, 'properties/' + propertyId
+  );
+
+  return (response.rows || []).map(function(row) {
+    return {
+      source: row.dimensionValues[0].value,
+      sessions: parseInt(row.metricValues[0].value)
+    };
+  });
 }
 
 // ===== Search Console API =====
 
 function fetchSearchConsoleData_() {
-  const now = new Date();
-  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
-  const startDate = Utilities.formatDate(sixMonthsAgo, 'Asia/Tokyo', 'yyyy-MM-dd');
-  // SC data has ~3 day delay
-  const endDate = Utilities.formatDate(
+  var now = new Date();
+  var sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+  var startDate = Utilities.formatDate(sixMonthsAgo, 'Asia/Tokyo', 'yyyy-MM-dd');
+  var endDate = Utilities.formatDate(
     new Date(now.getTime() - 3 * 86400000), 'Asia/Tokyo', 'yyyy-MM-dd'
   );
 
-  const token = ScriptApp.getOAuthToken();
-  const encodedUrl = encodeURIComponent(SC_SITE_URL);
-  const baseUrl = 'https://searchconsole.googleapis.com/webmasters/v3/sites/'
+  var token = ScriptApp.getOAuthToken();
+  var encodedUrl = encodeURIComponent(SC_SITE_URL);
+  var baseUrl = 'https://searchconsole.googleapis.com/webmasters/v3/sites/'
     + encodedUrl + '/searchAnalytics/query';
 
   // Monthly data (by date, then aggregate)
-  const monthlyRes = UrlFetchApp.fetch(baseUrl, {
+  var monthlyRes = UrlFetchApp.fetch(baseUrl, {
     method: 'POST',
     contentType: 'application/json',
     headers: { Authorization: 'Bearer ' + token },
@@ -177,12 +299,12 @@ function fetchSearchConsoleData_() {
     })
   });
 
-  const monthlyData = JSON.parse(monthlyRes.getContentText());
-  const monthMap = {};
+  var monthlyData = JSON.parse(monthlyRes.getContentText());
+  var monthMap = {};
 
   if (monthlyData.rows) {
-    monthlyData.rows.forEach(row => {
-      const month = row.keys[0].substring(0, 7); // "2026-02"
+    monthlyData.rows.forEach(function(row) {
+      var month = row.keys[0].substring(0, 7);
       if (!monthMap[month]) {
         monthMap[month] = { clicks: 0, impressions: 0, ctrSum: 0, posSum: 0, count: 0 };
       }
@@ -194,16 +316,18 @@ function fetchSearchConsoleData_() {
     });
   }
 
-  const months = Object.keys(monthMap).sort().map(m => ({
-    month: m,
-    clicks: monthMap[m].clicks,
-    impressions: monthMap[m].impressions,
-    ctr: parseFloat((monthMap[m].ctrSum / monthMap[m].count * 100).toFixed(1)),
-    position: parseFloat((monthMap[m].posSum / monthMap[m].count).toFixed(1))
-  }));
+  var months = Object.keys(monthMap).sort().map(function(m) {
+    return {
+      month: m,
+      clicks: monthMap[m].clicks,
+      impressions: monthMap[m].impressions,
+      ctr: parseFloat((monthMap[m].ctrSum / monthMap[m].count * 100).toFixed(1)),
+      position: parseFloat((monthMap[m].posSum / monthMap[m].count).toFixed(1))
+    };
+  });
 
-  // Top queries (last 28 days)
-  const queryRes = UrlFetchApp.fetch(baseUrl, {
+  // Top queries (last 28 days) — expanded to 20
+  var queryRes = UrlFetchApp.fetch(baseUrl, {
     method: 'POST',
     contentType: 'application/json',
     headers: { Authorization: 'Bearer ' + token },
@@ -213,24 +337,87 @@ function fetchSearchConsoleData_() {
       ),
       endDate: endDate,
       dimensions: ['query'],
-      rowLimit: 10
+      rowLimit: 20
     })
   });
 
-  const queryData = JSON.parse(queryRes.getContentText());
-  const topQueries = (queryData.rows || []).map(row => ({
-    query: row.keys[0],
-    clicks: row.clicks,
-    impressions: row.impressions
-  }));
+  var queryData = JSON.parse(queryRes.getContentText());
+  var topQueries = (queryData.rows || []).map(function(row) {
+    return {
+      query: row.keys[0],
+      clicks: row.clicks,
+      impressions: row.impressions,
+      position: parseFloat(row.position.toFixed(1))
+    };
+  });
 
-  return { months, topQueries };
+  return { months: months, topQueries: topQueries };
+}
+
+// ===== Weekly Summary Generator =====
+
+function generateWeeklySummary_() {
+  var propertyId = getPropertyId_();
+
+  // This week (last 7 days)
+  var reqThis = AnalyticsData.newRunReportRequest();
+  reqThis.dateRanges = [AnalyticsData.newDateRange()];
+  reqThis.dateRanges[0].startDate = '7daysAgo';
+  reqThis.dateRanges[0].endDate = 'today';
+  reqThis.metrics = [
+    Object.assign(AnalyticsData.newMetric(), { name: 'sessions' }),
+    Object.assign(AnalyticsData.newMetric(), { name: 'screenPageViews' }),
+    Object.assign(AnalyticsData.newMetric(), { name: 'totalUsers' })
+  ];
+  var resThis = AnalyticsData.Properties.runReport(reqThis, 'properties/' + propertyId);
+
+  // Previous week (8-14 days ago)
+  var reqPrev = AnalyticsData.newRunReportRequest();
+  reqPrev.dateRanges = [AnalyticsData.newDateRange()];
+  reqPrev.dateRanges[0].startDate = '14daysAgo';
+  reqPrev.dateRanges[0].endDate = '8daysAgo';
+  reqPrev.metrics = reqThis.metrics;
+  var resPrev = AnalyticsData.Properties.runReport(reqPrev, 'properties/' + propertyId);
+
+  var thisRow = resThis.rows ? resThis.rows[0] : null;
+  var prevRow = resPrev.rows ? resPrev.rows[0] : null;
+
+  var lines = [];
+  if (thisRow && prevRow) {
+    var s = parseInt(thisRow.metricValues[0].value);
+    var sp = parseInt(prevRow.metricValues[0].value);
+    var pv = parseInt(thisRow.metricValues[1].value);
+    var pvp = parseInt(prevRow.metricValues[1].value);
+    var u = parseInt(thisRow.metricValues[2].value);
+    var up = parseInt(prevRow.metricValues[2].value);
+
+    function pct(a, b) { return b > 0 ? ((a - b) / b * 100).toFixed(1) : '—'; }
+    function arrow(a, b) { return a >= b ? '↑' : '↓'; }
+
+    lines.push('セッション: ' + s + ' ' + arrow(s, sp) + pct(s, sp) + '%');
+    lines.push('PV: ' + pv + ' ' + arrow(pv, pvp) + pct(pv, pvp) + '%');
+    lines.push('ユーザー: ' + u + ' ' + arrow(u, up) + pct(u, up) + '%');
+  } else {
+    lines.push('データ不足（比較不可）');
+  }
+
+  lines.push('更新: ' + Utilities.formatDate(new Date(), 'Asia/Tokyo', 'MM/dd HH:mm'));
+
+  var summary = lines.join('\n');
+  PropertiesService.getScriptProperties().setProperty('DASH_SUMMARY', summary);
+  Logger.log('Weekly summary generated:\n' + summary);
+  return summary;
+}
+
+function refreshWeeklySummary() {
+  generateWeeklySummary_();
+  refreshCache();
 }
 
 // ===== SNS (PropertiesService — 手動 or updateSNS() で更新) =====
 
 function getSNSData_() {
-  const p = PropertiesService.getScriptProperties();
+  var p = PropertiesService.getScriptProperties();
   return {
     xFollowers: parseInt(p.getProperty('X_FOLLOWERS') || '0'),
     xFollowersPrev: parseInt(p.getProperty('X_FOLLOWERS_PREV') || '0'),
@@ -242,10 +429,9 @@ function getSNSData_() {
 // ===== Config =====
 
 function getPropertyId_() {
-  const p = PropertiesService.getScriptProperties();
-  let id = p.getProperty('GA4_PROPERTY_ID');
+  var p = PropertiesService.getScriptProperties();
+  var id = p.getProperty('GA4_PROPERTY_ID');
   if (!id) {
-    // Auto-discover on first access
     Logger.log('GA4_PROPERTY_ID 未設定 — 自動検出を試行');
     id = autoDiscoverPropertyId_();
     if (!id) throw new Error('GA4プロパティが見つかりません。手動でGA4_PROPERTY_IDを設定してください');
@@ -255,19 +441,22 @@ function getPropertyId_() {
 
 function autoDiscoverPropertyId_() {
   try {
-    const summaries = AnalyticsAdmin.AccountSummaries.list();
+    var summaries = AnalyticsAdmin.AccountSummaries.list();
     if (!summaries.accountSummaries) return null;
 
-    for (const account of summaries.accountSummaries) {
-      for (const prop of (account.propertySummaries || [])) {
+    for (var a = 0; a < summaries.accountSummaries.length; a++) {
+      var account = summaries.accountSummaries[a];
+      var props = account.propertySummaries || [];
+      for (var p = 0; p < props.length; p++) {
         try {
-          const streams = AnalyticsAdmin.Properties.DataStreams.list(prop.property);
-          for (const stream of (streams.dataStreams || [])) {
+          var streams = AnalyticsAdmin.Properties.DataStreams.list(props[p].property);
+          for (var s = 0; s < (streams.dataStreams || []).length; s++) {
+            var stream = streams.dataStreams[s];
             if (stream.webStreamData &&
                 stream.webStreamData.measurementId === MEASUREMENT_ID) {
-              const id = prop.property.replace('properties/', '');
+              var id = props[p].property.replace('properties/', '');
               PropertiesService.getScriptProperties().setProperty('GA4_PROPERTY_ID', id);
-              Logger.log('GA4_PROPERTY_ID 自動設定: ' + id + ' (' + prop.displayName + ')');
+              Logger.log('GA4_PROPERTY_ID 自動設定: ' + id + ' (' + props[p].displayName + ')');
               return id;
             }
           }
@@ -282,86 +471,67 @@ function autoDiscoverPropertyId_() {
 
 // ===== Setup Helpers =====
 
-/**
- * GA4プロパティIDを自動検索する。
- * 実行すると、アクセス可能な全GA4プロパティを表示。
- * 測定ID G-6DV28MW59Z に対応するプロパティを自動設定する。
- *
- * 事前準備: GASエディタで「サービス」→ AnalyticsAdmin (v1alpha) を追加
- */
 function findMyGA4Property() {
   try {
-    const summaries = AnalyticsAdmin.AccountSummaries.list();
+    var summaries = AnalyticsAdmin.AccountSummaries.list();
     if (!summaries.accountSummaries) {
       Logger.log('GA4アカウントが見つかりません');
       return;
     }
 
     Logger.log('=== GA4 プロパティ一覧 ===');
-    let foundId = null;
+    var foundId = null;
 
-    summaries.accountSummaries.forEach(account => {
+    summaries.accountSummaries.forEach(function(account) {
       Logger.log('Account: ' + account.displayName);
-      (account.propertySummaries || []).forEach(prop => {
-        const id = prop.property.replace('properties/', '');
+      (account.propertySummaries || []).forEach(function(prop) {
+        var id = prop.property.replace('properties/', '');
         Logger.log('  ' + prop.displayName + ' — ID: ' + id);
-
-        // Check measurement ID
         try {
-          const streams = AnalyticsAdmin.Properties.DataStreams.list(prop.property);
-          (streams.dataStreams || []).forEach(stream => {
+          var streams = AnalyticsAdmin.Properties.DataStreams.list(prop.property);
+          (streams.dataStreams || []).forEach(function(stream) {
             if (stream.webStreamData &&
                 stream.webStreamData.measurementId === MEASUREMENT_ID) {
               Logger.log('  >>> 測定ID ' + MEASUREMENT_ID + ' に一致！ <<<');
               foundId = id;
             }
           });
-        } catch (e) {
-          // Skip if no access
-        }
+        } catch (e) { /* skip */ }
       });
     });
 
     if (foundId) {
       PropertiesService.getScriptProperties().setProperty('GA4_PROPERTY_ID', foundId);
-      Logger.log('');
       Logger.log('GA4_PROPERTY_ID を自動設定しました: ' + foundId);
     } else {
-      Logger.log('');
       Logger.log('測定ID ' + MEASUREMENT_ID + ' に対応するプロパティが見つかりません');
-      Logger.log('手動で GA4_PROPERTY_ID をスクリプトプロパティに設定してください');
     }
   } catch (e) {
     Logger.log('AnalyticsAdmin サービスが追加されていない可能性があります');
-    Logger.log('GASエディタ → サービス → Google Analytics Admin API (v1alpha) を追加してください');
     Logger.log('エラー: ' + e.message);
   }
 }
 
-/**
- * トリガーを設定する（6時間ごとにキャッシュ更新）
- */
 function createTrigger() {
-  // 既存トリガーを削除
-  ScriptApp.getProjectTriggers().forEach(t => {
-    if (t.getHandlerFunction() === 'refreshCache') {
-      ScriptApp.deleteTrigger(t);
-    }
+  ScriptApp.getProjectTriggers().forEach(function(t) {
+    if (t.getHandlerFunction() === 'refreshCache') ScriptApp.deleteTrigger(t);
   });
-
   ScriptApp.newTrigger('refreshCache')
-    .timeBased()
-    .everyHours(6)
-    .create();
-
+    .timeBased().everyHours(6).create();
   Logger.log('6時間ごとのキャッシュ更新トリガーを設定しました');
 }
 
-/**
- * SNSデータを更新する（手動実行用）
- */
+function createWeeklyTrigger() {
+  ScriptApp.getProjectTriggers().forEach(function(t) {
+    if (t.getHandlerFunction() === 'refreshWeeklySummary') ScriptApp.deleteTrigger(t);
+  });
+  ScriptApp.newTrigger('refreshWeeklySummary')
+    .timeBased().onWeekDay(ScriptApp.WeekDay.MONDAY).atHour(8).create();
+  Logger.log('毎週月曜8時のサマリー更新トリガーを設定しました');
+}
+
 function updateSNS(followers, followersPrev, impressions, impressionsPrev) {
-  const p = PropertiesService.getScriptProperties();
+  var p = PropertiesService.getScriptProperties();
   if (followers) p.setProperty('X_FOLLOWERS', String(followers));
   if (followersPrev) p.setProperty('X_FOLLOWERS_PREV', String(followersPrev));
   if (impressions) p.setProperty('X_IMPRESSIONS', String(impressions));
