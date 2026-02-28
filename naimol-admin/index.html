@@ -477,7 +477,7 @@ async function connect() {
 
 // ===== Load events =====
 async function loadEvents() {
-  eventPages = await wpFetch('/wp-json/wp/v2/pages?parent=' + NAIMOL_PARENT + '&per_page=50&orderby=date&order=desc');
+  eventPages = await wpFetch('/wp-json/wp/v2/pages?parent=' + NAIMOL_PARENT + '&per_page=50&orderby=date&order=desc&status=draft,publish');
   const sel = document.getElementById('eventSelect');
   sel.innerHTML = '<option value="">選択してください</option>';
   for (const p of eventPages) {
