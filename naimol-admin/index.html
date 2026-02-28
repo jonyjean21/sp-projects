@@ -176,6 +176,12 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
         <option value="">接続後に選択</option>
       </select>
     </div>
+    <div id="eventStatusRow" style="display:none;margin-top:0.5rem">
+      <div class="page-info" id="eventPageInfo"></div>
+      <div class="btn-row">
+        <button class="btn btn-warn btn-sm" id="publishEventBtn" onclick="publishEventPage()" style="display:none">大会ページを公開</button>
+      </div>
+    </div>
     <details id="newEventDetails" style="margin-top:0.8rem">
       <summary style="font-size:0.8rem;color:var(--accent);cursor:pointer">新しい大会ページを作成</summary>
       <div style="margin-top:0.8rem">
@@ -710,6 +716,7 @@ async function onEventChange() {
 
   updatePageInfo('result', resultPage);
   updatePageInfo('gallery', galleryPage);
+  updateEventPageInfo();
   loadPageMeta('result', resultPage);
   loadPageMeta('gallery', galleryPage);
 
@@ -740,6 +747,44 @@ function updatePageInfo(type, page) {
     <span class="stat">ID: <strong>${page.id}</strong></span>
     <a href="${preview}" target="_blank">プレビュー</a>
   `;
+}
+
+function updateEventPageInfo() {
+  const row = document.getElementById('eventStatusRow');
+  const info = document.getElementById('eventPageInfo');
+  const btn = document.getElementById('publishEventBtn');
+  if (!selectedEvent) { row.style.display = 'none'; return; }
+  row.style.display = '';
+  const pill = selectedEvent.status === 'publish' ? 'pill-publish' : 'pill-draft';
+  const label = selectedEvent.status === 'publish' ? '公開中' : '下書き';
+  const preview = selectedEvent.status === 'draft'
+    ? WP + '/?page_id=' + selectedEvent.id + '&preview=true'
+    : selectedEvent.link;
+  info.innerHTML =
+    '<span class="pill ' + pill + '">' + label + '</span> ' +
+    '<span class="stat">ID: <strong>' + selectedEvent.id + '</strong></span> ' +
+    '<a href="' + preview + '" target="_blank">プレビュー</a>';
+  btn.style.display = selectedEvent.status === 'draft' ? '' : 'none';
+}
+
+async function publishEventPage() {
+  if (!selectedEvent) return;
+  if (!confirm('大会ページ「' + selectedEvent.title.rendered + '」を公開しますか？')) return;
+  try {
+    const updated = await wpFetch('/wp-json/wp/v2/pages/' + selectedEvent.id, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'publish' })
+    });
+    selectedEvent = updated;
+    const idx = eventPages.findIndex(p => p.id === updated.id);
+    if (idx >= 0) eventPages[idx] = updated;
+    updateEventPageInfo();
+    log('大会ページを公開しました: ' + updated.link, 'ok');
+    showToast('大会ページを公開しました');
+  } catch (e) {
+    log('大会ページ公開失敗: ' + e.message, 'err');
+  }
 }
 
 // ===== Settings =====
