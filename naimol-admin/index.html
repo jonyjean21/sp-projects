@@ -720,12 +720,12 @@ async function onEventChange() {
   loadPageMeta('result', resultPage);
   loadPageMeta('gallery', galleryPage);
 
-  // Show/hide result generation card
-  document.getElementById('resultGenCard').style.display = resultPage ? 'none' : 'block';
-  if (!resultPage) {
-    document.getElementById('resultGenSummary').style.display = 'none';
-    document.getElementById('createResultBtn').style.display = 'none';
-  }
+  // Always show result generation card, reset summary state
+  document.getElementById('resultGenCard').style.display = 'block';
+  document.getElementById('resultGenSummary').style.display = 'none';
+  document.getElementById('createResultBtn').style.display = 'none';
+  document.getElementById('genResultBtn').textContent = resultPage ? 'スプシを再読み込み' : 'スプシを読み込む';
+  document.getElementById('genResultBtn').disabled = false;
 
   if (resultPage) loadResultPhotos();
   if (galleryPage) loadGallerySections();
@@ -1083,9 +1083,11 @@ async function generateResult() {
         <div>3位: <strong>${parsedTop4.slice(2).map(t => t.name).join(' / ') || '—'}</strong></div>
         <div>PM賞: <strong>${parsedPMTeams.length}件</strong></div>
       </div>`;
-    document.getElementById('createResultBtn').style.display = '';
+    const createBtn = document.getElementById('createResultBtn');
+    createBtn.style.display = '';
+    createBtn.textContent = resultPage ? '結果ページを再生成' : '結果ページを作成';
     log('スプシ読み込み完了: ' + parsedAllTeams.length + 'チーム', 'ok');
-    showToast('読み込み完了！確認して「結果ページを作成」を押してください');
+    showToast('読み込み完了！確認して作成ボタンを押してください');
   } catch (e) {
     log('スプシ読み込みエラー: ' + e.message, 'err');
     showToast('読み込みに失敗: ' + e.message);
