@@ -893,118 +893,58 @@ function parsePMSheet(csvText) {
 // ===== Result page HTML builders =====
 function buildResultPodiumHTML(top4) {
   const RANKS = [
-    { rank: '優勝', medal: '🥇', cls: 'gold' },
-    { rank: '準優勝', medal: '🥈', cls: 'silver' },
-    { rank: '3位', medal: '🥉', cls: 'bronze' },
-    { rank: '3位', medal: '🥉', cls: 'bronze' }
+    { rank: '優勝', medal: '🥇', border: '#FFD700' },
+    { rank: '準優勝', medal: '🥈', border: '#C0C0C0' },
+    { rank: '3位', medal: '🥉', border: '#CD7F32' },
+    { rank: '3位', medal: '🥉', border: '#CD7F32' }
   ];
+  const cls = ['gold', 'silver', 'bronze', 'bronze'];
   let items = '';
   top4.forEach((t, i) => {
     if (!t.name) return;
     const r = RANKS[i] || RANKS[3];
-    items += `
-    <div class="podium-item ${r.cls}">
-      <div class="rank-icon">${r.medal}</div>
-      <div class="podium-photo"></div>
-      <div class="team-info">
-        <div class="position">${r.rank}</div>
-        <div class="team-name">${t.name}</div>
-      </div>
-    </div>`;
+    items += `<div class="podium-item ${cls[i] || 'bronze'}" style="display:flex;align-items:center;width:100%;background:#fff;border-radius:10px;box-shadow:0 1px 2px rgba(0,0,0,0.05);border-left:8px solid ${r.border};padding:0.4rem 0.5rem">` +
+      `<span style="font-size:1.1rem;margin-right:0.5rem">${r.medal}</span>` +
+      `<div class="podium-photo" style="width:56px;height:56px;border-radius:7px;margin-right:0.7rem;overflow:hidden;background:#f4f4f4;display:flex;align-items:center;justify-content:center;flex-shrink:0"></div>` +
+      `<div style="flex:1;min-width:0;text-align:left"><div class="position" style="font-size:0.98rem;font-weight:bold;color:#2c3e50;line-height:1.1">${r.rank}</div>` +
+      `<div class="team-name" style="font-size:1.05rem;font-weight:700;word-break:break-word;line-height:1.1">${t.name}</div></div></div>\n`;
   });
 
-  return `<div class="top-results-mobile">
-  <div class="podium-list">${items}
-  </div>
-</div>
-
-<div id="photoModal" class="photo-modal" onclick="this.classList.remove('open')">
-  <span class="photo-modal-close" onclick="event.stopPropagation();this.parentElement.classList.remove('open')">&times;</span>
-  <img class="photo-modal-content" id="modalImg" alt="">
-</div>
-
-<style>
-.top-results-mobile{margin:0.7rem 0}
-.podium-list{display:flex;flex-direction:column;gap:0.3rem;align-items:flex-start;width:100%;max-width:520px;margin:0 auto}
-.podium-item{display:flex;flex-direction:row;align-items:center;width:100%;background:#fff;border-radius:10px;box-shadow:0 1px 2px rgba(0,0,0,0.05);border-left:8px solid;margin:0;padding:0.4rem 0.5rem;min-width:0;min-height:0}
-.podium-item.gold{border-left-color:#FFD700}
-.podium-item.silver{border-left-color:#C0C0C0}
-.podium-item.bronze{border-left-color:#CD7F32}
-.rank-icon{font-size:1.1rem;margin-right:0.5rem;flex-shrink:0}
-.podium-photo{width:56px;height:56px;border-radius:7px;margin-right:0.7rem;flex-shrink:0;overflow:hidden;background:#f4f4f4;display:flex;align-items:center;justify-content:center}
-.podium-photo img{width:100%;height:100%;object-fit:cover;display:block;cursor:pointer}
-.team-info{flex:1;min-width:0;text-align:left;display:flex;flex-direction:column;gap:0.1rem}
-.position{font-size:0.98rem;font-weight:bold;color:#2c3e50;line-height:1.1}
-.team-name{font-size:1.05rem;font-weight:700;word-break:break-word;line-height:1.1}
-.photo-modal{display:none;position:fixed;z-index:9999;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);align-items:center;justify-content:center}
-.photo-modal.open{display:flex}
-.photo-modal-content{max-width:90vw;max-height:80vh;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.3)}
-.photo-modal-close{position:absolute;top:20px;right:30px;color:#fff;font-size:2rem;font-weight:bold;cursor:pointer;z-index:10000}
-@media(min-width:769px){
-.podium-photo{width:84px!important;height:84px!important;border-radius:10px!important}
-.rank-icon{font-size:1.65rem!important}
-.position{font-size:1.2rem!important}
-.team-name{font-size:1.3rem!important}
-}
-</style>`;
+  return `<div class="top-results-mobile" style="margin:0.7rem 0"><div class="podium-list" style="display:flex;flex-direction:column;gap:0.3rem;align-items:flex-start;width:100%;max-width:520px;margin:0 auto">\n${items}</div></div>`;
 }
 
 function buildRankingTableHTML(teams) {
+  const thStyle = 'background:#f8f9fa;font-weight:700;padding:0.6rem 0.8rem;border-bottom:2px solid #dee2e6;text-align:center';
+  const tdStyle = 'padding:0.5rem 0.8rem;border-bottom:1px solid #eee;text-align:center';
+  const tdNameStyle = tdStyle + ';text-align:left;font-weight:500';
   let rows = '';
   teams.forEach(t => {
-    const cls = t.rank === 1 ? ' class="rank-gold"' : t.rank === 2 ? ' class="rank-silver"' : t.rank === 3 ? ' class="rank-bronze"' : '';
+    let bgStyle = '';
+    let rankTdExtra = '';
+    if (t.rank === 1) { bgStyle = ';background:rgba(255,215,0,0.08)'; rankTdExtra = ';font-weight:700;color:#b8860b'; }
+    else if (t.rank === 2) { bgStyle = ';background:rgba(192,192,192,0.08)'; rankTdExtra = ';font-weight:700;color:#808080'; }
+    else if (t.rank === 3) { bgStyle = ';background:rgba(205,127,50,0.08)'; rankTdExtra = ';font-weight:700;color:#8B4513'; }
     const pmDisplay = t.pm && t.pm !== '0' && t.pm !== '' ? t.pm : '';
-    rows += `<tr${cls}><td>${t.rank}</td><td>${t.name}</td><td>${t.participation}</td><td>${t.qualifier}</td><td>${t.final}</td><td>${t.bonus}</td><td>${pmDisplay}</td><td>${t.total}</td></tr>\n`;
+    rows += `<tr style="${bgStyle}"><td style="${tdStyle}${rankTdExtra}">${t.rank}</td><td style="${tdNameStyle}">${t.name}</td><td style="${tdStyle}">${t.participation}</td><td style="${tdStyle}">${t.qualifier}</td><td style="${tdStyle}">${t.final}</td><td style="${tdStyle}">${t.bonus}</td><td style="${tdStyle}">${pmDisplay}</td><td style="${tdStyle}">${t.total}</td></tr>\n`;
   });
 
-  return `<div class="naimol-ranking-wrap">
-<table class="naimol-ranking">
-<thead><tr><th>順位</th><th>チーム</th><th>参加</th><th>予選</th><th>決勝</th><th>ボーナス</th><th>PM</th><th>合計</th></tr></thead>
-<tbody>
-${rows}</tbody>
-</table>
-</div>
-<style>
-.naimol-ranking-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:1rem 0}
-.naimol-ranking{width:100%;border-collapse:collapse;font-size:0.9rem;white-space:nowrap;min-width:500px}
-.naimol-ranking th{background:#f8f9fa;font-weight:700;padding:0.6rem 0.8rem;border-bottom:2px solid #dee2e6;text-align:center;position:sticky;top:0}
-.naimol-ranking td{padding:0.5rem 0.8rem;border-bottom:1px solid #eee;text-align:center}
-.naimol-ranking td:nth-child(2){text-align:left;font-weight:500}
-.naimol-ranking tr:hover{background:#f8f9fa}
-.naimol-ranking .rank-gold{background:rgba(255,215,0,0.08)}
-.naimol-ranking .rank-gold td:first-child{font-weight:700;color:#b8860b}
-.naimol-ranking .rank-silver{background:rgba(192,192,192,0.08)}
-.naimol-ranking .rank-silver td:first-child{font-weight:700;color:#808080}
-.naimol-ranking .rank-bronze{background:rgba(205,127,50,0.08)}
-.naimol-ranking .rank-bronze td:first-child{font-weight:700;color:#8B4513}
-</style>`;
+  return `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:1rem 0">` +
+    `<table style="width:100%;border-collapse:collapse;font-size:0.9rem;white-space:nowrap;min-width:500px">` +
+    `<thead><tr><th style="${thStyle}">順位</th><th style="${thStyle}">チーム</th><th style="${thStyle}">参加</th><th style="${thStyle}">予選</th><th style="${thStyle}">決勝</th><th style="${thStyle}">ボーナス</th><th style="${thStyle}">PM</th><th style="${thStyle}">合計</th></tr></thead>` +
+    `<tbody>\n${rows}</tbody></table></div>`;
 }
 
 function buildPMListHTML(pms) {
   if (!pms.length) return '';
   let items = '';
-  pms.forEach(pm => {
-    items += `<div class="perfect-team-item"><span class="perfect-icon">⚡</span><span class="perfect-team-link">${pm.name}</span><span class="perfect-target">${pm.match}</span></div>\n`;
+  pms.forEach((pm, i) => {
+    const border = i < pms.length - 1 ? 'border-bottom:1px solid #f1f3f4;' : '';
+    items += `<div style="display:flex;align-items:center;padding:0.8rem 1rem;${border}">` +
+      `<span style="font-size:1.2rem;margin-right:0.8rem">⚡</span>` +
+      `<span style="font-weight:500;font-size:1rem;flex:1;min-width:0;word-break:break-word">${pm.name}</span>` +
+      `<span style="color:#888;font-size:0.9rem;margin-left:0.8rem;white-space:nowrap">${pm.match}</span></div>\n`;
   });
-  return `<div class="perfect-molkky-teams">
-<div class="perfect-teams-list">
-${items}</div>
-</div>
-<style>
-.perfect-molkky-teams{margin:1rem 0}
-.perfect-teams-list{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);overflow:hidden;max-width:480px}
-.perfect-team-item{display:flex;align-items:center;padding:0.8rem 1rem;border-bottom:1px solid #f1f3f4}
-.perfect-team-item:last-child{border-bottom:none}
-.perfect-icon{font-size:1.2rem;margin-right:0.8rem;flex-shrink:0}
-.perfect-team-link{font-weight:500;font-size:1rem;flex:1;min-width:0;word-break:break-word}
-.perfect-target{color:#888;font-size:0.9rem;margin-left:0.8rem;flex-shrink:0;white-space:nowrap}
-@media(max-width:768px){
-.perfect-team-item{padding:0.6rem 0.7rem}
-.perfect-icon{font-size:1rem;margin-right:0.5rem}
-.perfect-team-link{font-size:0.9rem}
-.perfect-target{font-size:0.85rem;margin-left:0.5rem}
-}
-</style>`;
+  return `<div style="margin:1rem 0"><div style="background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);overflow:hidden;max-width:480px">\n${items}</div></div>`;
 }
 
 function buildResultContent(eventTitle, top4, allTeams, pmTeams) {
@@ -1490,12 +1430,12 @@ async function updateResultPhotos() {
   const page = await wpFetch('/wp-json/wp/v2/pages/' + resultPage.id + '?context=edit');
   let content = page.content.raw;
   content = content.replace(
-    /(<div class="podium-item \w+">\s*<div class="rank-icon">[^<]*<\/div>\s*)<div class="podium-photo"[^>]*>(?:<a[^>]*>)?(?:<img[^>]*\/?>|[^<]*)(?:<\/a>)?<\/div>([\s\S]*?<div class="team-name">[\s\S]*?<\/div>)/g,
+    /(<div class="podium-item[^"]*"[^>]*>\s*<span[^>]*>[^<]*<\/span>\s*)<div class="podium-photo"[^>]*>(?:<a[^>]*>)?(?:<img[^>]*\/?>|[^<]*)(?:<\/a>)?<\/div>([\s\S]*?<div class="team-name"[\s\S]*?<\/div>)/g,
     (match, before, after) => {
       for (const team of podiumTeams) {
         if (!team.photoUrl || !after.includes(team.name)) continue;
         log(team.name + ': ページ反映', 'ok');
-        return before + '<div class="podium-photo"><a href="' + team.photoUrl + '"><img src="' + team.photoUrl + '" alt="' + team.rank + ' ' + team.name + '" style="width:100%;height:100%;object-fit:cover;border-radius:8px;"></a></div>' + after;
+        return before + '<div class="podium-photo" style="width:56px;height:56px;border-radius:7px;margin-right:0.7rem;overflow:hidden;background:#f4f4f4;display:flex;align-items:center;justify-content:center;flex-shrink:0"><a href="' + team.photoUrl + '"><img src="' + team.photoUrl + '" alt="' + team.rank + ' ' + team.name + '" style="width:100%;height:100%;object-fit:cover;display:block"></a></div>' + after;
       }
       return match;
     }
