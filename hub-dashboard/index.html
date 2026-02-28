@@ -31,6 +31,22 @@ body {
 }
 .refresh-btn:active { opacity: 0.7; }
 
+/* Weekly Summary Card */
+.summary-card {
+  background: linear-gradient(135deg, #1a3a5c 0%, #1f2a40 100%);
+  border: 1px solid #2d4a6f; border-radius: 12px;
+  padding: 16px 18px; margin-bottom: 24px;
+}
+.summary-title {
+  font-size: 12px; font-weight: 700; color: var(--accent);
+  margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+}
+.summary-body { font-size: 13px; line-height: 1.7; }
+.summary-line { display: flex; align-items: center; gap: 6px; }
+.summary-up { color: var(--green); font-weight: 600; }
+.summary-down { color: var(--red); font-weight: 600; }
+.summary-meta { font-size: 10px; color: var(--sub); margin-top: 8px; }
+
 /* Section */
 .section { margin-bottom: 28px; }
 .section-header {
@@ -55,6 +71,27 @@ body {
 .kpi-neutral { color: var(--sub); }
 .kpi-source { font-size: 10px; color: var(--sub); margin-top: 6px; opacity: 0.6; }
 
+/* Goals */
+.goals-grid { display: flex; flex-direction: column; gap: 10px; }
+.goal-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px;
+}
+.goal-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.goal-label { font-size: 12px; color: var(--sub); }
+.goal-nums { font-size: 12px; }
+.goal-current { font-weight: 700; }
+.goal-target { color: var(--sub); }
+.goal-bar-bg {
+  height: 8px; background: #1c2128; border-radius: 4px;
+  overflow: hidden;
+}
+.goal-bar {
+  height: 100%; border-radius: 4px;
+  transition: width 0.8s ease;
+}
+.goal-pct { font-size: 11px; font-weight: 600; margin-top: 4px; text-align: right; }
+
 /* Bar Chart */
 .chart { margin-top: 8px; }
 .chart-row {
@@ -77,6 +114,59 @@ body {
 .chart-bar-clicks { background: linear-gradient(90deg, #238636, #3fb950); }
 .chart-bar-impressions { background: linear-gradient(90deg, #6e40c9, #bc8cff); }
 .chart-bar-tournaments { background: linear-gradient(90deg, #b35d00, #d29922); }
+.chart-bar-sources { background: linear-gradient(90deg, #39d2c0, #56e8d6); }
+.chart-bar-pages { background: linear-gradient(90deg, #f778ba, #ffa0d0); }
+
+/* Source bar colors */
+.src-organic-search { background: linear-gradient(90deg, #238636, #3fb950); }
+.src-organic-social { background: linear-gradient(90deg, #1f6feb, #58a6ff); }
+.src-direct { background: linear-gradient(90deg, #6e40c9, #bc8cff); }
+.src-referral { background: linear-gradient(90deg, #b35d00, #d29922); }
+.src-other { background: linear-gradient(90deg, #484f58, #8b949e); }
+
+/* Source label */
+.source-row {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 8px; font-size: 12px;
+}
+.source-label-box {
+  width: 100px; flex-shrink: 0; display: flex; align-items: center; gap: 6px;
+}
+.source-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.source-bar-bg {
+  flex: 1; height: 24px; background: #1c2128; border-radius: 4px;
+  overflow: hidden; position: relative;
+}
+.source-bar {
+  height: 100%; border-radius: 4px;
+  transition: width 0.8s ease;
+  display: flex; align-items: center; justify-content: flex-end;
+  padding-right: 8px; font-size: 11px; font-weight: 600;
+  color: rgba(255,255,255,0.9); min-width: 40px;
+}
+.source-pct { width: 38px; text-align: right; font-size: 11px; color: var(--sub); flex-shrink: 0; }
+
+/* Top Pages */
+.page-list { display: flex; flex-direction: column; gap: 6px; }
+.page-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; font-size: 12px;
+}
+.page-rank {
+  width: 24px; height: 24px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; flex-shrink: 0;
+  background: #1c2128; color: var(--sub);
+}
+.page-rank-1 { background: #3d2e00; color: #ffd700; }
+.page-rank-2 { background: #2a2d30; color: #c0c0c0; }
+.page-rank-3 { background: #2d1f0f; color: #cd7f32; }
+.page-path { flex: 1; color: var(--accent); word-break: break-all; }
+.page-path a { color: inherit; text-decoration: none; }
+.page-path a:hover { text-decoration: underline; }
+.page-pv { font-weight: 700; flex-shrink: 0; }
+.page-users { font-size: 10px; color: var(--sub); flex-shrink: 0; }
 
 /* Data Table */
 .data-table { width: 100%; font-size: 12px; }
@@ -86,6 +176,9 @@ body {
 }
 .data-table td { padding: 8px; border-bottom: 1px solid #1c2128; }
 .data-table tr:last-child td { border-bottom: none; }
+.data-table .pos-good { color: var(--green); }
+.data-table .pos-mid { color: var(--orange); }
+.data-table .pos-low { color: var(--sub); }
 
 /* Content Cards */
 .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -140,6 +233,65 @@ body {
   60%, 100% { content: '...'; }
 }
 
+/* Skeleton Loading */
+.skeleton {
+  background: linear-gradient(90deg, #1c2128 25%, #2a3040 50%, #1c2128 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.skeleton-kpi { height: 28px; width: 60%; margin-bottom: 4px; }
+.skeleton-bar { height: 22px; margin-bottom: 6px; }
+.skeleton-text { height: 14px; width: 80%; margin-bottom: 8px; }
+
+/* Section Collapsible */
+.section-header {
+  cursor: pointer; user-select: none;
+}
+.section-toggle {
+  margin-left: auto; font-size: 10px; color: var(--sub);
+  transition: transform 0.2s;
+}
+.section.collapsed .section-toggle { transform: rotate(-90deg); }
+.section-body {
+  overflow: hidden; transition: max-height 0.3s ease, opacity 0.3s ease;
+  max-height: 2000px; opacity: 1;
+}
+.section.collapsed .section-body {
+  max-height: 0; opacity: 0;
+}
+
+/* Agenda Edit */
+.agenda-actions {
+  display: flex; gap: 6px; margin-top: 12px;
+}
+.agenda-btn {
+  background: var(--card); border: 1px solid var(--border); color: var(--accent);
+  padding: 6px 12px; border-radius: 6px; font-size: 11px; cursor: pointer;
+  font-family: inherit; flex: 1; text-align: center;
+}
+.agenda-btn:active { opacity: 0.7; }
+.agenda-btn-del { color: var(--red); }
+.agenda-status { cursor: pointer; }
+.agenda-status:active { opacity: 0.6; }
+.agenda-text { flex: 1; }
+.agenda-del-btn {
+  background: none; border: none; color: var(--red); cursor: pointer;
+  font-size: 14px; padding: 0 4px; opacity: 0.5;
+}
+.agenda-del-btn:hover { opacity: 1; }
+
+/* Chart Hover */
+.chart-row:hover .chart-bar { filter: brightness(1.2); }
+.chart-row:hover { background: rgba(255,255,255,0.02); border-radius: 4px; }
+.source-row:hover .source-bar { filter: brightness(1.2); }
+.source-row:hover { background: rgba(255,255,255,0.02); border-radius: 4px; }
+.page-item:hover { border-color: var(--accent); background: #1a2030; }
+
 /* Footer */
 .footer { padding: 24px 0; text-align: center; font-size: 10px; color: var(--sub); }
 .footer a { color: var(--accent); text-decoration: none; }
@@ -156,11 +308,20 @@ body {
   </div>
 </div>
 
+<!-- ========== 今週のサマリー ========== -->
+<div class="summary-card" id="weeklySummary" style="display:none">
+  <div class="summary-title">今週のサマリー（vs 先週）</div>
+  <div class="summary-body" id="summaryBody"></div>
+  <div class="summary-meta" id="summaryMeta"></div>
+</div>
+
 <!-- ========== KPI概要 ========== -->
-<div class="section">
-  <div class="section-header">
+<div class="section" data-section="kpi">
+  <div class="section-header" onclick="toggleSection(this)">
     <span class="section-icon">📊</span> KPI概要
+    <span class="section-toggle">▼</span>
   </div>
+  <div class="section-body">
   <div class="kpi-grid">
     <div class="kpi-card">
       <div class="kpi-label">月間セッション</div>
@@ -178,6 +339,18 @@ body {
       <div class="kpi-label">月間ユーザー</div>
       <div class="kpi-value" id="kpiUsers">-</div>
       <div class="kpi-change" id="kpiUsersChange"></div>
+      <div class="kpi-source">GA4 API</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">直帰率</div>
+      <div class="kpi-value" id="kpiBounce">-</div>
+      <div class="kpi-change" id="kpiBounceChange"></div>
+      <div class="kpi-source">GA4 API</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">平均滞在時間</div>
+      <div class="kpi-value" id="kpiDuration">-</div>
+      <div class="kpi-change" id="kpiDurationChange"></div>
       <div class="kpi-source">GA4 API</div>
     </div>
     <div class="kpi-card">
@@ -199,23 +372,67 @@ body {
       <div class="kpi-source">WP API 自動取得</div>
     </div>
   </div>
+  </div>
+</div>
+
+<!-- ========== 月次目標 ========== -->
+<div class="section" data-section="goals">
+  <div class="section-header" onclick="toggleSection(this)">
+    <span class="section-icon">🎯</span> 月次目標
+    <button class="refresh-btn" onclick="event.stopPropagation();editGoals()" style="margin-left:auto;font-size:10px;padding:3px 8px;">目標設定</button>
+    <span class="section-toggle">▼</span>
+  </div>
+  <div class="section-body">
+  <div class="goals-grid" id="goalsGrid"></div>
+  </div>
 </div>
 
 <!-- ========== トラフィック推移 ========== -->
-<div class="section">
-  <div class="section-header">
+<div class="section" data-section="traffic">
+  <div class="section-header" onclick="toggleSection(this)">
     <span class="section-icon">📈</span> トラフィック推移（直近6ヶ月）
+    <span class="section-toggle">▼</span>
   </div>
+  <div class="section-body">
   <div class="chart" id="trafficChart">
     <div class="loading">データ読込中</div>
+  </div>
+  </div>
+</div>
+
+<!-- ========== 流入元の内訳 ========== -->
+<div class="section" data-section="sources">
+  <div class="section-header" onclick="toggleSection(this)">
+    <span class="section-icon">🌐</span> 流入元の内訳（今月）
+    <span class="section-toggle">▼</span>
+  </div>
+  <div class="section-body">
+  <div id="sourcesChart">
+    <div class="loading">データ読込中</div>
+  </div>
+  </div>
+</div>
+
+<!-- ========== 人気ページ ========== -->
+<div class="section" data-section="pages">
+  <div class="section-header" onclick="toggleSection(this)">
+    <span class="section-icon">🔥</span> 人気ページ TOP10（直近30日）
+    <span class="section-toggle">▼</span>
+  </div>
+  <div class="section-body">
+  <div class="page-list" id="topPagesList">
+    <div class="loading">データ読込中</div>
+  </div>
   </div>
 </div>
 
 <!-- ========== サーチコンソール ========== -->
-<div class="section">
-  <div class="section-header">
+<div class="section" data-section="sc">
+  <div class="section-header" onclick="toggleSection(this)">
     <span class="section-icon">🔍</span> Search Console
+    <span class="section-toggle">▼</span>
   </div>
+  <div class="section-body">
   <div class="kpi-grid" style="margin-bottom:16px;">
     <div class="kpi-card">
       <div class="kpi-label">月間クリック数</div>
@@ -230,30 +447,36 @@ body {
   </div>
   <div class="chart" id="clicksChart"></div>
   <div style="margin-top:16px;">
-    <div style="font-size:12px; font-weight:600; color:var(--sub); margin-bottom:8px;">検索クエリ TOP5</div>
+    <div style="font-size:12px; font-weight:600; color:var(--sub); margin-bottom:8px;">検索クエリ TOP10</div>
     <table class="data-table" id="queryTable">
-      <thead><tr><th>クエリ</th><th>クリック</th><th>表示回数</th></tr></thead>
+      <thead><tr><th>クエリ</th><th>クリック</th><th>表示回数</th><th>順位</th></tr></thead>
       <tbody id="queryBody"></tbody>
     </table>
+  </div>
   </div>
 </div>
 
 <!-- ========== コンテンツ詳細 ========== -->
-<div class="section">
-  <div class="section-header">
+<div class="section" data-section="content">
+  <div class="section-header" onclick="toggleSection(this)">
     <span class="section-icon">📝</span> コンテンツ（WP API自動取得）
+    <span class="section-toggle">▼</span>
   </div>
+  <div class="section-body">
   <div class="content-grid" id="contentGrid">
     <div class="loading">WP API 取得中</div>
+  </div>
   </div>
 </div>
 
 <!-- ========== SNS ========== -->
-<div class="section">
-  <div class="section-header">
+<div class="section" data-section="sns">
+  <div class="section-header" onclick="toggleSection(this)">
     <span class="section-icon">🐦</span> SNS（<a href="https://x.com/molkkyhub" target="_blank" style="color:var(--accent);text-decoration:none;">@molkkyhub</a>）
-    <button class="refresh-btn" onclick="editSNS()" style="margin-left:auto;font-size:10px;padding:3px 8px;">数値更新</button>
+    <button class="refresh-btn" onclick="event.stopPropagation();editSNS()" style="margin-left:auto;font-size:10px;padding:3px 8px;">数値更新</button>
+    <span class="section-toggle">▼</span>
   </div>
+  <div class="section-body">
   <div class="kpi-grid">
     <div class="kpi-card">
       <div class="kpi-label">フォロワー</div>
@@ -272,68 +495,54 @@ body {
     <a class="twitter-timeline" data-theme="dark" data-height="300" data-chrome="noheader nofooter noborders transparent" href="https://twitter.com/molkkyhub">@molkkyhub</a>
     <script async src="https://platform.twitter.com/widgets.js"></script>
   </div>
+  </div>
 </div>
 
 <!-- ========== パートナー状況 ========== -->
-<div class="section">
-  <div class="section-header">
+<div class="section" data-section="partner">
+  <div class="section-header" onclick="toggleSection(this)">
     <span class="section-icon">🤝</span> パートナー状況（Firebase自動取得）
+    <span class="section-toggle">▼</span>
   </div>
+  <div class="section-body">
   <div class="partner-list" id="partnerList">
     <div class="loading">Firebase 取得中</div>
+  </div>
   </div>
 </div>
 
 <!-- ========== 月別大会掲載推移 ========== -->
-<div class="section">
-  <div class="section-header">
+<div class="section" data-section="tournaments">
+  <div class="section-header" onclick="toggleSection(this)">
     <span class="section-icon">🏆</span> 月別大会掲載推移
+    <span class="section-toggle">▼</span>
   </div>
+  <div class="section-body">
   <div class="chart" id="tournamentChart">
     <div class="loading">WP API 取得中</div>
+  </div>
   </div>
 </div>
 
 <!-- ========== 向上委員会アジェンダ ========== -->
-<div class="section">
-  <div class="section-header">
+<div class="section" data-section="agenda">
+  <div class="section-header" onclick="toggleSection(this)">
     <span class="section-icon">💡</span> 向上委員会アジェンダ
+    <span class="section-toggle">▼</span>
   </div>
+  <div class="section-body">
   <p style="font-size:12px; color:var(--sub); margin-bottom:12px;">モルハブ改善のためのTODO・検討事項</p>
-  <div class="agenda-box">
-    <div class="agenda-title">今月の議題</div>
-    <div class="agenda-item">
-      <span class="agenda-status agenda-new">●</span>
-      <span>パートナーLP公開 → 営業開始のタイミング</span>
-    </div>
-    <div class="agenda-item">
-      <span class="agenda-status agenda-new">●</span>
-      <span>SEO強化：上位狙うキーワード選定</span>
-    </div>
-    <div class="agenda-item">
-      <span class="agenda-status agenda-pending">△</span>
-      <span>大会情報の自動投稿フローの改善</span>
-    </div>
-    <div class="agenda-item">
-      <span class="agenda-status agenda-pending">△</span>
-      <span>チーム紹介100チーム掲載に向けた計画</span>
-    </div>
-    <div class="agenda-item">
-      <span class="agenda-status agenda-done">✓</span>
-      <span>パートナー循環ポータル構築</span>
-    </div>
-    <div class="agenda-item">
-      <span class="agenda-status agenda-done">✓</span>
-      <span>チャプ会議事録の全自動化</span>
-    </div>
+  <div class="agenda-box" id="agendaContainer"></div>
   </div>
 </div>
 
 <!-- ========== リンク集 ========== -->
-<div class="section">
-  <div class="section-header">
+<div class="section" data-section="links">
+  <div class="section-header" onclick="toggleSection(this)">
     <span class="section-icon">🔗</span> クイックリンク
+    <span class="section-toggle">▼</span>
   </div>
+  <div class="section-body">
   <div class="kpi-grid">
     <a href="https://molkky-hub.com/wp-admin/" target="_blank" style="text-decoration:none;">
       <div class="kpi-card" style="cursor:pointer;text-align:center;">
@@ -360,6 +569,7 @@ body {
       </div>
     </a>
   </div>
+  </div>
 </div>
 
 <div class="footer">
@@ -374,8 +584,6 @@ body {
 // ========== Config ==========
 const WP_API = 'https://molkky-hub.com/wp-json/wp/v2';
 
-// GAS Web App — デプロイ後にURLを設定
-// 未設定の場合は data.json にフォールバック
 const GAS_ENDPOINT = localStorage.getItem('hub_gas_endpoint') || 'https://script.google.com/macros/s/AKfycby_RB6NgSD7zq3Xx7pfsTiPG8JxHw7rtuw-drYYxcMyUwMeFed5zgtLjZimv2ZkFzsACQ/exec';
 
 const FIREBASE_CONFIG = {
@@ -384,7 +592,6 @@ const FIREBASE_CONFIG = {
   projectId: "viisi-master-app"
 };
 
-// Firebase init
 firebase.initializeApp(FIREBASE_CONFIG);
 const db = firebase.database();
 
@@ -405,6 +612,11 @@ function shortMonth(m) {
   const parts = m.split('-');
   return parseInt(parts[1]) + '月';
 }
+function fmtDuration(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return m + ':' + String(s).padStart(2, '0');
+}
 
 // ========== GAS Endpoint Setup ==========
 function setupGAS() {
@@ -421,7 +633,6 @@ let analyticsData = null;
 async function loadAnalytics() {
   const srcEl = document.getElementById('srcSessions');
 
-  // Try GAS Web App first
   if (GAS_ENDPOINT) {
     try {
       srcEl.textContent = 'GAS API 取得中...';
@@ -439,7 +650,6 @@ async function loadAnalytics() {
     }
   }
 
-  // Fallback to data.json
   if (!analyticsData) {
     try {
       const res = await fetch('./data.json?t=' + Date.now());
@@ -455,6 +665,12 @@ async function loadAnalytics() {
 
   document.getElementById('lastUpdated').textContent = analyticsData.lastUpdated;
 
+  // Weekly summary
+  if (analyticsData.weeklySummary) {
+    renderWeeklySummary(analyticsData.weeklySummary);
+  }
+
+  // Traffic + KPIs
   if (analyticsData.traffic && analyticsData.traffic.months && analyticsData.traffic.months.length >= 2) {
     renderTraffic();
     if (srcEl && GAS_ENDPOINT && !analyticsData.traffic.error) srcEl.textContent = 'GA4 API 自動取得';
@@ -463,6 +679,7 @@ async function loadAnalytics() {
       '<div style="font-size:12px;color:var(--sub);padding:8px;">トラフィックデータなし</div>';
   }
 
+  // Search Console
   if (analyticsData.searchConsole && analyticsData.searchConsole.months && analyticsData.searchConsole.months.length >= 2) {
     renderSearchConsole();
   } else {
@@ -470,16 +687,65 @@ async function loadAnalytics() {
       '<div style="font-size:12px;color:var(--sub);padding:8px;">Search Consoleデータなし</div>';
   }
 
+  // Top Pages
+  if (analyticsData.topPages && analyticsData.topPages.length > 0) {
+    renderTopPages();
+  } else {
+    document.getElementById('topPagesList').innerHTML =
+      '<div style="font-size:12px;color:var(--sub);padding:8px;">ページデータなし</div>';
+  }
+
+  // Traffic Sources
+  if (analyticsData.trafficSources && analyticsData.trafficSources.length > 0) {
+    renderTrafficSources();
+  } else {
+    document.getElementById('sourcesChart').innerHTML =
+      '<div style="font-size:12px;color:var(--sub);padding:8px;">流入元データなし</div>';
+  }
+
+  // Goals (uses traffic data)
+  renderGoals();
+
+  // SNS
   if (analyticsData.sns) {
     renderSNS();
   }
 }
 
+// ========== Weekly Summary ==========
+function renderWeeklySummary(text) {
+  const card = document.getElementById('weeklySummary');
+  const body = document.getElementById('summaryBody');
+  const meta = document.getElementById('summaryMeta');
+
+  const lines = text.split('\n');
+  let html = '';
+  let metaText = '';
+
+  lines.forEach(line => {
+    if (line.startsWith('更新:')) {
+      metaText = line;
+      return;
+    }
+    if (!line.trim()) return;
+    const hasUp = line.includes('↑');
+    const hasDown = line.includes('↓');
+    const cls = hasUp ? 'summary-up' : hasDown ? 'summary-down' : '';
+    html += `<div class="summary-line ${cls}">${line}</div>`;
+  });
+
+  body.innerHTML = html;
+  meta.textContent = metaText;
+  card.style.display = 'block';
+}
+
+// ========== Traffic + KPIs ==========
 function renderTraffic() {
   const months = analyticsData.traffic.months;
   const latest = months[months.length - 1];
   const prev = months[months.length - 2];
 
+  // Main KPIs
   document.getElementById('kpiSessions').textContent = fmt(latest.sessions);
   document.getElementById('kpiSessionsChange').innerHTML = changeHTML(latest.sessions, prev.sessions);
   document.getElementById('kpiPV').textContent = fmt(latest.pv);
@@ -487,6 +753,21 @@ function renderTraffic() {
   document.getElementById('kpiUsers').textContent = fmt(latest.users);
   document.getElementById('kpiUsersChange').innerHTML = changeHTML(latest.users, prev.users);
 
+  // Bounce rate (lower is better → invert)
+  if (latest.bounceRate !== undefined) {
+    document.getElementById('kpiBounce').textContent = latest.bounceRate + '%';
+    document.getElementById('kpiBounceChange').innerHTML =
+      prev.bounceRate !== undefined ? changeHTML(latest.bounceRate, prev.bounceRate, true) : '';
+  }
+
+  // Avg duration
+  if (latest.avgDuration !== undefined) {
+    document.getElementById('kpiDuration').textContent = fmtDuration(latest.avgDuration);
+    document.getElementById('kpiDurationChange').innerHTML =
+      prev.avgDuration !== undefined ? changeHTML(latest.avgDuration, prev.avgDuration) : '';
+  }
+
+  // Chart
   const maxVal = Math.max(...months.map(m => m.sessions));
   let html = '';
   months.forEach(m => {
@@ -501,6 +782,80 @@ function renderTraffic() {
   document.getElementById('trafficChart').innerHTML = html;
 }
 
+// ========== Traffic Sources ==========
+const SOURCE_LABELS = {
+  'Organic Search': '検索',
+  'Organic Social': 'SNS',
+  'Direct': 'ダイレクト',
+  'Referral': '参照元',
+  'Paid Search': '有料検索',
+  'Email': 'メール',
+  'Unassigned': 'その他'
+};
+const SOURCE_COLORS = {
+  'Organic Search': ['#238636', '#3fb950'],
+  'Organic Social': ['#1f6feb', '#58a6ff'],
+  'Direct': ['#6e40c9', '#bc8cff'],
+  'Referral': ['#b35d00', '#d29922'],
+};
+const SOURCE_DOT_COLORS = {
+  'Organic Search': '#3fb950',
+  'Organic Social': '#58a6ff',
+  'Direct': '#bc8cff',
+  'Referral': '#d29922',
+};
+
+function renderTrafficSources() {
+  const sources = analyticsData.trafficSources;
+  const total = sources.reduce((sum, s) => sum + s.sessions, 0);
+  const maxSessions = sources[0] ? sources[0].sessions : 1;
+
+  let html = '';
+  sources.forEach(s => {
+    const label = SOURCE_LABELS[s.source] || s.source;
+    const pct = total > 0 ? (s.sessions / total * 100).toFixed(1) : '0';
+    const barPct = (s.sessions / maxSessions * 100).toFixed(0);
+    const colors = SOURCE_COLORS[s.source] || ['#484f58', '#8b949e'];
+    const dotColor = SOURCE_DOT_COLORS[s.source] || '#8b949e';
+
+    html += `<div class="source-row">
+      <div class="source-label-box">
+        <span class="source-dot" style="background:${dotColor}"></span>
+        <span>${label}</span>
+      </div>
+      <div class="source-bar-bg">
+        <div class="source-bar" style="width:${barPct}%;background:linear-gradient(90deg,${colors[0]},${colors[1]})">${fmt(s.sessions)}</div>
+      </div>
+      <span class="source-pct">${pct}%</span>
+    </div>`;
+  });
+
+  document.getElementById('sourcesChart').innerHTML = html;
+}
+
+// ========== Top Pages ==========
+function renderTopPages() {
+  const pages = analyticsData.topPages.slice(0, 10);
+  let html = '';
+
+  pages.forEach((p, i) => {
+    const rank = i + 1;
+    const rankCls = rank <= 3 ? ` page-rank-${rank}` : '';
+    const path = p.path.length > 40 ? p.path.substring(0, 38) + '...' : p.path;
+    const href = 'https://molkky-hub.com' + p.path;
+
+    html += `<div class="page-item">
+      <span class="page-rank${rankCls}">${rank}</span>
+      <span class="page-path"><a href="${href}" target="_blank">${path}</a></span>
+      <span class="page-pv">${fmt(p.pv)}</span>
+      <span class="page-users">${fmt(p.users)}人</span>
+    </div>`;
+  });
+
+  document.getElementById('topPagesList').innerHTML = html;
+}
+
+// ========== Search Console ==========
 function renderSearchConsole() {
   const sc = analyticsData.searchConsole;
   const months = sc.months;
@@ -526,16 +881,89 @@ function renderSearchConsole() {
   });
   document.getElementById('clicksChart').innerHTML = html;
 
-  // Query table
+  // Query table (TOP10 + position)
   let tbody = '';
-  (sc.topQueries || []).forEach(q => {
-    tbody += `<tr><td>${q.query}</td><td>${fmt(q.clicks)}</td><td>${fmt(q.impressions)}</td></tr>`;
+  (sc.topQueries || []).slice(0, 10).forEach(q => {
+    const pos = q.position || 0;
+    const posCls = pos <= 5 ? 'pos-good' : pos <= 20 ? 'pos-mid' : 'pos-low';
+    tbody += `<tr>
+      <td>${q.query}</td>
+      <td>${fmt(q.clicks)}</td>
+      <td>${fmt(q.impressions)}</td>
+      <td class="${posCls}">${pos.toFixed(1)}</td>
+    </tr>`;
   });
-  document.getElementById('queryBody').innerHTML = tbody || '<tr><td colspan="3" style="color:var(--sub)">データなし</td></tr>';
+  document.getElementById('queryBody').innerHTML = tbody || '<tr><td colspan="4" style="color:var(--sub)">データなし</td></tr>';
 }
 
+// ========== Monthly Goals ==========
+const DEFAULT_GOALS = { sessions: 4000, pv: 8000, articles: 560 };
+
+function getGoals() {
+  return JSON.parse(localStorage.getItem('hub_goals') || 'null') || DEFAULT_GOALS;
+}
+
+function renderGoals() {
+  const goals = getGoals();
+  const grid = document.getElementById('goalsGrid');
+
+  // Get current values
+  let curSessions = 0, curPV = 0, curArticles = 0;
+  if (analyticsData && analyticsData.traffic && analyticsData.traffic.months) {
+    const latest = analyticsData.traffic.months[analyticsData.traffic.months.length - 1];
+    if (latest) {
+      curSessions = latest.sessions || 0;
+      curPV = latest.pv || 0;
+    }
+  }
+  const articlesEl = document.getElementById('kpiArticles');
+  curArticles = parseInt(articlesEl ? articlesEl.textContent : '0') || 0;
+
+  const items = [
+    { label: 'セッション', current: curSessions, target: goals.sessions, color: 'var(--accent)' },
+    { label: 'PV', current: curPV, target: goals.pv, color: 'var(--green)' },
+    { label: '総記事数', current: curArticles, target: goals.articles, color: 'var(--purple)' }
+  ];
+
+  let html = '';
+  items.forEach(item => {
+    const pct = item.target > 0 ? Math.min(100, (item.current / item.target * 100)).toFixed(0) : 0;
+    const pctColor = pct >= 100 ? 'var(--green)' : pct >= 70 ? 'var(--orange)' : 'var(--red)';
+    html += `<div class="goal-card">
+      <div class="goal-top">
+        <span class="goal-label">${item.label}</span>
+        <span class="goal-nums"><span class="goal-current">${fmt(item.current)}</span> <span class="goal-target">/ ${fmt(item.target)}</span></span>
+      </div>
+      <div class="goal-bar-bg">
+        <div class="goal-bar" style="width:${pct}%;background:${item.color}"></div>
+      </div>
+      <div class="goal-pct" style="color:${pctColor}">${pct}%</div>
+    </div>`;
+  });
+
+  grid.innerHTML = html;
+}
+
+function editGoals() {
+  const goals = getGoals();
+  const s = prompt('月間セッション目標:', goals.sessions);
+  if (s === null) return;
+  const p = prompt('月間PV目標:', goals.pv);
+  if (p === null) return;
+  const a = prompt('総記事数目標:', goals.articles);
+  if (a === null) return;
+
+  const newGoals = {
+    sessions: parseInt(s) || goals.sessions,
+    pv: parseInt(p) || goals.pv,
+    articles: parseInt(a) || goals.articles
+  };
+  localStorage.setItem('hub_goals', JSON.stringify(newGoals));
+  renderGoals();
+}
+
+// ========== SNS ==========
 function renderSNS() {
-  // Load from localStorage (user-input values take priority)
   const stored = JSON.parse(localStorage.getItem('hub_sns_data') || 'null');
   const sns = stored || analyticsData.sns || {};
   const followers = sns.xFollowers || 0;
@@ -599,6 +1027,9 @@ async function loadWPData() {
         <div class="content-label">その他記事</div>
       </div>
     `;
+
+    // Re-render goals now that we have article count
+    renderGoals();
 
     await loadTournamentMonthly();
   } catch (e) {
@@ -678,12 +1109,120 @@ async function loadFirebaseData() {
   }
 }
 
+// ========== Section Toggle ==========
+function toggleSection(headerEl) {
+  const section = headerEl.closest('.section');
+  if (!section) return;
+  section.classList.toggle('collapsed');
+  saveSectionStates();
+}
+
+function saveSectionStates() {
+  const states = {};
+  document.querySelectorAll('.section[data-section]').forEach(s => {
+    states[s.dataset.section] = s.classList.contains('collapsed');
+  });
+  localStorage.setItem('hub_sections', JSON.stringify(states));
+}
+
+function restoreSectionStates() {
+  const states = JSON.parse(localStorage.getItem('hub_sections') || '{}');
+  for (const [key, collapsed] of Object.entries(states)) {
+    if (collapsed) {
+      const el = document.querySelector(`.section[data-section="${key}"]`);
+      if (el) el.classList.add('collapsed');
+    }
+  }
+}
+
+// ========== Skeleton Loading ==========
+function showSkeleton(containerId, count) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  let html = '';
+  for (let i = 0; i < count; i++) {
+    html += '<div class="skeleton skeleton-bar" style="width:' + (60 + Math.random() * 40) + '%"></div>';
+  }
+  el.innerHTML = html;
+}
+
+// ========== Agenda (Dynamic, localStorage) ==========
+const DEFAULT_AGENDA = [
+  { text: 'パートナーLP公開 → 営業開始のタイミング', status: 'new' },
+  { text: 'SEO強化：上位狙うキーワード選定', status: 'new' },
+  { text: '大会情報の自動投稿フローの改善', status: 'pending' },
+  { text: 'チーム紹介100チーム掲載に向けた計画', status: 'pending' },
+  { text: 'パートナー循環ポータル構築', status: 'done' },
+  { text: 'チャプ会議事録の全自動化', status: 'done' }
+];
+
+function getAgendaItems() {
+  return JSON.parse(localStorage.getItem('hub_agenda') || 'null') || DEFAULT_AGENDA;
+}
+
+function saveAgenda(items) {
+  localStorage.setItem('hub_agenda', JSON.stringify(items));
+}
+
+const STATUS_CYCLE = ['new', 'pending', 'done'];
+const STATUS_ICONS = { new: '●', pending: '△', done: '✓' };
+const STATUS_CLASSES = { new: 'agenda-new', pending: 'agenda-pending', done: 'agenda-done' };
+
+function cycleAgendaStatus(idx) {
+  const items = getAgendaItems();
+  if (!items[idx]) return;
+  const cur = STATUS_CYCLE.indexOf(items[idx].status);
+  items[idx].status = STATUS_CYCLE[(cur + 1) % 3];
+  saveAgenda(items);
+  renderAgenda();
+}
+
+function deleteAgendaItem(idx) {
+  const items = getAgendaItems();
+  items.splice(idx, 1);
+  saveAgenda(items);
+  renderAgenda();
+}
+
+function addAgendaItem() {
+  const text = prompt('新しい議題:');
+  if (!text || !text.trim()) return;
+  const items = getAgendaItems();
+  items.unshift({ text: text.trim(), status: 'new' });
+  saveAgenda(items);
+  renderAgenda();
+}
+
+function renderAgenda() {
+  const container = document.getElementById('agendaContainer');
+  if (!container) return;
+  const items = getAgendaItems();
+
+  let html = '<div class="agenda-title">今月の議題</div>';
+  items.forEach((item, i) => {
+    const cls = STATUS_CLASSES[item.status] || 'agenda-new';
+    const icon = STATUS_ICONS[item.status] || '●';
+    html += `<div class="agenda-item">
+      <span class="agenda-status ${cls}" onclick="cycleAgendaStatus(${i})" title="クリックで状態変更">${icon}</span>
+      <span class="agenda-text">${item.text}</span>
+      <button class="agenda-del-btn" onclick="deleteAgendaItem(${i})" title="削除">&times;</button>
+    </div>`;
+  });
+  html += `<div class="agenda-actions">
+    <button class="agenda-btn" onclick="addAgendaItem()">+ 追加</button>
+  </div>`;
+
+  container.innerHTML = html;
+}
+
 // ========== Init ==========
 function loadAll() {
   loadAnalytics();
   loadWPData();
   loadFirebaseData();
 }
+restoreSectionStates();
+renderAgenda();
 loadAll();
 </script>
 
