@@ -1032,35 +1032,34 @@ async function addCrossLinks() {
   const resultUrl = WP + '/nice_molkky_japan_details/' + slug + '/result/';
   const galleryUrl = WP + '/nice_molkky_japan_details/' + slug + '/gallery/';
 
-  // Add link to gallery at bottom of result page
+  // Blog card format: URL alone in paragraph → SWELL auto-converts to blog card
+  // Add gallery link to result page
   try {
     const rp = await wpFetch('/wp-json/wp/v2/pages/' + resultPage.id + '?context=edit');
     let rc = rp.content.raw;
-    const galLinkHtml = '\n<!-- wp:paragraph -->\n<p><a href="' + galleryUrl + '">ギャラリーはこちら</a></p>\n<!-- /wp:paragraph -->';
-    if (!rc.includes('ギャラリーはこちら')) {
-      rc += galLinkHtml;
+    if (!rc.includes(galleryUrl)) {
+      rc += '\n<!-- wp:paragraph -->\n<p>' + galleryUrl + '</p>\n<!-- /wp:paragraph -->';
       await wpFetch('/wp-json/wp/v2/pages/' + resultPage.id, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: rc })
       });
-      log('結果ページにギャラリーリンク追加', 'ok');
+      log('結果ページにギャラリーリンク（ブログカード）追加', 'ok');
     }
   } catch (e) { log('結果→ギャラリーリンク失敗: ' + e.message, 'err'); }
 
-  // Add link to result at bottom of gallery page
+  // Add result link to gallery page
   try {
     const gp = await wpFetch('/wp-json/wp/v2/pages/' + galleryPage.id + '?context=edit');
     let gc = gp.content.raw;
-    const resLinkHtml = '\n<!-- wp:paragraph -->\n<p><a href="' + resultUrl + '">大会結果はこちら</a></p>\n<!-- /wp:paragraph -->';
-    if (!gc.includes('大会結果はこちら')) {
-      gc += resLinkHtml;
+    if (!gc.includes(resultUrl)) {
+      gc += '\n<!-- wp:paragraph -->\n<p>' + resultUrl + '</p>\n<!-- /wp:paragraph -->';
       await wpFetch('/wp-json/wp/v2/pages/' + galleryPage.id, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: gc })
       });
-      log('ギャラリーに結果リンク追加', 'ok');
+      log('ギャラリーに結果リンク（ブログカード）追加', 'ok');
     }
   } catch (e) { log('ギャラリー→結果リンク失敗: ' + e.message, 'err'); }
 
