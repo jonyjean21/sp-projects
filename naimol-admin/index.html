@@ -1764,55 +1764,14 @@ async function uploadGalleryPhotos() {
   loadGalleryMedia();
 }
 
-// ===== Gallery: query WP admin-ajax for folder contents =====
-async function queryFolderMedia(folderId) {
-  const body = new URLSearchParams();
-  body.append('action', 'query-attachments');
-  body.append('query[posts_per_page]', '100');
-  body.append('query[post_mime_type]', 'image');
-  body.append('query[folder]', String(folderId));
-
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 8000);
-  try {
-    const res = await fetch(WP + '/wp-admin/admin-ajax.php', {
-      method: 'POST',
-      headers: { 'Authorization': 'Basic ' + wpAuth },
-      body: body,
-      signal: controller.signal
-    });
-    clearTimeout(timer);
-    if (!res.ok) return null;
-    const json = await res.json();
-    if (!json.success || !json.data) return null;
-    return json.data.map(m => ({
-      id: m.id,
-      url: m.url || m.sizes?.full?.url || '',
-      thumb: m.sizes?.medium?.url || m.sizes?.thumbnail?.url || m.url || '',
-      name: m.title || m.filename || ''
-    }));
-  } catch (e) {
-    clearTimeout(timer);
-    log('admin-ajax timeout/error: ' + e.message, 'info');
-    return null;
-  }
-}
-
-// ===== Gallery: load existing media =====
+// ===== Gallery: load media by matching Drive filenames against WP media =====
 async function loadGalleryMedia() {
   if (!selectedEvent) return;
   await ensureEventFolder();
-  if (!eventFolderId) { log('FileBird\u30D5\u30A9\u30EB\u30C0\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093', 'err'); return; }
 
-  log('WP\u30E1\u30C7\u30A3\u30A2\u8AAD\u307F\u8FBC\u307F\u4E2D...', 'info');
-
-  const subFolders = fbFolders.filter(f => f.parent === eventFolderId);
-  const allFolderIds = [eventFolderId, ...subFolders.map(f => f.id)];
   galleryMediaIds = [];
   galleryFolderMedia = {};
   galleryFolderNames = {};
-  galleryFolderNames[eventFolderId] = '\u30EB\u30FC\u30C8';
-  subFolders.forEach(f => { galleryFolderNames[f.id] = f.name; });
 
   const summary = document.getElementById('galMediaSummary');
   summary.style.display = 'block';
@@ -1827,7 +1786,14 @@ async function loadGalleryMedia() {
     summary.innerHTML = html;
   }
 
-  // Strategy 1: Saved transfer mapping
+  // Strategy 1: Saved transfer mapping (from Drive→WP transfer)
+  const subFolders = eventFolderId ? fbFolders.filter(f => f.parent === eventFolderId) : [];
+  const allFolderIds = eventFolderId ? [eventFolderId, ...subFolders.map(f => f.id)] : [];
+  if (eventFolderId) {
+    galleryFolderNames[eventFolderId] = '\u30EB\u30FC\u30C8';
+    subFolders.forEach(f => { galleryFolderNames[f.id] = f.name; });
+  }
+
   const savedMap = JSON.parse(localStorage.getItem('naimol_transfer_map') || '{}');
   if (allFolderIds.some(fid => savedMap[fid] && savedMap[fid].length > 0)) {
     log('\u4FDD\u5B58\u6E08\u307F\u30DE\u30C3\u30D4\u30F3\u30B0\u3092\u4F7F\u7528', 'info');
@@ -1835,7 +1801,7 @@ async function loadGalleryMedia() {
       const fid = allFolderIds[i];
       const ids = savedMap[fid] || [];
       if (ids.length === 0) continue;
-      updateSummary('\u{1F50D} ' + (galleryFolderNames[fid] || fid) + ' \u3092\u8AAD\u307F\u8FBC\u307F\u4E2D... (' + (i + 1) + '/' + allFolderIds.length + ')');
+      updateSummary('\u{1F50D} ' + (galleryFolderNames[fid] || fid) + ' (' + (i + 1) + '/' + allFolderIds.length + ')');
       const items = await fetchMediaByIds(ids);
       if (items.length > 0) {
         galleryFolderMedia[fid] = items;
@@ -1848,46 +1814,87 @@ async function loadGalleryMedia() {
     return;
   }
 
-  // Strategy 2: Use WP admin-ajax query-attachments with folder filter (same as WP media library)
-  let ajaxWorked = false;
-  for (let i = 0; i < allFolderIds.length; i++) {
-    const fid = allFolderIds[i];
-    const fname = galleryFolderNames[fid] || fid;
-    updateSummary('\u{1F50D} ' + fname + ' \u3092\u8AAD\u307F\u8FBC\u307F\u4E2D... (' + (i + 1) + '/' + allFolderIds.length + ')');
-
-    const items = await queryFolderMedia(fid);
-    if (items === null && i === 0) {
-      log('admin-ajax\u304C\u5229\u7528\u4E0D\u53EF', 'info');
-      break;
-    }
-    if (items && items.length > 0) {
-      ajaxWorked = true;
-      galleryFolderMedia[fid] = items;
-      galleryMediaIds = galleryMediaIds.concat(items);
-      log(fname + ': ' + items.length + '\u679A', 'ok');
-    }
+  // Strategy 2: Drive filenames × WP media matching
+  const settings = JSON.parse(localStorage.getItem('naimol_settings') || '{}');
+  const folderUrl = settings.galleryDriveUrl;
+  if (!folderUrl) {
+    log('\u8A2D\u5B9A\u30BF\u30D6\u3067Drive\u30D5\u30A9\u30EB\u30C0URL\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044', 'err');
+    return;
   }
 
-  if (!ajaxWorked) {
-    log('\u30D5\u30A9\u30EB\u30C0\u53D6\u5F97\u4E0D\u53EF\u3002\u5168\u30E1\u30C7\u30A3\u30A2\u3092\u53D6\u5F97\u3057\u307E\u3059', 'info');
-    updateSummary('\u{1F50D} \u5168\u30E1\u30C7\u30A3\u30A2\u3092\u8AAD\u307F\u8FBC\u307F\u4E2D...');
-    let allMedia = [], page = 1;
-    while (true) {
-      const batch = await wpFetch('/wp-json/wp/v2/media?per_page=100&page=' + page);
-      allMedia = allMedia.concat(batch);
-      updateSummary('\u{1F50D} \u5168\u30E1\u30C7\u30A3\u30A2\u3092\u8AAD\u307F\u8FBC\u307F\u4E2D... (' + allMedia.length + '\u4EF6)');
-      if (batch.length < 100) break;
-      page++;
-    }
-    const items = allMedia.filter(m => m.mime_type && m.mime_type.startsWith('image/')).map(m => ({
+  // Step 1: Load Drive folder structure
+  updateSummary('\u{1F50D} Drive\u30D5\u30A9\u30EB\u30C0\u3092\u8AAD\u307F\u8FBC\u307F\u4E2D...');
+  log('Drive\u30D5\u30A9\u30EB\u30C0\u3092\u8AAD\u307F\u8FBC\u307F\u4E2D...', 'info');
+  const folderId = folderUrl.match(/folders\/([^?/]+)/)?.[1];
+  if (!folderId) { log('Drive\u30D5\u30A9\u30EB\u30C0URL\u304C\u4E0D\u6B63', 'err'); return; }
+  const excludeStr = document.getElementById('excludeFolders')?.value || '';
+  const excludeNames = excludeStr.split(',').map(s => s.trim()).filter(Boolean);
+  const driveImages = await driveCollectImages(folderId, excludeNames, '');
+  log('Drive: ' + driveImages.length + '\u679A\u306E\u30D5\u30A1\u30A4\u30EB\u540D\u3092\u53D6\u5F97', 'ok');
+
+  // Step 2: Fetch all WP media
+  updateSummary('\u{1F50D} WP\u30E1\u30C7\u30A3\u30A2\u3092\u53D6\u5F97\u4E2D...');
+  let allMedia = [], page = 1;
+  while (true) {
+    const batch = await wpFetch('/wp-json/wp/v2/media?per_page=100&page=' + page);
+    allMedia = allMedia.concat(batch);
+    updateSummary('\u{1F50D} WP\u30E1\u30C7\u30A3\u30A2\u3092\u53D6\u5F97\u4E2D... (' + allMedia.length + '\u4EF6)');
+    if (batch.length < 100) break;
+    page++;
+  }
+
+  // Step 3: Build filename→WP media lookup (slug = sanitized filename)
+  const wpBySlug = {};
+  for (const m of allMedia) {
+    if (!m.mime_type || !m.mime_type.startsWith('image/')) continue;
+    wpBySlug[m.slug] = {
       id: m.id, url: m.source_url,
       thumb: m.media_details?.sizes?.medium?.source_url || m.source_url,
       name: m.title.rendered
-    }));
-    if (items.length > 0) {
-      galleryFolderMedia[eventFolderId] = items;
-      galleryMediaIds = items;
+    };
+    // Also index by title (more lenient matching)
+    const title = (m.title.rendered || '').toLowerCase();
+    if (title && !wpBySlug[title]) wpBySlug[title] = wpBySlug[m.slug];
+  }
+
+  // Step 4: Match Drive filenames to WP media, grouped by Drive folder
+  const folderGroups = {}; // folderName → [media]
+  let matched = 0;
+  for (const df of driveImages) {
+    const baseName = df.name.replace(/\.[^.]+$/, '');
+    // WP slugs: lowercase, spaces→hyphens, special chars removed
+    const slug = baseName.toLowerCase().replace(/[^a-z0-9\u3000-\u9fff\uff00-\uffef]+/g, '-').replace(/^-|-$/g, '');
+    const wp = wpBySlug[slug] || wpBySlug[baseName.toLowerCase()];
+    if (wp) {
+      const folder = df.folder ? df.folder.split('/').pop() : '\u30EB\u30FC\u30C8';
+      if (!folderGroups[folder]) folderGroups[folder] = [];
+      folderGroups[folder].push(wp);
+      matched++;
     }
+  }
+  log('Drive\u2194WP\u30DE\u30C3\u30C1: ' + matched + '/' + driveImages.length + '\u679A', 'ok');
+
+  // Build galleryFolderMedia using folder names as keys
+  let fakeId = 1;
+  for (const [fname, items] of Object.entries(folderGroups)) {
+    galleryFolderNames[fakeId] = fname;
+    galleryFolderMedia[fakeId] = items;
+    galleryMediaIds = galleryMediaIds.concat(items);
+    fakeId++;
+  }
+
+  // Save mapping for next time (so Strategy 1 works on reload)
+  if (galleryMediaIds.length > 0 && eventFolderId) {
+    const saveMap = {};
+    // Map folder names back to FileBird IDs if possible
+    for (const [fakeKey, items] of Object.entries(galleryFolderMedia)) {
+      const fname = galleryFolderNames[fakeKey];
+      const fbFolder = fbFolders.find(f => f.name === fname && f.parent === eventFolderId);
+      const saveFid = fbFolder ? fbFolder.id : (fname === '\u30EB\u30FC\u30C8' ? eventFolderId : fakeKey);
+      saveMap[saveFid] = items.map(m => m.id);
+    }
+    localStorage.setItem('naimol_transfer_map', JSON.stringify(saveMap));
+    log('\u30DE\u30C3\u30D4\u30F3\u30B0\u3092\u4FDD\u5B58\uFF08\u6B21\u56DE\u304B\u3089\u9AD8\u901F\uFF09', 'ok');
   }
 
   updateSummary(null);
