@@ -323,14 +323,6 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
       </div>
     </div>
 
-    <!-- GASログ -->
-    <div class="card">
-      <h3>GASコレクターログ</h3>
-      <div id="gasLogs">
-        <div style="color:var(--dim);font-size:0.82rem">読み込み中...</div>
-      </div>
-    </div>
-
     <!-- IFTTT監視 -->
     <div class="card">
       <h3>IFTTT X検索 監視</h3>
@@ -1051,9 +1043,10 @@ function renderHistory() {
     const statusLabel = item.status === 'posted' ? '投稿済' : item.status === 'skipped' ? 'スキップ' : 'エラー';
     const ts = item.processed_at ? new Date(item.processed_at).toLocaleString('ja-JP', { month:'numeric', day:'numeric', hour:'numeric', minute:'numeric' }) : '';
     const tweetId = extractTweetId(item.url || '');
-    // Show tweet body snippet or title/reason as summary
+    // Show tweet body snippet; fallback to skip_reason or posted title (skip username-only titles)
     const cached = _historyTweets[item.key];
-    const summary = cached || item.title || item.skip_reason || item.url || '';
+    const titleIsUsername = item.title && /^[a-zA-Z0-9_]+$/.test(item.title);
+    const summary = cached || item.skip_reason || (!titleIsUsername && item.title) || item.url || '';
 
     return `
       <div style="border-bottom:1px solid var(--border)">
@@ -1775,24 +1768,6 @@ async function loadStatus() {
     document.getElementById('recentPosts').innerHTML = '<div style="color:var(--err)">取得失敗</div>';
   }
 
-  // GAS logs
-  try {
-    const resp = await fetch(`${FB}/tournament-collector-log.json`);
-    const data = await resp.json();
-    if (data) {
-      const logs = Object.entries(data).map(([k, v]) => ({ key: k, ...v }));
-      logs.sort((a, b) => (b.timestamp || b.key || '').localeCompare(a.timestamp || a.key || ''));
-      document.getElementById('gasLogs').innerHTML = logs.slice(0, 5).map(l => `
-        <div style="font-size:0.78rem;padding:0.3rem 0;border-bottom:1px solid var(--border);color:var(--dim)">
-          ${l.timestamp || l.key} · ${l.source || '?'} · ${l.status || '?'} ${l.count ? '(' + l.count + '件)' : ''}
-        </div>
-      `).join('') || '<div style="color:var(--dim)">ログなし</div>';
-    } else {
-      document.getElementById('gasLogs').innerHTML = '<div style="color:var(--dim)">ログなし</div>';
-    }
-  } catch(e) {
-    document.getElementById('gasLogs').innerHTML = '<div style="color:var(--err)">取得失敗</div>';
-  }
 }
 </script>
 </body>
