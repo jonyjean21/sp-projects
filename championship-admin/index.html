@@ -199,13 +199,9 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
       <div id="xPreviewArea" style="display:none;margin-top:0.8rem">
         <div class="tweet-preview">
           <div class="tweet-text" id="xTweetText"></div>
-          <div id="xTweetImages" style="display:flex;gap:6px;margin-top:0.6rem;flex-wrap:wrap"></div>
           <div class="tweet-meta" id="xTweetMeta"></div>
         </div>
-        <div class="btn-row" style="margin-top:0.6rem">
-          <button class="btn btn-sm btn-success" id="autoParseBtn" onclick="autoParseFromTweet()">自動パースして入力</button>
-          <span style="font-size:0.72rem;color:var(--dim);align-self:center">テキストから順位・名前を自動抽出</span>
-        </div>
+        <div id="xAutoResult" style="margin-top:0.5rem;font-size:0.82rem"></div>
       </div>
     </div>
 
@@ -348,8 +344,6 @@ const TWEET_PROXY = 'https://vercel-api-orpin-one.vercel.app/api/tweet-proxy';
 let blocksData = {};
 let previewRows = [];
 let currentVenueSlots = 0;
-let lastTweetText = '';
-let lastTweetUrl = '';
 
 // ===== Initial Data =====
 const INIT_DATA = {
@@ -616,6 +610,20 @@ function onVenueChange() {
 }
 
 // ===== Tweet Fetch =====
+function detectRankFromText(text) {
+  const t = text.replace(/\s+/g, ' ');
+  // 優勝 / 1位
+  if (/優勝|🥇|1位|🏆/.test(t)) return 1;
+  // 準優勝 / 2位
+  if (/準優勝|🥈|2位/.test(t)) return 2;
+  // 3位
+  if (/🥉|3位/.test(t)) return 3;
+  // N位
+  const m = t.match(/(\d+)\s*位/);
+  if (m) return parseInt(m[1]);
+  return null;
+}
+
 async function fetchTweet() {
   const url = document.getElementById('xPostUrl').value.trim();
   if (!url) return;
@@ -632,36 +640,60 @@ async function fetchTweet() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const data = await r.json();
 
-    document.getElementById('xTweetText').textContent = data.text || '';
+    const tweetText = data.text || '';
+    const authorName = data.user?.name || '';
+    const authorHandle = data.user?.screen_name || '';
+
+    // Show preview
+    document.getElementById('xTweetText').textContent = tweetText;
     document.getElementById('xTweetMeta').textContent =
-      `@${data.user?.screen_name || '?'} · ${new Date(data.created_at).toLocaleDateString('ja-JP')}`;
-
-    const imgBox = document.getElementById('xTweetImages');
-    imgBox.innerHTML = '';
-    if (data.mediaDetails) {
-      data.mediaDetails.forEach(m => {
-        if (m.media_url_https) {
-          const img = document.createElement('img');
-          img.src = m.media_url_https + '?format=jpg&name=small';
-          img.style.cssText = 'max-width:200px;border-radius:8px;border:1px solid var(--border);cursor:pointer';
-          img.onclick = () => window.open(m.media_url_https + '?format=jpg&name=large', '_blank');
-          imgBox.appendChild(img);
-        }
-      });
-    }
-
+      `@${authorHandle} · ${new Date(data.created_at).toLocaleDateString('ja-JP')}`;
     document.getElementById('xPreviewArea').style.display = 'block';
 
-    // Store for auto-parse
-    lastTweetText = data.text || '';
-    lastTweetUrl = url;
+    // Detect rank from tweet text
+    const rank = detectRankFromText(tweetText);
 
-    // Pre-fill X link in add form
+    if (rank) {
+      // Auto-add to preview table
+      const name = authorName || ('@' + authorHandle);
+      // Check if this rank or person already exists
+      const existing = previewRows.find(p => p.rank === rank || p.name === name);
+      if (existing) {
+        document.getElementById('xAutoResult').innerHTML =
+          `<span style="color:var(--warn)">⚠ ${rank}位（${name}）は既に登録済み</span>`;
+        log(`スキップ: ${rank}位 ${name} — 既に登録済み`, 'warn');
+      } else {
+        previewRows.push({
+          rank,
+          name,
+          team: '',
+          x_link: url,
+          qualified: false
+        });
+        previewRows.sort((a, b) => a.rank - b.rank);
+        previewRows.forEach((p, i) => { p.qualified = i < currentVenueSlots; });
+        renderPreview();
+        document.getElementById('xAutoResult').innerHTML =
+          `<span style="color:var(--ok)">✅ <b>${rank}位: ${escHtml(name)}</b> (@${escHtml(authorHandle)}) を追加</span>`;
+        log(`自動追加: ${rank}位 ${name} (@${authorHandle})`, 'ok');
+      }
+    } else {
+      document.getElementById('xAutoResult').innerHTML =
+        `<span style="color:var(--dim)">⚠ 順位を検出できませんでした → 下のフォームから手動追加</span>`;
+      log(`順位検出不可: @${authorHandle} — 手動追加が必要`, 'warn');
+    }
+
+    // Pre-fill add form for manual correction
     document.getElementById('addXLink').value = url;
+    if (rank) document.getElementById('addRank').value = rank;
+    document.getElementById('addName').value = authorName || '';
 
-    log('ツイート取得: @' + (data.user?.screen_name || '?'), 'ok');
+    // Clear URL input for next tweet
+    document.getElementById('xPostUrl').value = '';
 
-    // Also auto-save as source
+    log('ツイート取得: @' + authorHandle, 'ok');
+
+    // Auto-save as source
     const vid = document.getElementById('rVenue').value;
     if (vid) {
       await fetch(`${FB}${BASE_PATH}/sources/${vid}.json`, {
@@ -669,7 +701,7 @@ async function fetchTweet() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           url, type: 'x',
-          note: '結果情報 @' + (data.user?.screen_name || ''),
+          note: `${rank ? rank + '位' : '?位'} ${authorName} @${authorHandle}`,
           added_at: new Date().toISOString()
         })
       });
@@ -1015,90 +1047,6 @@ async function previewSourceUrl() {
     container.innerHTML = `<div style="padding:0.5rem"><a href="${escHtml(url)}" target="_blank" style="color:var(--blue);font-size:0.82rem">${escHtml(url)}</a></div>`;
     container.style.display = 'block';
   }
-}
-
-// ===== Auto Parse from Tweet =====
-function autoParseFromTweet() {
-  if (!lastTweetText) { showToast('先にツイートを取得してください'); return; }
-
-  const text = lastTweetText;
-  const parsed = [];
-
-  // パターン1: 「1位 名前」「2位 名前」「🥇名前」「🥈名前」等
-  const lines = text.split('\n').map(l => l.trim()).filter(l => l);
-
-  for (const line of lines) {
-    let match;
-
-    // 🥇🥈🥉 + 名前
-    match = line.match(/^[🥇🏆]\s*(.+)/);
-    if (match && !parsed.find(p => p.rank === 1)) { parsed.push({ rank: 1, name: match[1].trim() }); continue; }
-    match = line.match(/^🥈\s*(.+)/);
-    if (match && !parsed.find(p => p.rank === 2)) { parsed.push({ rank: 2, name: match[1].trim() }); continue; }
-    match = line.match(/^🥉\s*(.+)/);
-    if (match && !parsed.find(p => p.rank === 3)) { parsed.push({ rank: 3, name: match[1].trim() }); continue; }
-
-    // 「1位 名前」「1位：名前」「1位:名前」
-    match = line.match(/^(\d+)\s*位\s*[：:\s]\s*(.+)/);
-    if (match) { parsed.push({ rank: parseInt(match[1]), name: match[2].trim() }); continue; }
-
-    // 「第1位 名前」
-    match = line.match(/^第\s*(\d+)\s*位\s*[：:\s]\s*(.+)/);
-    if (match) { parsed.push({ rank: parseInt(match[1]), name: match[2].trim() }); continue; }
-
-    // 「1. 名前」「1） 名前」「1) 名前」
-    match = line.match(/^(\d+)\s*[.）)]\s+(.+)/);
-    if (match) { parsed.push({ rank: parseInt(match[1]), name: match[2].trim() }); continue; }
-
-    // 「優勝 名前」「準優勝 名前」「3位 名前」
-    match = line.match(/^優勝\s*[：:\s]\s*(.+)/);
-    if (match && !parsed.find(p => p.rank === 1)) { parsed.push({ rank: 1, name: match[1].trim() }); continue; }
-    match = line.match(/^準優勝\s*[：:\s]\s*(.+)/);
-    if (match && !parsed.find(p => p.rank === 2)) { parsed.push({ rank: 2, name: match[1].trim() }); continue; }
-  }
-
-  if (parsed.length === 0) {
-    showToast('順位情報を自動抽出できませんでした。手動入力してください');
-    log('自動パース: 抽出0件 — 手動入力が必要', 'err');
-    return;
-  }
-
-  // Clean up names: remove trailing hashtags, parens with team info
-  parsed.forEach(p => {
-    // 「名前（チーム名）」→ 名前 / チーム名 を分離
-    const teamMatch = p.name.match(/^(.+?)\s*[（(]\s*(.+?)\s*[）)](.*)$/);
-    if (teamMatch) {
-      p.name = teamMatch[1].trim();
-      p.team = teamMatch[2].trim();
-    }
-    // 「名前 / チーム」or「名前／チーム」
-    if (!p.team) {
-      const slashMatch = p.name.match(/^(.+?)\s*[/／]\s*(.+)$/);
-      if (slashMatch) {
-        p.name = slashMatch[1].trim();
-        p.team = slashMatch[2].trim();
-      }
-    }
-    // Remove hashtags from end
-    p.name = p.name.replace(/\s*#.+$/, '').trim();
-    if (p.team) p.team = p.team.replace(/\s*#.+$/, '').trim();
-  });
-
-  // Sort by rank and apply qualified
-  parsed.sort((a, b) => a.rank - b.rank);
-  const results = parsed.map(p => ({
-    rank: p.rank,
-    name: p.name,
-    team: p.team || '',
-    x_link: lastTweetUrl,
-    qualified: false
-  }));
-  results.forEach((r, i) => { r.qualified = i < currentVenueSlots; });
-
-  previewRows = results;
-  renderPreview();
-  showToast(`${results.length}名を自動抽出しました`);
-  log(`自動パース: ${results.length}名抽出 (通過: ${Math.min(results.length, currentVenueSlots)}名)`, 'ok');
 }
 
 // ===== Utilities =====
