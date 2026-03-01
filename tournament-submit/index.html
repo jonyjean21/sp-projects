@@ -225,6 +225,7 @@
 // Firebase RTDB
 const FIREBASE_DB = 'https://viisi-master-app-default-rtdb.firebaseio.com';
 const QUEUE_PATH = '/tournament-queue';
+const TWEET_PROXY = 'https://vercel-api-orpin-one.vercel.app/api/tweet-proxy';
 
 const urlInput = document.getElementById('urlInput');
 const submitBtn = document.getElementById('submitBtn');
@@ -271,7 +272,7 @@ async function fetchTweetPreview(url) {
   const tweetId = match[1];
 
   try {
-    const resp = await fetch(`https://cdn.syndication.twimg.com/tweet-result?id=${tweetId}&token=x`);
+    const resp = await fetch(`${TWEET_PROXY}?id=${tweetId}`);
     if (!resp.ok) return;
     const data = await resp.json();
 

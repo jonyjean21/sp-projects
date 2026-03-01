@@ -1,0 +1,230 @@
+{
+  "date": "2026-03-01",
+  "processed": [
+    {
+      "url": "https://twitter.com/Kitakita_Molkky/status/2028010846379794504",
+      "title": "第2回三種町カップモルック大会（結果報告）",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "大会結果報告（新規告知ではない）",
+      "timestamp": "2026-03-01T17:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/FANFARE1013/status/2028011381090644429",
+      "title": "地元モルック大会（結果報告）",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "大会結果報告（新規告知ではない）",
+      "timestamp": "2026-03-01T17:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/FANFARE1013/status/2028012287815237944",
+      "title": "地元モルック大会（返信ツイート）",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "返信ツイート（大会結果報告の続き）",
+      "timestamp": "2026-03-01T17:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/Molkky_Japan/status/2028016677863231929",
+      "title": "日本モルック選手権大会2026 福岡会場予選結果",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "大会結果報告（福岡予選終了の報告）",
+      "timestamp": "2026-03-01T17:00:00+09:00"
+    },
+    {
+      "url": "https://x.com/akashi_molkky/status/2028047495721529821",
+      "title": "モルッククラシック播磨",
+      "action": "posted",
+      "post_id": 6443,
+      "source": "manual",
+      "timestamp": "2026-03-01T19:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/geromolkky/status/2028031807229407480",
+      "title": "第2回 下呂市長杯争奪 下呂温泉モルックフェスティバル 2026",
+      "action": "posted",
+      "post_id": 6444,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-01T20:37:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/ohmatz_molkky/status/2028031926905499824",
+      "title": "越谷モルック体験会（綴-つづるひ-）",
+      "action": "posted",
+      "post_id": 6445,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-01T20:37:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/molkkydome/status/2028047604152516654",
+      "title": "モルックナイト 20260306",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "重複（WP ID:4438 モルックナイト 20260306 既に登録済み）",
+      "timestamp": "2026-03-01T20:37:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/ryotanomo/status/2028021049363993035",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "練習会参加報告",
+      "timestamp": "2026-03-01T20:37:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/atsuko198220850/status/2028024578048725176",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "大会参加感想（着物deモルック）",
+      "timestamp": "2026-03-01T20:37:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/AkitaMolkky/status/2028025377843827124",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "大会参加報告（三種町カップ）",
+      "timestamp": "2026-03-01T20:37:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/kazuchi11/status/2028025590465606087",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "大会結果報告（金沢区モルック交流大会準優勝）",
+      "timestamp": "2026-03-01T20:37:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/pokeca003/status/2028027515567280550",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "ポケカ大会報告（モルック言及のみ）",
+      "timestamp": "2026-03-01T20:37:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/TiiiMO_official/status/2028029644415610928",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "大会結果報告（御礼ポスト）",
+      "timestamp": "2026-03-01T20:37:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/molkkycalendar/status/2028031629944578226",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "情報提供・ランキング告知（新規大会告知ではない）",
+      "timestamp": "2026-03-01T20:37:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/2019fujiidera/status/2028035144523854253",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "大会閉会式報告",
+      "timestamp": "2026-03-01T20:37:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/masu_skmc46/status/2028036679341318626",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "テレビ番組の感想（モルック関連雑談）",
+      "timestamp": "2026-03-01T20:37:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/maito_0826/status/2028037990703149241",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "ゴルフ大会出場報告（モルック関連雑談）",
+      "timestamp": "2026-03-01T20:37:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/Chicken_N2020/status/2028039003543584870",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "大会結果報告（金沢区モルック交流大会）",
+      "timestamp": "2026-03-01T20:37:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/KyazB/status/2028040179634831575",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "大会結果報告（金沢区3位）",
+      "timestamp": "2026-03-01T20:37:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/cocorowomuni/status/2028040509558804634",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "練習報告",
+      "timestamp": "2026-03-01T20:37:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/dabi_suke_zoo/status/2028045890775314814",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "大会結果報告（バリバリ杯準優勝）",
+      "timestamp": "2026-03-01T20:37:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/_techitechio_/status/2028046896191930842",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "大会結果報告（日本選手権2位）",
+      "timestamp": "2026-03-01T20:37:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/dabi_suke_zoo/status/2028051835937067066",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "大会結果報告（ハイタッチ導入）",
+      "timestamp": "2026-03-01T20:37:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/niigata_molkky/status/2028052087716884675",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "大会結果報告（はまカップ）",
+      "timestamp": "2026-03-01T20:37:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/yuuchimu0820/status/2028056290791247895",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "大会参加感想",
+      "timestamp": "2026-03-01T20:37:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/Molkky_tosu1122/status/2028056697865126361",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "大会運営報告（鳥栖市レクリエーション祭）",
+      "timestamp": "2026-03-01T20:37:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/rio6712/status/2028057274900738340",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "大会結果報告（モックル杯）",
+      "timestamp": "2026-03-01T20:37:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/chiba_professor/status/2028057950410158566",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "大会結果報告（金沢区優勝）",
+      "timestamp": "2026-03-01T20:37:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/omusubiman_mini/status/2028063399876415941",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "練習会報告（広島県民）",
+      "timestamp": "2026-03-01T20:37:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/lowkey_molkky/status/2028066833396645997",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "大会開催報告（金沢区主催者、終了済み）",
+      "timestamp": "2026-03-01T20:37:00+09:00"
+    }
+  ]
+}

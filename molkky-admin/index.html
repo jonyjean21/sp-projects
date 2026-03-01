@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOLKKY HUB 管理</title>
+<style>
+:root {
+  --bg: #0a0a0f; --card: #12121a; --border: #2a2a3a;
+  --text: #e0e0e0; --dim: #888; --accent: #6366f1;
+  --ok: #22c55e; --err: #ef4444; --warn: #f59e0b;
+  --blue: #4a9eff;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* Header */
+.header { padding: 0.8rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+.header h1 { font-size: 1.1rem; flex: 1; }
+.conn-badge { font-size: 0.7rem; padding: 3px 10px; border-radius: 12px; background: var(--border); cursor: pointer; }
+.conn-badge.ok { background: rgba(34,197,94,0.15); color: var(--ok); }
+
+/* Tabs */
+.tabs { display: flex; border-bottom: 1px solid var(--border); padding: 0 0.5rem; overflow-x: auto; }
+.tab { padding: 0.65rem 1rem; font-size: 0.8rem; color: var(--dim); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab .badge { font-size: 0.65rem; background: var(--err); color: #fff; border-radius: 8px; padding: 1px 6px; margin-left: 4px; }
+
+/* Content */
+.content { padding: 1.2rem; max-width: 900px; margin: 0 auto; }
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* Cards */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem; margin-bottom: 1rem; }
+.card h3 { font-size: 0.9rem; margin-bottom: 0.8rem; color: var(--text); }
+label { font-size: 0.78rem; color: var(--dim); display: block; margin-bottom: 0.25rem; }
+input[type="text"], input[type="password"], input[type="url"], input[type="date"], select, textarea {
+  width: 100%; padding: 0.5rem 0.7rem; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text); font-size: 0.85rem;
+}
+textarea { resize: vertical; min-height: 80px; font-family: inherit; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+.field { margin-bottom: 0.7rem; }
+.field-row { display: flex; gap: 0.8rem; }
+.field-row .field { flex: 1; }
+.checkbox-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; margin-bottom: 0.5rem; }
+.checkbox-row input[type="checkbox"] { width: auto; }
+
+/* Buttons */
+.btn { padding: 0.5rem 1.2rem; border: none; border-radius: 8px; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: #4f46e5; }
+.btn-sm { padding: 0.3rem 0.7rem; font-size: 0.75rem; }
+.btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+.btn-outline:hover:not(:disabled) { border-color: var(--dim); }
+.btn-success { background: var(--ok); color: #fff; }
+.btn-success:hover:not(:disabled) { background: #16a34a; }
+.btn-warn { background: var(--warn); color: #000; }
+.btn-danger { background: var(--err); color: #fff; }
+.btn-danger:hover:not(:disabled) { background: #dc2626; }
+.btn-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.8rem; }
+
+/* Pills / badges */
+.pill { display: inline-block; font-size: 0.68rem; padding: 2px 8px; border-radius: 10px; }
+.pill-pending { background: rgba(245,158,11,0.15); color: var(--warn); }
+.pill-posted { background: rgba(34,197,94,0.15); color: var(--ok); }
+.pill-skipped { background: var(--border); color: var(--dim); }
+.pill-error { background: rgba(239,68,68,0.15); color: var(--err); }
+.pill-ifttt { background: rgba(99,102,241,0.15); color: var(--accent); }
+.pill-rss { background: rgba(74,158,255,0.15); color: var(--blue); }
+.pill-manual { background: var(--border); color: var(--dim); }
+
+/* Queue list */
+.queue-item { display: flex; align-items: center; gap: 0.8rem; padding: 0.8rem; border-bottom: 1px solid var(--border); }
+.queue-item:last-child { border-bottom: none; }
+.queue-info { flex: 1; min-width: 0; }
+.queue-url { font-size: 0.8rem; color: var(--blue); text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.queue-meta { font-size: 0.7rem; color: var(--dim); margin-top: 2px; }
+.queue-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
+
+/* Tweet preview */
+.tweet-preview { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; margin-bottom: 1rem; }
+.tweet-text { font-size: 0.85rem; line-height: 1.7; color: var(--text); white-space: pre-wrap; word-break: break-word; }
+.tweet-images { display: flex; gap: 6px; margin-top: 0.6rem; flex-wrap: wrap; }
+.tweet-images img { max-width: 140px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; }
+.tweet-meta { font-size: 0.72rem; color: var(--dim); margin-top: 0.5rem; }
+
+/* Post cards (promote/repost) */
+.post-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; margin-bottom: 0.8rem; position: relative; }
+.post-card .post-type { font-size: 0.7rem; color: var(--accent); margin-bottom: 0.4rem; font-weight: 600; }
+.post-card .post-body { font-size: 0.85rem; line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
+.post-card .post-actions { display: flex; gap: 0.4rem; margin-top: 0.6rem; }
+
+/* Status cards */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.8rem; margin-bottom: 1rem; }
+.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; text-align: center; }
+.stat-card .stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+.stat-card .stat-label { font-size: 0.75rem; color: var(--dim); margin-top: 0.3rem; }
+
+/* Log */
+.log-box { font-family: 'SF Mono', Monaco, monospace; font-size: 0.72rem; line-height: 1.7; max-height: 250px; overflow-y: auto; color: var(--dim); padding: 0.5rem; background: var(--bg); border-radius: 8px; }
+.log-box .ok { color: var(--ok); }
+.log-box .err { color: var(--err); }
+.log-box .info { color: var(--accent); }
+
+/* Toast */
+.toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 0.6rem 1.2rem; border-radius: 10px; font-size: 0.82rem; z-index: 200; transition: transform 0.3s; pointer-events: none; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* Auth modal */
+.auth-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; display: flex; align-items: center; justify-content: center; }
+.auth-modal .auth-box { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; width: 90vw; max-width: 360px; }
+.auth-modal .auth-box h3 { font-size: 0.95rem; margin-bottom: 1rem; }
+
+/* Duplicate warning */
+.dup-warning { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); border-radius: 10px; padding: 1rem; margin-bottom: 1rem; }
+.dup-warning h4 { font-size: 0.85rem; color: var(--warn); margin-bottom: 0.5rem; }
+.dup-item { font-size: 0.8rem; padding: 0.3rem 0; color: var(--dim); }
+
+/* Links list */
+.link-list a { display: block; color: var(--blue); text-decoration: none; font-size: 0.82rem; padding: 0.4rem 0; }
+.link-list a:hover { text-decoration: underline; }
+
+/* Loading spinner */
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 4px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Responsive */
+@media (max-width: 600px) {
+  .field-row { flex-direction: column; gap: 0; }
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <h1>MOLKKY HUB 管理</h1>
+  <span class="conn-badge" id="connBadge" onclick="showAuth()">未接続</span>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <div class="tab active" data-tab="tournament">大会投稿</div>
+  <div class="tab" data-tab="queue">キュー管理 <span class="badge" id="queueBadge" style="display:none">0</span></div>
+  <div class="tab" data-tab="promote">Xポスト生成</div>
+  <div class="tab" data-tab="repost">リポスト</div>
+  <div class="tab" data-tab="status">ステータス</div>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+  <!-- ===== 大会投稿タブ ===== -->
+  <div class="panel active" id="panel-tournament">
+    <!-- Step 1: URL入力 -->
+    <div class="card" id="urlCard">
+      <h3>URL入力</h3>
+      <div class="field">
+        <div style="display:flex;gap:0.5rem">
+          <input type="url" id="tUrl" placeholder="XポストやウェブページのURLを貼り付け" style="flex:1">
+          <button class="btn btn-primary" id="tFetchBtn" onclick="fetchContent()">取得</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: プレビュー -->
+    <div class="card" id="previewCard" style="display:none">
+      <h3>コンテンツ</h3>
+      <div class="tweet-preview" id="tweetPreview" style="display:none">
+        <div class="tweet-text" id="tTweetText"></div>
+        <div class="tweet-images" id="tTweetImages"></div>
+        <div class="tweet-meta" id="tTweetMeta"></div>
+      </div>
+      <div id="webPreview" style="display:none">
+        <textarea id="tWebContent" rows="6" placeholder="ページ内容をここに貼り付け"></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="extractInfo()">情報抽出 (Gemini)</button>
+      </div>
+    </div>
+
+    <!-- Step 3: 編集フォーム -->
+    <div class="card" id="formCard" style="display:none">
+      <h3>大会情報</h3>
+      <div class="field">
+        <label>大会名</label>
+        <input type="text" id="fTitle">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>開催日</label>
+          <input type="date" id="fDate">
+        </div>
+        <div class="field">
+          <label>都道府県</label>
+          <select id="fArea"></select>
+        </div>
+      </div>
+      <div class="field">
+        <label>主催者</label>
+        <input type="text" id="fOrganizer">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>SNSリンク</label>
+          <input type="url" id="fSns" readonly>
+        </div>
+        <div class="field">
+          <label>詳細リンク</label>
+          <input type="url" id="fDetail">
+        </div>
+      </div>
+      <div class="field">
+        <label>規模</label>
+        <input type="text" id="fScale" placeholder="例: 50チーム">
+      </div>
+      <div style="display:flex;gap:1.5rem;margin-top:0.3rem">
+        <div class="checkbox-row"><input type="checkbox" id="fBeginner"><label for="fBeginner" style="margin:0">初心者歓迎</label></div>
+        <div class="checkbox-row"><input type="checkbox" id="fOfficial"><label for="fOfficial" style="margin:0">公式大会</label></div>
+      </div>
+
+      <!-- 重複警告 -->
+      <div class="dup-warning" id="dupWarning" style="display:none">
+        <h4>重複の可能性</h4>
+        <div id="dupList"></div>
+        <div class="btn-row">
+          <button class="btn btn-sm btn-warn" onclick="skipPost()">スキップ</button>
+          <button class="btn btn-sm btn-primary" onclick="forcePost()">それでも投稿</button>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-success" id="postBtn" onclick="checkAndPost()">重複チェック & 投稿</button>
+        <button class="btn btn-outline" onclick="resetForm()">リセット</button>
+      </div>
+    </div>
+
+    <!-- 投稿結果 -->
+    <div class="card" id="resultCard" style="display:none">
+      <h3>投稿結果</h3>
+      <div id="resultContent"></div>
+    </div>
+  </div>
+
+  <!-- ===== キュー管理タブ ===== -->
+  <div class="panel" id="panel-queue">
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.8rem">
+        <h3 style="flex:1;margin:0">未処理キュー</h3>
+        <button class="btn btn-sm btn-outline" onclick="loadQueue()">更新</button>
+      </div>
+      <div style="font-size:0.78rem;color:var(--dim);margin-bottom:0.8rem">
+        pending: <strong id="qPending">-</strong> | 今日処理: <strong id="qToday">-</strong>
+      </div>
+      <div id="queueList">
+        <div style="text-align:center;color:var(--dim);padding:2rem;font-size:0.85rem">読み込み中...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Xポスト生成タブ ===== -->
+  <div class="panel" id="panel-promote">
+    <div class="card">
+      <h3>Xポスト生成</h3>
+      <div class="field">
+        <label>記事URL</label>
+        <div style="display:flex;gap:0.5rem">
+          <input type="url" id="pUrl" placeholder="https://molkky-hub.com/..." style="flex:1">
+          <button class="btn btn-primary" onclick="generatePromote()">生成</button>
+        </div>
+      </div>
+    </div>
+    <div id="promoteResults"></div>
+  </div>
+
+  <!-- ===== リポストタブ ===== -->
+  <div class="panel" id="panel-repost">
+    <div class="card">
+      <h3>引用リポスト生成</h3>
+      <div class="field">
+        <label>ツイートURL</label>
+        <div style="display:flex;gap:0.5rem">
+          <input type="url" id="rUrl" placeholder="https://x.com/..." style="flex:1">
+          <button class="btn btn-primary" onclick="generateRepost()">生成</button>
+        </div>
+      </div>
+      <div class="tweet-preview" id="rTweetPreview" style="display:none;margin-top:0.8rem">
+        <div class="tweet-text" id="rTweetText"></div>
+        <div class="tweet-meta" id="rTweetMeta"></div>
+      </div>
+    </div>
+    <div id="repostResults"></div>
+  </div>
+
+  <!-- ===== ステータスタブ ===== -->
+  <div class="panel" id="panel-status">
+    <div class="stat-grid" id="statGrid">
+      <div class="stat-card"><div class="stat-value" id="sTournaments">-</div><div class="stat-label">WP大会数</div></div>
+      <div class="stat-card"><div class="stat-value" id="sQueue">-</div><div class="stat-label">未処理キュー</div></div>
+      <div class="stat-card"><div class="stat-value" id="sIfttt">-</div><div class="stat-label">IFTTT 24h検知</div></div>
+      <div class="stat-card"><div class="stat-value" id="sToday">-</div><div class="stat-label">今日の処理</div></div>
+    </div>
+
+    <!-- 直近投稿 -->
+    <div class="card">
+      <h3>直近投稿</h3>
+      <div id="recentPosts">
+        <div style="color:var(--dim);font-size:0.82rem">読み込み中...</div>
+      </div>
+    </div>
+
+    <!-- GASログ -->
+    <div class="card">
+      <h3>GASコレクターログ</h3>
+      <div id="gasLogs">
+        <div style="color:var(--dim);font-size:0.82rem">読み込み中...</div>
+      </div>
+    </div>
+
+    <!-- IFTTT監視 -->
+    <div class="card">
+      <h3>IFTTT X検索 監視</h3>
+      <div id="iftttStatus">
+        <div style="color:var(--dim);font-size:0.82rem">読み込み中...</div>
+      </div>
+    </div>
+
+    <!-- 外部リンク -->
+    <div class="card">
+      <h3>外部リンク</h3>
+      <div class="link-list">
+        <a href="https://ifttt.com/my_applets" target="_blank">IFTTT ダッシュボード</a>
+        <a href="https://script.google.com/home/projects/1JsGv7breY0MXAz9sXF7olPv_qE3nQYpHqiUKTCbHQqoMJVYIhDmSMUSC/edit" target="_blank">GAS Script Editor</a>
+        <a href="https://console.firebase.google.com/project/viisi-master-app/database/viisi-master-app-default-rtdb/data" target="_blank">Firebase Console</a>
+        <a href="https://molkky-hub.com/wp-admin/" target="_blank">WP管理画面</a>
+        <a href="https://molkky-hub.com/wp-json/wp/v2/tournament?per_page=5&orderby=date&order=desc" target="_blank">WP Tournament API</a>
+      </div>
+    </div>
+
+    <!-- ログ -->
+    <div class="card">
+      <h3>操作ログ</h3>
+      <div class="log-box" id="log"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Auth Modal -->
+<div class="auth-modal" id="authModal" style="display:none">
+  <div class="auth-box">
+    <h3>WP接続</h3>
+    <div class="field">
+      <label>ユーザー名</label>
+      <input type="text" id="wpUser">
+    </div>
+    <div class="field">
+      <label>アプリケーションパスワード</label>
+      <input type="password" id="wpPass">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="connect()">接続</button>
+      <button class="btn btn-outline" onclick="hideAuth()">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== Constants =====
+const WP = 'https://molkky-hub.com';
+const FB = 'https://viisi-master-app-default-rtdb.firebaseio.com';
+const VERCEL = 'https://vercel-api-orpin-one.vercel.app';
+const TWEET_PROXY = VERCEL + '/api/tweet-proxy';
+const GEMINI_API = VERCEL + '/api/gemini';
+
+// Promote category map
+const CATEGORY_MAP = {
+  122: { name: '寄稿', tone: '知的・読み応え訴求', tags: '#モルック #モルハブ #molkky' },
+  126: { name: '寄稿（いとゆう）', tone: '知的・読み応え訴求', tags: '#モルック #モルハブ #molkky', author: 'いとゆう' },
+  8: { name: '大会情報', tone: '速報・情報提供系', tags: '#モルック #大会情報 #molkky' },
+  56: { name: 'チーム紹介', tone: '親しみやすい', tags: '#モルック #チーム紹介 #molkky' },
+};
+
+// Area taxonomy: 都道府県 → { slug, id }
+const AREAS = {
+  '北海道':{s:'hokkaido',id:58},'青森':{s:'aomori',id:69},'岩手':{s:'iwate',id:70},
+  '宮城':{s:'miyagi',id:71},'秋田':{s:'akita',id:72},'山形':{s:'yamagata',id:73},
+  '福島':{s:'fukushima',id:74},'茨城':{s:'ibaraki',id:75},'栃木':{s:'tochigi',id:76},
+  '群馬':{s:'gunma',id:77},'埼玉':{s:'saitama',id:78},'千葉':{s:'chiba',id:79},
+  '東京':{s:'tokyo',id:80},'神奈川':{s:'kanagawa',id:81},'山梨':{s:'yamanashi',id:82},
+  '新潟':{s:'niigata',id:83},'長野':{s:'nagano',id:84},'富山':{s:'toyama',id:85},
+  '石川':{s:'ishikawa',id:86},'福井':{s:'fukui',id:87},'岐阜':{s:'gifu',id:88},
+  '静岡':{s:'shizuoka',id:89},'愛知':{s:'aichi',id:90},'三重':{s:'mie',id:91},
+  '滋賀':{s:'shiga',id:92},'京都':{s:'kyoto',id:93},'大阪':{s:'osaka',id:94},
+  '兵庫':{s:'hyogo',id:95},'奈良':{s:'nara',id:96},'和歌山':{s:'wakayama',id:97},
+  '鳥取':{s:'tottori',id:98},'島根':{s:'shimane',id:99},'岡山':{s:'okayama',id:100},
+  '広島':{s:'hiroshima',id:101},'山口':{s:'yamaguchi',id:102},'徳島':{s:'tokushima',id:103},
+  '香川':{s:'kagawa',id:104},'愛媛':{s:'ehime',id:105},'高知':{s:'kochi',id:106},
+  '福岡':{s:'fukuoka',id:107},'佐賀':{s:'saga',id:108},'長崎':{s:'nagasaki',id:109},
+  '熊本':{s:'kumamoto',id:110},'大分':{s:'oita',id:111},'宮崎':{s:'miyazaki',id:112},
+  '鹿児島':{s:'kagoshima',id:113},'沖縄':{s:'okinawa',id:114}
+};
+
+let wpAuth = '';
+let currentQueueKey = null; // キューから来た場合のFirebaseキー
+
+// ===== Init =====
+document.addEventListener('DOMContentLoaded', () => {
+  initTabs();
+  initAreaSelect();
+  restoreAuth();
+  loadQueue();
+});
+
+// ===== Tabs =====
+function initTabs() {
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+      if (tab.dataset.tab === 'queue') loadQueue();
+      if (tab.dataset.tab === 'status') loadStatus();
+    });
+  });
+}
+
+// ===== Area select =====
+function initAreaSelect() {
+  const sel = document.getElementById('fArea');
+  sel.innerHTML = '<option value="">-- 選択 --</option>';
+  for (const [name, data] of Object.entries(AREAS)) {
+    sel.innerHTML += `<option value="${name}">${name}</option>`;
+  }
+}
+
+// ===== WP Auth =====
+function showAuth() {
+  document.getElementById('authModal').style.display = 'flex';
+}
+function hideAuth() {
+  document.getElementById('authModal').style.display = 'none';
+}
+
+function restoreAuth() {
+  const saved = localStorage.getItem('molkky_admin_auth');
+  if (saved) {
+    try {
+      const { user, pass } = JSON.parse(saved);
+      document.getElementById('wpUser').value = user;
+      document.getElementById('wpPass').value = pass;
+      wpAuth = btoa(user + ':' + pass);
+      verifyConnection();
+    } catch(e) {}
+  }
+}
+
+async function connect() {
+  const user = document.getElementById('wpUser').value.trim();
+  const pass = document.getElementById('wpPass').value.trim();
+  if (!user || !pass) return;
+  wpAuth = btoa(user + ':' + pass);
+  localStorage.setItem('molkky_admin_auth', JSON.stringify({ user, pass }));
+  hideAuth();
+  await verifyConnection();
+}
+
+async function verifyConnection() {
+  try {
+    await wpFetch('/wp-json/wp/v2/tournament?per_page=1');
+    document.getElementById('connBadge').textContent = '接続OK';
+    document.getElementById('connBadge').classList.add('ok');
+    log('WP接続成功', 'ok');
+  } catch(e) {
+    document.getElementById('connBadge').textContent = '接続失敗';
+    document.getElementById('connBadge').classList.remove('ok');
+    log('WP接続失敗: ' + e.message, 'err');
+  }
+}
+
+// ===== WP API =====
+async function wpFetch(endpoint, opts = {}) {
+  const res = await fetch(WP + endpoint, {
+    ...opts,
+    headers: { 'Authorization': 'Basic ' + wpAuth, ...(opts.headers || {}) }
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error('HTTP ' + res.status + ': ' + text.substring(0, 200));
+  }
+  const contentType = res.headers.get('content-type');
+  if (contentType && contentType.includes('json')) return res.json();
+  return res;
+}
+
+// ===== Utilities =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function log(msg, cls = '') {
+  const el = document.getElementById('log');
+  const line = document.createElement('div');
+  line.className = cls;
+  line.textContent = new Date().toLocaleTimeString() + ' ' + msg;
+  el.prepend(line);
+}
+
+function escapeHtml(text) {
+  const d = document.createElement('div');
+  d.textContent = text;
+  return d.innerHTML;
+}
+
+function extractTweetId(url) {
+  const m = url.match(/status\/(\d+)/);
+  return m ? m[1] : null;
+}
+
+function isXUrl(url) {
+  return url.includes('x.com/') || url.includes('twitter.com/');
+}
+
+// ===== 大会投稿タブ =====
+
+async function fetchContent() {
+  const url = document.getElementById('tUrl').value.trim();
+  if (!url) return;
+
+  const btn = document.getElementById('tFetchBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>取得中';
+
+  try {
+    if (isXUrl(url)) {
+      const tweetId = extractTweetId(url);
+      if (!tweetId) throw new Error('ツイートIDが見つかりません');
+
+      const resp = await fetch(`${TWEET_PROXY}?id=${tweetId}`);
+      if (!resp.ok) throw new Error('ツイート取得失敗: ' + resp.status);
+      const data = await resp.json();
+
+      // Show tweet preview
+      document.getElementById('tTweetText').textContent = data.text || '';
+      document.getElementById('tTweetMeta').textContent =
+        `@${data.user?.screen_name || '?'} · ${new Date(data.created_at).toLocaleDateString('ja-JP')}`;
+
+      const imgBox = document.getElementById('tTweetImages');
+      imgBox.innerHTML = '';
+      if (data.mediaDetails) {
+        data.mediaDetails.forEach(m => {
+          if (m.media_url_https) {
+            const img = document.createElement('img');
+            img.src = m.media_url_https + '?format=jpg&name=small';
+            img.alt = 'media';
+            imgBox.appendChild(img);
+          }
+        });
+      }
+
+      document.getElementById('tweetPreview').style.display = 'block';
+      document.getElementById('webPreview').style.display = 'none';
+      document.getElementById('fSns').value = url;
+      window._tweetData = data;
+      log('ツイート取得完了: @' + (data.user?.screen_name || '?'), 'ok');
+    } else {
+      // Web URL - show textarea for manual paste or auto-fetch
+      document.getElementById('tweetPreview').style.display = 'none';
+      document.getElementById('webPreview').style.display = 'block';
+      document.getElementById('fSns').value = '';
+      document.getElementById('fDetail').value = url;
+      window._tweetData = null;
+      log('WebURL: ページ内容をテキストエリアに貼り付けてください', 'info');
+    }
+
+    document.getElementById('previewCard').style.display = 'block';
+  } catch(e) {
+    showToast('取得失敗: ' + e.message);
+    log('取得失敗: ' + e.message, 'err');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '取得';
+}
+
+async function extractInfo() {
+  let content = '';
+  if (window._tweetData) {
+    content = window._tweetData.text || '';
+    // Add embedded URLs
+    if (window._tweetData.entities?.urls) {
+      content += '\n\nリンク:\n' + window._tweetData.entities.urls.map(u => u.expanded_url).join('\n');
+    }
+  } else {
+    content = document.getElementById('tWebContent').value.trim();
+  }
+
+  if (!content) {
+    showToast('コンテンツがありません');
+    return;
+  }
+
+  const btn = event.target;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>抽出中...';
+
+  try {
+    const prompt = `以下のテキストからモルック大会の情報を抽出してJSON形式で返してください。
+テキストが大会の新規告知でない場合（結果報告、感想、練習報告など）は {"not_tournament": true, "reason": "理由"} を返してください。
+
+抽出するフィールド:
+- title: 大会名（正式名称）
+- date: 開催日（YYYY-MM-DD形式）
+- prefecture: 都道府県名のみ（市町村は含めない）
+- organizer: 主催者名
+- detail_link: エントリーフォームや詳細ページのURL（テキスト中にあれば）
+- scale: 募集チーム数や規模（わかれば）
+- beginner_friendly: 初心者歓迎か（true/false）
+- official: JMA公式大会か（true/false）
+
+JSONのみ返してください。説明文は不要です。
+
+テキスト:
+${content}`;
+
+    const resp = await fetch(GEMINI_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+
+    if (!resp.ok) throw new Error('Gemini API error: ' + resp.status);
+    const result = await resp.json();
+    const text = result.text || result.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    // Extract JSON from response
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('JSONが抽出できませんでした');
+
+    const info = JSON.parse(jsonMatch[0]);
+
+    if (info.not_tournament) {
+      showToast('大会告知ではありません: ' + (info.reason || ''));
+      log('Gemini判定: 大会告知ではない - ' + (info.reason || ''), 'info');
+      btn.disabled = false;
+      btn.textContent = '情報抽出 (Gemini)';
+      return;
+    }
+
+    // Fill form
+    document.getElementById('fTitle').value = info.title || '';
+    if (info.date) {
+      document.getElementById('fDate').value = info.date;
+    }
+    document.getElementById('fArea').value = info.prefecture || '';
+    document.getElementById('fOrganizer').value = info.organizer || '';
+    if (info.detail_link) document.getElementById('fDetail').value = info.detail_link;
+    document.getElementById('fScale').value = info.scale || '';
+    document.getElementById('fBeginner').checked = !!info.beginner_friendly;
+    document.getElementById('fOfficial').checked = !!info.official;
+
+    document.getElementById('formCard').style.display = 'block';
+    log('Gemini情報抽出完了: ' + (info.title || ''), 'ok');
+  } catch(e) {
+    showToast('抽出失敗: ' + e.message);
+    log('Gemini抽出エラー: ' + e.message, 'err');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '情報抽出 (Gemini)';
+}
+
+async function checkAndPost() {
+  if (!wpAuth) { showAuth(); return; }
+
+  const title = document.getElementById('fTitle').value.trim();
+  const dateVal = document.getElementById('fDate').value;
+  const area = document.getElementById('fArea').value;
+  if (!title) { showToast('大会名を入力してください'); return; }
+  if (!dateVal) { showToast('開催日を入力してください'); return; }
+  if (!area) { showToast('都道府県を選択してください'); return; }
+
+  const btn = document.getElementById('postBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>チェック中...';
+
+  const eventDate = dateVal.replace(/-/g, '');
+  const areaId = AREAS[area]?.id;
+
+  try {
+    // Stage 1: Firebase URL duplicate
+    const sourceUrl = document.getElementById('fSns').value || document.getElementById('tUrl').value;
+    if (sourceUrl) {
+      const fbResp = await fetch(`${FB}/tournament-queue.json`);
+      const fbData = await fbResp.json();
+      if (fbData) {
+        const dup = Object.values(fbData).find(e => e.url === sourceUrl && e.status === 'posted');
+        if (dup) {
+          showDuplicate([{ source: 'Firebase', title: dup.title || sourceUrl, id: dup.post_id }]);
+          btn.disabled = false;
+          btn.textContent = '重複チェック & 投稿';
+          return;
+        }
+      }
+    }
+
+    // Stage 2: WP title + date match
+    const keyword = title.split(/[（(]/)[0].trim().substring(0, 20);
+    const wpResults = await wpFetch(
+      `/wp-json/wp/v2/tournament?search=${encodeURIComponent(keyword)}&per_page=10&_fields=id,title,acf,status,link`
+    );
+    const dateDups = wpResults.filter(p => p.acf?.event_date === eventDate);
+    if (dateDups.length > 0) {
+      showDuplicate(dateDups.map(p => ({
+        source: 'WP',
+        title: p.title.rendered,
+        id: p.id,
+        status: p.status,
+        link: p.link
+      })));
+      btn.disabled = false;
+      btn.textContent = '重複チェック & 投稿';
+      return;
+    }
+
+    // Stage 3: Area + date fuzzy match
+    if (areaId) {
+      const areaResults = await wpFetch(
+        `/wp-json/wp/v2/tournament?area=${areaId}&per_page=50&_fields=id,title,acf,status,link`
+      );
+      const fuzzyDups = areaResults.filter(p => p.acf?.event_date === eventDate);
+      if (fuzzyDups.length > 0) {
+        showDuplicate(fuzzyDups.map(p => ({
+          source: 'WP(area)',
+          title: p.title.rendered,
+          id: p.id,
+          status: p.status,
+          link: p.link
+        })));
+        btn.disabled = false;
+        btn.textContent = '重複チェック & 投稿';
+        return;
+      }
+    }
+
+    // No duplicates - post
+    await postToWP();
+  } catch(e) {
+    showToast('エラー: ' + e.message);
+    log('チェックエラー: ' + e.message, 'err');
+    btn.disabled = false;
+    btn.textContent = '重複チェック & 投稿';
+  }
+}
+
+function showDuplicate(dups) {
+  const list = document.getElementById('dupList');
+  list.innerHTML = dups.map(d => `
+    <div class="dup-item">
+      [${d.source}] ${d.link ? `<a href="${d.link}" target="_blank" style="color:var(--blue)">` : ''}
+      ID:${d.id || '?'} ${escapeHtml(d.title || '?')}
+      ${d.status ? `<span class="pill pill-${d.status}">${d.status}</span>` : ''}
+      ${d.link ? '</a>' : ''}
+    </div>
+  `).join('');
+  document.getElementById('dupWarning').style.display = 'block';
+  log('重複検出: ' + dups.length + '件', 'info');
+}
+
+function skipPost() {
+  document.getElementById('dupWarning').style.display = 'none';
+  if (currentQueueKey) {
+    updateQueueStatus(currentQueueKey, 'skipped', '重複のためスキップ');
+  }
+  showToast('スキップしました');
+  log('投稿スキップ', 'info');
+}
+
+async function forcePost() {
+  document.getElementById('dupWarning').style.display = 'none';
+  await postToWP();
+}
+
+async function postToWP() {
+  if (!wpAuth) { showAuth(); return; }
+
+  const btn = document.getElementById('postBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>投稿中...';
+
+  const title = document.getElementById('fTitle').value.trim();
+  const dateVal = document.getElementById('fDate').value;
+  const area = document.getElementById('fArea').value;
+  const eventDate = dateVal.replace(/-/g, '');
+  const areaId = AREAS[area]?.id;
+
+  try {
+    const body = {
+      title: title,
+      status: 'publish',
+      area: areaId ? [areaId] : [],
+      acf: {
+        event_date: eventDate,
+        location: area,
+        organizer: document.getElementById('fOrganizer').value.trim(),
+        sns_link: document.getElementById('fSns').value.trim(),
+        detail_link: document.getElementById('fDetail').value.trim(),
+        scale: document.getElementById('fScale').value.trim(),
+        beginner_friendly: document.getElementById('fBeginner').checked,
+        official: document.getElementById('fOfficial').checked
+      }
+    };
+
+    const result = await wpFetch('/wp-json/wp/v2/tournament', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    // Show result
+    document.getElementById('resultCard').style.display = 'block';
+    document.getElementById('resultContent').innerHTML = `
+      <div style="color:var(--ok);font-size:0.9rem;margin-bottom:0.5rem">投稿完了!</div>
+      <div style="font-size:0.82rem">Post ID: <strong>${result.id}</strong></div>
+      <div style="font-size:0.82rem"><a href="${result.link}" target="_blank" style="color:var(--blue)">${result.link}</a></div>
+    `;
+
+    // Update Firebase queue if from queue
+    if (currentQueueKey) {
+      updateQueueStatus(currentQueueKey, 'posted', null, result.id, title);
+      currentQueueKey = null;
+    }
+
+    log(`WP投稿完了: ID=${result.id} "${title}"`, 'ok');
+    showToast('投稿完了! ID: ' + result.id);
+  } catch(e) {
+    showToast('投稿失敗: ' + e.message);
+    log('WP投稿エラー: ' + e.message, 'err');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '重複チェック & 投稿';
+}
+
+function resetForm() {
+  ['tUrl','fTitle','fDate','fArea','fOrganizer','fSns','fDetail','fScale'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('fBeginner').checked = false;
+  document.getElementById('fOfficial').checked = false;
+  ['previewCard','formCard','resultCard','dupWarning'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  currentQueueKey = null;
+  window._tweetData = null;
+}
+
+// ===== キュー管理タブ =====
+
+async function loadQueue() {
+  try {
+    const resp = await fetch(`${FB}/tournament-queue.json`);
+    const data = await resp.json();
+    if (!data) {
+      renderQueue([]);
+      return;
+    }
+
+    const entries = Object.entries(data).map(([k, v]) => ({ key: k, ...v }));
+    entries.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
+
+    const pending = entries.filter(e => e.status === 'pending');
+    const todayStr = new Date().toISOString().substring(0, 10);
+    const todayProcessed = entries.filter(e =>
+      e.status !== 'pending' && (e.processed_at || '').substring(0, 10) === todayStr
+    );
+
+    document.getElementById('qPending').textContent = pending.length;
+    document.getElementById('qToday').textContent = todayProcessed.length;
+
+    const badge = document.getElementById('queueBadge');
+    if (pending.length > 0) {
+      badge.textContent = pending.length;
+      badge.style.display = 'inline';
+    } else {
+      badge.style.display = 'none';
+    }
+
+    renderQueue(pending);
+  } catch(e) {
+    log('キュー読み込み失敗: ' + e.message, 'err');
+  }
+}
+
+function renderQueue(items) {
+  const box = document.getElementById('queueList');
+  if (items.length === 0) {
+    box.innerHTML = '<div style="text-align:center;color:var(--dim);padding:2rem;font-size:0.85rem">未処理キューはありません</div>';
+    return;
+  }
+
+  box.innerHTML = items.map(item => {
+    const source = item.source || 'manual';
+    const pillCls = source.includes('ifttt') ? 'pill-ifttt' : source.includes('rss') ? 'pill-rss' : 'pill-manual';
+    const sourceLabel = source.includes('ifttt') ? 'IFTTT' : source.includes('rss') ? 'RSS' : '手動';
+    const ts = item.timestamp ? new Date(item.timestamp).toLocaleString('ja-JP', { month:'numeric', day:'numeric', hour:'numeric', minute:'numeric' }) : '';
+    const user = item.url?.match(/twitter\.com\/(\w+)|x\.com\/(\w+)/);
+    const userName = user ? (user[1] || user[2]) : '';
+
+    return `
+      <div class="queue-item">
+        <div class="queue-info">
+          <a class="queue-url" href="${escapeHtml(item.url || '')}" target="_blank">
+            ${userName ? '@' + escapeHtml(userName) + ' ' : ''}${escapeHtml(item.url || '')}
+          </a>
+          <div class="queue-meta">
+            <span class="pill ${pillCls}">${sourceLabel}</span>
+            ${ts} ${item.title ? ' · ' + escapeHtml(item.title) : ''}
+          </div>
+        </div>
+        <div class="queue-actions">
+          <button class="btn btn-sm btn-primary" onclick="processFromQueue('${item.key}','${escapeHtml(item.url || '')}')">処理</button>
+          <button class="btn btn-sm btn-outline" onclick="skipFromQueue('${item.key}')">スキップ</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function processFromQueue(key, url) {
+  currentQueueKey = key;
+  document.getElementById('tUrl').value = url;
+
+  // Switch to tournament tab
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelector('[data-tab="tournament"]').classList.add('active');
+  document.getElementById('panel-tournament').classList.add('active');
+
+  // Auto-fetch
+  fetchContent();
+}
+
+async function skipFromQueue(key) {
+  const reason = prompt('スキップ理由（任意）:') || '手動スキップ';
+  await updateQueueStatus(key, 'skipped', reason);
+  loadQueue();
+  showToast('スキップしました');
+}
+
+async function updateQueueStatus(key, status, reason, postId, title) {
+  const patch = { status, processed_at: new Date().toISOString() };
+  if (reason) patch.skip_reason = reason;
+  if (postId) patch.post_id = postId;
+  if (title) patch.title = title;
+
+  try {
+    await fetch(`${FB}/tournament-queue/${key}.json`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch)
+    });
+    log(`キュー更新: ${key} → ${status}`, 'ok');
+  } catch(e) {
+    log(`キュー更新失敗: ${e.message}`, 'err');
+  }
+}
+
+// ===== Xポスト生成タブ (promote) =====
+
+async function generatePromote() {
+  const url = document.getElementById('pUrl').value.trim();
+  if (!url) return;
+
+  const box = document.getElementById('promoteResults');
+  box.innerHTML = '<div class="card"><span class="spinner"></span> 記事取得中...</div>';
+
+  try {
+    // Extract slug from URL
+    const slug = url.replace(/\/$/, '').split('/').pop();
+    if (!slug) throw new Error('URLからslugを取得できません');
+
+    // Fetch article from WP
+    let article;
+    if (wpAuth) {
+      const results = await wpFetch(`/wp-json/wp/v2/posts?slug=${slug}&_fields=id,title,excerpt,categories,link`);
+      if (results.length === 0) throw new Error('記事が見つかりません: ' + slug);
+      article = results[0];
+    } else {
+      const resp = await fetch(`${WP}/wp-json/wp/v2/posts?slug=${slug}&_fields=id,title,excerpt,categories,link`);
+      if (!resp.ok) throw new Error('記事取得失敗');
+      const results = await resp.json();
+      if (results.length === 0) throw new Error('記事が見つかりません: ' + slug);
+      article = results[0];
+    }
+
+    const titleText = article.title.rendered.replace(/<[^>]*>/g, '');
+    const excerptText = (article.excerpt?.rendered || '').replace(/<[^>]*>/g, '').trim();
+    const utmLink = article.link.replace(/\/$/, '') + '/?utm_source=twitter&utm_medium=social&utm_campaign=promote';
+    const catInfo = (article.categories || []).reduce((a, id) => a || CATEGORY_MAP[id], null)
+      || { name: '記事', tone: '情報提供', tags: '#モルック #molkky' };
+
+    box.innerHTML = '<div class="card"><span class="spinner"></span> Gemini生成中...</div>';
+
+    const prompt = `あなたはモルック（フィンランド発祥の投擲スポーツ）の情報メディア「MOLKKY HUB（モルハブ）」のX（Twitter）アカウント @molkkyhub の運用担当です。
+以下の記事をXで宣伝するポスト文面を3パターン生成してください。
+
+## モルハブの人格設定（厳守）
+- 立場: モルック界の情報ハブ。つなぎ役の黒子メディア
+- 3つの柱: メディア（正確・丁寧な情報発信）/ ハブ（人と情報をつなぐ）/ 裏方（自分を前に出さず相手を持ち上げる）
+- 文体: 完全敬語（です・ます調）。タメ口・カジュアル表現は一切使わない
+- 距離感: 丁寧で誠実。馴れ馴れしくない。品のある文体
+- 温度感: 冷たくはないが、過度にテンション高くしない。静かな熱量
+- 自己主張: 控えめ。自画自賛は絶対にしない
+- 絵文字: 控えめに2〜3個程度
+
+## 記事情報
+- タイトル: ${titleText}
+- カテゴリ: ${catInfo.name}
+- トーン: ${catInfo.tone}
+- 記事概要: ${excerptText}
+- 記事URL: ${utmLink}
+- ハッシュタグ: ${catInfo.tags}
+
+## 生成ルール
+1. 1文目は必ず「📝 記事更新！」または「📝 記事公開！」で始め、すぐ後にタイトルを含めること
+2. 各ポストの本文は200〜400文字程度（URL・ハッシュタグ除く）
+3. 完全敬語
+4. 構成: 「記事更新！」+タイトル → 記事の要点・魅力 → URL → ハッシュタグ
+5. 3パターンは切り口を変える: A=ストレート紹介型、B=要約型、C=つながり型
+
+## 出力形式（JSON）
+[
+  {"type": "ストレート紹介型", "text": "ポスト文面A"},
+  {"type": "要約型", "text": "ポスト文面B"},
+  {"type": "つながり型", "text": "ポスト文面C"}
+]`;
+
+    const geminiResp = await fetch(GEMINI_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, temperature: 0.4 })
+    });
+    if (!geminiResp.ok) throw new Error('Gemini API error');
+    const geminiResult = await geminiResp.json();
+    const text = geminiResult.text || geminiResult.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    // Try JSON parse first, fallback to --- split
+    let patterns;
+    try {
+      const jsonMatch = text.match(/\[[\s\S]*\]/);
+      if (jsonMatch) {
+        patterns = JSON.parse(jsonMatch[0]);
+      }
+    } catch(e) {}
+    if (!patterns) {
+      patterns = text.split(/---+/).map(s => s.trim()).filter(Boolean).map((t, i) => ({
+        type: ['ストレート紹介型', '要約型', 'つながり型'][i] || 'パターン ' + (i+1),
+        text: t
+      }));
+    }
+
+    box.innerHTML = patterns.map(p => `
+      <div class="post-card">
+        <div class="post-type">${escapeHtml(p.type || '')}</div>
+        <div class="post-body">${escapeHtml(p.text || '')}</div>
+        <div class="post-actions">
+          <button class="btn btn-sm btn-primary" onclick="copyText(this)">コピー</button>
+          <button class="btn btn-sm btn-outline" onclick="openInX(this)">Xで開く</button>
+        </div>
+      </div>
+    `).join('');
+
+    log('Xポスト生成完了: ' + titleText, 'ok');
+  } catch(e) {
+    box.innerHTML = `<div class="card" style="color:var(--err)">${escapeHtml(e.message)}</div>`;
+    log('promote error: ' + e.message, 'err');
+  }
+}
+
+// ===== リポストタブ (repost) =====
+
+async function generateRepost() {
+  const url = document.getElementById('rUrl').value.trim();
+  if (!url) return;
+
+  const box = document.getElementById('repostResults');
+  box.innerHTML = '<div class="card"><span class="spinner"></span> ツイート取得中...</div>';
+
+  try {
+    const tweetId = extractTweetId(url);
+    if (!tweetId) throw new Error('ツイートIDが見つかりません');
+
+    // Fetch tweet: FxTwitter → VxTwitter → tweet-proxy fallback
+    let tweetText = '', tweetAuthor = '';
+    try {
+      const fxResp = await fetch(`https://api.fxtwitter.com/status/${tweetId}`, { signal: AbortSignal.timeout(8000) });
+      if (fxResp.ok) {
+        const fxData = await fxResp.json();
+        if (fxData.tweet?.text) { tweetText = fxData.tweet.text; tweetAuthor = fxData.tweet.author?.screen_name || ''; }
+      }
+    } catch(e) {}
+
+    if (!tweetText) {
+      try {
+        const vxResp = await fetch(`https://api.vxtwitter.com/Twitter/status/${tweetId}`, { signal: AbortSignal.timeout(8000) });
+        if (vxResp.ok) {
+          const vxData = await vxResp.json();
+          if (vxData.text) { tweetText = vxData.text; tweetAuthor = vxData.user_screen_name || ''; }
+        }
+      } catch(e) {}
+    }
+
+    if (!tweetText) {
+      const proxyResp = await fetch(`${TWEET_PROXY}?id=${tweetId}`);
+      if (proxyResp.ok) {
+        const proxyData = await proxyResp.json();
+        tweetText = proxyData.text || '';
+        tweetAuthor = proxyData.user?.screen_name || '';
+      }
+    }
+
+    if (!tweetText) throw new Error('ツイート内容を取得できませんでした');
+
+    // Show preview
+    document.getElementById('rTweetText').textContent = tweetText;
+    document.getElementById('rTweetMeta').textContent = `@${tweetAuthor || '?'}`;
+    document.getElementById('rTweetPreview').style.display = 'block';
+
+    // Fetch past @molkkyhub posts for tone reference
+    box.innerHTML = '<div class="card"><span class="spinner"></span> Gemini生成中...</div>';
+    let pastPosts = '';
+    try {
+      const synResp = await fetch('https://syndication.twitter.com/srv/timeline-profile/screen-name/molkkyhub', { signal: AbortSignal.timeout(5000) });
+      const html = await synResp.text();
+      const matches = html.match(/"text":"([^"]{20,})"/g);
+      if (matches) {
+        pastPosts = matches.slice(0, 5).map(m => m.replace(/"text":"/, '').replace(/"$/, '').replace(/\\n/g, '\n')).join('\n---\n');
+      }
+    } catch(e) {}
+
+    const repostUrl = url;
+    const prompt = `あなたはモルック（フィンランド発祥の投擲スポーツ）の情報メディア「MOLKKY HUB（モルハブ）」のX（Twitter）アカウント @molkkyhub の運用担当です。
+以下の元ポストに対する「引用リポスト」の文面を3パターン生成してください。
+
+## モルハブの人格設定（厳守）
+- 立場: モルック界の情報ハブ。つなぎ役の黒子メディア
+- 3つの柱: メディア（正確・丁寧な情報発信）/ ハブ（人と情報をつなぐ）/ 裏方（自分を前に出さず相手を持ち上げる）
+- 文体: 完全敬語（です・ます調）
+- 距離感: 丁寧で誠実。馴れ馴れしくない。品のある文体
+- 温度感: 冷たくはないが、過度にテンション高くしない。静かな熱量
+- 自己主張: 控えめ。自画自賛は絶対にしない
+- 絵文字: 控えめに2〜3個程度
+- ハッシュタグ: 末尾に必ず #モルック #molkky
+
+## 引用リポスト時の原則
+1. 相手を主役にする（モルハブは脇役）
+2. 補足情報を自然に添える（ハブとしての価値）
+3. 感謝を丁寧に示す
+4. モルック界のつながり・広がりに触れる
+5. 宣伝臭を出さない
+
+## 元ポストの内容
+投稿者: @${tweetAuthor || '?'}
+${tweetText}
+
+${pastPosts ? '## モルハブの過去ポスト（トーン参考）\n' + pastPosts : ''}
+
+## 生成ルール
+1. 1文目で元ポストの具体的な内容に触れること。固有名詞・出来事・数字・場所を必ず拾う
+2. 各ポストは80〜160文字程度（ハッシュタグ込み）
+3. 完全敬語
+4. 3パターンは切り口を変える: A=感謝・称賛型、B=情報補足型、C=つながり型
+5. ハッシュタグは必ず末尾に #モルック #molkky
+
+## 出力形式（JSON）
+[
+  {"type": "感謝・称賛型", "text": "文面A"},
+  {"type": "情報補足型", "text": "文面B"},
+  {"type": "つながり型", "text": "文面C"}
+]`;
+
+    const geminiResp = await fetch(GEMINI_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, temperature: 0.6 })
+    });
+    if (!geminiResp.ok) throw new Error('Gemini API error');
+    const geminiResult = await geminiResp.json();
+    const text = geminiResult.text || geminiResult.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    // Try JSON parse first, fallback to --- split
+    let patterns;
+    try {
+      const jsonMatch = text.match(/\[[\s\S]*\]/);
+      if (jsonMatch) patterns = JSON.parse(jsonMatch[0]);
+    } catch(e) {}
+    if (!patterns) {
+      patterns = text.split(/---+/).map(s => s.trim()).filter(Boolean).map((t, i) => ({
+        type: ['感謝・称賛型', '情報補足型', 'つながり型'][i] || 'パターン ' + (i+1),
+        text: t
+      }));
+    }
+
+    box.innerHTML = patterns.map(p => `
+      <div class="post-card">
+        <div class="post-type">${escapeHtml(p.type || '')}</div>
+        <div class="post-body">${escapeHtml(p.text || '')}</div>
+        <div class="post-actions">
+          <button class="btn btn-sm btn-primary" onclick="copyText(this)">コピー</button>
+          <button class="btn btn-sm btn-outline" onclick="openInX(this, '${repostUrl}')">Xで引用</button>
+        </div>
+      </div>
+    `).join('');
+
+    log('リポスト生成完了: @' + (tweetAuthor || '?'), 'ok');
+  } catch(e) {
+    box.innerHTML = `<div class="card" style="color:var(--err)">${escapeHtml(e.message)}</div>`;
+    log('repost error: ' + e.message, 'err');
+  }
+}
+
+// ===== 共通: コピー & Xで開く =====
+
+function copyText(btn) {
+  const text = btn.closest('.post-card').querySelector('.post-body').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'コピー済';
+    setTimeout(() => btn.textContent = 'コピー', 1500);
+  });
+}
+
+function openInX(btn, quoteUrl) {
+  const text = btn.closest('.post-card').querySelector('.post-body').textContent;
+  let xUrl = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text);
+  if (quoteUrl) xUrl += '&url=' + encodeURIComponent(quoteUrl);
+  window.open(xUrl, '_blank');
+}
+
+// ===== ステータスタブ =====
+
+async function loadStatus() {
+  // WP tournament count
+  try {
+    const resp = await fetch(`${WP}/wp-json/wp/v2/tournament?per_page=1`, {
+      headers: wpAuth ? { 'Authorization': 'Basic ' + wpAuth } : {}
+    });
+    const total = resp.headers.get('X-WP-Total');
+    document.getElementById('sTournaments').textContent = total || '?';
+  } catch(e) {}
+
+  // Queue stats
+  try {
+    const resp = await fetch(`${FB}/tournament-queue.json`);
+    const data = await resp.json();
+    if (data) {
+      const entries = Object.values(data);
+      const pending = entries.filter(e => e.status === 'pending').length;
+      const todayStr = new Date().toISOString().substring(0, 10);
+      const today = entries.filter(e =>
+        e.status !== 'pending' && (e.processed_at || '').substring(0, 10) === todayStr
+      ).length;
+
+      // IFTTT 24h
+      const now = Date.now();
+      const h24 = entries.filter(e => {
+        if (!e.source?.includes('ifttt')) return false;
+        const t = new Date(e.timestamp).getTime();
+        return (now - t) < 86400000;
+      }).length;
+
+      document.getElementById('sQueue').textContent = pending;
+      document.getElementById('sIfttt').textContent = h24;
+      document.getElementById('sToday').textContent = today;
+
+      // IFTTT status
+      const iftttEntries = entries.filter(e => e.source?.includes('ifttt'));
+      iftttEntries.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
+      const lastIfttt = iftttEntries[0];
+      document.getElementById('iftttStatus').innerHTML = lastIfttt ? `
+        <div style="font-size:0.82rem">
+          <div>最終検知: <strong>${new Date(lastIfttt.timestamp).toLocaleString('ja-JP')}</strong></div>
+          <div style="margin-top:0.3rem">24h検知: <strong>${h24}件</strong></div>
+          <div style="margin-top:0.3rem">累計IFTTT: <strong>${iftttEntries.length}件</strong></div>
+          <div style="margin-top:0.5rem"><a href="https://ifttt.com/my_applets" target="_blank" style="color:var(--blue);font-size:0.78rem">IFTTT管理画面を開く</a></div>
+        </div>
+      ` : '<div style="color:var(--dim);font-size:0.82rem">IFTTTエントリなし</div>';
+    }
+  } catch(e) {}
+
+  // Recent WP posts
+  try {
+    let posts;
+    if (wpAuth) {
+      posts = await wpFetch('/wp-json/wp/v2/tournament?per_page=8&orderby=date&order=desc&_fields=id,title,acf,date,status,link');
+    } else {
+      const resp = await fetch(`${WP}/wp-json/wp/v2/tournament?per_page=8&orderby=date&order=desc&_fields=id,title,acf,date,status,link`);
+      posts = await resp.json();
+    }
+    document.getElementById('recentPosts').innerHTML = posts.map(p => {
+      const d = p.acf?.event_date;
+      const dateStr = d ? `${d.substring(0,4)}/${d.substring(4,6)}/${d.substring(6,8)}` : '';
+      return `
+        <div style="display:flex;align-items:center;gap:0.8rem;padding:0.4rem 0;border-bottom:1px solid var(--border);font-size:0.82rem">
+          <span style="color:var(--dim);min-width:45px">ID:${p.id}</span>
+          <a href="${p.link}" target="_blank" style="color:var(--blue);flex:1;text-decoration:none">${p.title.rendered}</a>
+          <span style="color:var(--dim)">${dateStr}</span>
+          <span class="pill pill-${p.status}">${p.status}</span>
+        </div>
+      `;
+    }).join('');
+  } catch(e) {
+    document.getElementById('recentPosts').innerHTML = '<div style="color:var(--err)">取得失敗</div>';
+  }
+
+  // GAS logs
+  try {
+    const resp = await fetch(`${FB}/tournament-collector-log.json`);
+    const data = await resp.json();
+    if (data) {
+      const logs = Object.entries(data).map(([k, v]) => ({ key: k, ...v }));
+      logs.sort((a, b) => (b.timestamp || b.key || '').localeCompare(a.timestamp || a.key || ''));
+      document.getElementById('gasLogs').innerHTML = logs.slice(0, 5).map(l => `
+        <div style="font-size:0.78rem;padding:0.3rem 0;border-bottom:1px solid var(--border);color:var(--dim)">
+          ${l.timestamp || l.key} · ${l.source || '?'} · ${l.status || '?'} ${l.count ? '(' + l.count + '件)' : ''}
+        </div>
+      `).join('') || '<div style="color:var(--dim)">ログなし</div>';
+    } else {
+      document.getElementById('gasLogs').innerHTML = '<div style="color:var(--dim)">ログなし</div>';
+    }
+  } catch(e) {
+    document.getElementById('gasLogs').innerHTML = '<div style="color:var(--err)">取得失敗</div>';
+  }
+}
+</script>
+</body>
+</html>
