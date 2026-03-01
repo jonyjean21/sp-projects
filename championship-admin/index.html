@@ -121,6 +121,18 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
 .log-box .err { color: var(--err); }
 .log-box .info { color: var(--accent); }
 
+/* Result list (card style) */
+.result-item { display: flex; align-items: center; gap: 0.7rem; padding: 0.6rem 0; border-bottom: 1px solid var(--border); }
+.result-item:last-child { border-bottom: none; }
+.result-rank { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; background: var(--border); color: var(--text); }
+.result-rank.r1 { background: linear-gradient(135deg, #ffd700, #b8960f); color: #000; }
+.result-rank.r2 { background: linear-gradient(135deg, #c0c0c0, #888); color: #000; }
+.result-rank.r3 { background: linear-gradient(135deg, #cd7f32, #8b5a2b); color: #fff; }
+.result-body { flex: 1; min-width: 0; }
+.result-name { font-size: 0.88rem; font-weight: 600; }
+.result-meta { font-size: 0.72rem; color: var(--dim); margin-top: 1px; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+.result-meta a { color: var(--blue); text-decoration: none; }
+
 @media (max-width: 600px) {
   .field-row { flex-direction: column; gap: 0; }
   .block-grid { grid-template-columns: 1fr; }
@@ -132,6 +144,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
 
 <div class="header">
   <h1>選手権トラッカー 管理</h1>
+  <a href="https://jonyjean21.github.io/sp-projects/championship/" target="_blank" style="font-size:0.72rem;color:var(--blue);text-decoration:none;white-space:nowrap">公開ページ ↗</a>
   <span class="conn-badge" id="connBadge" onclick="showAuth()">未接続</span>
 </div>
 
@@ -267,10 +280,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
         <h3 style="flex:1;margin:0">登録済み結果</h3>
         <button class="btn btn-sm btn-danger" onclick="deleteResults()">全削除</button>
       </div>
-      <table class="results-table">
-        <thead><tr><th class="rank">#</th><th>名前</th><th>所属</th><th>X</th><th>通過</th></tr></thead>
-        <tbody id="existingBody"></tbody>
-      </table>
+      <div id="existingList"></div>
     </div>
   </div>
 
@@ -887,16 +897,23 @@ async function loadExistingResults(venueId) {
     const entries = Object.values(data).sort((a, b) => a.rank - b.rank);
     card.style.display = 'block';
 
-    document.getElementById('existingBody').innerHTML = entries.map(p => {
-      const rankCls = p.rank <= 3 ? ` rank-${p.rank}` : '';
+    document.getElementById('existingList').innerHTML = entries.map(p => {
+      const rCls = p.rank <= 3 ? ` r${p.rank}` : '';
+      const handle = extractHandle(p.x_link);
+      const metaParts = [];
+      if (p.team) metaParts.push(escHtml(p.team));
+      if (handle) metaParts.push(`<a href="${escHtml(p.x_link)}" target="_blank">@${escHtml(handle)}</a>`);
       return `
-        <tr class="${p.qualified ? 'qualified' : ''}">
-          <td class="rank${rankCls}">${p.rank}</td>
-          <td>${escHtml(p.name)}</td>
-          <td style="color:var(--dim)">${escHtml(p.team)}</td>
-          <td>${p.x_link ? `<a href="${escHtml(p.x_link)}" target="_blank" class="x-link">@${extractHandle(p.x_link)}</a>` : ''}</td>
-          <td>${p.qualified ? '<span class="q-badge">通過</span>' : ''}</td>
-        </tr>
+        <div class="result-item">
+          <div class="result-rank${rCls}">${p.rank}</div>
+          <div class="result-body">
+            <div class="result-name">${escHtml(p.name)}</div>
+            <div class="result-meta">
+              ${metaParts.join(' · ')}
+            </div>
+          </div>
+          ${p.qualified ? '<span class="q-badge">通過</span>' : ''}
+        </div>
       `;
     }).join('');
   } catch(e) {
