@@ -447,16 +447,23 @@ function hideAuth() {
 }
 
 function restoreAuth() {
-  const saved = localStorage.getItem('molkky_admin_auth');
-  if (saved) {
-    try {
-      const { user, pass } = JSON.parse(saved);
-      document.getElementById('wpUser').value = user;
-      document.getElementById('wpPass').value = pass;
-      wpAuth = btoa(user + ':' + pass);
-      verifyConnection();
-      return;
-    } catch(e) {}
+  // Check all admin tool auth keys (shared across tools)
+  const keys = ['molkky_admin_auth', 'naimol_auth'];
+  for (const key of keys) {
+    const saved = localStorage.getItem(key);
+    if (saved) {
+      try {
+        const { user, pass } = JSON.parse(saved);
+        document.getElementById('wpUser').value = user;
+        document.getElementById('wpPass').value = pass;
+        wpAuth = btoa(user + ':' + pass);
+        // Save to all keys so they stay in sync
+        const data = JSON.stringify({ user, pass });
+        keys.forEach(k => localStorage.setItem(k, data));
+        verifyConnection();
+        return;
+      } catch(e) {}
+    }
   }
   // No saved creds → auto-show auth modal
   showAuth();
@@ -467,7 +474,9 @@ async function connect() {
   const pass = document.getElementById('wpPass').value.trim();
   if (!user || !pass) return;
   wpAuth = btoa(user + ':' + pass);
-  localStorage.setItem('molkky_admin_auth', JSON.stringify({ user, pass }));
+  // Save to all admin tool keys
+  const data = JSON.stringify({ user, pass });
+  ['molkky_admin_auth', 'naimol_auth'].forEach(k => localStorage.setItem(k, data));
   hideAuth();
   await verifyConnection();
 }
