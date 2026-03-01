@@ -1004,6 +1004,7 @@ async function fetchQueuePreview(key, tweetId) {
 
 let _historyOpen = false;
 let _allQueueEntries = [];
+const _historyTweets = {};
 
 function toggleHistory() {
   _historyOpen = !_historyOpen;
@@ -1038,10 +1039,10 @@ function renderHistory() {
     const statusCls = item.status === 'posted' ? 'pill-posted' : item.status === 'skipped' ? 'pill-skipped' : 'pill-error';
     const statusLabel = item.status === 'posted' ? '投稿済' : item.status === 'skipped' ? 'スキップ' : 'エラー';
     const ts = item.processed_at ? new Date(item.processed_at).toLocaleString('ja-JP', { month:'numeric', day:'numeric', hour:'numeric', minute:'numeric' }) : '';
-    const user = item.url?.match(/twitter\.com\/(\w+)|x\.com\/(\w+)/);
-    const userName = user ? (user[1] || user[2]) : '';
-    const reason = item.skip_reason || item.title || '';
     const tweetId = extractTweetId(item.url || '');
+    // Show tweet body snippet or title/reason as summary
+    const cached = _historyTweets[item.key];
+    const summary = cached || item.title || item.skip_reason || item.url || '';
 
     return `
       <div style="border-bottom:1px solid var(--border)">
@@ -1049,9 +1050,7 @@ function renderHistory() {
           <span class="pill ${statusCls}">${statusLabel}</span>
           <span class="pill ${pillCls}" style="font-size:0.62rem">${sourceLabel}</span>
           <div style="flex:1;min-width:0">
-            <div style="color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-              ${userName ? '@' + escapeHtml(userName) + ' · ' : ''}${escapeHtml(reason)}
-            </div>
+            <div style="color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(summary)}</div>
             ${item.post_id ? '<span style="color:var(--ok);font-size:0.7rem">WP ID:' + item.post_id + '</span>' : ''}
           </div>
           <span style="color:var(--dim);font-size:0.7rem;white-space:nowrap">${ts}</span>
@@ -1098,6 +1097,10 @@ async function fetchHistoryPreview(key, tweetId) {
       <div style="white-space:pre-wrap;word-break:break-word;color:var(--text)">${escapeHtml(text)}</div>
       ${hasMedia ? '<div style="margin-top:0.3rem;color:var(--accent);font-size:0.72rem">[画像 ' + data.mediaDetails.length + '枚]</div>' : ''}
     `;
+    // Cache for summary line
+    if (text && !_historyTweets[key]) {
+      _historyTweets[key] = text.replace(/\n/g, ' ').substring(0, 80);
+    }
   } catch(e) {
     el.innerHTML = '<span style="color:var(--err)">内容取得失敗</span>';
   }
@@ -1219,8 +1222,7 @@ function processFromQueue(key, url) {
 }
 
 async function skipFromQueue(key) {
-  const reason = prompt('スキップ理由:') || '手動スキップ';
-  await updateQueueStatus(key, 'skipped', reason);
+  await updateQueueStatus(key, 'skipped');
   await loadQueue();
   showToast('スキップしました');
 }
