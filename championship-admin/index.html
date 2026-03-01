@@ -202,7 +202,10 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
           <div id="xTweetImages" style="display:flex;gap:6px;margin-top:0.6rem;flex-wrap:wrap"></div>
           <div class="tweet-meta" id="xTweetMeta"></div>
         </div>
-        <div style="font-size:0.72rem;color:var(--dim);margin-top:0.5rem">上記を参考に、下のフォームに手動入力してください</div>
+        <div class="btn-row" style="margin-top:0.6rem">
+          <button class="btn btn-sm btn-success" id="autoParseBtn" onclick="autoParseFromTweet()">自動パースして入力</button>
+          <span style="font-size:0.72rem;color:var(--dim);align-self:center">テキストから順位・名前を自動抽出</span>
+        </div>
       </div>
     </div>
 
@@ -345,6 +348,8 @@ const TWEET_PROXY = 'https://vercel-api-orpin-one.vercel.app/api/tweet-proxy';
 let blocksData = {};
 let previewRows = [];
 let currentVenueSlots = 0;
+let lastTweetText = '';
+let lastTweetUrl = '';
 
 // ===== Initial Data =====
 const INIT_DATA = {
@@ -646,6 +651,10 @@ async function fetchTweet() {
     }
 
     document.getElementById('xPreviewArea').style.display = 'block';
+
+    // Store for auto-parse
+    lastTweetText = data.text || '';
+    lastTweetUrl = url;
 
     // Pre-fill X link in add form
     document.getElementById('addXLink').value = url;
@@ -1006,6 +1015,90 @@ async function previewSourceUrl() {
     container.innerHTML = `<div style="padding:0.5rem"><a href="${escHtml(url)}" target="_blank" style="color:var(--blue);font-size:0.82rem">${escHtml(url)}</a></div>`;
     container.style.display = 'block';
   }
+}
+
+// ===== Auto Parse from Tweet =====
+function autoParseFromTweet() {
+  if (!lastTweetText) { showToast('先にツイートを取得してください'); return; }
+
+  const text = lastTweetText;
+  const parsed = [];
+
+  // パターン1: 「1位 名前」「2位 名前」「🥇名前」「🥈名前」等
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+
+  for (const line of lines) {
+    let match;
+
+    // 🥇🥈🥉 + 名前
+    match = line.match(/^[🥇🏆]\s*(.+)/);
+    if (match && !parsed.find(p => p.rank === 1)) { parsed.push({ rank: 1, name: match[1].trim() }); continue; }
+    match = line.match(/^🥈\s*(.+)/);
+    if (match && !parsed.find(p => p.rank === 2)) { parsed.push({ rank: 2, name: match[1].trim() }); continue; }
+    match = line.match(/^🥉\s*(.+)/);
+    if (match && !parsed.find(p => p.rank === 3)) { parsed.push({ rank: 3, name: match[1].trim() }); continue; }
+
+    // 「1位 名前」「1位：名前」「1位:名前」
+    match = line.match(/^(\d+)\s*位\s*[：:\s]\s*(.+)/);
+    if (match) { parsed.push({ rank: parseInt(match[1]), name: match[2].trim() }); continue; }
+
+    // 「第1位 名前」
+    match = line.match(/^第\s*(\d+)\s*位\s*[：:\s]\s*(.+)/);
+    if (match) { parsed.push({ rank: parseInt(match[1]), name: match[2].trim() }); continue; }
+
+    // 「1. 名前」「1） 名前」「1) 名前」
+    match = line.match(/^(\d+)\s*[.）)]\s+(.+)/);
+    if (match) { parsed.push({ rank: parseInt(match[1]), name: match[2].trim() }); continue; }
+
+    // 「優勝 名前」「準優勝 名前」「3位 名前」
+    match = line.match(/^優勝\s*[：:\s]\s*(.+)/);
+    if (match && !parsed.find(p => p.rank === 1)) { parsed.push({ rank: 1, name: match[1].trim() }); continue; }
+    match = line.match(/^準優勝\s*[：:\s]\s*(.+)/);
+    if (match && !parsed.find(p => p.rank === 2)) { parsed.push({ rank: 2, name: match[1].trim() }); continue; }
+  }
+
+  if (parsed.length === 0) {
+    showToast('順位情報を自動抽出できませんでした。手動入力してください');
+    log('自動パース: 抽出0件 — 手動入力が必要', 'err');
+    return;
+  }
+
+  // Clean up names: remove trailing hashtags, parens with team info
+  parsed.forEach(p => {
+    // 「名前（チーム名）」→ 名前 / チーム名 を分離
+    const teamMatch = p.name.match(/^(.+?)\s*[（(]\s*(.+?)\s*[）)](.*)$/);
+    if (teamMatch) {
+      p.name = teamMatch[1].trim();
+      p.team = teamMatch[2].trim();
+    }
+    // 「名前 / チーム」or「名前／チーム」
+    if (!p.team) {
+      const slashMatch = p.name.match(/^(.+?)\s*[/／]\s*(.+)$/);
+      if (slashMatch) {
+        p.name = slashMatch[1].trim();
+        p.team = slashMatch[2].trim();
+      }
+    }
+    // Remove hashtags from end
+    p.name = p.name.replace(/\s*#.+$/, '').trim();
+    if (p.team) p.team = p.team.replace(/\s*#.+$/, '').trim();
+  });
+
+  // Sort by rank and apply qualified
+  parsed.sort((a, b) => a.rank - b.rank);
+  const results = parsed.map(p => ({
+    rank: p.rank,
+    name: p.name,
+    team: p.team || '',
+    x_link: lastTweetUrl,
+    qualified: false
+  }));
+  results.forEach((r, i) => { r.qualified = i < currentVenueSlots; });
+
+  previewRows = results;
+  renderPreview();
+  showToast(`${results.length}名を自動抽出しました`);
+  log(`自動パース: ${results.length}名抽出 (通過: ${Math.min(results.length, currentVenueSlots)}名)`, 'ok');
 }
 
 // ===== Utilities =====
