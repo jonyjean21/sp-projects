@@ -72,6 +72,8 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
 .pill-draft { background: rgba(245,158,11,0.15); color: var(--warn); }
 .pill-ifttt { background: rgba(99,102,241,0.15); color: var(--accent); }
 .pill-rss { background: rgba(74,158,255,0.15); color: var(--blue); }
+.pill-jma { background: rgba(245,158,11,0.2); color: #f59e0b; }
+.pill-kokuchees { background: rgba(34,197,94,0.15); color: var(--ok); }
 .pill-manual { background: var(--border); color: var(--dim); }
 
 /* Queue list */
@@ -552,6 +554,15 @@ function isXUrl(url) {
   return url.includes('x.com/') || url.includes('twitter.com/');
 }
 
+function sourceInfo(source) {
+  if (!source) return { cls: 'pill-manual', label: '手動' };
+  if (source.includes('JMA') || source.includes('jma')) return { cls: 'pill-jma', label: 'JMA' };
+  if (source.includes('こくちーず') || source.includes('kokuchees')) return { cls: 'pill-kokuchees', label: 'こくちーず' };
+  if (source.includes('ifttt')) return { cls: 'pill-ifttt', label: 'IFTTT' };
+  if (source.includes('rss')) return { cls: 'pill-rss', label: 'RSS' };
+  return { cls: 'pill-manual', label: '手動' };
+}
+
 // ===== 大会投稿タブ =====
 
 async function fetchContent() {
@@ -942,9 +953,7 @@ function renderQueue(items) {
   }
 
   box.innerHTML = items.map(item => {
-    const source = item.source || 'manual';
-    const pillCls = source.includes('ifttt') ? 'pill-ifttt' : source.includes('rss') ? 'pill-rss' : 'pill-manual';
-    const sourceLabel = source.includes('ifttt') ? 'IFTTT' : source.includes('rss') ? 'RSS' : '手動';
+    const si = sourceInfo(item.source);
     const ts = item.timestamp ? new Date(item.timestamp).toLocaleString('ja-JP', { month:'numeric', day:'numeric', hour:'numeric', minute:'numeric' }) : '';
     const user = item.url?.match(/twitter\.com\/(\w+)|x\.com\/(\w+)/);
     const userName = user ? (user[1] || user[2]) : '';
@@ -955,7 +964,7 @@ function renderQueue(items) {
         <div style="display:flex;align-items:center;gap:0.8rem">
           <div class="queue-info">
             <div class="queue-meta">
-              <span class="pill ${pillCls}">${sourceLabel}</span>
+              <span class="pill ${si.cls}">${si.label}</span>
               ${userName ? ' <strong>@' + escapeHtml(userName) + '</strong>' : ''}
               <span style="color:var(--dim)">${ts}</span>
             </div>
@@ -1033,9 +1042,7 @@ function renderHistory() {
   }
 
   box.innerHTML = processed.map(item => {
-    const source = item.source || 'manual';
-    const pillCls = source.includes('ifttt') ? 'pill-ifttt' : source.includes('rss') ? 'pill-rss' : 'pill-manual';
-    const sourceLabel = source.includes('ifttt') ? 'IFTTT' : source.includes('rss') ? 'RSS' : '手動';
+    const si = sourceInfo(item.source);
     const statusCls = item.status === 'posted' ? 'pill-posted' : item.status === 'skipped' ? 'pill-skipped' : 'pill-error';
     const statusLabel = item.status === 'posted' ? '投稿済' : item.status === 'skipped' ? 'スキップ' : 'エラー';
     const ts = item.processed_at ? new Date(item.processed_at).toLocaleString('ja-JP', { month:'numeric', day:'numeric', hour:'numeric', minute:'numeric' }) : '';
@@ -1048,7 +1055,7 @@ function renderHistory() {
       <div style="border-bottom:1px solid var(--border)">
         <div style="display:flex;align-items:center;gap:0.6rem;padding:0.5rem 0.4rem;font-size:0.78rem;cursor:pointer;transition:background 0.15s;border-radius:4px" onclick="toggleHistoryDetail('${item.key}','${tweetId || ''}')" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''">
           <span class="pill ${statusCls}">${statusLabel}</span>
-          <span class="pill ${pillCls}" style="font-size:0.62rem">${sourceLabel}</span>
+          <span class="pill ${si.cls}" style="font-size:0.62rem">${si.label}</span>
           <div style="flex:1;min-width:0">
             <div style="color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(summary)}</div>
             ${item.post_id ? '<span style="color:var(--ok);font-size:0.7rem">WP ID:' + item.post_id + '</span>' : ''}
@@ -1548,6 +1555,13 @@ function toggleEditPost(postId) {
     ? `${eventDate.substring(0,4)}-${eventDate.substring(4,6)}-${eventDate.substring(6,8)}`
     : '';
 
+  // If source is JMA and detail_link is empty, auto-fill with JMA source URL
+  const postSource = (window._postSourceMap || {})[postId] || '';
+  const postSourceUrl = (window._postUrlMap || {})[postId] || '';
+  if (postSource.includes('JMA') && !acf.detail_link && postSourceUrl) {
+    acf.detail_link = postSourceUrl;
+  }
+
   const postAreaIds = post.area || [];
   let currentArea = '';
   for (const [name, data] of Object.entries(AREAS)) {
@@ -1667,7 +1681,9 @@ async function loadStatus() {
     document.getElementById('sTournaments').textContent = total || '?';
   } catch(e) {}
 
-  // Queue stats
+  // Queue stats + post_id→source map
+  let _postSourceMap = {};
+  let _postUrlMap = {};
   try {
     const resp = await fetch(`${FB}/tournament-queue.json`);
     const data = await resp.json();
@@ -1691,6 +1707,14 @@ async function loadStatus() {
       document.getElementById('sIfttt').textContent = h24;
       document.getElementById('sToday').textContent = today;
 
+      // Build post_id → source/url map
+      entries.forEach(e => {
+        if (e.post_id && e.source) {
+          _postSourceMap[e.post_id] = e.source;
+          _postUrlMap[e.post_id] = e.url || '';
+        }
+      });
+
       // IFTTT status
       const iftttEntries = entries.filter(e => e.source?.includes('ifttt'));
       iftttEntries.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
@@ -1706,7 +1730,11 @@ async function loadStatus() {
     }
   } catch(e) {}
 
-  // Recent WP posts (editable)
+  // Store maps globally for edit form
+  window._postSourceMap = _postSourceMap;
+  window._postUrlMap = _postUrlMap;
+
+  // Recent WP posts (editable, with source badge)
   try {
     let posts;
     if (wpAuth) {
@@ -1719,10 +1747,13 @@ async function loadStatus() {
     document.getElementById('recentPosts').innerHTML = posts.map(p => {
       const d = p.acf?.event_date;
       const dateStr = d ? `${d.substring(0,4)}/${d.substring(4,6)}/${d.substring(6,8)}` : '';
+      const src = _postSourceMap[p.id];
+      const si = src ? sourceInfo(src) : null;
       return `
         <div>
           <div style="display:flex;align-items:center;gap:0.8rem;padding:0.5rem 0.3rem;border-bottom:1px solid var(--border);font-size:0.82rem;cursor:pointer;transition:background 0.15s;border-radius:4px" onclick="toggleEditPost(${p.id})" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''">
             <span style="color:var(--dim);min-width:45px;font-size:0.75rem">ID:${p.id}</span>
+            ${si ? '<span class="pill ' + si.cls + '" style="font-size:0.62rem">' + si.label + '</span>' : ''}
             <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.title.rendered}</span>
             <span style="color:var(--dim);font-size:0.75rem">${dateStr}</span>
             <span style="color:var(--dim);font-size:0.75rem">${p.acf?.location || ''}</span>
