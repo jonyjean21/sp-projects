@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>選手権トラッカー 管理</title>
+<style>
+:root {
+  --bg: #0a0a0f; --card: #12121a; --border: #2a2a3a;
+  --text: #e0e0e0; --dim: #888; --accent: #6366f1;
+  --ok: #22c55e; --err: #ef4444; --warn: #f59e0b;
+  --blue: #4a9eff; --gold: #d4a017;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+.header { padding: 0.8rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+.header h1 { font-size: 1.1rem; flex: 1; }
+.conn-badge { font-size: 0.7rem; padding: 3px 10px; border-radius: 12px; background: var(--border); cursor: pointer; }
+.conn-badge.ok { background: rgba(34,197,94,0.15); color: var(--ok); }
+
+.tabs { display: flex; border-bottom: 1px solid var(--border); padding: 0 0.5rem; overflow-x: auto; }
+.tab { padding: 0.65rem 1rem; font-size: 0.8rem; color: var(--dim); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.content { padding: 1.2rem; max-width: 960px; margin: 0 auto; }
+.panel { display: none; }
+.panel.active { display: block; }
+
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem; margin-bottom: 1rem; }
+.card h3 { font-size: 0.9rem; margin-bottom: 0.8rem; color: var(--text); }
+label { font-size: 0.78rem; color: var(--dim); display: block; margin-bottom: 0.25rem; }
+input[type="text"], input[type="password"], input[type="url"], select, textarea {
+  width: 100%; padding: 0.5rem 0.7rem; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text); font-size: 0.85rem;
+}
+textarea { resize: vertical; min-height: 80px; font-family: inherit; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+.field { margin-bottom: 0.7rem; }
+.field-row { display: flex; gap: 0.8rem; }
+.field-row .field { flex: 1; }
+
+.btn { padding: 0.5rem 1.2rem; border: none; border-radius: 8px; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: #4f46e5; }
+.btn-sm { padding: 0.3rem 0.7rem; font-size: 0.75rem; }
+.btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+.btn-outline:hover:not(:disabled) { border-color: var(--dim); }
+.btn-success { background: var(--ok); color: #fff; }
+.btn-success:hover:not(:disabled) { background: #16a34a; }
+.btn-warn { background: var(--warn); color: #000; }
+.btn-danger { background: var(--err); color: #fff; }
+.btn-danger:hover:not(:disabled) { background: #dc2626; }
+.btn-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.8rem; }
+
+.pill { display: inline-block; font-size: 0.68rem; padding: 2px 8px; border-radius: 10px; }
+.pill-upcoming { background: rgba(99,102,241,0.15); color: var(--accent); }
+.pill-in-progress { background: rgba(245,158,11,0.15); color: var(--warn); }
+.pill-completed { background: rgba(34,197,94,0.15); color: var(--ok); }
+
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.8rem; margin-bottom: 1rem; }
+.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; text-align: center; }
+.stat-card .stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+.stat-card .stat-label { font-size: 0.75rem; color: var(--dim); margin-top: 0.3rem; }
+
+/* Block cards */
+.block-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.8rem; }
+.block-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; }
+.block-card h4 { font-size: 0.85rem; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.5rem; }
+.venue-row { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0; border-top: 1px solid var(--border); font-size: 0.8rem; }
+.venue-row:first-child { border-top: none; }
+.venue-info { flex: 1; min-width: 0; }
+.venue-name { font-weight: 600; }
+.venue-meta { font-size: 0.72rem; color: var(--dim); }
+.status-btn { font-size: 0.65rem; padding: 2px 8px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--dim); cursor: pointer; }
+.status-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Results table */
+.results-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.results-table th { text-align: left; padding: 0.4rem 0.5rem; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 0.72rem; font-weight: 600; }
+.results-table td { padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--border); }
+.results-table tr.qualified { background: rgba(212,160,23,0.08); }
+.results-table tr:hover { background: rgba(99,102,241,0.05); }
+.results-table .rank { width: 40px; text-align: center; font-weight: 700; }
+.results-table .rank-1 { color: #ffd700; }
+.results-table .rank-2 { color: #c0c0c0; }
+.results-table .rank-3 { color: #cd7f32; }
+.x-link { color: var(--blue); text-decoration: none; }
+.x-link:hover { text-decoration: underline; }
+.q-badge { font-size: 0.65rem; background: rgba(212,160,23,0.2); color: var(--gold); padding: 1px 6px; border-radius: 8px; }
+.delete-btn { background: none; border: none; color: var(--dim); cursor: pointer; font-size: 0.8rem; padding: 2px 4px; }
+.delete-btn:hover { color: var(--err); }
+
+/* Source items */
+.source-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.8rem; }
+.source-item:last-child { border-bottom: none; }
+.source-url { color: var(--blue); text-decoration: none; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.source-type { font-size: 0.65rem; padding: 1px 6px; border-radius: 8px; }
+.source-type-x { background: rgba(99,102,241,0.15); color: var(--accent); }
+.source-type-web { background: rgba(74,158,255,0.15); color: var(--blue); }
+.source-type-jma { background: rgba(245,158,11,0.15); color: var(--warn); }
+
+/* Tweet preview */
+.tweet-preview { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; margin-top: 0.6rem; }
+.tweet-text { font-size: 0.85rem; line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
+.tweet-meta { font-size: 0.72rem; color: var(--dim); margin-top: 0.5rem; }
+
+.toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 0.6rem 1.2rem; border-radius: 10px; font-size: 0.82rem; z-index: 200; transition: transform 0.3s; pointer-events: none; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+.auth-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; display: flex; align-items: center; justify-content: center; }
+.auth-modal .auth-box { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; width: 90vw; max-width: 360px; }
+.auth-modal .auth-box h3 { font-size: 0.95rem; margin-bottom: 1rem; }
+
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 4px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.log-box { font-family: 'SF Mono', Monaco, monospace; font-size: 0.72rem; line-height: 1.7; max-height: 200px; overflow-y: auto; color: var(--dim); padding: 0.5rem; background: var(--bg); border-radius: 8px; }
+.log-box .ok { color: var(--ok); }
+.log-box .err { color: var(--err); }
+.log-box .info { color: var(--accent); }
+
+@media (max-width: 600px) {
+  .field-row { flex-direction: column; gap: 0; }
+  .block-grid { grid-template-columns: 1fr; }
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>選手権トラッカー 管理</h1>
+  <span class="conn-badge" id="connBadge" onclick="showAuth()">未接続</span>
+</div>
+
+<div class="tabs">
+  <div class="tab" data-tab="results">結果入力</div>
+  <div class="tab active" data-tab="slots">出場枠管理</div>
+  <div class="tab" data-tab="sources">ソース管理</div>
+</div>
+
+<div class="content">
+
+  <!-- ===== 出場枠管理タブ ===== -->
+  <div class="panel active" id="panel-slots">
+    <div class="stat-grid" id="slotStats"></div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:0.8rem;flex-wrap:wrap">
+        <h3 style="flex:1;margin:0">ブロック・会場一覧</h3>
+        <button class="btn btn-sm btn-outline" onclick="loadBlocks()">更新</button>
+        <button class="btn btn-sm btn-danger" id="initBtn" onclick="initData()">データ初期化</button>
+      </div>
+      <div class="block-grid" id="blockGrid">
+        <div style="color:var(--dim);font-size:0.82rem;grid-column:1/-1;text-align:center;padding:2rem">読み込み中...</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>操作ログ</h3>
+      <div class="log-box" id="log"></div>
+    </div>
+  </div>
+
+  <!-- ===== 結果入力タブ ===== -->
+  <div class="panel" id="panel-results">
+    <div class="card">
+      <h3>会場選択</h3>
+      <div class="field-row">
+        <div class="field">
+          <label>ブロック</label>
+          <select id="rBlock" onchange="onBlockChange()">
+            <option value="">-- 選択 --</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>会場</label>
+          <select id="rVenue" onchange="onVenueChange()">
+            <option value="">-- 選択 --</option>
+          </select>
+        </div>
+      </div>
+      <div id="venueInfo" style="display:none;margin-top:0.5rem">
+        <span style="font-size:0.78rem;color:var(--dim)" id="venueInfoText"></span>
+      </div>
+    </div>
+
+    <div class="card" id="pasteCard" style="display:none">
+      <h3>一括ペースト</h3>
+      <div class="field">
+        <label>タブ区切りデータ（順位 \t 名前 \t 所属 \t Xリンク）</label>
+        <textarea id="pasteArea" rows="8" placeholder="1&#9;太郎&#9;チーム名&#9;https://x.com/taro&#10;2&#9;花子&#9;チーム名&#9;&#10;3&#9;次郎&#9;チーム名&#9;"></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="parsePaste()">パース</button>
+        <button class="btn btn-outline" onclick="document.getElementById('pasteArea').value=''">クリア</button>
+      </div>
+    </div>
+
+    <div class="card" id="addRowCard" style="display:none">
+      <h3>個別追加</h3>
+      <div class="field-row">
+        <div class="field" style="flex:0 0 60px">
+          <label>順位</label>
+          <input type="text" id="addRank" placeholder="#">
+        </div>
+        <div class="field">
+          <label>名前</label>
+          <input type="text" id="addName">
+        </div>
+        <div class="field">
+          <label>所属</label>
+          <input type="text" id="addTeam">
+        </div>
+        <div class="field">
+          <label>Xリンク</label>
+          <input type="text" id="addXLink" placeholder="https://x.com/...">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-sm btn-primary" onclick="addRow()">追加</button>
+      </div>
+    </div>
+
+    <div class="card" id="previewCard" style="display:none">
+      <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:0.8rem">
+        <h3 style="flex:1;margin:0">プレビュー <span style="font-size:0.75rem;color:var(--dim)" id="previewCount"></span></h3>
+        <button class="btn btn-sm btn-outline" onclick="clearPreview()">全削除</button>
+      </div>
+      <table class="results-table" id="previewTable">
+        <thead><tr><th class="rank">#</th><th>名前</th><th>所属</th><th>X</th><th>通過</th><th></th></tr></thead>
+        <tbody id="previewBody"></tbody>
+      </table>
+      <div class="btn-row">
+        <button class="btn btn-success" id="saveBtn" onclick="saveResults()">Firebase に保存</button>
+      </div>
+    </div>
+
+    <!-- 既存結果表示 -->
+    <div class="card" id="existingCard" style="display:none">
+      <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:0.8rem">
+        <h3 style="flex:1;margin:0">登録済み結果</h3>
+        <button class="btn btn-sm btn-danger" onclick="deleteResults()">全削除</button>
+      </div>
+      <table class="results-table">
+        <thead><tr><th class="rank">#</th><th>名前</th><th>所属</th><th>X</th><th>通過</th></tr></thead>
+        <tbody id="existingBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== ソース管理タブ ===== -->
+  <div class="panel" id="panel-sources">
+    <div class="card">
+      <h3>会場選択</h3>
+      <div class="field-row">
+        <div class="field">
+          <label>ブロック</label>
+          <select id="sBlock" onchange="onSrcBlockChange()">
+            <option value="">-- 選択 --</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>会場</label>
+          <select id="sVenue" onchange="loadSources()">
+            <option value="">-- 選択 --</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="srcAddCard" style="display:none">
+      <h3>ソース追加</h3>
+      <div class="field">
+        <label>URL</label>
+        <input type="url" id="srcUrl" placeholder="https://x.com/... or https://...">
+      </div>
+      <div class="field">
+        <label>メモ</label>
+        <input type="text" id="srcNote" placeholder="公式発表、速報 など">
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="addSource()">追加</button>
+        <button class="btn btn-sm btn-outline" onclick="previewSourceUrl()">プレビュー</button>
+      </div>
+      <div id="srcPreview" style="display:none"></div>
+    </div>
+
+    <div class="card" id="srcListCard" style="display:none">
+      <h3>登録済みソース</h3>
+      <div id="srcList">
+        <div style="color:var(--dim);font-size:0.82rem">ソースなし</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="auth-modal" id="authModal" style="display:none">
+  <div class="auth-box">
+    <h3>Firebase 接続確認</h3>
+    <p style="font-size:0.8rem;color:var(--dim);margin-bottom:1rem">Firebase RTDBへの接続を確認します</p>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="connectFB()">接続テスト</button>
+      <button class="btn btn-outline" onclick="hideAuth()">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== Constants =====
+const FB = 'https://viisi-master-app-default-rtdb.firebaseio.com';
+const BASE_PATH = '/championship-2026';
+const TWEET_PROXY = 'https://vercel-api-orpin-one.vercel.app/api/tweet-proxy';
+
+// ===== State =====
+let blocksData = {};
+let previewRows = [];
+let currentVenueSlots = 0;
+
+// ===== Initial Data =====
+const INIT_DATA = {
+  config: {
+    title: '全日本モルック選手権 2026',
+    finals_date: '2026-06-07',
+    finals_venue: '大阪舞洲',
+    total_slots: 112
+  },
+  blocks: {
+    'kyushu-okinawa': {
+      name: '九州沖縄ブロック', order: 1,
+      venues: {
+        'fukuoka-0301': { name: '福岡会場', date: '2026-03-01', slots: 8, status: 'completed' }
+      }
+    },
+    'hokushinetsu-tokai': {
+      name: '北信越東海ブロック', order: 2,
+      venues: {
+        'aichi-0307': { name: '愛知会場(Day1)', date: '2026-03-07', slots: 6, status: 'upcoming' },
+        'aichi-0308': { name: '愛知会場(Day2)', date: '2026-03-08', slots: 9, status: 'upcoming' }
+      }
+    },
+    'kanto': {
+      name: '関東ブロック', order: 3,
+      venues: {
+        'tokyo-0315': { name: '東京会場(Day1)', date: '2026-03-15', slots: 18, status: 'upcoming' },
+        'tokyo-0321': { name: '東京会場(Day2)', date: '2026-03-21', slots: 16, status: 'upcoming' }
+      }
+    },
+    'kinki': {
+      name: '近畿ブロック', order: 4,
+      venues: {
+        'osaka-0322': { name: '大阪会場', date: '2026-03-22', slots: 13, status: 'upcoming' },
+        'kyoto-0329': { name: '京都会場', date: '2026-03-29', slots: 13, status: 'upcoming' }
+      }
+    },
+    'chugoku-shikoku': {
+      name: '中国四国ブロック', order: 5,
+      venues: {
+        'ehime-0412': { name: '愛媛会場', date: '2026-04-12', slots: 12, status: 'upcoming' }
+      }
+    },
+    'hokkaido-tohoku': {
+      name: '北海道東北ブロック', order: 6,
+      venues: {
+        'sapporo-0505': { name: '札幌会場(Day1)', date: '2026-05-05', slots: 8, status: 'upcoming' },
+        'sapporo-0506': { name: '札幌会場(Day2)', date: '2026-05-06', slots: 9, status: 'upcoming' }
+      }
+    }
+  }
+};
+
+// ===== Init =====
+document.addEventListener('DOMContentLoaded', () => {
+  initTabs();
+  checkConnection();
+  loadBlocks();
+});
+
+// ===== Tabs =====
+function initTabs() {
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+      if (tab.dataset.tab === 'slots') loadBlocks();
+    });
+  });
+}
+
+// ===== Firebase Connection =====
+function showAuth() { document.getElementById('authModal').style.display = 'flex'; }
+function hideAuth() { document.getElementById('authModal').style.display = 'none'; }
+
+async function checkConnection() {
+  try {
+    const r = await fetch(`${FB}${BASE_PATH}/config.json`);
+    if (r.ok) {
+      const data = await r.json();
+      const badge = document.getElementById('connBadge');
+      badge.textContent = data ? 'FB接続OK' : 'FB接続OK (データなし)';
+      badge.classList.add('ok');
+      log('Firebase接続成功', 'ok');
+    }
+  } catch(e) {
+    log('Firebase接続エラー: ' + e.message, 'err');
+  }
+}
+
+async function connectFB() {
+  await checkConnection();
+  hideAuth();
+}
+
+// ===== Load Blocks =====
+async function loadBlocks() {
+  try {
+    const r = await fetch(`${FB}${BASE_PATH}/blocks.json`);
+    const data = await r.json();
+    blocksData = data || {};
+
+    // Also load results count
+    const rr = await fetch(`${FB}${BASE_PATH}/results.json`);
+    const resultsData = await rr.json();
+
+    renderBlockGrid(resultsData);
+    renderStats(resultsData);
+    populateBlockSelectors();
+  } catch(e) {
+    log('ブロック読み込みエラー: ' + e.message, 'err');
+  }
+}
+
+function renderStats(resultsData) {
+  let totalSlots = 0, confirmedSlots = 0, completedVenues = 0, totalVenues = 0;
+  for (const [, block] of Object.entries(blocksData)) {
+    if (!block.venues) continue;
+    for (const [vid, venue] of Object.entries(block.venues)) {
+      totalVenues++;
+      totalSlots += venue.slots || 0;
+      if (venue.status === 'completed') completedVenues++;
+      if (resultsData && resultsData[vid]) {
+        const entries = Object.values(resultsData[vid]);
+        confirmedSlots += entries.filter(e => e.qualified).length;
+      }
+    }
+  }
+
+  document.getElementById('slotStats').innerHTML = `
+    <div class="stat-card"><div class="stat-value">${confirmedSlots}/${totalSlots}</div><div class="stat-label">通過確定</div></div>
+    <div class="stat-card"><div class="stat-value">${completedVenues}/${totalVenues}</div><div class="stat-label">会場完了</div></div>
+    <div class="stat-card"><div class="stat-value">${totalSlots}</div><div class="stat-label">総枠数</div></div>
+  `;
+}
+
+function renderBlockGrid(resultsData) {
+  const grid = document.getElementById('blockGrid');
+  const sorted = Object.entries(blocksData).sort((a, b) => (a[1].order || 0) - (b[1].order || 0));
+
+  if (sorted.length === 0) {
+    grid.innerHTML = '<div style="color:var(--dim);font-size:0.82rem;grid-column:1/-1;text-align:center;padding:2rem">データなし — 「データ初期化」で作成してください</div>';
+    return;
+  }
+
+  grid.innerHTML = sorted.map(([bid, block]) => {
+    const venues = block.venues ? Object.entries(block.venues) : [];
+    return `
+      <div class="block-card">
+        <h4>${escHtml(block.name)}</h4>
+        ${venues.map(([vid, v]) => {
+          const resultCount = resultsData && resultsData[vid] ? Object.keys(resultsData[vid]).length : 0;
+          return `
+            <div class="venue-row">
+              <div class="venue-info">
+                <div class="venue-name">${escHtml(v.name)}</div>
+                <div class="venue-meta">${v.date} · ${v.slots}枠${resultCount > 0 ? ` · ${resultCount}名登録` : ''}</div>
+              </div>
+              <span class="pill pill-${v.status}">${statusLabel(v.status)}</span>
+              <button class="status-btn" onclick="cycleStatus('${bid}','${vid}','${v.status}')">変更</button>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }).join('');
+}
+
+function statusLabel(s) {
+  return { upcoming: '予定', 'in-progress': '進行中', completed: '完了' }[s] || s;
+}
+
+async function cycleStatus(blockId, venueId, current) {
+  const order = ['upcoming', 'in-progress', 'completed'];
+  const next = order[(order.indexOf(current) + 1) % order.length];
+  try {
+    await fetch(`${FB}${BASE_PATH}/blocks/${blockId}/venues/${venueId}/status.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(next)
+    });
+    showToast(`${venueId}: ${statusLabel(next)}`);
+    log(`ステータス変更: ${venueId} → ${next}`, 'ok');
+    loadBlocks();
+  } catch(e) {
+    showToast('エラー: ' + e.message);
+  }
+}
+
+// ===== Data Init =====
+async function initData() {
+  if (!confirm('全ブロック・会場データを初期化しますか？既存データは上書きされます。')) return;
+
+  const btn = document.getElementById('initBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>初期化中';
+
+  try {
+    await fetch(`${FB}${BASE_PATH}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(INIT_DATA)
+    });
+    showToast('データ初期化完了');
+    log('データ初期化完了: 6ブロック10会場', 'ok');
+    loadBlocks();
+  } catch(e) {
+    showToast('初期化エラー: ' + e.message);
+    log('初期化エラー: ' + e.message, 'err');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'データ初期化';
+}
+
+// ===== Block Selectors =====
+function populateBlockSelectors() {
+  const sorted = Object.entries(blocksData).sort((a, b) => (a[1].order || 0) - (b[1].order || 0));
+  const opts = '<option value="">-- 選択 --</option>' +
+    sorted.map(([bid, b]) => `<option value="${bid}">${escHtml(b.name)}</option>`).join('');
+
+  document.getElementById('rBlock').innerHTML = opts;
+  document.getElementById('sBlock').innerHTML = opts;
+}
+
+function onBlockChange() {
+  const bid = document.getElementById('rBlock').value;
+  const sel = document.getElementById('rVenue');
+  sel.innerHTML = '<option value="">-- 選択 --</option>';
+  if (!bid || !blocksData[bid]?.venues) return;
+
+  for (const [vid, v] of Object.entries(blocksData[bid].venues)) {
+    sel.innerHTML += `<option value="${vid}">${escHtml(v.name)} (${v.date})</option>`;
+  }
+}
+
+function onVenueChange() {
+  const bid = document.getElementById('rBlock').value;
+  const vid = document.getElementById('rVenue').value;
+  if (!bid || !vid) {
+    document.getElementById('pasteCard').style.display = 'none';
+    document.getElementById('addRowCard').style.display = 'none';
+    document.getElementById('previewCard').style.display = 'none';
+    document.getElementById('existingCard').style.display = 'none';
+    document.getElementById('venueInfo').style.display = 'none';
+    return;
+  }
+
+  const venue = blocksData[bid].venues[vid];
+  currentVenueSlots = venue.slots || 0;
+  document.getElementById('venueInfoText').textContent =
+    `${venue.name} · ${venue.date} · ${venue.slots}枠 · ${statusLabel(venue.status)}`;
+  document.getElementById('venueInfo').style.display = 'block';
+  document.getElementById('pasteCard').style.display = 'block';
+  document.getElementById('addRowCard').style.display = 'block';
+
+  previewRows = [];
+  renderPreview();
+  loadExistingResults(vid);
+}
+
+// ===== Results Input =====
+function parsePaste() {
+  const text = document.getElementById('pasteArea').value.trim();
+  if (!text) return;
+
+  const lines = text.split('\n').filter(l => l.trim());
+  const parsed = [];
+
+  for (const line of lines) {
+    const parts = line.split('\t');
+    if (parts.length < 2) continue;
+    parsed.push({
+      rank: parseInt(parts[0]) || parsed.length + 1,
+      name: (parts[1] || '').trim(),
+      team: (parts[2] || '').trim(),
+      x_link: (parts[3] || '').trim(),
+      qualified: false
+    });
+  }
+
+  // Sort by rank
+  parsed.sort((a, b) => a.rank - b.rank);
+
+  // Auto-qualify top N
+  parsed.forEach((p, i) => {
+    p.qualified = i < currentVenueSlots;
+  });
+
+  previewRows = parsed;
+  renderPreview();
+  showToast(`${parsed.length}名パース完了`);
+  log(`パース完了: ${parsed.length}名 (通過: ${currentVenueSlots}名)`, 'ok');
+}
+
+function addRow() {
+  const rank = parseInt(document.getElementById('addRank').value) || (previewRows.length + 1);
+  const name = document.getElementById('addName').value.trim();
+  if (!name) { showToast('名前を入力してください'); return; }
+
+  previewRows.push({
+    rank,
+    name,
+    team: document.getElementById('addTeam').value.trim(),
+    x_link: document.getElementById('addXLink').value.trim(),
+    qualified: false
+  });
+
+  // Re-sort and re-qualify
+  previewRows.sort((a, b) => a.rank - b.rank);
+  previewRows.forEach((p, i) => { p.qualified = i < currentVenueSlots; });
+
+  renderPreview();
+  // Clear inputs
+  document.getElementById('addRank').value = '';
+  document.getElementById('addName').value = '';
+  document.getElementById('addTeam').value = '';
+  document.getElementById('addXLink').value = '';
+}
+
+function removeRow(idx) {
+  previewRows.splice(idx, 1);
+  previewRows.forEach((p, i) => { p.qualified = i < currentVenueSlots; });
+  renderPreview();
+}
+
+function renderPreview() {
+  const card = document.getElementById('previewCard');
+  if (previewRows.length === 0) {
+    card.style.display = 'none';
+    return;
+  }
+
+  card.style.display = 'block';
+  const qualified = previewRows.filter(p => p.qualified).length;
+  document.getElementById('previewCount').textContent = `${previewRows.length}名 (通過: ${qualified})`;
+
+  document.getElementById('previewBody').innerHTML = previewRows.map((p, i) => {
+    const rankCls = p.rank <= 3 ? ` rank-${p.rank}` : '';
+    return `
+      <tr class="${p.qualified ? 'qualified' : ''}">
+        <td class="rank${rankCls}">${p.rank}</td>
+        <td>${escHtml(p.name)}</td>
+        <td style="color:var(--dim)">${escHtml(p.team)}</td>
+        <td>${p.x_link ? `<a href="${escHtml(p.x_link)}" target="_blank" class="x-link">@${extractHandle(p.x_link)}</a>` : ''}</td>
+        <td>${p.qualified ? '<span class="q-badge">通過</span>' : ''}</td>
+        <td><button class="delete-btn" onclick="removeRow(${i})">×</button></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function clearPreview() {
+  previewRows = [];
+  renderPreview();
+}
+
+async function saveResults() {
+  const vid = document.getElementById('rVenue').value;
+  const bid = document.getElementById('rBlock').value;
+  if (!vid || previewRows.length === 0) return;
+
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>保存中';
+
+  try {
+    // Build results object
+    const results = {};
+    previewRows.forEach((p, i) => {
+      results[String(i).padStart(3, '0')] = {
+        rank: p.rank,
+        name: p.name,
+        team: p.team,
+        x_link: p.x_link,
+        qualified: p.qualified
+      };
+    });
+
+    // PUT results
+    await fetch(`${FB}${BASE_PATH}/results/${vid}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(results)
+    });
+
+    // Update venue status to completed
+    await fetch(`${FB}${BASE_PATH}/blocks/${bid}/venues/${vid}/status.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify('completed')
+    });
+
+    showToast('保存完了');
+    log(`結果保存: ${vid} — ${previewRows.length}名`, 'ok');
+    previewRows = [];
+    renderPreview();
+    loadExistingResults(vid);
+    loadBlocks();
+  } catch(e) {
+    showToast('保存エラー: ' + e.message);
+    log('保存エラー: ' + e.message, 'err');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Firebase に保存';
+}
+
+async function loadExistingResults(venueId) {
+  const card = document.getElementById('existingCard');
+  try {
+    const r = await fetch(`${FB}${BASE_PATH}/results/${venueId}.json`);
+    const data = await r.json();
+    if (!data) {
+      card.style.display = 'none';
+      return;
+    }
+
+    const entries = Object.values(data).sort((a, b) => a.rank - b.rank);
+    card.style.display = 'block';
+
+    document.getElementById('existingBody').innerHTML = entries.map(p => {
+      const rankCls = p.rank <= 3 ? ` rank-${p.rank}` : '';
+      return `
+        <tr class="${p.qualified ? 'qualified' : ''}">
+          <td class="rank${rankCls}">${p.rank}</td>
+          <td>${escHtml(p.name)}</td>
+          <td style="color:var(--dim)">${escHtml(p.team)}</td>
+          <td>${p.x_link ? `<a href="${escHtml(p.x_link)}" target="_blank" class="x-link">@${extractHandle(p.x_link)}</a>` : ''}</td>
+          <td>${p.qualified ? '<span class="q-badge">通過</span>' : ''}</td>
+        </tr>
+      `;
+    }).join('');
+  } catch(e) {
+    card.style.display = 'none';
+  }
+}
+
+async function deleteResults() {
+  const vid = document.getElementById('rVenue').value;
+  if (!vid) return;
+  if (!confirm(`${vid} の結果を全削除しますか？`)) return;
+
+  try {
+    await fetch(`${FB}${BASE_PATH}/results/${vid}.json`, { method: 'DELETE' });
+    showToast('結果削除完了');
+    log(`結果削除: ${vid}`, 'ok');
+    loadExistingResults(vid);
+    loadBlocks();
+  } catch(e) {
+    showToast('削除エラー: ' + e.message);
+  }
+}
+
+// ===== Sources Tab =====
+function onSrcBlockChange() {
+  const bid = document.getElementById('sBlock').value;
+  const sel = document.getElementById('sVenue');
+  sel.innerHTML = '<option value="">-- 選択 --</option>';
+  if (!bid || !blocksData[bid]?.venues) return;
+
+  for (const [vid, v] of Object.entries(blocksData[bid].venues)) {
+    sel.innerHTML += `<option value="${vid}">${escHtml(v.name)} (${v.date})</option>`;
+  }
+}
+
+async function loadSources() {
+  const vid = document.getElementById('sVenue').value;
+  if (!vid) {
+    document.getElementById('srcAddCard').style.display = 'none';
+    document.getElementById('srcListCard').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('srcAddCard').style.display = 'block';
+  document.getElementById('srcListCard').style.display = 'block';
+
+  try {
+    const r = await fetch(`${FB}${BASE_PATH}/sources/${vid}.json`);
+    const data = await r.json();
+    const list = document.getElementById('srcList');
+
+    if (!data) {
+      list.innerHTML = '<div style="color:var(--dim);font-size:0.82rem">ソースなし</div>';
+      return;
+    }
+
+    const entries = Object.entries(data);
+    list.innerHTML = entries.map(([key, s]) => {
+      const typeInfo = detectSourceType(s.url);
+      return `
+        <div class="source-item">
+          <span class="source-type ${typeInfo.cls}">${typeInfo.label}</span>
+          <a href="${escHtml(s.url)}" target="_blank" class="source-url">${escHtml(s.url)}</a>
+          ${s.note ? `<span style="font-size:0.72rem;color:var(--dim)">${escHtml(s.note)}</span>` : ''}
+          <button class="delete-btn" onclick="deleteSource('${vid}','${key}')">×</button>
+        </div>
+      `;
+    }).join('');
+  } catch(e) {
+    log('ソース読み込みエラー: ' + e.message, 'err');
+  }
+}
+
+function detectSourceType(url) {
+  if (!url) return { cls: 'source-type-web', label: 'Web' };
+  if (url.includes('x.com/') || url.includes('twitter.com/')) return { cls: 'source-type-x', label: 'X' };
+  if (url.includes('molkky.jp')) return { cls: 'source-type-jma', label: 'JMA' };
+  return { cls: 'source-type-web', label: 'Web' };
+}
+
+async function addSource() {
+  const vid = document.getElementById('sVenue').value;
+  const url = document.getElementById('srcUrl').value.trim();
+  if (!vid || !url) { showToast('URLを入力してください'); return; }
+
+  const typeInfo = detectSourceType(url);
+  const entry = {
+    url,
+    type: typeInfo.label.toLowerCase(),
+    note: document.getElementById('srcNote').value.trim(),
+    added_at: new Date().toISOString()
+  };
+
+  try {
+    await fetch(`${FB}${BASE_PATH}/sources/${vid}.json`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entry)
+    });
+    showToast('ソース追加完了');
+    log(`ソース追加: ${vid} — ${url}`, 'ok');
+    document.getElementById('srcUrl').value = '';
+    document.getElementById('srcNote').value = '';
+    document.getElementById('srcPreview').style.display = 'none';
+    loadSources();
+  } catch(e) {
+    showToast('追加エラー: ' + e.message);
+  }
+}
+
+async function deleteSource(venueId, key) {
+  if (!confirm('このソースを削除しますか？')) return;
+  try {
+    await fetch(`${FB}${BASE_PATH}/sources/${venueId}/${key}.json`, { method: 'DELETE' });
+    showToast('削除完了');
+    loadSources();
+  } catch(e) {
+    showToast('削除エラー: ' + e.message);
+  }
+}
+
+async function previewSourceUrl() {
+  const url = document.getElementById('srcUrl').value.trim();
+  if (!url) return;
+
+  const container = document.getElementById('srcPreview');
+
+  if (url.includes('x.com/') || url.includes('twitter.com/')) {
+    const match = url.match(/status\/(\d+)/);
+    if (!match) { showToast('ツイートIDが見つかりません'); return; }
+
+    container.innerHTML = '<div style="padding:0.5rem;color:var(--dim);font-size:0.8rem"><span class="spinner"></span>読み込み中...</div>';
+    container.style.display = 'block';
+
+    try {
+      const r = await fetch(`${TWEET_PROXY}?id=${match[1]}`);
+      const data = await r.json();
+      container.innerHTML = `
+        <div class="tweet-preview">
+          <div class="tweet-text">${escHtml(data.text || '')}</div>
+          <div class="tweet-meta">@${escHtml(data.user?.screen_name || '?')} · ${new Date(data.created_at).toLocaleDateString('ja-JP')}</div>
+        </div>
+      `;
+    } catch(e) {
+      container.innerHTML = `<div style="color:var(--err);font-size:0.8rem;padding:0.5rem">プレビュー失敗: ${e.message}</div>`;
+    }
+  } else {
+    container.innerHTML = `<div style="padding:0.5rem"><a href="${escHtml(url)}" target="_blank" style="color:var(--blue);font-size:0.82rem">${escHtml(url)}</a></div>`;
+    container.style.display = 'block';
+  }
+}
+
+// ===== Utilities =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function log(msg, cls = '') {
+  const el = document.getElementById('log');
+  if (!el) return;
+  const line = document.createElement('div');
+  line.className = cls;
+  line.textContent = new Date().toLocaleTimeString() + ' ' + msg;
+  el.prepend(line);
+}
+
+function escHtml(text) {
+  const d = document.createElement('div');
+  d.textContent = text || '';
+  return d.innerHTML;
+}
+
+function extractHandle(url) {
+  if (!url) return '';
+  const m = url.match(/x\.com\/([^\/\?]+)/) || url.match(/twitter\.com\/([^\/\?]+)/);
+  return m ? m[1] : '';
+}
+</script>
+</body>
+</html>

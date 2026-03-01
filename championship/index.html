@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>全日本モルック選手権 2026 予選トラッカー | MOLKKY HUB</title>
+<meta name="description" content="全日本モルック選手権2026の予選結果をリアルタイムで追跡。6ブロック10会場112枠の通過者情報をまとめてチェック。">
+<style>
+:root {
+  --bg: #0a0a0f; --card: #12121a; --border: #2a2a3a;
+  --text: #e0e0e0; --dim: #888; --accent: #d4a017;
+  --accent-light: #f0d060; --accent-dark: #a07810;
+  --ok: #22c55e; --blue: #4a9eff;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+a { color: var(--blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Hero */
+.hero { text-align: center; padding: 2.5rem 1.5rem 1.5rem; border-bottom: 1px solid var(--border); }
+.hero-title { font-size: 1.4rem; font-weight: 800; background: linear-gradient(135deg, var(--accent-light), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.hero-sub { font-size: 0.82rem; color: var(--dim); margin-top: 0.4rem; }
+.hero-stats { display: flex; justify-content: center; gap: 2rem; margin-top: 1.2rem; }
+.hero-stat { text-align: center; }
+.hero-stat-value { font-size: 1.6rem; font-weight: 800; color: var(--accent); }
+.hero-stat-label { font-size: 0.7rem; color: var(--dim); margin-top: 0.15rem; }
+.live-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.7rem; color: #ef4444; font-weight: 700; margin-left: 0.5rem; }
+.live-dot { width: 8px; height: 8px; background: #ef4444; border-radius: 50%; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+/* Progress */
+.progress-section { padding: 1rem 1.5rem; max-width: 800px; margin: 0 auto; }
+.progress-bar-outer { background: var(--card); border: 1px solid var(--border); border-radius: 10px; height: 28px; overflow: hidden; position: relative; }
+.progress-bar-inner { height: 100%; background: linear-gradient(90deg, var(--accent-dark), var(--accent), var(--accent-light)); border-radius: 10px; transition: width 0.8s ease; min-width: 2px; }
+.progress-label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: var(--text); }
+
+/* Main */
+.main { max-width: 800px; margin: 0 auto; padding: 0.5rem 1.2rem 3rem; }
+
+/* Block cards */
+.block-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1.5rem; }
+.block-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; transition: border-color 0.2s; overflow: hidden; }
+.block-card:hover { border-color: var(--accent); }
+.block-card.expanded { border-color: var(--accent); }
+.block-header { padding: 1rem; display: flex; align-items: center; gap: 0.6rem; }
+.block-icon { font-size: 1.2rem; }
+.block-info { flex: 1; min-width: 0; }
+.block-name { font-size: 0.85rem; font-weight: 700; }
+.block-meta { font-size: 0.7rem; color: var(--dim); margin-top: 0.15rem; }
+.block-slots { text-align: right; }
+.block-slots-value { font-size: 1.1rem; font-weight: 800; color: var(--accent); }
+.block-slots-label { font-size: 0.65rem; color: var(--dim); }
+.block-expand { font-size: 0.7rem; color: var(--dim); transition: transform 0.2s; }
+.block-card.expanded .block-expand { transform: rotate(180deg); }
+
+/* Venue pills in block header */
+.venue-pills { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 0.3rem; }
+.venue-pill { font-size: 0.6rem; padding: 1px 6px; border-radius: 6px; }
+.venue-pill-upcoming { background: rgba(99,102,241,0.12); color: #6366f1; }
+.venue-pill-in-progress { background: rgba(245,158,11,0.15); color: #f59e0b; }
+.venue-pill-completed { background: rgba(34,197,94,0.12); color: var(--ok); }
+
+/* Block detail (results) */
+.block-detail { display: none; border-top: 1px solid var(--border); }
+.block-card.expanded .block-detail { display: block; }
+.venue-section { padding: 0.8rem 1rem; border-top: 1px solid var(--border); }
+.venue-section:first-child { border-top: none; }
+.venue-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+.venue-name { font-size: 0.8rem; font-weight: 600; }
+.venue-date { font-size: 0.7rem; color: var(--dim); }
+.venue-status { font-size: 0.6rem; padding: 1px 6px; border-radius: 6px; }
+
+/* Results table */
+.results-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+.results-table th { text-align: left; padding: 0.3rem 0.4rem; border-bottom: 1px solid var(--border); color: var(--dim); font-size: 0.68rem; font-weight: 600; }
+.results-table td { padding: 0.35rem 0.4rem; border-bottom: 1px solid rgba(42,42,58,0.5); }
+.results-table tr.qualified-row { background: rgba(212,160,23,0.06); }
+.rank-cell { width: 32px; text-align: center; font-weight: 700; }
+.rank-1 { color: #ffd700; }
+.rank-2 { color: #c0c0c0; }
+.rank-3 { color: #cd7f32; }
+.q-badge { font-size: 0.6rem; background: linear-gradient(135deg, rgba(212,160,23,0.25), rgba(240,208,96,0.15)); color: var(--accent-light); padding: 1px 6px; border-radius: 8px; font-weight: 600; }
+.x-btn { display: inline-flex; align-items: center; gap: 3px; color: var(--blue); font-size: 0.72rem; padding: 2px 6px; border-radius: 6px; background: rgba(74,158,255,0.08); }
+.x-btn:hover { background: rgba(74,158,255,0.15); text-decoration: none; }
+.no-results { padding: 1.5rem; text-align: center; color: var(--dim); font-size: 0.8rem; }
+
+/* Qualified list */
+.section-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.8rem; padding-bottom: 0.4rem; border-bottom: 2px solid var(--accent); display: inline-block; }
+.qualified-section { margin-bottom: 2rem; }
+.qualified-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.5rem; }
+.qualified-item { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 0.6rem 0.8rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; }
+.qualified-rank { font-weight: 800; color: var(--accent); min-width: 20px; }
+.qualified-name { font-weight: 600; flex: 1; }
+.qualified-from { font-size: 0.68rem; color: var(--dim); }
+
+/* Finals */
+.finals-card { background: linear-gradient(135deg, rgba(212,160,23,0.08), rgba(10,10,15,1)); border: 1px solid rgba(212,160,23,0.3); border-radius: 14px; padding: 1.5rem; text-align: center; margin-bottom: 2rem; }
+.finals-title { font-size: 1rem; font-weight: 700; color: var(--accent-light); }
+.finals-info { font-size: 0.85rem; color: var(--dim); margin-top: 0.4rem; }
+.finals-date { font-size: 1.3rem; font-weight: 800; color: var(--accent); margin-top: 0.3rem; }
+
+/* Footer */
+.footer { text-align: center; padding: 2rem 1rem; border-top: 1px solid var(--border); font-size: 0.72rem; color: var(--dim); }
+.footer a { color: var(--accent); }
+
+/* Loading */
+.loading { text-align: center; padding: 3rem; color: var(--dim); }
+.spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 600px) {
+  .block-grid { grid-template-columns: 1fr; }
+  .hero-stats { gap: 1.2rem; }
+  .hero-title { font-size: 1.15rem; }
+  .qualified-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-title">全日本モルック選手権 2026</div>
+  <div class="hero-sub">予選トラッカー <span id="liveBadge" style="display:none"><span class="live-badge"><span class="live-dot"></span>LIVE</span></span></div>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-value" id="statSlots">-/-</div>
+      <div class="hero-stat-label">通過枠確定</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-value" id="statVenues">-/-</div>
+      <div class="hero-stat-label">会場完了</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-value" id="statBlocks">-/-</div>
+      <div class="hero-stat-label">ブロック完了</div>
+    </div>
+  </div>
+</div>
+
+<div class="progress-section">
+  <div class="progress-bar-outer">
+    <div class="progress-bar-inner" id="progressBar" style="width:0%"></div>
+    <div class="progress-label" id="progressLabel">読み込み中...</div>
+  </div>
+</div>
+
+<div class="main">
+  <div id="blockContainer" class="block-grid">
+    <div class="loading" style="grid-column:1/-1"><div class="spinner"></div></div>
+  </div>
+
+  <div class="qualified-section" id="qualifiedSection" style="display:none">
+    <div class="section-title">通過者一覧</div>
+    <div class="qualified-grid" id="qualifiedGrid"></div>
+  </div>
+
+  <div class="finals-card">
+    <div class="finals-title">決勝大会</div>
+    <div class="finals-date" id="finalsDate">2026.6.7</div>
+    <div class="finals-info" id="finalsVenue">大阪舞洲</div>
+  </div>
+</div>
+
+<div class="footer">
+  Powered by <a href="https://molkky-hub.com" target="_blank">MOLKKY HUB</a> · データは各予選主催者の公式発表に基づきます
+</div>
+
+<script>
+const FB = 'https://viisi-master-app-default-rtdb.firebaseio.com';
+const BASE_PATH = '/championship-2026';
+
+const BLOCK_ICONS = {
+  'kyushu-okinawa': '🌋',
+  'hokushinetsu-tokai': '🏔',
+  'kanto': '🗼',
+  'kinki': '⛩',
+  'chugoku-shikoku': '🍊',
+  'hokkaido-tohoku': '❄️'
+};
+
+let allData = { blocks: {}, results: {}, config: {} };
+let pollTimer = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadData();
+});
+
+async function loadData() {
+  try {
+    const [blocksR, resultsR, configR] = await Promise.all([
+      fetch(`${FB}${BASE_PATH}/blocks.json`).then(r => r.json()),
+      fetch(`${FB}${BASE_PATH}/results.json`).then(r => r.json()),
+      fetch(`${FB}${BASE_PATH}/config.json`).then(r => r.json())
+    ]);
+
+    allData.blocks = blocksR || {};
+    allData.results = resultsR || {};
+    allData.config = configR || {};
+
+    render();
+    setupPolling();
+  } catch(e) {
+    document.getElementById('blockContainer').innerHTML =
+      '<div class="no-results" style="grid-column:1/-1">データの読み込みに失敗しました</div>';
+  }
+}
+
+function render() {
+  renderStats();
+  renderBlocks();
+  renderQualified();
+  renderFinals();
+}
+
+function renderStats() {
+  const blocks = allData.blocks;
+  const results = allData.results;
+  let totalSlots = 0, confirmedSlots = 0;
+  let totalVenues = 0, completedVenues = 0;
+  let totalBlocks = 0, completedBlocks = 0;
+  let hasLive = false;
+
+  for (const [, block] of Object.entries(blocks)) {
+    if (!block.venues) continue;
+    totalBlocks++;
+    let blockComplete = true;
+
+    for (const [vid, venue] of Object.entries(block.venues)) {
+      totalVenues++;
+      totalSlots += venue.slots || 0;
+      if (venue.status === 'completed') {
+        completedVenues++;
+      } else {
+        blockComplete = false;
+      }
+      if (venue.status === 'in-progress') hasLive = true;
+
+      if (results[vid]) {
+        confirmedSlots += Object.values(results[vid]).filter(e => e.qualified).length;
+      }
+    }
+    if (blockComplete) completedBlocks++;
+  }
+
+  document.getElementById('statSlots').textContent = `${confirmedSlots}/${totalSlots}`;
+  document.getElementById('statVenues').textContent = `${completedVenues}/${totalVenues}`;
+  document.getElementById('statBlocks').textContent = `${completedBlocks}/${totalBlocks}`;
+
+  const pct = totalSlots > 0 ? Math.round((confirmedSlots / totalSlots) * 100) : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `${confirmedSlots} / ${totalSlots} 枠確定 (${pct}%)`;
+
+  document.getElementById('liveBadge').style.display = hasLive ? 'inline' : 'none';
+}
+
+function renderBlocks() {
+  const sorted = Object.entries(allData.blocks)
+    .sort((a, b) => (a[1].order || 0) - (b[1].order || 0));
+
+  if (sorted.length === 0) {
+    document.getElementById('blockContainer').innerHTML =
+      '<div class="no-results" style="grid-column:1/-1">予選データが登録されていません</div>';
+    return;
+  }
+
+  document.getElementById('blockContainer').innerHTML = sorted.map(([bid, block]) => {
+    const venues = block.venues ? Object.entries(block.venues) : [];
+    const totalSlots = venues.reduce((s, [, v]) => s + (v.slots || 0), 0);
+    const confirmed = venues.reduce((s, [vid]) => {
+      if (!allData.results[vid]) return s;
+      return s + Object.values(allData.results[vid]).filter(e => e.qualified).length;
+    }, 0);
+    const icon = BLOCK_ICONS[bid] || '📍';
+
+    const venuePills = venues.map(([, v]) => {
+      const cls = `venue-pill venue-pill-${v.status}`;
+      const label = { upcoming: '予定', 'in-progress': '進行中', completed: '完了' }[v.status] || v.status;
+      return `<span class="${cls}">${esc(v.name).replace(/会場/, '')} ${label}</span>`;
+    }).join('');
+
+    const venueDetails = venues.map(([vid, v]) => {
+      const statusCls = `venue-pill-${v.status}`;
+      const statusLabel = { upcoming: '予定', 'in-progress': '進行中', completed: '完了' }[v.status] || v.status;
+      const results = allData.results[vid];
+      let tableHtml = '';
+
+      if (results) {
+        const entries = Object.values(results).sort((a, b) => a.rank - b.rank);
+        tableHtml = `
+          <table class="results-table">
+            <thead><tr><th class="rank-cell">#</th><th>名前</th><th>所属</th><th>X</th><th></th></tr></thead>
+            <tbody>
+              ${entries.map(e => {
+                const rankCls = e.rank <= 3 ? ` rank-${e.rank}` : '';
+                return `
+                  <tr class="${e.qualified ? 'qualified-row' : ''}">
+                    <td class="rank-cell${rankCls}">${e.rank}</td>
+                    <td>${esc(e.name)}</td>
+                    <td style="color:var(--dim);font-size:0.72rem">${esc(e.team)}</td>
+                    <td>${e.x_link ? `<a href="${esc(e.x_link)}" target="_blank" class="x-btn">𝕏</a>` : ''}</td>
+                    <td>${e.qualified ? '<span class="q-badge">通過</span>' : ''}</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        `;
+      } else if (v.status === 'completed') {
+        tableHtml = '<div class="no-results">結果データ未登録</div>';
+      } else {
+        tableHtml = `<div class="no-results">${v.status === 'in-progress' ? '現在進行中...' : '開催前'}</div>`;
+      }
+
+      return `
+        <div class="venue-section">
+          <div class="venue-header">
+            <span class="venue-name">${esc(v.name)}</span>
+            <span class="venue-date">${v.date}</span>
+            <span class="venue-status ${statusCls}">${statusLabel}</span>
+            <span style="font-size:0.68rem;color:var(--dim);margin-left:auto">${v.slots}枠</span>
+          </div>
+          ${tableHtml}
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="block-card" onclick="toggleBlock(this)">
+        <div class="block-header">
+          <div class="block-icon">${icon}</div>
+          <div class="block-info">
+            <div class="block-name">${esc(block.name)}</div>
+            <div class="venue-pills">${venuePills}</div>
+          </div>
+          <div class="block-slots">
+            <div class="block-slots-value">${confirmed}/${totalSlots}</div>
+            <div class="block-slots-label">枠確定</div>
+          </div>
+          <div class="block-expand">▼</div>
+        </div>
+        <div class="block-detail">
+          ${venueDetails}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleBlock(el) {
+  el.classList.toggle('expanded');
+}
+
+function renderQualified() {
+  const section = document.getElementById('qualifiedSection');
+  const grid = document.getElementById('qualifiedGrid');
+  const qualifiedAll = [];
+
+  for (const [bid, block] of Object.entries(allData.blocks)) {
+    if (!block.venues) continue;
+    for (const [vid, venue] of Object.entries(block.venues)) {
+      if (!allData.results[vid]) continue;
+      const entries = Object.values(allData.results[vid])
+        .filter(e => e.qualified)
+        .sort((a, b) => a.rank - b.rank);
+      entries.forEach(e => {
+        qualifiedAll.push({
+          ...e,
+          blockName: block.name,
+          venueName: venue.name
+        });
+      });
+    }
+  }
+
+  if (qualifiedAll.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+
+  section.style.display = 'block';
+  grid.innerHTML = qualifiedAll.map(q => `
+    <div class="qualified-item">
+      <div class="qualified-rank">${q.rank}</div>
+      <div class="qualified-name">${esc(q.name)}</div>
+      <div class="qualified-from">${esc(q.venueName)}</div>
+      ${q.x_link ? `<a href="${esc(q.x_link)}" target="_blank" class="x-btn">𝕏</a>` : ''}
+    </div>
+  `).join('');
+}
+
+function renderFinals() {
+  const config = allData.config;
+  if (config.finals_date) {
+    const d = config.finals_date.split('-');
+    document.getElementById('finalsDate').textContent = `${d[0]}.${parseInt(d[1])}.${parseInt(d[2])}`;
+  }
+  if (config.finals_venue) {
+    document.getElementById('finalsVenue').textContent = config.finals_venue;
+  }
+}
+
+function setupPolling() {
+  // Check if any venue is in-progress
+  let hasLive = false;
+  for (const [, block] of Object.entries(allData.blocks)) {
+    if (!block.venues) continue;
+    for (const [, venue] of Object.entries(block.venues)) {
+      if (venue.status === 'in-progress') { hasLive = true; break; }
+    }
+    if (hasLive) break;
+  }
+
+  if (pollTimer) clearInterval(pollTimer);
+  if (hasLive) {
+    pollTimer = setInterval(loadData, 60000);
+  }
+}
+
+function esc(text) {
+  const d = document.createElement('div');
+  d.textContent = text || '';
+  return d.innerHTML;
+}
+</script>
+</body>
+</html>
