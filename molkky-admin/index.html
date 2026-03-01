@@ -68,6 +68,8 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
 .pill-posted { background: rgba(34,197,94,0.15); color: var(--ok); }
 .pill-skipped { background: var(--border); color: var(--dim); }
 .pill-error { background: rgba(239,68,68,0.15); color: var(--err); }
+.pill-publish { background: rgba(34,197,94,0.15); color: var(--ok); }
+.pill-draft { background: rgba(245,158,11,0.15); color: var(--warn); }
 .pill-ifttt { background: rgba(99,102,241,0.15); color: var(--accent); }
 .pill-rss { background: rgba(74,158,255,0.15); color: var(--blue); }
 .pill-manual { background: var(--border); color: var(--dim); }
@@ -158,7 +160,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
 
     <!-- キュー一覧 -->
     <div class="card" id="queueCard">
-      <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:0.6rem">
+      <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:0.6rem;flex-wrap:wrap">
         <h3 style="flex:1;margin:0">未処理キュー</h3>
         <span style="font-size:0.75rem;color:var(--dim)">pending: <strong id="qPending">-</strong> | 今日: <strong id="qToday">-</strong></span>
         <button class="btn btn-sm btn-primary" id="classifyBtn" onclick="autoClassify()" style="display:none">自動分類</button>
@@ -166,6 +168,12 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
       </div>
       <div id="queueList">
         <div style="text-align:center;color:var(--dim);padding:1rem;font-size:0.82rem">読み込み中...</div>
+      </div>
+      <div style="border-top:1px solid var(--border);margin-top:0.6rem;padding-top:0.6rem">
+        <div style="display:flex;align-items:center;gap:0.6rem;cursor:pointer" onclick="toggleHistory()">
+          <span style="font-size:0.78rem;color:var(--dim)" id="historyToggle">▶ 処理済みを表示</span>
+        </div>
+        <div id="queueHistory" style="display:none;margin-top:0.5rem"></div>
       </div>
     </div>
 
@@ -304,10 +312,14 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
 
     <!-- 直近投稿 -->
     <div class="card">
-      <h3>直近投稿</h3>
+      <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:0.8rem">
+        <h3 style="flex:1;margin:0">直近投稿</h3>
+        <button class="btn btn-sm btn-outline" onclick="loadStatus()">更新</button>
+      </div>
       <div id="recentPosts">
         <div style="color:var(--dim);font-size:0.82rem">読み込み中...</div>
       </div>
+      <div id="editPostForm" style="display:none"></div>
     </div>
 
     <!-- GASログ -->
@@ -885,12 +897,14 @@ async function loadQueue() {
     const resp = await fetch(`${FB}/tournament-queue.json`);
     const data = await resp.json();
     if (!data) {
+      _allQueueEntries = [];
       renderQueue([]);
       return;
     }
 
     const entries = Object.entries(data).map(([k, v]) => ({ key: k, ...v }));
     entries.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
+    _allQueueEntries = entries;
 
     const pending = entries.filter(e => e.status === 'pending');
     const todayStr = new Date().toISOString().substring(0, 10);
@@ -913,6 +927,9 @@ async function loadQueue() {
 
     // Show classify button if there are pending items
     document.getElementById('classifyBtn').style.display = pending.length > 0 ? 'inline-block' : 'none';
+
+    // Re-render history if open
+    if (_historyOpen) renderHistory();
   } catch(e) {
     log('キュー読み込み失敗: ' + e.message, 'err');
   }
@@ -983,6 +1000,80 @@ async function fetchQueuePreview(key, tweetId) {
     `;
   } catch(e) {
     el.innerHTML = '<span style="color:var(--err)">内容取得失敗</span>';
+  }
+}
+
+let _historyOpen = false;
+let _allQueueEntries = [];
+
+function toggleHistory() {
+  _historyOpen = !_historyOpen;
+  const el = document.getElementById('queueHistory');
+  const toggle = document.getElementById('historyToggle');
+  if (_historyOpen) {
+    toggle.textContent = '▼ 処理済みを隠す';
+    el.style.display = 'block';
+    renderHistory();
+  } else {
+    toggle.textContent = '▶ 処理済みを表示';
+    el.style.display = 'none';
+  }
+}
+
+function renderHistory() {
+  const box = document.getElementById('queueHistory');
+  const processed = _allQueueEntries
+    .filter(e => e.status === 'posted' || e.status === 'skipped' || e.status === 'error')
+    .sort((a, b) => (b.processed_at || b.timestamp || '').localeCompare(a.processed_at || a.timestamp || ''))
+    .slice(0, 30);
+
+  if (processed.length === 0) {
+    box.innerHTML = '<div style="text-align:center;color:var(--dim);padding:0.5rem;font-size:0.78rem">処理済みエントリなし</div>';
+    return;
+  }
+
+  box.innerHTML = processed.map(item => {
+    const source = item.source || 'manual';
+    const pillCls = source.includes('ifttt') ? 'pill-ifttt' : source.includes('rss') ? 'pill-rss' : 'pill-manual';
+    const sourceLabel = source.includes('ifttt') ? 'IFTTT' : source.includes('rss') ? 'RSS' : '手動';
+    const statusCls = item.status === 'posted' ? 'pill-posted' : item.status === 'skipped' ? 'pill-skipped' : 'pill-error';
+    const statusLabel = item.status === 'posted' ? '投稿済' : item.status === 'skipped' ? 'スキップ' : 'エラー';
+    const ts = item.processed_at ? new Date(item.processed_at).toLocaleString('ja-JP', { month:'numeric', day:'numeric', hour:'numeric', minute:'numeric' }) : '';
+    const user = item.url?.match(/twitter\.com\/(\w+)|x\.com\/(\w+)/);
+    const userName = user ? (user[1] || user[2]) : '';
+    const reason = item.skip_reason || item.title || '';
+
+    return `
+      <div style="display:flex;align-items:center;gap:0.6rem;padding:0.5rem 0.4rem;border-bottom:1px solid var(--border);font-size:0.78rem">
+        <span class="pill ${statusCls}">${statusLabel}</span>
+        <span class="pill ${pillCls}" style="font-size:0.62rem">${sourceLabel}</span>
+        <div style="flex:1;min-width:0">
+          <div style="color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+            ${userName ? '@' + escapeHtml(userName) + ' · ' : ''}${escapeHtml(reason)}
+          </div>
+          ${item.post_id ? '<span style="color:var(--ok);font-size:0.7rem">WP ID:' + item.post_id + '</span>' : ''}
+        </div>
+        <span style="color:var(--dim);font-size:0.7rem;white-space:nowrap">${ts}</span>
+        <button class="btn btn-sm btn-outline" onclick="revertQueue('${item.key}')" title="未処理に戻す" style="font-size:0.68rem;padding:2px 6px">戻す</button>
+      </div>
+    `;
+  }).join('');
+}
+
+async function revertQueue(key) {
+  try {
+    await fetch(`${FB}/tournament-queue/${key}.json`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'pending', processed_at: null, skip_reason: null, post_id: null, title: null })
+    });
+    showToast('pendingに戻しました');
+    log('キュー戻し: ' + key, 'ok');
+    await loadQueue();
+    if (_historyOpen) renderHistory();
+  } catch(e) {
+    showToast('エラー: ' + e.message);
+    log('キュー戻し失敗: ' + e.message, 'err');
   }
 }
 
@@ -1380,6 +1471,138 @@ function openInX(btn, quoteUrl) {
   window.open(xUrl, '_blank');
 }
 
+// ===== 直近投稿 編集 =====
+
+function openEditPost(postId) {
+  const post = (window._recentPosts || []).find(p => p.id === postId);
+  if (!post) return;
+
+  const acf = post.acf || {};
+  const eventDate = acf.event_date || '';
+  const dateForInput = eventDate.length === 8
+    ? `${eventDate.substring(0,4)}-${eventDate.substring(4,6)}-${eventDate.substring(6,8)}`
+    : '';
+
+  // Find current area name from area IDs
+  const postAreaIds = post.area || [];
+  let currentArea = '';
+  for (const [name, data] of Object.entries(AREAS)) {
+    if (postAreaIds.includes(data.id)) { currentArea = name; break; }
+  }
+
+  const areaOptions = Object.keys(AREAS).map(name =>
+    `<option value="${name}" ${name === currentArea ? 'selected' : ''}>${name}</option>`
+  ).join('');
+
+  const form = document.getElementById('editPostForm');
+  form.style.display = 'block';
+  form.innerHTML = `
+    <div style="border-top:2px solid var(--accent);margin-top:1rem;padding-top:1rem">
+      <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:0.8rem">
+        <h3 style="flex:1;margin:0;font-size:0.85rem">編集: ID ${postId}</h3>
+        <span class="pill pill-${post.status}">${post.status}</span>
+        <button class="btn btn-sm btn-outline" onclick="closeEditPost()">閉じる</button>
+      </div>
+      <div class="field">
+        <label>大会名</label>
+        <input type="text" id="eTitle" value="${escapeHtml(post.title.rendered.replace(/&amp;/g,'&').replace(/&#039;/g,"'"))}">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>開催日</label>
+          <input type="date" id="eDate" value="${dateForInput}">
+        </div>
+        <div class="field">
+          <label>都道府県</label>
+          <select id="eArea"><option value="">-- 選択 --</option>${areaOptions}</select>
+        </div>
+      </div>
+      <div class="field">
+        <label>主催者</label>
+        <input type="text" id="eOrganizer" value="${escapeHtml(acf.organizer || '')}">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>SNSリンク</label>
+          <input type="url" id="eSns" value="${escapeHtml(acf.sns_link || '')}">
+        </div>
+        <div class="field">
+          <label>詳細リンク</label>
+          <input type="url" id="eDetail" value="${escapeHtml(acf.detail_link || '')}">
+        </div>
+      </div>
+      <div class="field">
+        <label>規模</label>
+        <input type="text" id="eScale" value="${escapeHtml(acf.scale || '')}">
+      </div>
+      <div style="display:flex;gap:1.5rem;margin-top:0.3rem">
+        <div class="checkbox-row"><input type="checkbox" id="eBeginner" ${acf.beginner_friendly ? 'checked' : ''}><label for="eBeginner" style="margin:0">初心者歓迎</label></div>
+        <div class="checkbox-row"><input type="checkbox" id="eOfficial" ${acf.official ? 'checked' : ''}><label for="eOfficial" style="margin:0">公式大会</label></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-success" id="eSaveBtn" onclick="saveEditPost(${postId})">WPに保存</button>
+        <button class="btn btn-outline" onclick="closeEditPost()">キャンセル</button>
+        ${post.status === 'draft' ? `<button class="btn btn-primary" onclick="saveEditPost(${postId}, 'publish')">公開する</button>` : ''}
+        ${post.status === 'publish' ? `<button class="btn btn-outline" onclick="saveEditPost(${postId}, 'draft')">下書きに戻す</button>` : ''}
+      </div>
+    </div>
+  `;
+  form.scrollIntoView({ behavior: 'smooth' });
+}
+
+function closeEditPost() {
+  document.getElementById('editPostForm').style.display = 'none';
+  document.getElementById('editPostForm').innerHTML = '';
+}
+
+async function saveEditPost(postId, newStatus) {
+  if (!wpAuth) { showAuth(); return; }
+
+  const btn = document.getElementById('eSaveBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>保存中...';
+
+  const title = document.getElementById('eTitle').value.trim();
+  const dateVal = document.getElementById('eDate').value;
+  const area = document.getElementById('eArea').value;
+  const eventDate = dateVal ? dateVal.replace(/-/g, '') : '';
+  const areaId = area ? AREAS[area]?.id : null;
+
+  const body = {
+    title: title,
+    area: areaId ? [areaId] : [],
+    acf: {
+      event_date: eventDate,
+      location: area,
+      organizer: document.getElementById('eOrganizer').value.trim(),
+      sns_link: document.getElementById('eSns').value.trim(),
+      detail_link: document.getElementById('eDetail').value.trim(),
+      scale: document.getElementById('eScale').value.trim(),
+      beginner_friendly: document.getElementById('eBeginner').checked,
+      official: document.getElementById('eOfficial').checked
+    }
+  };
+  if (newStatus) body.status = newStatus;
+
+  try {
+    const result = await wpFetch(`/wp-json/wp/v2/tournament/${postId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    showToast(`保存完了 (ID: ${result.id})`);
+    log(`WP更新: ID=${result.id} "${title}"${newStatus ? ' → ' + newStatus : ''}`, 'ok');
+    closeEditPost();
+    loadStatus(); // refresh list
+  } catch(e) {
+    showToast('保存失敗: ' + e.message);
+    log('WP更新エラー: ' + e.message, 'err');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'WPに保存';
+}
+
 // ===== ステータスタブ =====
 
 async function loadStatus() {
@@ -1431,25 +1654,25 @@ async function loadStatus() {
     }
   } catch(e) {}
 
-  // Recent WP posts
+  // Recent WP posts (editable)
   try {
     let posts;
     if (wpAuth) {
-      posts = await wpFetch('/wp-json/wp/v2/tournament?per_page=8&orderby=date&order=desc&_fields=id,title,acf,date,status,link');
+      posts = await wpFetch('/wp-json/wp/v2/tournament?per_page=10&orderby=date&order=desc&_fields=id,title,acf,date,status,link,area');
     } else {
-      const resp = await fetch(`${WP}/wp-json/wp/v2/tournament?per_page=8&orderby=date&order=desc&_fields=id,title,acf,date,status,link`);
+      const resp = await fetch(`${WP}/wp-json/wp/v2/tournament?per_page=10&orderby=date&order=desc&_fields=id,title,acf,date,status,link,area`);
       posts = await resp.json();
     }
+    window._recentPosts = posts;
     document.getElementById('recentPosts').innerHTML = posts.map(p => {
       const d = p.acf?.event_date;
       const dateStr = d ? `${d.substring(0,4)}/${d.substring(4,6)}/${d.substring(6,8)}` : '';
-      const editUrl = `${WP}/wp-admin/post.php?post=${p.id}&action=edit`;
       return `
-        <div style="display:flex;align-items:center;gap:0.8rem;padding:0.4rem 0;border-bottom:1px solid var(--border);font-size:0.82rem">
-          <a href="${editUrl}" target="_blank" style="color:var(--dim);min-width:45px;text-decoration:none" title="WPで編集">ID:${p.id}</a>
-          <span style="flex:1">${p.title.rendered}</span>
-          <span style="color:var(--dim)">${dateStr}</span>
-          <span style="color:var(--dim)">${p.acf?.location || ''}</span>
+        <div style="display:flex;align-items:center;gap:0.8rem;padding:0.5rem 0.3rem;border-bottom:1px solid var(--border);font-size:0.82rem;cursor:pointer;transition:background 0.15s;border-radius:4px" onclick="openEditPost(${p.id})" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background=''">
+          <span style="color:var(--dim);min-width:45px;font-size:0.75rem">ID:${p.id}</span>
+          <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.title.rendered}</span>
+          <span style="color:var(--dim);font-size:0.75rem">${dateStr}</span>
+          <span style="color:var(--dim);font-size:0.75rem">${p.acf?.location || ''}</span>
           <span class="pill pill-${p.status}">${p.status}</span>
         </div>
       `;
