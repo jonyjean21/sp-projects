@@ -92,6 +92,54 @@ body {
 }
 .goal-pct { font-size: 11px; font-weight: 600; margin-top: 4px; text-align: right; }
 
+/* Calendar */
+.cal-nav {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+}
+.cal-nav-label { font-size: 14px; font-weight: 700; flex: 1; text-align: center; }
+.cal-nav-btn {
+  background: var(--card); border: 1px solid var(--border); color: var(--accent);
+  padding: 4px 10px; border-radius: 6px; font-size: 13px; cursor: pointer;
+  font-family: inherit;
+}
+.cal-nav-btn:active { opacity: 0.7; }
+.cal-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
+}
+.cal-dow {
+  font-size: 10px; color: var(--sub); text-align: center; padding: 4px 0; font-weight: 600;
+}
+.cal-cell {
+  aspect-ratio: 1; background: var(--card); border-radius: 6px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-size: 12px; color: var(--sub); position: relative; cursor: default;
+  border: 1px solid transparent;
+}
+.cal-cell.has-event {
+  background: #1a2a1a; border-color: var(--green); cursor: pointer;
+}
+.cal-cell.has-event:active { opacity: 0.7; }
+.cal-cell.today { border-color: var(--accent); }
+.cal-cell.other-month { opacity: 0.3; }
+.cal-badge {
+  position: absolute; top: 2px; right: 2px;
+  background: var(--green); color: #fff; font-size: 8px; font-weight: 700;
+  width: 14px; height: 14px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.cal-detail {
+  margin-top: 10px; background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px;
+}
+.cal-detail-title { font-size: 11px; color: var(--sub); margin-bottom: 8px; }
+.cal-event {
+  padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 12px;
+}
+.cal-event:last-child { border-bottom: none; }
+.cal-event a { color: var(--accent); text-decoration: none; }
+.cal-event a:hover { text-decoration: underline; }
+.cal-event-meta { font-size: 10px; color: var(--sub); margin-top: 2px; }
+
 /* Bar Chart */
 .chart { margin-top: 8px; }
 .chart-row {
@@ -521,6 +569,26 @@ body {
   <div class="chart" id="tournamentChart">
     <div class="loading">WP API 取得中</div>
   </div>
+  </div>
+</div>
+
+<!-- ========== 大会カレンダー ========== -->
+<div class="section" data-section="calendar">
+  <div class="section-header" onclick="toggleSection(this)">
+    <span class="section-icon">📅</span> 大会カレンダー
+    <span class="section-toggle">▼</span>
+  </div>
+  <div class="section-body">
+  <div class="cal-nav">
+    <button class="cal-nav-btn" onclick="calNavPrev()">◀</button>
+    <span class="cal-nav-label" id="calLabel"></span>
+    <button class="cal-nav-btn" onclick="calNavNext()">▶</button>
+    <button class="cal-nav-btn" onclick="calNavToday()" style="margin-left:auto;font-size:10px;">今月</button>
+  </div>
+  <div class="cal-grid" id="calGrid">
+    <div class="loading">WP API 取得中</div>
+  </div>
+  <div class="cal-detail" id="calDetail" style="display:none;"></div>
   </div>
 </div>
 
@@ -1215,11 +1283,160 @@ function renderAgenda() {
   container.innerHTML = html;
 }
 
+// ========== Tournament Calendar ==========
+let calYear, calMonth, calEvents = [];
+const CAL_CACHE_KEY = 'hub_cal_cache';
+const CAL_CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
+function calInit() {
+  const now = new Date();
+  calYear = now.getFullYear();
+  calMonth = now.getMonth();
+  loadCalendarEvents();
+}
+
+async function loadCalendarEvents() {
+  // Check localStorage cache
+  const cached = JSON.parse(localStorage.getItem(CAL_CACHE_KEY) || 'null');
+  if (cached && Date.now() - cached.ts < CAL_CACHE_TTL) {
+    calEvents = cached.events;
+    renderCalendar();
+    return;
+  }
+
+  // Fetch all published tournaments with event_date
+  try {
+    let allEvents = [];
+    let page = 1;
+    let hasMore = true;
+    while (hasMore) {
+      const res = await fetch(
+        `${WP_API}/tournament?status=publish&per_page=100&page=${page}&_fields=id,title,acf,link`
+      );
+      if (!res.ok) break;
+      const data = await res.json();
+      data.forEach(t => {
+        if (t.acf && t.acf.event_date) {
+          allEvents.push({
+            id: t.id,
+            title: t.title.rendered,
+            date: t.acf.event_date,
+            location: t.acf.location || '',
+            link: t.link
+          });
+        }
+      });
+      const total = parseInt(res.headers.get('X-WP-TotalPages')) || 1;
+      hasMore = page < total;
+      page++;
+    }
+    calEvents = allEvents;
+    localStorage.setItem(CAL_CACHE_KEY, JSON.stringify({ ts: Date.now(), events: allEvents }));
+  } catch (e) {
+    console.error('Calendar load error:', e);
+  }
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const label = document.getElementById('calLabel');
+  const grid = document.getElementById('calGrid');
+  label.textContent = `${calYear}年${calMonth + 1}月`;
+
+  const today = new Date();
+  const firstDay = new Date(calYear, calMonth, 1);
+  const lastDay = new Date(calYear, calMonth + 1, 0);
+  const startDow = firstDay.getDay(); // 0=Sun
+
+  // Group events by YYYYMMDD
+  const eventMap = {};
+  calEvents.forEach(e => {
+    if (!eventMap[e.date]) eventMap[e.date] = [];
+    eventMap[e.date].push(e);
+  });
+
+  let html = '';
+  ['日','月','火','水','木','金','土'].forEach(d => {
+    html += `<div class="cal-dow">${d}</div>`;
+  });
+
+  // Leading empty cells
+  for (let i = 0; i < startDow; i++) {
+    const prevDate = new Date(calYear, calMonth, -(startDow - 1 - i));
+    html += `<div class="cal-cell other-month">${prevDate.getDate()}</div>`;
+  }
+
+  // Days of month
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    const dateStr = `${calYear}${String(calMonth + 1).padStart(2, '0')}${String(d).padStart(2, '0')}`;
+    const events = eventMap[dateStr] || [];
+    const isToday = today.getFullYear() === calYear && today.getMonth() === calMonth && today.getDate() === d;
+    const classes = ['cal-cell'];
+    if (events.length > 0) classes.push('has-event');
+    if (isToday) classes.push('today');
+
+    html += `<div class="${classes.join(' ')}"${events.length > 0 ? ` onclick="showCalDetail('${dateStr}')"` : ''}>`;
+    html += d;
+    if (events.length > 0) {
+      html += `<div class="cal-badge">${events.length}</div>`;
+    }
+    html += '</div>';
+  }
+
+  // Trailing empty cells
+  const endDow = lastDay.getDay();
+  for (let i = endDow + 1; i < 7 && endDow < 6; i++) {
+    const nextDate = i - endDow;
+    html += `<div class="cal-cell other-month">${nextDate}</div>`;
+  }
+
+  grid.innerHTML = html;
+  document.getElementById('calDetail').style.display = 'none';
+}
+
+function showCalDetail(dateStr) {
+  const detail = document.getElementById('calDetail');
+  const events = calEvents.filter(e => e.date === dateStr);
+  if (events.length === 0) { detail.style.display = 'none'; return; }
+
+  const y = dateStr.substring(0, 4);
+  const m = parseInt(dateStr.substring(4, 6));
+  const d = parseInt(dateStr.substring(6, 8));
+
+  let html = `<div class="cal-detail-title">${y}/${m}/${d} の大会 (${events.length}件)</div>`;
+  events.forEach(e => {
+    html += `<div class="cal-event">
+      <a href="${e.link}" target="_blank">${e.title}</a>
+      <div class="cal-event-meta">${e.location}</div>
+    </div>`;
+  });
+  detail.innerHTML = html;
+  detail.style.display = 'block';
+}
+
+function calNavPrev() {
+  calMonth--;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderCalendar();
+}
+function calNavNext() {
+  calMonth++;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCalendar();
+}
+function calNavToday() {
+  const now = new Date();
+  calYear = now.getFullYear();
+  calMonth = now.getMonth();
+  renderCalendar();
+}
+
 // ========== Init ==========
 function loadAll() {
   loadAnalytics();
   loadWPData();
   loadFirebaseData();
+  calInit();
 }
 restoreSectionStates();
 renderAgenda();
