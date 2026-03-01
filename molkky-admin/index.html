@@ -161,6 +161,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
       <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:0.6rem">
         <h3 style="flex:1;margin:0">未処理キュー</h3>
         <span style="font-size:0.75rem;color:var(--dim)">pending: <strong id="qPending">-</strong> | 今日: <strong id="qToday">-</strong></span>
+        <button class="btn btn-sm btn-primary" id="classifyBtn" onclick="autoClassify()" style="display:none">自動分類</button>
         <button class="btn btn-sm btn-outline" onclick="loadQueue()">更新</button>
       </div>
       <div id="queueList">
@@ -909,6 +910,9 @@ async function loadQueue() {
     }
 
     renderQueue(pending);
+
+    // Show classify button if there are pending items
+    document.getElementById('classifyBtn').style.display = pending.length > 0 ? 'inline-block' : 'none';
   } catch(e) {
     log('キュー読み込み失敗: ' + e.message, 'err');
   }
@@ -959,6 +963,9 @@ function renderQueue(items) {
   });
 }
 
+// Store fetched tweet data for classification
+const _queueTweets = {};
+
 async function fetchQueuePreview(key, tweetId) {
   const el = document.getElementById('qc-' + key);
   if (!el) return;
@@ -969,6 +976,7 @@ async function fetchQueuePreview(key, tweetId) {
     const text = data.text || '';
     const user = data.user?.screen_name || '';
     const hasMedia = data.mediaDetails?.length > 0;
+    _queueTweets[key] = { text, user, hasMedia };
     el.innerHTML = `
       <div style="white-space:pre-wrap;word-break:break-word">${escapeHtml(text)}</div>
       ${hasMedia ? '<div style="margin-top:0.3rem;color:var(--accent);font-size:0.72rem">[画像 ' + data.mediaDetails.length + '枚]</div>' : ''}
@@ -976,6 +984,94 @@ async function fetchQueuePreview(key, tweetId) {
   } catch(e) {
     el.innerHTML = '<span style="color:var(--err)">内容取得失敗</span>';
   }
+}
+
+async function autoClassify() {
+  const keys = Object.keys(_queueTweets);
+  if (keys.length === 0) {
+    showToast('ツイート内容がまだ読み込まれていません');
+    return;
+  }
+
+  const btn = document.getElementById('classifyBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>分類中...';
+
+  try {
+    const items = keys.map(k => ({
+      key: k,
+      text: _queueTweets[k].text,
+      user: _queueTweets[k].user
+    }));
+
+    const prompt = `以下のツイート一覧を分類してください。各ツイートが「モルック大会の新規告知・参加者募集」かどうかを判定します。
+
+## 分類ルール
+- "tournament": 大会・イベント・体験会の新規告知、参加者募集、エントリー案内
+- "skip": 大会結果報告、感想、練習報告、雑談、RT、返信、ランキング、テレビの話題、他スポーツの話題
+- "review": 判断が難しいもの（大会告知の可能性はあるが確信が持てない）
+
+## ツイート一覧
+${items.map((item, i) => `[${i}] @${item.user}: ${item.text}`).join('\n\n')}
+
+## 出力形式（JSON配列のみ）
+[
+  {"index": 0, "classification": "skip", "reason": "大会結果報告"},
+  {"index": 1, "classification": "tournament", "reason": "大会参加者募集"}
+]`;
+
+    const resp = await fetch(GEMINI_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+    if (!resp.ok) throw new Error('Gemini API error: ' + resp.status);
+    const result = await resp.json();
+    const text = result.text || result.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    const jsonMatch = text.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) throw new Error('分類結果のJSONが取得できません');
+    const classifications = JSON.parse(jsonMatch[0]);
+
+    let skipCount = 0;
+    let tournamentCount = 0;
+    let reviewCount = 0;
+
+    for (const c of classifications) {
+      const item = items[c.index];
+      if (!item) continue;
+      const el = document.getElementById('qc-' + item.key);
+
+      if (c.classification === 'skip') {
+        await updateQueueStatus(item.key, 'skipped', c.reason || '自動分類: スキップ');
+        skipCount++;
+        if (el) {
+          el.closest('.queue-item').style.opacity = '0.3';
+          el.closest('.queue-item').style.pointerEvents = 'none';
+          el.innerHTML += `<div style="color:var(--warn);font-size:0.72rem;margin-top:0.3rem">自動スキップ: ${escapeHtml(c.reason || '')}</div>`;
+        }
+      } else if (c.classification === 'tournament') {
+        tournamentCount++;
+        if (el) el.innerHTML += `<div style="color:var(--ok);font-size:0.72rem;margin-top:0.3rem;font-weight:600">新規大会</div>`;
+      } else {
+        reviewCount++;
+        if (el) el.innerHTML += `<div style="color:var(--warn);font-size:0.72rem;margin-top:0.3rem;font-weight:600">要確認</div>`;
+      }
+    }
+
+    const msg = `分類完了: 大会${tournamentCount}件 / 要確認${reviewCount}件 / スキップ${skipCount}件`;
+    showToast(msg);
+    log(msg, 'ok');
+
+    // Reload queue after a short delay to reflect skipped items
+    setTimeout(loadQueue, 1500);
+  } catch(e) {
+    showToast('自動分類失敗: ' + e.message);
+    log('自動分類エラー: ' + e.message, 'err');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '自動分類';
 }
 
 function processFromQueue(key, url) {

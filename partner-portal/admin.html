@@ -388,7 +388,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-const ADMIN_PW = 'hub';
+const ADMIN_HASH = '08d33503ee27d4c13055d0cefec5e730be4ef2e41cd6cfce434936ec1e7c9d4b';
 let returnsData = [];
 let selectedReturnKey = null;
 let compressedPhotoData = null;
@@ -396,9 +396,11 @@ let compressedPhotoData = null;
 // Auth
 document.getElementById('pw-input').addEventListener('keydown', e => { if (e.key === 'Enter') tryAuth(); });
 
-function tryAuth() {
+async function tryAuth() {
   const pw = document.getElementById('pw-input').value;
-  if (pw === ADMIN_PW) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+  const hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  if (hash === ADMIN_HASH) {
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('main-screen').style.display = 'block';
     loadReturns();

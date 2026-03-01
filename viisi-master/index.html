@@ -533,7 +533,7 @@ let firebaseConnected = false;
 // ============================================================
 const STORAGE_KEY = 'viisi-master-data';
 const OFFLINE_QUEUE_KEY = 'viisi-offline-queue';
-const ADMIN_PASSWORD = 'gosaki';
+const ADMIN_HASH = '6e976a15e6b47bede504d8a86ed16c81eb81ffdb8ff963bbaf016f242520a638';
 const DEFAULT_DATA = {
   links: {
     x_account: "https://x.com/viisimaster5",
@@ -863,9 +863,16 @@ function requireAuth(callback) {
   setTimeout(() => document.getElementById('pw-input').focus(), 100);
 }
 
-function submitAuth() {
+async function hashPassword(pw) {
+  const encoded = new TextEncoder().encode(pw);
+  const buf = await crypto.subtle.digest('SHA-256', encoded);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function submitAuth() {
   const pw = document.getElementById('pw-input').value;
-  if (pw === ADMIN_PASSWORD) {
+  const hash = await hashPassword(pw);
+  if (hash === ADMIN_HASH) {
     isAuthenticated = true;
     hideModal('pw-modal');
     if (pendingAuthCallback) { pendingAuthCallback(); pendingAuthCallback = null; }
