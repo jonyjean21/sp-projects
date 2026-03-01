@@ -955,9 +955,10 @@ function renderQueue(items) {
   box.innerHTML = items.map(item => {
     const si = sourceInfo(item.source);
     const ts = item.timestamp ? new Date(item.timestamp).toLocaleString('ja-JP', { month:'numeric', day:'numeric', hour:'numeric', minute:'numeric' }) : '';
-    const user = item.url?.match(/twitter\.com\/(\w+)|x\.com\/(\w+)/);
-    const userName = user ? (user[1] || user[2]) : '';
     const tweetId = extractTweetId(item.url || '');
+    // Show cached tweet text snippet, or URL as fallback
+    const cached = _queueTweets[item.key];
+    const snippet = cached ? cached.text.replace(/\n/g, ' ').substring(0, 60) : (item.url || '');
 
     return `
       <div class="queue-item" style="flex-direction:column;align-items:stretch">
@@ -965,7 +966,7 @@ function renderQueue(items) {
           <div class="queue-info">
             <div class="queue-meta">
               <span class="pill ${si.cls}">${si.label}</span>
-              ${userName ? ' <strong>@' + escapeHtml(userName) + '</strong>' : ''}
+              <span id="qs-${item.key}" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(snippet)}</span>
               <span style="color:var(--dim)">${ts}</span>
             </div>
           </div>
@@ -1006,6 +1007,9 @@ async function fetchQueuePreview(key, tweetId) {
       <div style="white-space:pre-wrap;word-break:break-word">${escapeHtml(text)}</div>
       ${hasMedia ? '<div style="margin-top:0.3rem;color:var(--accent);font-size:0.72rem">[画像 ' + data.mediaDetails.length + '枚]</div>' : ''}
     `;
+    // Update header snippet
+    const qs = document.getElementById('qs-' + key);
+    if (qs) qs.textContent = text.replace(/\n/g, ' ').substring(0, 60);
   } catch(e) {
     el.innerHTML = '<span style="color:var(--err)">内容取得失敗</span>';
   }
