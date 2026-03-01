@@ -2,68 +2,12 @@
   "date": "2026-03-02",
   "processed": [
     {
-      "url": "https://twitter.com/kawamolkky/status/2028107699469299898",
-      "title": "川西モルック合戦 2026シリーズ告知",
-      "action": "already_exists",
-      "note": "シリーズ全体の告知。各月の大会は個別にWP登録済み（ID:4472-4481）",
-      "source": "ifttt-x-search",
-      "timestamp": "2026-03-02T00:00:00+09:00"
-    },
-    {
-      "url": "https://twitter.com/FdfwSPdEZXn3I3G/status/2028141720928653800",
-      "title": "モックル杯モルック大会 開催レポート",
+      "url": "https://twitter.com/nanae_molkky/status/2028221140293075402",
+      "title": "七飯モルック協会 練習報告",
       "action": "skipped",
-      "note": "2/28開催済みイベントの報告記事。大会告知ではない",
+      "reason": "練習報告ポスト（大会情報なし）",
       "source": "ifttt-x-search",
-      "timestamp": "2026-03-02T00:00:00+09:00"
-    },
-    {
-      "url": "https://twitter.com/shuhei_nishino/status/2028200948406034478",
-      "title": "モックル杯名称訂正ツイート",
-      "action": "skipped",
-      "note": "河内長野市長による名称訂正。大会告知ではない",
-      "source": "ifttt-x-search",
-      "timestamp": "2026-03-02T00:00:00+09:00"
-    },
-    {
-      "url": "https://twitter.com/molkkynosaito/status/2028120316195795436",
-      "title": "モルック練習の個人投稿",
-      "action": "skipped",
-      "note": "有明でのモルック練習の個人投稿。大会告知ではない",
-      "source": "ifttt-x-search",
-      "timestamp": "2026-03-02T00:00:00+09:00"
-    },
-    {
-      "url": "https://twitter.com/kumasan_2013/status/2028107482430836895",
-      "title": "大会参加後の感想",
-      "action": "skipped",
-      "note": "モルック大会に参加した感想ツイート。大会告知ではない",
-      "source": "ifttt-x-search",
-      "timestamp": "2026-03-02T00:00:00+09:00"
-    },
-    {
-      "url": "https://twitter.com/kawamolkky/status/2028108348827287909",
-      "title": "川西モルック合戦2026 3月の陣",
-      "action": "already_exists",
-      "note": "3/28個人戦 → WP ID:4472で登録済み",
-      "source": "ifttt-x-search",
-      "timestamp": "2026-03-02T00:00:00+09:00"
-    },
-    {
-      "url": "https://twitter.com/motshiroshima/status/2028097139566633355",
-      "title": "2nd BeeWood大会 引用RT",
-      "action": "already_exists",
-      "note": "BeeWood 2nd(5/23-24)の引用RT。WP ID:6422(シングル), 6423(チーム)で登録済み",
-      "source": "ifttt-x-search",
-      "timestamp": "2026-03-02T00:00:00+09:00"
-    },
-    {
-      "url": "https://twitter.com/gamamoru_club/status/2028118110503645310",
-      "title": "蒲郡モルッククラブ 練習会投稿",
-      "action": "skipped",
-      "note": "ベイパーク竹島での練習投稿。大会告知ではない",
-      "source": "ifttt-x-search",
-      "timestamp": "2026-03-02T00:00:00+09:00"
+      "timestamp": "2026-03-02T07:00:00+09:00"
     }
   ]
 }

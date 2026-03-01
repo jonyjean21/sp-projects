@@ -133,6 +133,24 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
 .result-meta { font-size: 0.72rem; color: var(--dim); margin-top: 1px; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
 .result-meta a { color: var(--blue); text-decoration: none; }
 
+/* Queue items */
+.queue-item { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; margin-bottom: 0.6rem; }
+.queue-item.queue-approved { border-color: var(--ok); opacity: 0.6; }
+.queue-item.queue-rejected { border-color: var(--err); opacity: 0.4; }
+.queue-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
+.queue-rank { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; background: var(--border); color: var(--text); flex-shrink: 0; }
+.queue-rank.r1 { background: linear-gradient(135deg, #ffd700, #b8960f); color: #000; }
+.queue-rank.r2 { background: linear-gradient(135deg, #c0c0c0, #888); color: #000; }
+.queue-rank.r3 { background: linear-gradient(135deg, #cd7f32, #8b5a2b); color: #fff; }
+.queue-name { font-weight: 600; font-size: 0.88rem; flex: 1; }
+.queue-time { font-size: 0.68rem; color: var(--dim); }
+.queue-meta { font-size: 0.75rem; color: var(--dim); margin-bottom: 0.5rem; }
+.queue-meta a { color: var(--blue); text-decoration: none; }
+.queue-note { font-size: 0.78rem; color: var(--dim); font-style: italic; margin-bottom: 0.5rem; }
+.queue-actions { display: flex; gap: 0.4rem; }
+.queue-empty { text-align: center; color: var(--dim); font-size: 0.82rem; padding: 2rem; }
+.queue-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; border-radius: 9px; background: var(--err); color: #fff; font-size: 0.65rem; font-weight: 700; margin-left: 4px; padding: 0 5px; }
+
 @media (max-width: 600px) {
   .field-row { flex-direction: column; gap: 0; }
   .block-grid { grid-template-columns: 1fr; }
@@ -151,6 +169,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
 <div class="tabs">
   <div class="tab" data-tab="results">結果入力</div>
   <div class="tab active" data-tab="slots">出場枠管理</div>
+  <div class="tab" data-tab="queue">投稿キュー</div>
   <div class="tab" data-tab="sources">ソース管理</div>
 </div>
 
@@ -284,6 +303,20 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
     </div>
   </div>
 
+  <!-- ===== 投稿キュータブ ===== -->
+  <div class="panel" id="panel-queue">
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:0.8rem">
+        <h3 style="flex:1;margin:0">投稿キュー <span id="queueCount" style="font-size:0.75rem;color:var(--dim)"></span></h3>
+        <button class="btn btn-sm btn-outline" onclick="loadQueue()">更新</button>
+        <button class="btn btn-sm btn-outline" onclick="toggleQueueFilter()">処理済みも表示</button>
+      </div>
+      <div id="queueList">
+        <div class="queue-empty">読み込み中...</div>
+      </div>
+    </div>
+  </div>
+
   <!-- ===== ソース管理タブ ===== -->
   <div class="panel" id="panel-sources">
     <div class="card">
@@ -412,6 +445,11 @@ document.addEventListener('DOMContentLoaded', () => {
   initTabs();
   checkConnection();
   loadBlocks();
+  // Load queue count for badge
+  fetch(`${FB}${BASE_PATH}/submissions.json`).then(r => r.json()).then(data => {
+    queueData = data || {};
+    updateQueueBadge();
+  }).catch(() => {});
 });
 
 // ===== Tabs =====
@@ -423,6 +461,7 @@ function initTabs() {
       tab.classList.add('active');
       document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
       if (tab.dataset.tab === 'slots') loadBlocks();
+      if (tab.dataset.tab === 'queue') loadQueue();
     });
   });
 }
@@ -1063,6 +1102,165 @@ async function previewSourceUrl() {
   } else {
     container.innerHTML = `<div style="padding:0.5rem"><a href="${escHtml(url)}" target="_blank" style="color:var(--blue);font-size:0.82rem">${escHtml(url)}</a></div>`;
     container.style.display = 'block';
+  }
+}
+
+// ===== Queue Tab =====
+let queueData = {};
+let showProcessedQueue = false;
+
+async function loadQueue() {
+  try {
+    const r = await fetch(`${FB}${BASE_PATH}/submissions.json`);
+    const data = await r.json();
+    queueData = data || {};
+    renderQueue();
+    updateQueueBadge();
+  } catch(e) {
+    document.getElementById('queueList').innerHTML =
+      `<div class="queue-empty" style="color:var(--err)">読み込みエラー: ${e.message}</div>`;
+  }
+}
+
+function updateQueueBadge() {
+  const pending = Object.values(queueData).filter(s => s.status === 'pending').length;
+  const tab = document.querySelector('[data-tab="queue"]');
+  const existing = tab.querySelector('.queue-badge');
+  if (existing) existing.remove();
+  if (pending > 0) {
+    tab.innerHTML = `投稿キュー<span class="queue-badge">${pending}</span>`;
+  } else {
+    tab.textContent = '投稿キュー';
+  }
+}
+
+function toggleQueueFilter() {
+  showProcessedQueue = !showProcessedQueue;
+  renderQueue();
+}
+
+function renderQueue() {
+  const list = document.getElementById('queueList');
+  let entries = Object.entries(queueData);
+
+  if (!showProcessedQueue) {
+    entries = entries.filter(([, s]) => s.status === 'pending');
+  }
+
+  // Sort: pending first, then by submitted_at desc
+  entries.sort((a, b) => {
+    if (a[1].status === 'pending' && b[1].status !== 'pending') return -1;
+    if (a[1].status !== 'pending' && b[1].status === 'pending') return 1;
+    return (b[1].submitted_at || '').localeCompare(a[1].submitted_at || '');
+  });
+
+  const pending = entries.filter(([, s]) => s.status === 'pending').length;
+  document.getElementById('queueCount').textContent =
+    `${pending}件の未処理${showProcessedQueue ? ` / 全${entries.length}件` : ''}`;
+
+  if (entries.length === 0) {
+    list.innerHTML = '<div class="queue-empty">投稿なし</div>';
+    return;
+  }
+
+  list.innerHTML = entries.map(([key, s]) => {
+    const rCls = s.rank <= 3 ? ` r${s.rank}` : '';
+    const statusCls = s.status === 'approved' ? ' queue-approved' : s.status === 'rejected' ? ' queue-rejected' : '';
+    const handle = extractHandle(s.x_link);
+    const time = s.submitted_at ? new Date(s.submitted_at).toLocaleString('ja-JP', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
+
+    return `
+      <div class="queue-item${statusCls}">
+        <div class="queue-header">
+          <div class="queue-rank${rCls}">${s.rank || '?'}</div>
+          <div class="queue-name">${escHtml(s.name)}</div>
+          <div class="queue-time">${time}</div>
+        </div>
+        <div class="queue-meta">
+          ${escHtml(s.venue_name || s.venue_id)}${s.team ? ' · ' + escHtml(s.team) : ''}${handle ? ` · <a href="${escHtml(s.x_link)}" target="_blank">@${escHtml(handle)}</a>` : ''}
+        </div>
+        ${s.note ? `<div class="queue-note">${escHtml(s.note)}</div>` : ''}
+        ${s.status === 'pending' ? `
+          <div class="queue-actions">
+            <button class="btn btn-sm btn-success" onclick="approveSubmission('${key}')">承認 → 結果に追加</button>
+            <button class="btn btn-sm btn-danger" onclick="rejectSubmission('${key}')">却下</button>
+          </div>
+        ` : `<div style="font-size:0.72rem;color:var(--dim)">${s.status === 'approved' ? '✅ 承認済み' : '❌ 却下済み'}</div>`}
+      </div>
+    `;
+  }).join('');
+}
+
+async function approveSubmission(key) {
+  const sub = queueData[key];
+  if (!sub) return;
+
+  // Load existing results for this venue
+  try {
+    const r = await fetch(`${FB}${BASE_PATH}/results/${sub.venue_id}.json`);
+    const existing = await r.json() || {};
+
+    // Find next key
+    const keys = Object.keys(existing).map(k => parseInt(k)).filter(n => !isNaN(n));
+    const nextKey = String(keys.length > 0 ? Math.max(...keys) + 1 : 0).padStart(3, '0');
+
+    // Get venue info for qualification check
+    const bid = sub.block_id;
+    const vid = sub.venue_id;
+    let slots = 999;
+    if (blocksData[bid]?.venues?.[vid]) {
+      slots = blocksData[bid].venues[vid].slots || 999;
+    }
+    const qualified = sub.rank <= slots;
+
+    // Add result entry
+    const entry = {
+      rank: sub.rank,
+      name: sub.name,
+      team: sub.team || '',
+      x_link: sub.x_link || '',
+      qualified
+    };
+
+    await fetch(`${FB}${BASE_PATH}/results/${vid}/${nextKey}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entry)
+    });
+
+    // Update submission status
+    await fetch(`${FB}${BASE_PATH}/submissions/${key}/status.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify('approved')
+    });
+
+    queueData[key].status = 'approved';
+    renderQueue();
+    updateQueueBadge();
+    showToast(`${sub.name} (${sub.rank}位) を結果に追加しました`);
+    log(`キュー承認: ${sub.name} ${sub.rank}位 → ${vid}`, 'ok');
+  } catch(e) {
+    showToast('承認エラー: ' + e.message);
+    log('承認エラー: ' + e.message, 'err');
+  }
+}
+
+async function rejectSubmission(key) {
+  if (!confirm('この投稿を却下しますか？')) return;
+  try {
+    await fetch(`${FB}${BASE_PATH}/submissions/${key}/status.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify('rejected')
+    });
+    queueData[key].status = 'rejected';
+    renderQueue();
+    updateQueueBadge();
+    showToast('却下しました');
+    log(`キュー却下: ${queueData[key].name}`, 'ok');
+  } catch(e) {
+    showToast('却下エラー: ' + e.message);
   }
 }
 

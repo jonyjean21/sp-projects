@@ -100,6 +100,34 @@ a:hover { text-decoration: underline; }
 .finals-info { font-size: 0.85rem; color: var(--dim); margin-top: 0.4rem; }
 .finals-date { font-size: 1.3rem; font-weight: 800; color: var(--accent); margin-top: 0.3rem; }
 
+/* Submit form */
+.submit-section { margin-bottom: 2rem; }
+.submit-toggle { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.2rem; cursor: pointer; display: flex; align-items: center; gap: 0.6rem; transition: border-color 0.2s; }
+.submit-toggle:hover { border-color: var(--accent); }
+.submit-toggle-icon { font-size: 1.1rem; }
+.submit-toggle-text { flex: 1; }
+.submit-toggle-title { font-size: 0.88rem; font-weight: 600; }
+.submit-toggle-desc { font-size: 0.72rem; color: var(--dim); margin-top: 0.15rem; }
+.submit-toggle-arrow { font-size: 0.7rem; color: var(--dim); transition: transform 0.2s; }
+.submit-section.open .submit-toggle-arrow { transform: rotate(180deg); }
+.submit-section.open .submit-toggle { border-color: var(--accent); border-radius: 12px 12px 0 0; }
+.submit-form { display: none; background: var(--card); border: 1px solid var(--accent); border-top: none; border-radius: 0 0 12px 12px; padding: 1.2rem; }
+.submit-section.open .submit-form { display: block; }
+.sf-field { margin-bottom: 0.7rem; }
+.sf-label { font-size: 0.75rem; color: var(--dim); display: block; margin-bottom: 0.2rem; }
+.sf-required { color: #ef4444; }
+.sf-input, .sf-select { width: 100%; padding: 0.5rem 0.7rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 0.85rem; }
+.sf-input:focus, .sf-select:focus { outline: none; border-color: var(--accent); }
+.sf-row { display: flex; gap: 0.6rem; }
+.sf-row .sf-field { flex: 1; }
+.sf-btn { padding: 0.6rem 1.5rem; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; background: var(--accent); color: #000; transition: opacity 0.15s; }
+.sf-btn:hover { opacity: 0.85; }
+.sf-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.sf-msg { font-size: 0.8rem; margin-top: 0.5rem; }
+.sf-msg.ok { color: var(--ok); }
+.sf-msg.err { color: #ef4444; }
+.sf-note { font-size: 0.7rem; color: var(--dim); margin-top: 0.5rem; line-height: 1.5; }
+
 /* Footer */
 .footer { text-align: center; padding: 2rem 1rem; border-top: 1px solid var(--border); font-size: 0.72rem; color: var(--dim); }
 .footer a { color: var(--accent); }
@@ -153,6 +181,59 @@ a:hover { text-decoration: underline; }
   <div class="qualified-section" id="qualifiedSection" style="display:none">
     <div class="section-title">通過者一覧</div>
     <div class="qualified-grid" id="qualifiedGrid"></div>
+  </div>
+
+  <!-- Submit form -->
+  <div class="submit-section" id="submitSection">
+    <div class="submit-toggle" onclick="document.getElementById('submitSection').classList.toggle('open')">
+      <div class="submit-toggle-icon">📝</div>
+      <div class="submit-toggle-text">
+        <div class="submit-toggle-title">予選結果の情報提供</div>
+        <div class="submit-toggle-desc">予選に参加された方の結果情報をお寄せください</div>
+      </div>
+      <div class="submit-toggle-arrow">▼</div>
+    </div>
+    <div class="submit-form">
+      <div class="sf-row">
+        <div class="sf-field">
+          <label class="sf-label">ブロック <span class="sf-required">*</span></label>
+          <select class="sf-select" id="sfBlock" onchange="onSfBlockChange()">
+            <option value="">-- 選択 --</option>
+          </select>
+        </div>
+        <div class="sf-field">
+          <label class="sf-label">会場 <span class="sf-required">*</span></label>
+          <select class="sf-select" id="sfVenue">
+            <option value="">-- 選択 --</option>
+          </select>
+        </div>
+      </div>
+      <div class="sf-row">
+        <div class="sf-field" style="flex:0 0 70px">
+          <label class="sf-label">順位 <span class="sf-required">*</span></label>
+          <input type="number" class="sf-input" id="sfRank" min="1" placeholder="#">
+        </div>
+        <div class="sf-field">
+          <label class="sf-label">名前（チーム名 or 選手名）<span class="sf-required">*</span></label>
+          <input type="text" class="sf-input" id="sfName" placeholder="例: モルック太郎">
+        </div>
+        <div class="sf-field">
+          <label class="sf-label">所属チーム</label>
+          <input type="text" class="sf-input" id="sfTeam" placeholder="例: チーム名">
+        </div>
+      </div>
+      <div class="sf-field">
+        <label class="sf-label">Xポスト（結果報告のURL）</label>
+        <input type="url" class="sf-input" id="sfXLink" placeholder="https://x.com/...">
+      </div>
+      <div class="sf-field">
+        <label class="sf-label">補足メモ</label>
+        <input type="text" class="sf-input" id="sfNote" placeholder="例: 通過確定、本戦出場辞退 など">
+      </div>
+      <button class="sf-btn" id="sfSubmitBtn" onclick="submitResult()">送信する</button>
+      <div class="sf-msg" id="sfMsg"></div>
+      <div class="sf-note">※ 送信された情報は管理者が確認後に反映します。個人情報の取り扱いにはご注意ください。</div>
+    </div>
   </div>
 
   <div class="finals-card">
@@ -211,6 +292,7 @@ function render() {
   renderBlocks();
   renderQualified();
   renderFinals();
+  populateSubmitForm();
 }
 
 function renderStats() {
@@ -415,6 +497,83 @@ function setupPolling() {
   if (hasLive) {
     pollTimer = setInterval(loadData, 60000);
   }
+}
+
+// ===== Submit Form =====
+const SUBMIT_API = 'https://vercel-api-orpin-one.vercel.app/api/championship-submit';
+
+function populateSubmitForm() {
+  const sorted = Object.entries(allData.blocks)
+    .sort((a, b) => (a[1].order || 0) - (b[1].order || 0));
+  const sel = document.getElementById('sfBlock');
+  sel.innerHTML = '<option value="">-- 選択 --</option>' +
+    sorted.map(([bid, b]) => `<option value="${bid}">${esc(b.name)}</option>`).join('');
+}
+
+function onSfBlockChange() {
+  const bid = document.getElementById('sfBlock').value;
+  const sel = document.getElementById('sfVenue');
+  sel.innerHTML = '<option value="">-- 選択 --</option>';
+  if (!bid || !allData.blocks[bid]?.venues) return;
+  for (const [vid, v] of Object.entries(allData.blocks[bid].venues)) {
+    sel.innerHTML += `<option value="${vid}">${esc(v.name)} (${v.date})</option>`;
+  }
+}
+
+async function submitResult() {
+  const btn = document.getElementById('sfSubmitBtn');
+  const msg = document.getElementById('sfMsg');
+  const blockId = document.getElementById('sfBlock').value;
+  const venueId = document.getElementById('sfVenue').value;
+  const rank = parseInt(document.getElementById('sfRank').value);
+  const name = document.getElementById('sfName').value.trim();
+
+  if (!blockId || !venueId) { msg.className = 'sf-msg err'; msg.textContent = 'ブロックと会場を選択してください'; return; }
+  if (!rank || rank < 1) { msg.className = 'sf-msg err'; msg.textContent = '順位を入力してください'; return; }
+  if (!name) { msg.className = 'sf-msg err'; msg.textContent = '名前を入力してください'; return; }
+
+  const venue = allData.blocks[blockId]?.venues?.[venueId];
+
+  btn.disabled = true;
+  btn.textContent = '送信中...';
+  msg.textContent = '';
+
+  try {
+    const r = await fetch(SUBMIT_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        block_id: blockId,
+        venue_id: venueId,
+        venue_name: venue?.name || venueId,
+        rank,
+        name,
+        team: document.getElementById('sfTeam').value.trim(),
+        x_link: document.getElementById('sfXLink').value.trim(),
+        note: document.getElementById('sfNote').value.trim()
+      })
+    });
+
+    if (!r.ok) {
+      const err = await r.json();
+      throw new Error(err.error || 'HTTP ' + r.status);
+    }
+
+    msg.className = 'sf-msg ok';
+    msg.textContent = '送信しました！管理者が確認後に反映します。';
+    // Clear form
+    document.getElementById('sfRank').value = '';
+    document.getElementById('sfName').value = '';
+    document.getElementById('sfTeam').value = '';
+    document.getElementById('sfXLink').value = '';
+    document.getElementById('sfNote').value = '';
+  } catch (e) {
+    msg.className = 'sf-msg err';
+    msg.textContent = '送信失敗: ' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '送信する';
 }
 
 function esc(text) {
