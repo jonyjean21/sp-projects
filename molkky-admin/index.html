@@ -1596,11 +1596,17 @@ function toggleEditPost(postId) {
       <div class="field-row">
         <div class="field">
           <label>SNSリンク</label>
-          <input type="url" id="eSns-${postId}" value="${escapeHtml(acf.sns_link || '')}">
+          <div style="display:flex;gap:4px">
+            <input type="url" id="eSns-${postId}" value="${escapeHtml(acf.sns_link || '')}" style="flex:1">
+            ${acf.sns_link ? `<a href="${escapeHtml(acf.sns_link)}" target="_blank" class="btn btn-sm btn-outline" style="text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center" title="開く">↗</a>` : ''}
+          </div>
         </div>
         <div class="field">
           <label>詳細リンク</label>
-          <input type="url" id="eDetail-${postId}" value="${escapeHtml(acf.detail_link || '')}">
+          <div style="display:flex;gap:4px">
+            <input type="url" id="eDetail-${postId}" value="${escapeHtml(acf.detail_link || '')}" style="flex:1">
+            ${acf.detail_link ? `<a href="${escapeHtml(acf.detail_link)}" target="_blank" class="btn btn-sm btn-outline" style="text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center" title="開く">↗</a>` : ''}
+          </div>
         </div>
       </div>
       <div class="field">
@@ -1745,8 +1751,7 @@ async function loadStatus() {
     }
     window._recentPosts = posts;
     document.getElementById('recentPosts').innerHTML = posts.map(p => {
-      const d = p.acf?.event_date;
-      const dateStr = d ? `${d.substring(0,4)}/${d.substring(4,6)}/${d.substring(6,8)}` : '';
+      const posted = p.date ? new Date(p.date).toLocaleString('ja-JP', { month:'numeric', day:'numeric', hour:'numeric', minute:'numeric' }) : '';
       const src = _postSourceMap[p.id];
       const si = src ? sourceInfo(src) : null;
       return `
@@ -1755,8 +1760,7 @@ async function loadStatus() {
             <span style="color:var(--dim);min-width:45px;font-size:0.75rem">ID:${p.id}</span>
             ${si ? '<span class="pill ' + si.cls + '" style="font-size:0.62rem">' + si.label + '</span>' : ''}
             <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.title.rendered}</span>
-            <span style="color:var(--dim);font-size:0.75rem">${dateStr}</span>
-            <span style="color:var(--dim);font-size:0.75rem">${p.acf?.location || ''}</span>
+            <span style="color:var(--dim);font-size:0.75rem;white-space:nowrap">${posted}</span>
             <span class="pill pill-${p.status}">${p.status}</span>
           </div>
           <div id="ep-${p.id}" style="display:none"></div>
