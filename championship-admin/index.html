@@ -187,15 +187,22 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
       </div>
     </div>
 
-    <div class="card" id="pasteCard" style="display:none">
-      <h3>一括ペースト</h3>
+    <div class="card" id="xInputCard" style="display:none">
+      <h3>Xポストから情報取得</h3>
       <div class="field">
-        <label>タブ区切りデータ（順位 \t 名前 \t 所属 \t Xリンク）</label>
-        <textarea id="pasteArea" rows="8" placeholder="1&#9;太郎&#9;チーム名&#9;https://x.com/taro&#10;2&#9;花子&#9;チーム名&#9;&#10;3&#9;次郎&#9;チーム名&#9;"></textarea>
+        <label>XポストURL（結果報告・順位ツイート等）</label>
+        <div style="display:flex;gap:0.5rem">
+          <input type="url" id="xPostUrl" placeholder="https://x.com/user/status/..." style="flex:1">
+          <button class="btn btn-primary" id="xFetchBtn" onclick="fetchTweet()">取得</button>
+        </div>
       </div>
-      <div class="btn-row">
-        <button class="btn btn-primary" onclick="parsePaste()">パース</button>
-        <button class="btn btn-outline" onclick="document.getElementById('pasteArea').value=''">クリア</button>
+      <div id="xPreviewArea" style="display:none;margin-top:0.8rem">
+        <div class="tweet-preview">
+          <div class="tweet-text" id="xTweetText"></div>
+          <div id="xTweetImages" style="display:flex;gap:6px;margin-top:0.6rem;flex-wrap:wrap"></div>
+          <div class="tweet-meta" id="xTweetMeta"></div>
+        </div>
+        <div style="font-size:0.72rem;color:var(--dim);margin-top:0.5rem">上記を参考に、下のフォームに手動入力してください</div>
       </div>
     </div>
 
@@ -221,6 +228,23 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
       </div>
       <div class="btn-row">
         <button class="btn btn-sm btn-primary" onclick="addRow()">追加</button>
+      </div>
+    </div>
+
+    <div class="card" id="pasteCard" style="display:none">
+      <div style="display:flex;align-items:center;gap:0.5rem;cursor:pointer" onclick="togglePaste()">
+        <h3 style="margin:0">一括ペースト</h3>
+        <span style="font-size:0.7rem;color:var(--dim)" id="pasteToggle">▶ 展開</span>
+      </div>
+      <div id="pasteBody" style="display:none;margin-top:0.8rem">
+        <div class="field">
+          <label>タブ区切りデータ（順位 \t 名前 \t 所属 \t Xリンク）</label>
+          <textarea id="pasteArea" rows="6" placeholder="1&#9;太郎&#9;チーム名&#9;https://x.com/taro&#10;2&#9;花子&#9;チーム名&#9;&#10;3&#9;次郎&#9;チーム名&#9;"></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="parsePaste()">パース</button>
+          <button class="btn btn-outline" onclick="document.getElementById('pasteArea').value=''">クリア</button>
+        </div>
       </div>
     </div>
 
@@ -563,6 +587,7 @@ function onVenueChange() {
   const bid = document.getElementById('rBlock').value;
   const vid = document.getElementById('rVenue').value;
   if (!bid || !vid) {
+    document.getElementById('xInputCard').style.display = 'none';
     document.getElementById('pasteCard').style.display = 'none';
     document.getElementById('addRowCard').style.display = 'none';
     document.getElementById('previewCard').style.display = 'none';
@@ -576,12 +601,89 @@ function onVenueChange() {
   document.getElementById('venueInfoText').textContent =
     `${venue.name} · ${venue.date} · ${venue.slots}枠 · ${statusLabel(venue.status)}`;
   document.getElementById('venueInfo').style.display = 'block';
-  document.getElementById('pasteCard').style.display = 'block';
+  document.getElementById('xInputCard').style.display = 'block';
   document.getElementById('addRowCard').style.display = 'block';
+  document.getElementById('pasteCard').style.display = 'block';
 
   previewRows = [];
   renderPreview();
   loadExistingResults(vid);
+}
+
+// ===== Tweet Fetch =====
+async function fetchTweet() {
+  const url = document.getElementById('xPostUrl').value.trim();
+  if (!url) return;
+
+  const match = url.match(/status\/(\d+)/);
+  if (!match) { showToast('ツイートIDが見つかりません'); return; }
+
+  const btn = document.getElementById('xFetchBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>取得中';
+
+  try {
+    const r = await fetch(`${TWEET_PROXY}?id=${match[1]}`);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+
+    document.getElementById('xTweetText').textContent = data.text || '';
+    document.getElementById('xTweetMeta').textContent =
+      `@${data.user?.screen_name || '?'} · ${new Date(data.created_at).toLocaleDateString('ja-JP')}`;
+
+    const imgBox = document.getElementById('xTweetImages');
+    imgBox.innerHTML = '';
+    if (data.mediaDetails) {
+      data.mediaDetails.forEach(m => {
+        if (m.media_url_https) {
+          const img = document.createElement('img');
+          img.src = m.media_url_https + '?format=jpg&name=small';
+          img.style.cssText = 'max-width:200px;border-radius:8px;border:1px solid var(--border);cursor:pointer';
+          img.onclick = () => window.open(m.media_url_https + '?format=jpg&name=large', '_blank');
+          imgBox.appendChild(img);
+        }
+      });
+    }
+
+    document.getElementById('xPreviewArea').style.display = 'block';
+
+    // Pre-fill X link in add form
+    document.getElementById('addXLink').value = url;
+
+    log('ツイート取得: @' + (data.user?.screen_name || '?'), 'ok');
+
+    // Also auto-save as source
+    const vid = document.getElementById('rVenue').value;
+    if (vid) {
+      await fetch(`${FB}${BASE_PATH}/sources/${vid}.json`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url, type: 'x',
+          note: '結果情報 @' + (data.user?.screen_name || ''),
+          added_at: new Date().toISOString()
+        })
+      });
+    }
+  } catch(e) {
+    showToast('取得失敗: ' + e.message);
+    log('ツイート取得エラー: ' + e.message, 'err');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '取得';
+}
+
+function togglePaste() {
+  const body = document.getElementById('pasteBody');
+  const toggle = document.getElementById('pasteToggle');
+  if (body.style.display === 'none') {
+    body.style.display = 'block';
+    toggle.textContent = '▼ 閉じる';
+  } else {
+    body.style.display = 'none';
+    toggle.textContent = '▶ 展開';
+  }
 }
 
 // ===== Results Input =====
