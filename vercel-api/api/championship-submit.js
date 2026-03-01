@@ -23,6 +23,10 @@ export default async function handler(req, res) {
       team: String(body.team || '').trim(),
       x_link: String(body.x_link || '').trim(),
       note: String(body.note || '').trim(),
+      tweet_text: String(body.tweet_text || '').trim().slice(0, 1000),
+      tweet_author: String(body.tweet_author || '').trim(),
+      tweet_handle: String(body.tweet_handle || '').trim(),
+      detected_rank: body.detected_rank != null ? (parseInt(body.detected_rank) || null) : null,
       submitted_at: new Date().toISOString(),
       status: 'pending'
     };

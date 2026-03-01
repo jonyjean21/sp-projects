@@ -224,7 +224,15 @@ a:hover { text-decoration: underline; }
       </div>
       <div class="sf-field">
         <label class="sf-label">Xポスト（結果報告のURL）</label>
-        <input type="url" class="sf-input" id="sfXLink" placeholder="https://x.com/...">
+        <div style="display:flex;gap:0.4rem">
+          <input type="url" class="sf-input" id="sfXLink" placeholder="https://x.com/..." style="flex:1">
+          <button class="sf-btn" style="padding:0.5rem 0.8rem;font-size:0.78rem;flex-shrink:0" onclick="fetchSfTweet()">取得</button>
+        </div>
+        <div id="sfTweetPreview" style="display:none;margin-top:0.5rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:0.7rem">
+          <div id="sfTweetText" style="font-size:0.8rem;line-height:1.6;white-space:pre-wrap;word-break:break-word"></div>
+          <div id="sfTweetMeta" style="font-size:0.7rem;color:var(--dim);margin-top:0.3rem"></div>
+          <div id="sfTweetDetect" style="font-size:0.75rem;margin-top:0.3rem"></div>
+        </div>
       </div>
       <div class="sf-field">
         <label class="sf-label">補足メモ</label>
@@ -501,6 +509,64 @@ function setupPolling() {
 
 // ===== Submit Form =====
 const SUBMIT_API = 'https://vercel-api-orpin-one.vercel.app/api/championship-submit';
+const TWEET_PROXY = 'https://vercel-api-orpin-one.vercel.app/api/tweet-proxy';
+
+// Tweet state for current form
+let sfTweetData = { text: '', author: '', handle: '', detected_rank: null };
+
+function detectRankFromText(text) {
+  const t = text.replace(/\s+/g, ' ');
+  if (/優勝|1位|🏆/.test(t)) return 1;
+  if (/準優勝|2位/.test(t)) return 2;
+  if (/3位/.test(t)) return 3;
+  const m = t.match(/(\d+)\s*位/);
+  if (m) return parseInt(m[1]);
+  return null;
+}
+
+async function fetchSfTweet() {
+  const url = document.getElementById('sfXLink').value.trim();
+  if (!url) return;
+  const match = url.match(/status\/(\d+)/);
+  if (!match) return;
+
+  const preview = document.getElementById('sfTweetPreview');
+  preview.style.display = 'block';
+  document.getElementById('sfTweetText').textContent = '読み込み中...';
+  document.getElementById('sfTweetMeta').textContent = '';
+  document.getElementById('sfTweetDetect').textContent = '';
+
+  try {
+    const r = await fetch(`${TWEET_PROXY}?id=${match[1]}`);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+
+    const tweetText = data.text || '';
+    const authorName = data.user?.name || '';
+    const authorHandle = data.user?.screen_name || '';
+
+    document.getElementById('sfTweetText').textContent = tweetText;
+    document.getElementById('sfTweetMeta').textContent = `@${authorHandle} · ${new Date(data.created_at).toLocaleDateString('ja-JP')}`;
+
+    // Auto-detect rank
+    const rank = detectRankFromText(tweetText);
+    sfTweetData = { text: tweetText, author: authorName, handle: authorHandle, detected_rank: rank };
+
+    if (rank) {
+      document.getElementById('sfTweetDetect').innerHTML = `<span style="color:var(--ok)">${rank}位を検出 → 自動入力しました</span>`;
+      document.getElementById('sfRank').value = rank;
+    } else {
+      document.getElementById('sfTweetDetect').innerHTML = `<span style="color:var(--dim)">順位を自動検出できませんでした</span>`;
+    }
+    // Auto-fill name if empty
+    if (!document.getElementById('sfName').value.trim() && authorName) {
+      document.getElementById('sfName').value = authorName;
+    }
+  } catch(e) {
+    document.getElementById('sfTweetText').textContent = '取得失敗: ' + e.message;
+    sfTweetData = { text: '', author: '', handle: '', detected_rank: null };
+  }
+}
 
 function populateSubmitForm() {
   const sorted = Object.entries(allData.blocks)
@@ -550,7 +616,11 @@ async function submitResult() {
         name,
         team: document.getElementById('sfTeam').value.trim(),
         x_link: document.getElementById('sfXLink').value.trim(),
-        note: document.getElementById('sfNote').value.trim()
+        note: document.getElementById('sfNote').value.trim(),
+        tweet_text: sfTweetData.text,
+        tweet_author: sfTweetData.author,
+        tweet_handle: sfTweetData.handle,
+        detected_rank: sfTweetData.detected_rank
       })
     });
 
@@ -567,6 +637,8 @@ async function submitResult() {
     document.getElementById('sfTeam').value = '';
     document.getElementById('sfXLink').value = '';
     document.getElementById('sfNote').value = '';
+    document.getElementById('sfTweetPreview').style.display = 'none';
+    sfTweetData = { text: '', author: '', handle: '', detected_rank: null };
   } catch (e) {
     msg.className = 'sf-msg err';
     msg.textContent = '送信失敗: ' + e.message;
