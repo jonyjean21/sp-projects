@@ -37,3 +37,31 @@ if data:
     echo ""
   fi
 fi
+
+# ===== 大会情報キューの自動チェック =====
+T_QUEUE=$(curl -sf "${FIREBASE_URL}/tournament-queue.json?orderBy=%22status%22&equalTo=%22pending%22" 2>/dev/null || echo "{}")
+
+if [ "$T_QUEUE" != "{}" ] && [ "$T_QUEUE" != "null" ]; then
+  T_PENDING=$(echo "$T_QUEUE" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+if data:
+    for key, val in data.items():
+        title = val.get('title','(不明)')[:40]
+        src = val.get('source','')
+        print(f'  - {title} [{src}]')
+" 2>/dev/null)
+
+  if [ -n "$T_PENDING" ]; then
+    T_COUNT=$(echo "$T_QUEUE" | python3 -c "import sys,json; print(len(json.load(sys.stdin)))" 2>/dev/null)
+    echo ""
+    echo "===== AUTO-PROCESS: 大会情報 ====="
+    echo "未処理の大会情報が ${T_COUNT}件 検出されました。自動で処理してください:"
+    echo "$T_PENDING"
+    echo ""
+    echo "処理内容: /tournament queue の手順に従って一括処理"
+    echo "スキル: /tournament queue を実行すること"
+    echo "=================================="
+    echo ""
+  fi
+fi

@@ -1,10 +1,13 @@
 /**
  * 大会情報 RSS コレクター
  * molkky.jp + kokuchpro を毎日巡回 → Firebase /tournament-queue に push
+ * 重複チェック: Firebase /tournament-queue の全URLと照合
+ * 実行ログ: Firebase /tournament-collector-log に記録
  */
 
 const FIREBASE_URL = 'https://viisi-master-app-default-rtdb.firebaseio.com';
 const QUEUE_PATH = '/tournament-queue';
+const LOG_PATH = '/tournament-collector-log';
 
 const FEEDS = [
   {
@@ -14,7 +17,7 @@ const FEEDS = [
   },
   {
     name: 'こくちーず',
-    url: 'https://kokuchpro.com/feature/%E3%83%A2%E3%83%AB%E3%83%83%E3%82%AF/.rss',
+    url: 'https://www.kokuchpro.com/feature/%E3%83%A2%E3%83%AB%E3%83%83%E3%82%AF/.rss',
     filter: /モルック|mölkky|molkky/i // タイトルフィルタ
   }
 ];
@@ -23,32 +26,56 @@ const FEEDS = [
  * メイン処理: 全フィードを巡回して新規エントリをキューに追加
  */
 function collectTournaments() {
-  const seen = getSeenUrls_();
+  const startTime = new Date();
+  const seenUrls = getSeenUrlsFromFirebase_();
   let totalNew = 0;
+  let totalSkipped = 0;
+  const feedResults = [];
 
   FEEDS.forEach(feed => {
+    const result = { name: feed.name, entries: 0, newCount: 0, skipped: 0, error: null };
     try {
       const entries = fetchRSS_(feed);
-      let newCount = 0;
+      result.entries = entries.length;
 
       entries.forEach(entry => {
-        if (seen.has(entry.link)) return;
-        if (feed.filter && !feed.filter.test(entry.title)) return;
+        if (seenUrls.has(entry.link)) {
+          result.skipped++;
+          return;
+        }
+        if (feed.filter && !feed.filter.test(entry.title)) {
+          result.skipped++;
+          return;
+        }
 
         pushToQueue_(entry.title, entry.link, feed.name);
-        markSeen_(seen, entry.link);
-        newCount++;
+        seenUrls.add(entry.link);
+        result.newCount++;
       });
 
-      Logger.log(`${feed.name}: ${entries.length}件中 ${newCount}件が新規`);
-      totalNew += newCount;
+      totalNew += result.newCount;
+      totalSkipped += result.skipped;
+      Logger.log(`${feed.name}: ${entries.length}件中 ${result.newCount}件が新規, ${result.skipped}件スキップ`);
     } catch (e) {
+      result.error = e.message;
       Logger.log(`${feed.name} エラー: ${e.message}`);
     }
+    feedResults.push(result);
   });
 
-  saveSeenUrls_(seen);
-  Logger.log(`完了: 合計 ${totalNew}件の新規エントリをキューに追加`);
+  const endTime = new Date();
+  const durationSec = Math.round((endTime - startTime) / 1000);
+
+  // 実行ログをFirebaseに記録
+  writeLog_({
+    timestamp: startTime.toISOString(),
+    durationSec: durationSec,
+    totalNew: totalNew,
+    totalSkipped: totalSkipped,
+    feeds: feedResults
+  });
+
+  Logger.log(`完了: 合計 ${totalNew}件の新規エントリをキューに追加 (${durationSec}秒)`);
 }
 
 /**
@@ -125,25 +152,51 @@ function pushToQueue_(title, url, source) {
   Logger.log(`  → キュー追加: ${title.substring(0, 50)}`);
 }
 
-// === 重複チェック（PropertiesService） ===
+// === 重複チェック（Firebase /tournament-queue の全URL） ===
 
-const MAX_SEEN = 500;
+function getSeenUrlsFromFirebase_() {
+  const resp = UrlFetchApp.fetch(
+    `${FIREBASE_URL}${QUEUE_PATH}.json?shallow=true`,
+    { muteHttpExceptions: true }
+  );
 
-function getSeenUrls_() {
-  const props = PropertiesService.getScriptProperties();
-  const raw = props.getProperty('SEEN_URLS');
-  return new Set(raw ? JSON.parse(raw) : []);
+  const keys = JSON.parse(resp.getContentText());
+  if (!keys || typeof keys !== 'object') return new Set();
+
+  // 全エントリのURLを取得（バッチで取得）
+  const seenUrls = new Set();
+  const allKeys = Object.keys(keys);
+
+  // 100件ずつバッチ取得（GAS実行時間制限対策）
+  const batchSize = 100;
+  for (let i = 0; i < allKeys.length; i += batchSize) {
+    const batch = allKeys.slice(i, i + batchSize);
+    const requests = batch.map(key => ({
+      url: `${FIREBASE_URL}${QUEUE_PATH}/${key}/url.json`,
+      muteHttpExceptions: true
+    }));
+
+    const responses = UrlFetchApp.fetchAll(requests);
+    responses.forEach(r => {
+      const url = JSON.parse(r.getContentText());
+      if (url) seenUrls.add(url);
+    });
+  }
+
+  Logger.log(`Firebase既存URL: ${seenUrls.size}件を取得`);
+  return seenUrls;
 }
 
-function markSeen_(seenSet, url) {
-  seenSet.add(url);
-}
+// === 実行ログ ===
 
-function saveSeenUrls_(seenSet) {
-  const arr = Array.from(seenSet);
-  // FIFO: 古いものから削除して500件以内に
-  const trimmed = arr.length > MAX_SEEN ? arr.slice(arr.length - MAX_SEEN) : arr;
-  PropertiesService.getScriptProperties().setProperty('SEEN_URLS', JSON.stringify(trimmed));
+function writeLog_(logEntry) {
+  UrlFetchApp.fetch(`${FIREBASE_URL}${LOG_PATH}.json`, {
+    method: 'post',
+    contentType: 'application/json',
+    payload: JSON.stringify(logEntry),
+    muteHttpExceptions: true
+  });
+  Logger.log('実行ログをFirebaseに記録');
 }
 
 // === トリガー管理 ===
@@ -178,10 +231,22 @@ function testRun() {
 }
 
 /**
- * 記録済みURL一覧を確認（デバッグ用）
+ * 直近の実行ログを確認（デバッグ用）
  */
-function showSeenUrls() {
-  const seen = getSeenUrls_();
-  Logger.log(`記録済みURL: ${seen.size}件`);
-  seen.forEach(url => Logger.log(`  ${url}`));
+function showRecentLogs() {
+  const resp = UrlFetchApp.fetch(
+    `${FIREBASE_URL}${LOG_PATH}.json?orderBy=%22timestamp%22&limitToLast=5`,
+    { muteHttpExceptions: true }
+  );
+  const logs = JSON.parse(resp.getContentText());
+  if (!logs) {
+    Logger.log('ログなし');
+    return;
+  }
+  Object.entries(logs).forEach(([key, log]) => {
+    Logger.log(`${log.timestamp}: 新規${log.totalNew}件, スキップ${log.totalSkipped}件 (${log.durationSec}秒)`);
+    log.feeds.forEach(f => {
+      Logger.log(`  ${f.name}: ${f.entries}件中 ${f.newCount}件新規${f.error ? ' [エラー: ' + f.error + ']' : ''}`);
+    });
+  });
 }
