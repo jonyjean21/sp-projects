@@ -491,6 +491,7 @@ textarea{resize:vertical;min-height:60px}
     </div>
 
     <button class="btn btn-primary" onclick="saveEvent()">保存</button>
+    <button class="btn btn-outline" onclick="closeModal('eventModal')" style="margin-top:8px">キャンセル</button>
     <div id="eventDeleteBtn" class="hidden" style="margin-top:16px;text-align:center">
       <button class="btn btn-small" style="color:var(--danger);background:none" onclick="deleteEvent()">このイベントを削除</button>
     </div>
@@ -597,10 +598,10 @@ function showPage(page) {
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
-// Close modal on overlay click
+// Close modal on overlay click (skip fullscreen event modal)
 document.querySelectorAll('.modal-overlay').forEach(ov => {
   ov.addEventListener('click', e => {
-    if (e.target === ov) ov.classList.remove('open');
+    if (e.target === ov && ov.id !== 'eventModal') ov.classList.remove('open');
   });
 });
 
@@ -1539,7 +1540,7 @@ function renderRsvpForm() {
 
     <!-- 参加/不参加 -->
     <div class="form-label">${mem.name}は参加しますか？</div>
-    <div class="rsvp-choices" style="margin-bottom:16px">
+    <div class="rsvp-choices" style="margin-bottom:16px" id="rsvpAttendChoices">
       <div class="rsvp-choice ${att===true?'selected':''}" onclick="rsvpToggleAttending(true)">
         <div class="rsvp-choice-icon">✅</div>参加
       </div>
@@ -1563,7 +1564,7 @@ function renderRsvpForm() {
 
       <!-- 保護者 -->
       <div class="form-label">保護者も行きますか？</div>
-      <div class="rsvp-choices" style="margin-bottom:16px">
+      <div class="rsvp-choices" style="margin-bottom:16px" id="rsvpParentChoices">
         <div class="rsvp-choice ${parentComing===true?'selected':''}" onclick="rsvpToggleParent(true)">
           <div class="rsvp-choice-icon">👨</div>同行する
         </div>
@@ -1572,8 +1573,8 @@ function renderRsvpForm() {
         </div>
       </div>
 
-      <!-- 行く人数 -->
-      <div id="rsvpFamilySection">
+      <!-- 行く人数（親同行の場合のみ表示） -->
+      <div id="rsvpFamilySection" style="display:${parentComing===true?'':'none'}">
         <div class="form-label">行く人数（お子さん含む）</div>
         <div class="rsvp-number-choices" style="margin-bottom:16px" id="rsvpFamilyChoices">
           ${[1,2,3,4,5].map(n => `<div class="rsvp-num ${familyCount===n?'selected':''}"
@@ -1601,7 +1602,7 @@ function renderRsvpForm() {
       <div id="rsvpDriverSection" style="display:${transport==='drive'?'':'none'}">
         <div class="form-label">あと何人乗せられますか？${hasCar ? ' <span style="font-weight:400;color:var(--text-sub)">(提案: '+suggestedSeats+'人)</span>' : ''}</div>
         <div class="rsvp-number-choices" style="margin-bottom:12px;flex-wrap:wrap" id="rsvpSeatChoices">
-          ${[0,1,2,3,4,5].map(n => `<div class="rsvp-num ${(extraSeats||suggestedSeats)===n?'selected':''}"
+          ${[0,1,2,3,4,5].map(n => `<div class="rsvp-num ${(existing ? extraSeats : suggestedSeats)===n?'selected':''}"
             onclick="rsvpPickSeats(${n})">${n}</div>`).join('')}
         </div>
         ${availEq.length > 0 ? `
@@ -1626,10 +1627,17 @@ function renderRsvpForm() {
     <div id="rsvpInitSection" style="display:${att===null?'':'none'}">
       <button class="btn btn-outline" onclick="closeModal('rsvpModal')">キャンセル</button>
     </div>`;
+
+  // Fix #1: Initialize dataset from existing data so editing without re-clicking preserves values
+  if (att !== null) c.dataset.attending = att;
+  if (parentComing !== null) c.dataset.parentComing = parentComing;
+  c.dataset.familyCount = familyCount;
+  if (transport) c.dataset.transport = transport;
+  c.dataset.extraSeats = existing?.extra_seats ?? 0;
 }
 
 function rsvpToggleAttending(val) {
-  document.querySelectorAll('#rsvpContent > .rsvp-choices:first-of-type .rsvp-choice').forEach((el, i) => {
+  document.querySelectorAll('#rsvpAttendChoices .rsvp-choice').forEach((el, i) => {
     el.classList.toggle('selected', (i === 0 && val) || (i === 1 && !val));
   });
   document.getElementById('rsvpNotAttendSection').style.display = val === false ? '' : 'none';
@@ -1640,9 +1648,10 @@ function rsvpToggleAttending(val) {
 }
 
 function rsvpToggleParent(val) {
-  document.querySelectorAll('#rsvpAttendSection > .rsvp-choices:first-of-type .rsvp-choice').forEach((el, i) => {
+  document.querySelectorAll('#rsvpParentChoices .rsvp-choice').forEach((el, i) => {
     el.classList.toggle('selected', (i === 0 && val) || (i === 1 && !val));
   });
+  document.getElementById('rsvpFamilySection').style.display = val ? '' : 'none';
   document.getElementById('rsvpTransportSection').style.display = val ? '' : 'none';
   if (!val) {
     // Child only → auto ride, hide driver section
@@ -1678,7 +1687,7 @@ function rsvpPickSeats(n) {
 async function rsvpSubmit() {
   const c = document.getElementById('rsvpContent');
   const attending = c.dataset.attending === 'true';
-  const btn = c.querySelector('.btn-primary');
+  const btn = document.getElementById(attending ? 'rsvpSubmitBtn2' : 'rsvpSubmitBtn');
   if (btn) { btn.disabled = true; btn.textContent = '送信中...'; }
 
   try {
@@ -1848,7 +1857,8 @@ function runAutoAssign(eventId) {
     });
   });
 
-  // Step 3: Cross-zone matching
+  // Step 3: Cross-zone matching (re-sort after same-zone phase)
+  drivers.sort((a, b) => b.available_seats - a.available_seats);
   const remaining = [...unassigned];
   remaining.forEach(rider => {
     if (!unassigned.includes(rider)) return;
@@ -1909,7 +1919,7 @@ function showAssignmentResult() {
       d.passengers.forEach((p, pi) => {
         const detail = [];
         if (p.with_parent) detail.push('保護者同行');
-        if (p.family_count > 2) detail.push(`${p.family_count}人`);
+        if (p.family_count > 1) detail.push(`${p.family_count}人`);
         html += `<div class="assign-passenger">
           <span>${p.name}${detail.length ? ' ('+detail.join('・')+')' : ''}</span>
           ${isAdmin ? `<span class="passenger-move-btn" onclick="openMoveRider('${currentAssignEventId}',${di},${pi})">移動</span>` : ''}
@@ -1997,9 +2007,8 @@ function moveRiderToUnassigned(fromIdx, pIdx) {
   const rider = a.drivers[fromIdx].passengers.splice(pIdx, 1)[0];
   a.drivers[fromIdx].available_seats += rider.seats_needed;
   a.unassigned.push(rider);
-  if (!a.warnings.some(w => w.includes('未割り当て'))) {
-    a.warnings.push(`⚠ 席が足りません: ${a.unassigned.length}人が未割り当て`);
-  }
+  a.warnings = a.warnings.filter(w => !w.includes('未割り当て'));
+  a.warnings.push(`⚠ 席が足りません: ${a.unassigned.length}人が未割り当て`);
   closeModal('moveRiderModal');
   showAssignmentResult();
 }
@@ -2154,10 +2163,12 @@ function viewAssignment(eventId) {
     const mem = membersData[did];
     if (!mem) return;
     const rsvp = e.rsvp?.[did];
+    const eqSeatsUsed = (d.equipment || []).reduce((s, eid) => s + (equipmentTypesData[eid]?.seats_used || 0), 0);
+    const passengerSeats = (d.passengers || []).reduce((s,p) => s + (p.seats_needed || 1), 0);
     drivers.push({
       id: did, name: mem.name, zone_id: mem.zone_id || '',
       original_seats: rsvp?.extra_seats || 0,
-      available_seats: (rsvp?.extra_seats || 0) - (d.passengers || []).reduce((s,p) => s + (p.seats_needed || 1), 0),
+      available_seats: (rsvp?.extra_seats || 0) - eqSeatsUsed - passengerSeats,
       assigned_equipment: d.equipment || [],
       passengers: (d.passengers || []).map(p => ({
         id: p.id, name: p.name, with_parent: p.with_parent,
@@ -2169,9 +2180,15 @@ function viewAssignment(eventId) {
   const directs = Object.keys(a.direct || {}).map(did => ({
     id: did, name: membersData[did]?.name || did
   }));
-  const unassigned = Object.keys(a.unassigned || {}).map(rid => ({
-    id: rid, name: membersData[rid]?.name || rid, seats_needed: 1
-  }));
+  const unassigned = Object.keys(a.unassigned || {}).map(rid => {
+    const rRsvp = e.rsvp?.[rid];
+    return {
+      id: rid, name: membersData[rid]?.name || rid,
+      seats_needed: rRsvp ? calcSeatsNeeded(rid, rRsvp) : 1,
+      with_parent: rRsvp?.parent_coming || false,
+      family_count: rRsvp?.family_count || 1
+    };
+  });
 
   currentAssignment = { drivers, directs, unassigned, warnings: a.warnings || [] };
   currentAssignEventId = eventId;
