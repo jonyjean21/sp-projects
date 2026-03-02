@@ -500,6 +500,11 @@ textarea{resize:vertical;min-height:60px}
       <input type="text" id="eventLocation" placeholder="例: ○○グラウンド" oninput="showLocSuggestions()" onfocus="showLocSuggestions()" autocomplete="off">
       <div class="loc-suggestions" id="locSuggestions"></div>
     </div>
+    <div class="form-group">
+      <label class="form-label">台数上限</label>
+      <input type="number" id="eventMaxCars" min="0" max="20" placeholder="制限なし" inputmode="numeric" style="width:120px">
+      <div style="font-size:12px;color:var(--text-light);margin-top:4px">会場の駐車場制限。空欄=制限なし</div>
+    </div>
     <div class="form-group" id="eventEquipSection">
       <label class="form-label">必要機材</label>
       <div id="eventEquipList"></div>
@@ -1234,16 +1239,22 @@ function renderEventCard(id, e, isPast) {
 
     // Admin dashboard
     if (isAdmin) {
+      const maxCars = e.max_cars || 0;
+      const overCars = maxCars > 0 && drivers > maxCars;
       const seatBalance = driverSeats - riderSeats;
       const seatStatus = seatBalance >= 0
         ? `<span style="color:var(--success)">✅ 席OK (${seatBalance}席余裕)</span>`
         : `<span style="color:var(--danger)">⚠ ${Math.abs(seatBalance)}席不足</span>`;
+      const carLimit = maxCars > 0 ? ` <span style="font-size:11px;color:${overCars?'var(--danger)':'var(--text-light)'}">/ 上限${maxCars}台</span>` : '';
       html += `<div style="font-size:13px;margin:8px 0;display:flex;flex-wrap:wrap;gap:8px">
-        <span>🚗 ${drivers}台(${driverSeats}席)</span>
+        <span>🚗 ${drivers}台(${driverSeats}席)${carLimit}</span>
         <span>🙋 ${riders}人(${riderSeats}席必要)</span>
         <span>🏃 ${directs}人</span>
         ${seatStatus}
       </div>`;
+      if (overCars) {
+        html += `<div style="font-size:12px;color:var(--danger);margin-bottom:6px">⚠ 台数制限${maxCars}台に対し${drivers}台回答（自動配車で${maxCars}台に絞り込みます）</div>`;
+      }
     }
 
     // Nudge button for unanswered members
@@ -1347,7 +1358,9 @@ function renderRsvpList(eventId, e) {
 
   // Drivers
   if (groups.drivers.length) {
-    html += `<div class="rsvp-section-header">🚗 車出し <span class="rsvp-section-count">(${groups.drivers.length}台)</span></div>`;
+    const maxC = e.max_cars || 0;
+    const limitLabel = maxC > 0 ? ` / 上限${maxC}台` : '';
+    html += `<div class="rsvp-section-header">🚗 車出し <span class="rsvp-section-count">(${groups.drivers.length}台${limitLabel})</span></div>`;
     groups.drivers.forEach(([mid, m, r]) => {
       const fc = r.family_count || (r.parent_coming ? 2 : 1);
       const seats = r.extra_seats || 0;
@@ -1482,6 +1495,7 @@ function openEventModal(eventId) {
     document.getElementById('eventDate').value = e.date || '';
     document.getElementById('eventMeetTime').value = e.meet_time || '';
     document.getElementById('eventLocation').value = e.location || '';
+    document.getElementById('eventMaxCars').value = e.max_cars || '';
     if (e.equipment_needed) {
       Object.entries(e.equipment_needed).forEach(([eid, qty]) => {
         const inp = document.getElementById('eventEq_' + eid);
@@ -1494,6 +1508,7 @@ function openEventModal(eventId) {
     document.getElementById('eventDate').value = '';
     document.getElementById('eventMeetTime').value = '';
     document.getElementById('eventLocation').value = '';
+    document.getElementById('eventMaxCars').value = '';
   }
   openModal('eventModal');
 }
@@ -1550,6 +1565,8 @@ async function saveEvent() {
     }
   });
 
+  const maxCars = parseInt(document.getElementById('eventMaxCars').value) || 0;
+
   const editId = document.getElementById('eventEditId').value;
   const data = {
     title,
@@ -1557,6 +1574,7 @@ async function saveEvent() {
     date,
     meet_time: meetTime,
     location,
+    max_cars: maxCars,
     equipment_needed: equipNeeded
   };
 
@@ -1951,6 +1969,29 @@ function runAutoAssign(eventId) {
       warnings.push(`⚠ ${eqType.name}${qty}つ必要ですが${qty - remaining}つしか確保できません`);
     }
   });
+
+  // Step 1.5: Car limit — keep top max_cars drivers, rest become riders
+  const maxCars = e.max_cars || 0;
+  if (maxCars > 0 && drivers.length > maxCars) {
+    // Sort: equipment carriers first, then by available_seats desc
+    drivers.sort((a, b) => {
+      const aEq = (a.assigned_equipment && a.assigned_equipment.length) ? 1 : 0;
+      const bEq = (b.assigned_equipment && b.assigned_equipment.length) ? 1 : 0;
+      if (bEq !== aEq) return bEq - aEq;
+      return b.available_seats - a.available_seats;
+    });
+    const demoted = drivers.splice(maxCars);
+    const demotedNames = demoted.map(d => d.name);
+    demoted.forEach(d => {
+      const r = rsvp[d.id];
+      const fc = r ? (r.family_count || (r.parent_coming ? 2 : 1)) : 1;
+      riders.push({
+        id: d.id, name: d.name, zone_id: d.zone_id,
+        seats_needed: fc, with_parent: r?.parent_coming || false, family_count: fc
+      });
+    });
+    warnings.push(`⚠ 台数制限${maxCars}台: ${demotedNames.join('・')}を乗せてに変更`);
+  }
 
   // Step 2: Same-zone matching
   const unassigned = [...riders];
