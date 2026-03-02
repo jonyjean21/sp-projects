@@ -87,13 +87,53 @@ const POST_TEMPLATES = {
       style: "インタラクティブ",
     },
   ],
+
+  // === Claude Code 解説投稿（週2〜3回）★ブルーオーシャン ===
+  // 日本語でClaude Codeのリアルな使い方を発信してる人がほぼゼロ
+  // 実際に使って稼いでいるSP本人が書くから信頼性が高い
+  claudecode: [
+    {
+      topic: "Claude Codeのターミナル版とブラウザ版の違い",
+      style: "知られていない事実を明かす系",
+      noteUrl: true, // note記事への誘導あり
+    },
+    {
+      topic: "AIは何も覚えていない。だからSESSION-HANDOFF.mdに全部書く",
+      style: "逆説・驚き系",
+      noteUrl: true,
+    },
+    {
+      topic: "Claude Codeで副業するときにやった最初の設計ミス",
+      style: "失敗談・共感系",
+      noteUrl: true,
+    },
+    {
+      topic: "cronとClaude Codeを組み合わせると何が全自動になるか",
+      style: "具体的なTips",
+      noteUrl: true,
+    },
+    {
+      topic: "CLAUDE.mdに何を書くかで、AIの動きが全部変わる",
+      style: "上級者向けTips",
+      noteUrl: true,
+    },
+    {
+      topic: "Claude Codeで月に稼いだ金額と、かかったAPI費用を公開する",
+      style: "実績・数字公開系",
+      noteUrl: true,
+    },
+  ],
 };
 
 // === 今日の投稿タイプを決定 ===
 function getTodayPostType() {
   const day = new Date().getDay();
-  // 月水金 → affiliate, 火木土 → info, 日 → engagement
-  if ([1, 3, 5].includes(day)) return "affiliate";
+  // 月木 → claudecode（ブルーオーシャン枠）
+  // 火金 → affiliate（収益枠）
+  // 水土 → info（モルック情報枠）
+  // 日   → engagement
+  if ([1, 4].includes(day)) return "claudecode";
+  if ([2, 5].includes(day)) return "affiliate";
   if ([0].includes(day)) return "engagement";
   return "info";
 }
@@ -104,10 +144,38 @@ async function generatePost(type, template) {
     ? `\nhttps://www.amazon.co.jp/s?k=${encodeURIComponent(template.affiliateProduct)}&tag=${CONFIG.amazonTag}`
     : "";
 
-  const hashtags =
-    "\n\n#モルック #モルックHUB #アウトドア #スポーツ #モルック大会";
+  // Claude Code解説投稿はnoteへの誘導リンク付き
+  const noteLink = template.noteUrl
+    ? "\n\n詳しくはnoteに書きました👇\n[note記事URLをここに貼る]"
+    : "";
 
-  const prompt = `
+  const hashtags = type === "claudecode"
+    ? "\n\n#ClaudeCode #AI副業 #副業 #AIツール #自動化"
+    : "\n\n#モルック #モルックHUB #アウトドア #スポーツ #モルック大会";
+
+  // Claude Code解説投稿専用プロンプト
+  const claudecodePrompt = `
+あなたはClaude Codeを使いこなして副業収入を得ているエンジニア「SP」です。
+Claude Codeのリアルな使い方・つまずきポイント・稼ぎ方を発信しています。
+
+以下の条件でXの投稿文を作成してください:
+
+**テーマ**: ${template.topic}
+**スタイル**: ${template.style}
+
+## 要件
+- 文字数: 120〜200文字（ハッシュタグ除く）
+- 読者: Claude Code・AI副業に興味がある日本人エンジニア・ビジネスマン
+- トーン: 実際にやってる人間のリアルな言葉。教科書的でなく、体験談ベース
+- 「知らなかった」「そうだったのか」と思わせる具体的な内容
+- 絵文字: 1〜2個（使いすぎない）
+- URLやハッシュタグは含めない（後で追加する）
+- 「〜かもしれません」は使わない。断言する
+
+投稿文だけ出力してください（説明不要）。
+`;
+
+  const generalPrompt = `
 あなたはモルック（フィンランドのアウトドアゲーム）専門のSNSライターです。
 
 以下の条件でXの投稿文を作成してください:
@@ -129,6 +197,8 @@ ${template.cta ? `**CTA**: ${template.cta}` : ""}
 投稿文だけ出力してください（説明不要）。
 `;
 
+  const prompt = type === "claudecode" ? claudecodePrompt : generalPrompt;
+
   const message = await client.messages.create({
     model: CONFIG.model,
     max_tokens: 512,
@@ -136,7 +206,7 @@ ${template.cta ? `**CTA**: ${template.cta}` : ""}
   });
 
   const baseText = message.content[0].text.trim();
-  const fullPost = baseText + affiliateLink + hashtags;
+  const fullPost = baseText + affiliateLink + noteLink + hashtags;
 
   return fullPost;
 }
