@@ -1276,8 +1276,9 @@ function renderEventCard(id, e, isPast) {
     }
     if (selectedMemberId && e.status === 'assigned') {
       if (myRsvp) html += renderMyRsvpSummary(myRsvp);
-      html += `<div style="margin-top:10px">
-        <button class="btn btn-secondary btn-small" onclick="viewAssignment('${id}')">🚗 配車表を見る</button>
+      html += `<div class="btn-row" style="margin-top:10px">
+        <button class="btn btn-secondary btn-small" onclick="viewAssignment('${id}')">🚗 配車表</button>
+        <button class="btn btn-outline btn-small" onclick="showLineText('${id}')">📋 LINE共有</button>
       </div>`;
       html += `<button class="btn btn-outline btn-small" onclick="startRsvp('${id}')" style="margin-top:8px">回答を変更 ⚠</button>`;
     }
@@ -1285,13 +1286,6 @@ function renderEventCard(id, e, isPast) {
     // Admin: auto-assign button
     if (isAdmin && e.status === 'open' && drivers > 0) {
       html += `<button class="btn btn-secondary" onclick="runAutoAssign('${id}')" style="margin-top:12px">🚗 自動配車を実行</button>`;
-    }
-    // Admin: view/manage confirmed assignment
-    if (isAdmin && e.status === 'assigned') {
-      html += `<div class="btn-row" style="margin-top:10px">
-        <button class="btn btn-secondary btn-small" onclick="viewAssignment('${id}')">🚗 配車表</button>
-        <button class="btn btn-outline btn-small" onclick="showLineText('${id}')">📋 LINE共有</button>
-      </div>`;
     }
   }
 
@@ -2095,8 +2089,11 @@ function showAssignmentResult() {
         <button class="btn btn-outline" onclick="resetAssignment('${currentAssignEventId}')" style="margin-top:8px">🔄 やり直す</button>
         <button class="btn btn-outline" onclick="closeModal('assignModal')" style="margin-top:8px">閉じる</button>`;
     } else {
-      actions = `<button class="btn btn-primary" onclick="confirmAssignment('${currentAssignEventId}')">✅ 配車を確定</button>
-        <button class="btn btn-secondary" onclick="showLineText('${currentAssignEventId}')" style="margin-top:8px">📋 LINE用テキスト</button>
+      const hasUnassigned = a.unassigned && a.unassigned.length > 0;
+      actions = hasUnassigned
+        ? `<div style="background:#fce4ec;border:1px solid var(--danger);border-radius:var(--radius);padding:10px 14px;margin-bottom:10px;font-size:14px;color:var(--danger)">⚠ ${a.unassigned.length}人が未割り当てのため確定できません。車を増やすか回答を変更してください。</div>`
+        : `<button class="btn btn-primary" onclick="confirmAssignment('${currentAssignEventId}')">✅ 配車を確定</button>`;
+      actions += `<button class="btn btn-secondary" onclick="showLineText('${currentAssignEventId}')" style="margin-top:8px">📋 LINE用テキスト</button>
         <button class="btn btn-outline" onclick="closeModal('assignModal')" style="margin-top:8px">キャンセル</button>`;
     }
   } else {
