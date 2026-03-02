@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#2e7d32">
 <title>チームライド</title>
@@ -57,8 +57,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Segoe UI',san
 .btn-secondary{background:var(--accent-light);color:var(--accent)}
 .btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text-sub)}
 .btn-danger{background:var(--danger);color:#fff}
-.btn-small{padding:8px 16px;font-size:14px;width:auto}
-.btn-icon{width:40px;height:40px;padding:0;border-radius:50%;font-size:20px}
+.btn:disabled{opacity:0.5;pointer-events:none}
+.btn-small{padding:10px 16px;font-size:14px;width:auto;min-height:44px}
+.btn-icon{width:44px;height:44px;padding:0;border-radius:50%;font-size:20px}
 .btn+.btn{margin-top:8px}
 .btn-row{display:flex;gap:8px}.btn-row .btn{flex:1}
 
@@ -114,6 +115,8 @@ textarea{resize:vertical;min-height:60px}
   max-height:85vh;overflow-y:auto;padding:20px 20px 32px;
   padding-bottom:calc(32px + env(safe-area-inset-bottom));animation:slideUp .25s ease}
 @media(min-width:640px){.modal{max-width:640px}}
+#eventModal{align-items:stretch}
+#eventModal .modal{border-radius:0;max-height:100vh;min-height:100vh;padding-top:0}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;
   margin:0 auto 16px}
@@ -263,6 +266,7 @@ textarea{resize:vertical;min-height:60px}
   <div class="member-select-title">お子さんを選んでください</div>
   <div class="member-select-sub">あなたのお子さんの名前をタップしてください</div>
   <div class="member-select-list" id="memberSelectList"></div>
+  <button class="btn btn-outline btn-small" onclick="closeMemberSelect()" style="margin-top:16px;max-width:400px">戻る</button>
 </div>
 
 <!-- Main App -->
@@ -820,7 +824,12 @@ function selectMember(id) {
 // ── Settings ──
 function saveTeamName() {
   const v = document.getElementById('settingsTeamName').value.trim();
-  if (v) db.ref(ROOT + '/config/team_name').set(v);
+  if (v) { db.ref(ROOT + '/config/team_name').set(v); showToast('保存しました'); }
+}
+
+function closeMemberSelect() {
+  document.getElementById('memberSelectOverlay').classList.add('hidden');
+  if (selectedMemberId) showMainApp();
 }
 
 // ── Members ──
@@ -1119,7 +1128,6 @@ function renderSettings() {
 function renderHome() {
   autoMarkDoneEvents();
   const c = document.getElementById('homeContent');
-  const now = new Date().toISOString().slice(0,10);
   const active = Object.entries(eventsData)
     .filter(([, e]) => e.status === 'open' || e.status === 'assigned')
     .sort((a, b) => (a[1].date || '').localeCompare(b[1].date || ''));
@@ -1396,8 +1404,14 @@ function showLocSuggestions() {
     .sort((a,b) => (b[1].used_count||0) - (a[1].used_count||0))
     .slice(0, 5);
   if (matches.length === 0) { box.classList.remove('open'); return; }
-  box.innerHTML = matches.map(([,l]) =>
-    `<div class="loc-suggest-item" onclick="pickLocation('${l.name}')">${l.name}</div>`).join('');
+  box.innerHTML = '';
+  matches.forEach(([,l]) => {
+    const div = document.createElement('div');
+    div.className = 'loc-suggest-item';
+    div.textContent = l.name;
+    div.addEventListener('click', () => pickLocation(l.name));
+    box.appendChild(div);
+  });
   box.classList.add('open');
 }
 
@@ -1586,13 +1600,13 @@ function renderRsvpForm() {
       <div id="rsvpTransportSection" style="display:${parentComing===true?'':'none'}">
         <div class="form-label">移動手段</div>
         <div class="rsvp-choices" style="margin-bottom:16px">
-          <div class="rsvp-choice ${transport==='drive'?'selected':''}" onclick="rsvpPickTransport('drive')">
+          <div class="rsvp-choice ${transport==='drive'?'selected':''}" data-transport="drive" onclick="rsvpPickTransport('drive')">
             <div class="rsvp-choice-icon">🚗</div>車を出す
           </div>
-          <div class="rsvp-choice ${transport==='ride'?'selected':''}" onclick="rsvpPickTransport('ride')">
+          <div class="rsvp-choice ${transport==='ride'?'selected':''}" data-transport="ride" onclick="rsvpPickTransport('ride')">
             <div class="rsvp-choice-icon">🙋</div>乗せて
           </div>
-          <div class="rsvp-choice ${transport==='direct'?'selected':''}" onclick="rsvpPickTransport('direct')">
+          <div class="rsvp-choice ${transport==='direct'?'selected':''}" data-transport="direct" onclick="rsvpPickTransport('direct')">
             <div class="rsvp-choice-icon">🏃</div>現地集合
           </div>
         </div>
@@ -1671,9 +1685,7 @@ function rsvpPickFamily(n) {
 
 function rsvpPickTransport(t) {
   document.querySelectorAll('#rsvpTransportSection .rsvp-choice').forEach(el => {
-    el.classList.toggle('selected', el.textContent.includes(
-      t === 'drive' ? '車を出す' : t === 'ride' ? '乗せて' : '現地集合'
-    ));
+    el.classList.toggle('selected', el.dataset.transport === t);
   });
   document.getElementById('rsvpDriverSection').style.display = t === 'drive' ? '' : 'none';
   document.getElementById('rsvpContent').dataset.transport = t;
@@ -1751,7 +1763,7 @@ function generateNudgeText(eventId) {
   }
 
   const dateStr = formatEventDate(e.date);
-  const text = `【出欠未回答のお知らせ】\n⚽ ${dateStr} ${e.title}\nまだ回答がありません:\n${unanswered.map(n => '・' + n).join('\n')}\nアプリから回答をお願いします\nhttps://jonyjean21.github.io/sp-projects/teamride/`;
+  const text = `【出欠未回答のお知らせ】\n⚽ ${dateStr} ${e.title}\nまだ回答がありません:\n${unanswered.map(n => '・' + n).join('\n')}\nアプリから回答をお願いします\n${window.location.href.split('?')[0]}`;
 
   navigator.clipboard.writeText(text).then(() => {
     showToast(`催促テキストをコピーしました（${unanswered.length}人未回答）`);
