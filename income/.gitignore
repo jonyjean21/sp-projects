@@ -1,0 +1,13 @@
+# 絶対にコミットしない
+.env
+*.env
+.env.local
+.env.*
+
+# 生成物（大きいのでgitignore）
+node_modules/
+logs/
+*.log
+
+# macOS
+.DS_Store
