@@ -15,6 +15,9 @@
 
 set -e
 
+# Node.js パスを明示的に設定
+export PATH="/usr/local/bin:$PATH"
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOG_DIR="$SCRIPT_DIR/logs"
 mkdir -p "$LOG_DIR"
@@ -26,30 +29,41 @@ log() {
   echo "[$(date '+%H:%M:%S')] $1" | tee -a "$LOG_FILE"
 }
 
-# === APIキー確認 ===
+# === 環境変数読み込み + チェック ===
 check_env() {
+  # .env を自動読み込み
+  if [ -f "$SCRIPT_DIR/.env" ]; then
+    set -a
+    source "$SCRIPT_DIR/.env"
+    set +a
+  fi
+
   if [ -z "$ANTHROPIC_API_KEY" ]; then
     log "❌ ANTHROPIC_API_KEY が設定されていません"
-    log "   export ANTHROPIC_API_KEY=sk-ant-... を実行してください"
+    log "   income/.env に ANTHROPIC_API_KEY=sk-ant-... を設定してください"
     exit 1
   fi
-  log "✅ 環境変数 OK"
+  log "✅ 環境変数 OK (ANTHROPIC_API_KEY設定済み)"
 }
 
 # === 朝の処理 (9:00) ===
 morning_tasks() {
   log "🌅 朝の処理開始"
 
-  # 1. X 自動投稿（アフィリエイト系）
-  log "📣 X自動投稿 (朝)"
-  node "$SCRIPT_DIR/06-x-auto-post/x-affiliate-poster.js" --type=affiliate 2>&1 | tee -a "$LOG_FILE" || log "⚠️  X投稿スキップ"
-
-  # 2. MOLKKY HUB 記事生成（週3回）
+  # 1. MOLKKY HUB 記事生成 → WP自動下書き投稿（週3回）
   DAY_OF_WEEK=$(date +%u)
   if [ "$DAY_OF_WEEK" -eq 1 ] || [ "$DAY_OF_WEEK" -eq 3 ] || [ "$DAY_OF_WEEK" -eq 5 ]; then
-    log "📝 MOLKKY HUB 記事生成"
+    log "📝 MOLKKY HUB 記事生成 → WP下書き投稿"
     node "$SCRIPT_DIR/01-molkky-affiliate/article-generator.js" 2>&1 | tee -a "$LOG_FILE" || log "⚠️  記事生成スキップ"
   fi
+
+  # 2. クラウドワークス案件スキャン + 提案文生成（毎日）
+  log "💼 クラウドワークス 提案文生成"
+  node "$SCRIPT_DIR/tools/crowdworks-proposal-generator.js" 2>&1 | tee -a "$LOG_FILE" || log "⚠️  CWスキャンスキップ"
+
+  # 3. X投稿文生成 → Buffer用ファイルに追記（毎日）
+  log "📣 X投稿文生成 (Buffer用)"
+  node "$SCRIPT_DIR/06-x-auto-post/x-affiliate-poster.js" 2>&1 | tee -a "$LOG_FILE" || log "⚠️  X投稿文生成スキップ"
 
   log "✅ 朝の処理完了"
 }

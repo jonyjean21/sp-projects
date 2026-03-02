@@ -23,12 +23,13 @@ const client = new Anthropic({
 
 // === 設定 ===
 const CONFIG = {
-  model: "claude-opus-4-6",
+  model: "claude-haiku-4-5-20251001", // haiku: opus比50倍安い ($0.001/記事)
   wpApiUrl: process.env.WP_API_URL || "https://molkky-hub.com/wp-json/wp/v2",
   wpUsername: process.env.WP_USERNAME,
-  wpPassword: process.env.WP_APP_PASSWORD, // WordPressアプリパスワード
+  wpPassword: process.env.WP_APP_PASSWORD,
   amazonAssociateTag: process.env.AMAZON_ASSOCIATE_TAG || "molkkyhub-22",
   outputDir: "./generated-articles",
+  usedKeywordsFile: "./used-keywords.json",
 };
 
 // === アフィリエイト商品データ ===
@@ -192,6 +193,11 @@ async function main() {
     fs.mkdirSync(CONFIG.outputDir, { recursive: true });
   }
 
+  // 使用済みキーワード管理
+  const usedKeywords = fs.existsSync(CONFIG.usedKeywordsFile)
+    ? JSON.parse(fs.readFileSync(CONFIG.usedKeywordsFile, "utf8"))
+    : [];
+
   // キーワードを選択（引数 or 優先度順に未使用を選択）
   let targetKeyword;
   let targetIntent;
@@ -200,9 +206,11 @@ async function main() {
     targetKeyword = keywordArg;
     targetIntent = "info";
   } else {
-    // 優先度順に1つ選ぶ
+    // 優先度順に未使用キーワードを選ぶ
     const sorted = KEYWORD_DATABASE.sort((a, b) => a.priority - b.priority);
-    const selected = sorted[0]; // TODO: 使用済みキーワードを除外するロジック
+    const unused = sorted.filter(k => !usedKeywords.includes(k.keyword));
+    const pool = unused.length > 0 ? unused : sorted; // 全使用済みならリセット
+    const selected = pool[0];
     targetKeyword = selected.keyword;
     targetIntent = selected.intent;
   }
@@ -220,18 +228,23 @@ async function main() {
   fs.writeFileSync(filepath, article);
   console.log(`✅ 記事保存: ${filepath}`);
 
-  // WordPress投稿（オプション）
-  if (shouldPublish) {
+  // WordPress投稿（--no-wp フラグがない限り常に実行）
+  if (!args.includes("--no-wp")) {
     try {
       const result = await postToWordPress(title, article);
       if (result) {
-        console.log(
-          `✅ WP下書き投稿完了: ${result.link || "投稿ID: " + result.id}`
-        );
+        console.log(`✅ WP下書き投稿完了: ID=${result.id} ${result.link || ""}`);
+        console.log(`   → 確認: https://molkky-hub.com/wp-admin/post.php?post=${result.id}&action=edit`);
       }
     } catch (e) {
       console.error(`❌ WP投稿エラー: ${e.message}`);
     }
+  }
+
+  // 使用済みキーワードを記録
+  if (!usedKeywords.includes(targetKeyword)) {
+    usedKeywords.push(targetKeyword);
+    fs.writeFileSync(CONFIG.usedKeywordsFile, JSON.stringify(usedKeywords, null, 2));
   }
 
   console.log("\n📊 生成完了:");
@@ -239,6 +252,7 @@ async function main() {
   console.log(`   タイトル: ${title}`);
   console.log(`   文字数: 約${article.length}文字`);
   console.log(`   ファイル: ${filepath}`);
+  console.log(`   残りキーワード: ${KEYWORD_DATABASE.length - usedKeywords.length}件`);
 }
 
 main().catch(console.error);

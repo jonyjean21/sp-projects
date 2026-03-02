@@ -26,14 +26,11 @@ const client = new Anthropic({
 });
 
 const CONFIG = {
-  model: "claude-opus-4-6",
+  model: "claude-haiku-4-5-20251001", // haiku: 50倍安い、X投稿文なら品質十分
   amazonTag: process.env.AMAZON_ASSOCIATE_TAG || "molkkyhub-22",
   historyFile: "./post-history.json",
-  // Twitter API v2 設定
-  twitterApiKey: process.env.TWITTER_API_KEY,
-  twitterApiSecret: process.env.TWITTER_API_SECRET,
-  twitterAccessToken: process.env.TWITTER_ACCESS_TOKEN,
-  twitterAccessSecret: process.env.TWITTER_ACCESS_SECRET,
+  // Buffer向けキュー出力（Twitter API不要）
+  bufferQueueFile: "./generated/buffer-queue.txt",
 };
 
 // === 投稿テンプレート（ローテーション）===
@@ -211,36 +208,16 @@ ${template.cta ? `**CTA**: ${template.cta}` : ""}
   return fullPost;
 }
 
-// === Twitter API v2 で投稿 ===
-async function postToTwitter(text) {
-  if (
-    !CONFIG.twitterApiKey ||
-    !CONFIG.twitterApiSecret ||
-    !CONFIG.twitterAccessToken ||
-    !CONFIG.twitterAccessSecret
-  ) {
-    console.log("⚠️  Twitter API認証情報なし → テストモード");
-    return null;
-  }
+// === Buffer キューにファイル出力（Twitter API不要）===
+// Bufferの無料プランで週1回まとめてスケジュール投稿する設計
+function saveToBufferQueue(text) {
+  const dir = path.dirname(CONFIG.bufferQueueFile);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
-  // OAuth 1.0a 署名（実装が複雑なため、twitter-api-v2 ライブラリ推奨）
-  // npm install twitter-api-v2 が必要
-  try {
-    const { TwitterApi } = await import("twitter-api-v2");
-    const twitterClient = new TwitterApi({
-      appKey: CONFIG.twitterApiKey,
-      appSecret: CONFIG.twitterApiSecret,
-      accessToken: CONFIG.twitterAccessToken,
-      accessSecret: CONFIG.twitterAccessSecret,
-    });
-
-    const result = await twitterClient.v2.tweet(text);
-    return result;
-  } catch (e) {
-    console.error("Twitter API エラー:", e.message);
-    console.log("📌 twitter-api-v2 をインストール: npm install twitter-api-v2");
-    return null;
-  }
+  const timestamp = new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" });
+  const entry = `\n===== ${timestamp} =====\n${text}\n`;
+  fs.appendFileSync(CONFIG.bufferQueueFile, entry);
+  return CONFIG.bufferQueueFile;
 }
 
 // === 投稿履歴管理 ===
@@ -282,21 +259,20 @@ async function main() {
   console.log(`文字数: ${post.length}文字`);
 
   if (isDryRun) {
-    console.log("\n✅ ドライランモード: 投稿しません");
+    console.log("\n✅ ドライランモード: ファイルに保存しません");
     return;
   }
 
-  // Twitter投稿
-  const result = await postToTwitter(post);
+  // Bufferキューに保存（Twitter API不要）
+  const queueFile = saveToBufferQueue(post);
+  console.log(`\n📁 Buffer用に保存: ${queueFile}`);
+  console.log(`   → 週1回Bufferを開いてコピペでスケジュール投稿`);
+  console.log(`   → https://buffer.com/`);
 
-  if (result) {
-    console.log(`\n✅ 投稿完了! Tweet ID: ${result.data?.id}`);
-  } else {
-    // ファイルに保存（後で手動投稿 or 別の方法で投稿）
-    const logFile = `./pending-posts-${new Date().toISOString().split("T")[0]}.txt`;
-    fs.appendFileSync(logFile, post + "\n\n---\n\n");
-    console.log(`\n📁 投稿文を保存: ${logFile}`);
-  }
+  // 件数表示
+  const queueContent = fs.readFileSync(queueFile, "utf8");
+  const count = (queueContent.match(/=====/g) || []).length / 2;
+  console.log(`   → 現在のキュー: ${count}件`);
 
   // 履歴保存
   const history = loadHistory();

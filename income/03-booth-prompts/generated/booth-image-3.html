@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>BOOTH Image 3 - Categories</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Source+Code+Pro:wght@400;700&display=swap');
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { width: 720px; height: 720px; overflow: hidden; }
+.card {
+  width: 720px;
+  height: 720px;
+  background: #0a0e27;
+  padding: 28px 32px;
+  font-family: 'Noto Sans JP', sans-serif;
+  position: relative;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 36px, rgba(212,160,23,0.02) 36px, rgba(212,160,23,0.02) 37px),
+    repeating-linear-gradient(90deg, transparent, transparent 36px, rgba(212,160,23,0.02) 36px, rgba(212,160,23,0.02) 37px);
+}
+.header {
+  text-align: center;
+  margin-bottom: 18px;
+  position: relative;
+  z-index: 1;
+}
+.header-title {
+  font-size: 20px;
+  font-weight: 900;
+  color: #f5f5f5;
+  margin-bottom: 4px;
+}
+.header-sub {
+  font-size: 12px;
+  color: #d4a017;
+  letter-spacing: 2px;
+  font-weight: 700;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+}
+.cat-card {
+  border-radius: 10px;
+  padding: 14px 16px;
+  position: relative;
+  overflow: hidden;
+}
+.cat-card::before {
+  content: attr(data-num);
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-family: 'Source Code Pro', monospace;
+  font-size: 32px;
+  font-weight: 900;
+  opacity: 0.1;
+  line-height: 1;
+}
+.cat-num {
+  font-family: 'Source Code Pro', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+  opacity: 0.8;
+}
+.cat-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f5f5f5;
+  margin-bottom: 6px;
+}
+.cat-items {
+  font-size: 9px;
+  line-height: 1.5;
+  opacity: 0.7;
+  color: #cbd5e1;
+}
+
+/* カテゴリカラー */
+.c1 { background: rgba(212,160,23,0.12); border: 1px solid rgba(212,160,23,0.3); }
+.c1 .cat-num { color: #d4a017; }
+.c2 { background: rgba(224,96,48,0.12); border: 1px solid rgba(224,96,48,0.3); }
+.c2 .cat-num { color: #e06030; }
+.c3 { background: rgba(32,160,208,0.12); border: 1px solid rgba(32,160,208,0.3); }
+.c3 .cat-num { color: #20a0d0; }
+.c4 { background: rgba(160,64,208,0.12); border: 1px solid rgba(160,64,208,0.3); }
+.c4 .cat-num { color: #a040d0; }
+.c5 { background: rgba(48,176,96,0.12); border: 1px solid rgba(48,176,96,0.3); }
+.c5 .cat-num { color: #30b060; }
+.c6 { background: rgba(208,64,128,0.12); border: 1px solid rgba(208,64,128,0.3); }
+.c6 .cat-num { color: #d04080; }
+.c7 { background: rgba(80,160,160,0.12); border: 1px solid rgba(80,160,160,0.3); }
+.c7 .cat-num { color: #50a0a0; }
+.c8 { background: rgba(128,128,208,0.12); border: 1px solid rgba(128,128,208,0.3); }
+.c8 .cat-num { color: #8080d0; }
+.c9 { background: rgba(208,128,64,0.12); border: 1px solid rgba(208,128,64,0.3); }
+.c9 .cat-num { color: #d08040; }
+.c10 { background: rgba(208,64,64,0.12); border: 1px solid rgba(208,64,64,0.3); }
+.c10 .cat-num { color: #d04040; }
+
+.footer {
+  position: absolute;
+  bottom: 18px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  z-index: 1;
+}
+.footer-badge {
+  display: inline-block;
+  background: rgba(212,160,23,0.15);
+  border: 1px solid rgba(212,160,23,0.4);
+  color: #d4a017;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 20px;
+  border-radius: 20px;
+  font-family: 'Source Code Pro', monospace;
+}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <div class="header-title">全10カテゴリ完全収録</div>
+    <div class="header-sub">ALL 10 CATEGORIES / 50 PROMPTS</div>
+  </div>
+
+  <div class="grid">
+    <div class="cat-card c1" data-num="01">
+      <div class="cat-num">CATEGORY 01</div>
+      <div class="cat-name">SEO記事量産</div>
+      <div class="cat-items">検索上位記事 / 競合分析 / ロングテール / FAQ / アフィ記事</div>
+    </div>
+    <div class="cat-card c2" data-num="02">
+      <div class="cat-num">CATEGORY 02</div>
+      <div class="cat-name">SNS運用自動化</div>
+      <div class="cat-items">バズ投稿 / スレッド / フォロワー戦略 / リプライ / ハッシュタグ</div>
+    </div>
+    <div class="cat-card c3" data-num="03">
+      <div class="cat-num">CATEGORY 03</div>
+      <div class="cat-name">コピーライティング</div>
+      <div class="cat-items">LP / メルマガ / BOOTH説明 / note導入文 / セールスレター</div>
+    </div>
+    <div class="cat-card c4" data-num="04">
+      <div class="cat-num">CATEGORY 04</div>
+      <div class="cat-name">受託・フリーランス営業</div>
+      <div class="cat-items">提案文 / ポートフォリオ / スコープ定義 / 納品 / トラブル対応</div>
+    </div>
+    <div class="cat-card c5" data-num="05">
+      <div class="cat-num">CATEGORY 05</div>
+      <div class="cat-name">プログラミング自動化</div>
+      <div class="cat-items">GAS / WordPress API / LINE Bot / スプシ / Firebase</div>
+    </div>
+    <div class="cat-card c6" data-num="06">
+      <div class="cat-num">CATEGORY 06</div>
+      <div class="cat-name">デザイン指示・画像生成</div>
+      <div class="cat-items">Canva指示 / OGP / アイキャッチ / スライド / サムネ</div>
+    </div>
+    <div class="cat-card c7" data-num="07">
+      <div class="cat-num">CATEGORY 07</div>
+      <div class="cat-name">データ分析・レポート</div>
+      <div class="cat-items">GA4 / 競合分析 / SNS分析 / 月次レポート / KPI設計</div>
+    </div>
+    <div class="cat-card c8" data-num="08">
+      <div class="cat-num">CATEGORY 08</div>
+      <div class="cat-name">ビジネス文書・メール</div>
+      <div class="cat-items">敬語変換 / 議事録 / 企画書 / 見積書 / お詫びメール</div>
+    </div>
+    <div class="cat-card c9" data-num="09">
+      <div class="cat-num">CATEGORY 09</div>
+      <div class="cat-name">教育・コンテンツ制作</div>
+      <div class="cat-items">講座設計 / ワークショップ / 技術ブログ / 用語集 / Q&A</div>
+    </div>
+    <div class="cat-card c10" data-num="10">
+      <div class="cat-num">CATEGORY 10</div>
+      <div class="cat-name">収益最大化テクニック</div>
+      <div class="cat-items">アフィリ最適化 / 価格設定 / リピーター / 導線設計 / 収益戦略</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-badge">TOTAL: 50 PROMPTS / &yen;1,980</div>
+  </div>
+</div>
+</body>
+</html>

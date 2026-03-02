@@ -8,6 +8,102 @@
       "reason": "練習報告ポスト（大会情報なし）",
       "source": "ifttt-x-search",
       "timestamp": "2026-03-02T07:00:00+09:00"
+    },
+    {
+      "url": "https://x.com/molkkydome/status/2028409994106798555",
+      "title": "満願寺モルック大会2026 予選会（第5回）",
+      "action": "posted",
+      "post_id": 6455,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-02T20:29:46+09:00"
+    },
+    {
+      "url": "https://x.com/masudaya223215/status/2028375323637895578",
+      "title": "ますだ家杯モルック",
+      "action": "posted",
+      "post_id": 6456,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-02T20:29:46+09:00"
+    },
+    {
+      "url": "https://x.com/Akio_Molkky/status/2028385717844578412",
+      "title": "第11回AKO杯モルック大会",
+      "action": "posted",
+      "post_id": 6457,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-02T20:29:46+09:00"
+    },
+    {
+      "url": "https://x.com/ShintaKameoka/status/2028411847037345988",
+      "title": "(noise) personal practice diary",
+      "action": "skipped",
+      "post_id": null,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-02T20:29:46+09:00"
+    },
+    {
+      "url": "https://x.com/renn_sa10/status/2028411370082030041",
+      "title": "(noise) comment about tournament",
+      "action": "skipped",
+      "post_id": null,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-02T20:29:46+09:00"
+    },
+    {
+      "url": "https://x.com/biwaohashi/status/2028380688215654547",
+      "title": "(noise) cancel waitlist update",
+      "action": "skipped",
+      "post_id": null,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-02T20:29:46+09:00"
+    },
+    {
+      "url": "https://twitter.com/spasauna_joso/status/2028455119201947771",
+      "title": "KIYASUME presents OYUMUSUBI CUP vol.6",
+      "action": "posted",
+      "post_id": 6458,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-02T23:31:23+09:00"
+    },
+    {
+      "url": "https://twitter.com/TOMO_BR1999/status/2028467225607409735",
+      "title": "第3回OverThe40 参加報告",
+      "action": "skipped",
+      "reason": "past_event_report",
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-02T23:31:23+09:00"
+    },
+    {
+      "url": "https://twitter.com/okaguchisumie/status/2028456786160955543",
+      "title": "吉田ゲンキクラブ 輪投げ&モルック大会レポート",
+      "action": "skipped",
+      "reason": "past_event_report",
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-02T23:31:23+09:00"
+    },
+    {
+      "url": "https://twitter.com/okaguchisumie/status/2028455912697188569",
+      "title": "(削除済み)",
+      "action": "skipped",
+      "reason": "tweet_deleted",
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-02T23:31:23+09:00"
+    },
+    {
+      "url": "https://twitter.com/contamo3/status/2028458786051211772",
+      "title": "コンササポボードゲーム会アンケート",
+      "action": "skipped",
+      "reason": "not_tournament",
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-02T23:31:23+09:00"
+    },
+    {
+      "url": "https://twitter.com/Y_3_0223/status/2028435435874345451",
+      "title": "チームロケット練習日記",
+      "action": "skipped",
+      "reason": "practice_log",
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-02T23:31:23+09:00"
     }
   ]
 }
