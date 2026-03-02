@@ -159,12 +159,6 @@ textarea{resize:vertical;min-height:60px}
 .sibling-row input{flex:1}
 .sibling-row .btn-icon{flex-shrink:0}
 
-/* PIN input */
-.pin-input{display:flex;gap:8px;justify-content:center;margin-bottom:24px}
-.pin-digit{width:48px;height:56px;text-align:center;font-size:24px;font-weight:700;
-  border:2px solid var(--border);border-radius:12px;background:var(--bg-card);color:var(--text)}
-.pin-digit:focus{border-color:var(--accent);outline:none}
-
 /* RSVP step flow */
 .rsvp-flow{padding:8px 0}
 .rsvp-question{font-size:17px;font-weight:700;margin-bottom:16px;text-align:center}
@@ -295,7 +289,7 @@ textarea{resize:vertical;min-height:60px}
 
   <!-- Tab: Members -->
   <div class="page" id="pageMembers">
-    <div id="membersAdminControls" class="hidden" style="margin:16px 0">
+    <div id="membersAdminControls" style="margin:16px 0">
       <div class="btn-row">
         <button class="btn btn-primary btn-small" onclick="openMemberModal()">+ メンバー追加</button>
         <button class="btn btn-outline btn-small" onclick="openZoneManager()">エリア管理</button>
@@ -313,28 +307,11 @@ textarea{resize:vertical;min-height:60px}
       <div style="font-size:13px;color:var(--text-sub);margin-top:4px" id="settingsCurrentMember"></div>
     </div>
 
-    <div class="section-title">管理者</div>
-    <div class="card" id="adminToggleCard">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div>
-          <div style="font-size:15px;font-weight:600">管理者モード</div>
-          <div style="font-size:13px;color:var(--text-sub);margin-top:2px" id="adminStatusText">OFF</div>
-        </div>
-        <button class="btn btn-small btn-outline" id="adminToggleBtn" onclick="toggleAdmin()">ON にする</button>
-      </div>
-    </div>
-
-    <div id="adminSettings" class="hidden">
-      <div class="section-title">チーム設定</div>
-      <div class="card">
-        <div class="form-group">
-          <label class="form-label">チーム名</label>
-          <input type="text" id="settingsTeamName" onchange="saveTeamName()">
-        </div>
-        <div class="form-group">
-          <label class="form-label">管理者PIN（4桁数字）</label>
-          <input type="text" id="settingsPin" maxlength="4" inputmode="numeric" onchange="savePin()">
-        </div>
+    <div class="section-title">チーム設定</div>
+    <div class="card">
+      <div class="form-group">
+        <label class="form-label">チーム名</label>
+        <input type="text" id="settingsTeamName" onchange="saveTeamName()">
       </div>
     </div>
   </div>
@@ -371,6 +348,7 @@ textarea{resize:vertical;min-height:60px}
     <div class="form-group">
       <label class="form-label">学年</label>
       <select id="memberGrade">
+        <option value="0">年長</option>
         <option value="1">1年生</option>
         <option value="2">2年生</option>
         <option value="3">3年生</option>
@@ -558,20 +536,6 @@ textarea{resize:vertical;min-height:60px}
   </div>
 </div>
 
-<!-- Modal: PIN Input -->
-<div class="modal-overlay" id="pinModal">
-  <div class="modal" style="text-align:center">
-    <div class="modal-handle"></div>
-    <div class="modal-title">管理者PINを入力</div>
-    <div class="pin-input">
-      <input type="tel" class="pin-digit" maxlength="1" inputmode="numeric" data-pin="0" oninput="pinInput(this,0)">
-      <input type="tel" class="pin-digit" maxlength="1" inputmode="numeric" data-pin="1" oninput="pinInput(this,1)">
-      <input type="tel" class="pin-digit" maxlength="1" inputmode="numeric" data-pin="2" oninput="pinInput(this,2)">
-      <input type="tel" class="pin-digit" maxlength="1" inputmode="numeric" data-pin="3" oninput="pinInput(this,3)">
-    </div>
-    <button class="btn btn-outline btn-small" onclick="closeModal('pinModal')">キャンセル</button>
-  </div>
-</div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -589,7 +553,7 @@ let membersData = {};
 let equipmentTypesData = {};
 let locationsData = {};
 let eventsData = {};
-let isAdmin = false;
+const isAdmin = true; // v2: 管理者モード廃止、全機能開放
 let selectedMemberId = localStorage.getItem('teamride_member') || null;
 
 const ZONE_COLORS = ['#4CAF50','#2196F3','#FF9800','#E91E63','#9C27B0','#00BCD4','#795548','#607D8B'];
@@ -603,6 +567,13 @@ const CAR_TYPES = {
   kei:      { label: '軽自動車',           seats: 4, maxPassengers: 2 },
   other:    { label: 'その他',             seats: 0, maxPassengers: 0 }
 };
+
+// ── Helpers ──
+function gradeLabel(g) {
+  const n = parseInt(g);
+  if (n === 0 || isNaN(n)) return '年長';
+  return n + '年';
+}
 
 // ── Toast ──
 function showToast(msg, type = 'success') {
@@ -709,7 +680,7 @@ function updateHeaderMember() {
 
 // ── Wizard ──
 let wizardStep = 0;
-let wizardData = { team_name: '', pin: '', zones: [] };
+let wizardData = { team_name: '', zones: [] };
 
 function showWizard() {
   document.getElementById('mainApp').style.display = 'none';
@@ -724,24 +695,13 @@ function renderWizardStep() {
   const c = document.getElementById('wizardContent');
   if (wizardStep === 0) {
     c.innerHTML = `
-      <div class="wizard-step">Step 1 / 3</div>
+      <div class="wizard-step">Step 1 / 2</div>
       <div class="wizard-title">⚽ チーム名を入力</div>
       <div class="wizard-input">
         <input type="text" id="wizTeamName" placeholder="例: FC○○ 1年生" value="${wizardData.team_name}">
       </div>
       <button class="btn btn-primary" onclick="wizardNext()">次へ</button>`;
   } else if (wizardStep === 1) {
-    c.innerHTML = `
-      <div class="wizard-step">Step 2 / 3</div>
-      <div class="wizard-title">🔒 管理者PINを設定</div>
-      <p style="font-size:14px;color:var(--text-sub);margin-bottom:16px">管理者機能を使うための4桁の数字です</p>
-      <div class="wizard-input">
-        <input type="tel" id="wizPin" placeholder="4桁の数字" maxlength="4" inputmode="numeric"
-          value="${wizardData.pin}" style="text-align:center;font-size:24px;letter-spacing:8px">
-      </div>
-      <button class="btn btn-primary" onclick="wizardNext()">次へ</button>
-      <button class="btn btn-outline" onclick="wizardBack()" style="margin-top:8px">戻る</button>`;
-  } else if (wizardStep === 2) {
     let zonesHtml = wizardData.zones.map((z, i) => `
       <div class="list-item" style="cursor:default">
         <span class="zone-dot" style="background:${z.color}"></span>
@@ -749,7 +709,7 @@ function renderWizardStep() {
         <button class="btn-icon btn-outline" onclick="removeWizZone(${i})" style="font-size:14px">✕</button>
       </div>`).join('');
     c.innerHTML = `
-      <div class="wizard-step">Step 3 / 3</div>
+      <div class="wizard-step">Step 2 / 2</div>
       <div class="wizard-title">📍 エリアを追加</div>
       <p style="font-size:14px;color:var(--text-sub);margin-bottom:16px">近所のメンバー同士で乗り合わせるためのエリア分けです</p>
       ${zonesHtml}
@@ -792,10 +752,6 @@ function wizardNext() {
     const v = document.getElementById('wizTeamName').value.trim();
     if (!v) return showToast('チーム名を入力してください', 'error');
     wizardData.team_name = v;
-  } else if (wizardStep === 1) {
-    const v = document.getElementById('wizPin').value.trim();
-    if (!/^\d{4}$/.test(v)) return showToast('4桁の数字を入力してください', 'error');
-    wizardData.pin = v;
   }
   wizardStep++;
   renderWizardStep();
@@ -810,8 +766,7 @@ async function wizardFinish() {
   if (wizardData.zones.length === 0) return;
   try {
     await db.ref(ROOT + '/config').set({
-      team_name: wizardData.team_name,
-      admin_pin: wizardData.pin
+      team_name: wizardData.team_name
     });
     for (let i = 0; i < wizardData.zones.length; i++) {
       await db.ref(ROOT + '/zones').push({
@@ -820,8 +775,6 @@ async function wizardFinish() {
         order: i + 1
       });
     }
-    isAdmin = true;
-    updateAdminUI();
     showToast('セットアップ完了！メンバーを追加しましょう');
     showMainApp();
     showPage('Members');
@@ -864,58 +817,10 @@ function selectMember(id) {
   showToast(membersData[id].name + ' を選択しました');
 }
 
-// ── Admin Toggle ──
-function toggleAdmin() {
-  if (isAdmin) {
-    isAdmin = false;
-    updateAdminUI();
-    showToast('管理者モードをOFFにしました');
-  } else {
-    openModal('pinModal');
-    setTimeout(() => document.querySelector('.pin-digit').focus(), 100);
-  }
-}
-
-function pinInput(el, idx) {
-  if (el.value.length === 1 && idx < 3) {
-    const next = document.querySelector(`.pin-digit[data-pin="${idx+1}"]`);
-    if (next) next.focus();
-  }
-  if (idx === 3 && el.value.length === 1) {
-    const digits = Array.from(document.querySelectorAll('.pin-digit')).map(d => d.value).join('');
-    if (digits === configData.admin_pin) {
-      isAdmin = true;
-      updateAdminUI();
-      closeModal('pinModal');
-      document.querySelectorAll('.pin-digit').forEach(d => d.value = '');
-      showToast('管理者モードON');
-    } else {
-      showToast('PINが違います', 'error');
-      document.querySelectorAll('.pin-digit').forEach(d => d.value = '');
-      document.querySelector('.pin-digit').focus();
-    }
-  }
-}
-
-function updateAdminUI() {
-  document.getElementById('adminStatusText').textContent = isAdmin ? 'ON' : 'OFF';
-  document.getElementById('adminToggleBtn').textContent = isAdmin ? 'OFF にする' : 'ON にする';
-  document.getElementById('adminSettings').classList.toggle('hidden', !isAdmin);
-  document.getElementById('membersAdminControls').classList.toggle('hidden', !isAdmin);
-  if (isAdmin) {
-    document.getElementById('settingsTeamName').value = configData.team_name || '';
-    document.getElementById('settingsPin').value = configData.admin_pin || '';
-  }
-  renderMembers();
-}
-
+// ── Settings ──
 function saveTeamName() {
   const v = document.getElementById('settingsTeamName').value.trim();
   if (v) db.ref(ROOT + '/config/team_name').set(v);
-}
-function savePin() {
-  const v = document.getElementById('settingsPin').value.trim();
-  if (/^\d{4}$/.test(v)) db.ref(ROOT + '/config/admin_pin').set(v);
 }
 
 // ── Members ──
@@ -940,11 +845,11 @@ function renderMembers() {
     const icons = [];
     if (car) icons.push('🚗');
     if (eqList.length) icons.push('📦');
-    return `<div class="list-item" onclick="${isAdmin ? "editMember('"+id+"')" : ''}">
+    return `<div class="list-item" onclick="editMember('${id}')">
       ${z ? '<span class="zone-dot" style="background:'+z.color+'"></span>' : '<span style="width:10px"></span>'}
       <div class="list-item-info">
         <div class="list-item-name">${m.name}</div>
-        <div class="list-item-sub">${m.school || ''}${m.grade ? ' · '+m.grade+'年' : ''}${car ? ' · '+car : ''}</div>
+        <div class="list-item-sub">${m.school || ''} · ${gradeLabel(m.grade)}${car ? ' · '+car : ''}</div>
       </div>
       <div class="list-item-icons">${icons.join(' ')}</div>
     </div>`;
@@ -979,7 +884,7 @@ function openMemberModal(id) {
     const m = membersData[id];
     document.getElementById('memberName').value = m.name || '';
     document.getElementById('memberSchool').value = m.school || '';
-    document.getElementById('memberGrade').value = m.grade || '1';
+    document.getElementById('memberGrade').value = m.grade != null ? m.grade : '1';
     document.getElementById('memberZone').value = m.zone_id || '';
     document.getElementById('memberFatherName').value = m.father_name || '';
     document.getElementById('memberFatherTel').value = m.father_tel || '';
@@ -1073,7 +978,7 @@ async function saveMember() {
   const data = {
     name,
     school: document.getElementById('memberSchool').value.trim(),
-    grade: parseInt(document.getElementById('memberGrade').value) || 1,
+    grade: parseInt(document.getElementById('memberGrade').value) || 0,
     zone_id: document.getElementById('memberZone').value || '',
     father_name: document.getElementById('memberFatherName').value.trim(),
     father_tel: document.getElementById('memberFatherTel').value.trim(),
@@ -1205,9 +1110,9 @@ async function deleteEquipment(id) {
   renderEquipmentList();
 }
 
-// ── Settings ──
 function renderSettings() {
   updateHeaderMember();
+  document.getElementById('settingsTeamName').value = configData.team_name || '';
 }
 
 // ── Home ──
@@ -1313,6 +1218,11 @@ function renderEventCard(id, e, isPast) {
         <span>🏃 ${directs}人</span>
         ${seatStatus}
       </div>`;
+    }
+
+    // Nudge button for unanswered members
+    if (answeredCount < totalMembers && e.status === 'open') {
+      html += `<button class="btn btn-outline btn-small" onclick="generateNudgeText('${id}')" style="margin-top:6px;font-size:13px">📢 未回答に催促（${totalMembers - answeredCount}人）</button>`;
     }
 
     // RSVP status list
@@ -1572,306 +1482,292 @@ async function deleteEvent() {
   showToast('イベントを削除しました');
 }
 
-// ── RSVP Flow ──
-let rsvpState = {};
+// ── RSVP Flow (1画面フォーム) ──
+let rsvpEventId = null;
 
 function startRsvp(eventId) {
   const e = eventsData[eventId];
   if (!e || !selectedMemberId) return;
-  const existing = e.rsvp && e.rsvp[selectedMemberId] ? e.rsvp[selectedMemberId] : null;
-  const mem = membersData[selectedMemberId];
+  rsvpEventId = eventId;
+
   const isAssigned = e.status === 'assigned';
-
-  rsvpState = {
-    eventId,
-    event: e,
-    memberId: selectedMemberId,
-    member: mem,
-    step: 0,
-    attending: existing ? existing.attending : null,
-    not_attending_reason: existing?.not_attending_reason || '',
-    parent_coming: existing ? existing.parent_coming : null,
-    sibling_count: existing?.sibling_count || 0,
-    transport: existing?.transport || null,
-    extra_seats: existing?.extra_seats || 0,
-    bring_equipment: existing?.bring_equipment || {},
-    note: existing?.note || '',
-    isAssigned
-  };
-
-  openModal('rsvpModal');
-  renderRsvpStep();
-}
-
-function renderRsvpStep() {
-  const c = document.getElementById('rsvpContent');
-  const s = rsvpState;
-  const mem = s.member;
-  const e = s.event;
-
-  if (s.isAssigned && s.step === 0) {
-    // Warning banner for post-assignment changes
+  if (isAssigned) {
+    // Warning for post-assignment changes
+    const c = document.getElementById('rsvpContent');
     c.innerHTML = `<div style="text-align:center;margin-bottom:16px">
       <div style="font-size:48px;margin-bottom:8px">⚠️</div>
       <div style="font-size:16px;font-weight:700;color:var(--warning)">配車確定後の変更です</div>
-      <div style="font-size:14px;color:var(--text-sub);margin-top:8px">回答を変更すると配車に影響があります。<br>管理者に再配車を依頼してください。</div>
+      <div style="font-size:14px;color:var(--text-sub);margin-top:8px">回答を変更すると配車に影響があります。</div>
     </div>
-    <button class="btn btn-primary" onclick="rsvpState.step=1;rsvpState.isAssigned=false;renderRsvpStep()">変更する</button>
+    <button class="btn btn-primary" onclick="renderRsvpForm()">変更する</button>
     <button class="btn btn-outline" onclick="closeModal('rsvpModal')" style="margin-top:8px">やめる</button>`;
+    openModal('rsvpModal');
     return;
   }
+  renderRsvpForm();
+  openModal('rsvpModal');
+}
 
-  const step = s.isAssigned ? s.step : s.step;
-  const actualStep = s.step;
+function renderRsvpForm() {
+  const c = document.getElementById('rsvpContent');
+  const e = eventsData[rsvpEventId];
+  const mem = membersData[selectedMemberId];
+  const existing = e.rsvp?.[selectedMemberId] || null;
+  const dateStr = formatEventDate(e.date);
 
-  // Step 1: Attending?
-  if (actualStep === 1 || (actualStep === 0 && !s.isAssigned)) {
-    if (actualStep === 0) s.step = 1;
-    const dateStr = formatEventDate(e.date);
-    c.innerHTML = `<div style="text-align:center;margin-bottom:16px">
+  // Defaults from existing
+  const att = existing ? existing.attending : null;
+  const parentComing = existing?.parent_coming ?? null;
+  const sibCount = existing?.sibling_count || 0;
+  const transport = existing?.transport || null;
+  const extraSeats = existing?.extra_seats || 0;
+  const bringEq = existing?.bring_equipment || {};
+  const note = existing?.note || '';
+  const reason = existing?.not_attending_reason || '';
+
+  // Nudge check
+  let nudgeHtml = '';
+  if (mem.zone_id) {
+    const rsvp = e.rsvp || {};
+    const zoneDrivers = Object.entries(rsvp).filter(([mid, r]) =>
+      r.attending && r.transport === 'drive' && membersData[mid]?.zone_id === mem.zone_id
+    ).length;
+    if (zoneDrivers === 0) {
+      const zn = zonesData[mem.zone_id]?.name || '';
+      nudgeHtml = `<div class="rsvp-nudge">⚠ ${zn}エリアにまだドライバーがいません</div>`;
+    }
+  }
+
+  // Seat suggestion for driver
+  const hasCar = mem.car_type && CAR_TYPES[mem.car_type] && mem.car_type !== 'other';
+  let suggestedSeats = hasCar ? Math.max(0, (mem.car_max_passengers || CAR_TYPES[mem.car_type].maxPassengers) - sibCount) : 0;
+
+  // Equipment available for this member
+  const availEq = Object.entries(equipmentTypesData)
+    .filter(([eid]) => mem.equipment && mem.equipment[eid])
+    .sort((a,b) => (a[1].order||0) - (b[1].order||0));
+
+  c.innerHTML = `
+    <div style="text-align:center;margin-bottom:16px">
       <div style="font-size:14px;color:var(--text-sub)">${e.type==='match'?'🟠 試合':'🟢 練習'} ${dateStr} ${e.meet_time||''}</div>
       <div style="font-size:17px;font-weight:700;margin-top:4px">${e.title}</div>
+      ${e.location ? '<div style="font-size:13px;color:var(--text-sub)">📍 '+e.location+'</div>' : ''}
     </div>
-    <div class="rsvp-question">${mem.name}は参加しますか？</div>
-    <div class="rsvp-choices">
-      <div class="rsvp-choice" onclick="rsvpSetAttending(true)">
+
+    <!-- 参加/不参加 -->
+    <div class="form-label">${mem.name}は参加しますか？</div>
+    <div class="rsvp-choices" style="margin-bottom:16px">
+      <div class="rsvp-choice ${att===true?'selected':''}" onclick="rsvpToggleAttending(true)">
         <div class="rsvp-choice-icon">✅</div>参加
       </div>
-      <div class="rsvp-choice" onclick="rsvpSetAttending(false)">
+      <div class="rsvp-choice ${att===false?'selected':''}" onclick="rsvpToggleAttending(false)">
         <div class="rsvp-choice-icon">❌</div>不参加
       </div>
-    </div>`;
-    return;
-  }
-
-  // Not attending → reason
-  if (actualStep === 2 && s.attending === false) {
-    c.innerHTML = `<div class="rsvp-question">不参加の理由（任意）</div>
-    <div class="form-group">
-      <textarea id="rsvpNotAttendReason" placeholder="理由があれば入力">${s.not_attending_reason}</textarea>
     </div>
-    <button class="btn btn-primary" onclick="rsvpSubmitNotAttending()">送信</button>
-    <button class="btn btn-outline" onclick="rsvpState.step=1;renderRsvpStep()" style="margin-top:8px">戻る</button>`;
-    return;
-  }
 
-  // Step 2: Parent coming?
-  if (actualStep === 2) {
-    c.innerHTML = `<div class="rsvp-question">保護者も行きますか？</div>
-    <div class="rsvp-choices">
-      <div class="rsvp-choice" onclick="rsvpSetParent(true)">
-        <div class="rsvp-choice-icon">👨</div>同行する
+    <!-- 不参加の理由 -->
+    <div id="rsvpNotAttendSection" style="display:${att===false?'':'none'}">
+      <div class="form-group">
+        <label class="form-label">理由（任意）</label>
+        <textarea id="rsvpReason" placeholder="理由があれば">${reason}</textarea>
       </div>
-      <div class="rsvp-choice" onclick="rsvpSetParent(false)">
-        <div class="rsvp-choice-icon">👋</div>子供だけ
-      </div>
+      <button class="btn btn-primary" id="rsvpSubmitBtn" onclick="rsvpSubmit()">回答を送信</button>
+      <button class="btn btn-outline" onclick="closeModal('rsvpModal')" style="margin-top:8px">キャンセル</button>
     </div>
-    <button class="btn btn-outline btn-small" onclick="rsvpState.step=1;renderRsvpStep()" style="margin-top:16px">戻る</button>`;
-    return;
-  }
 
-  // Step 3: Sibling count
-  if (actualStep === 3) {
-    c.innerHTML = `<div class="rsvp-question">弟妹も一緒に乗りますか？</div>
-    <div class="rsvp-number-choices">
-      ${[0,1,2,3].map(n => `<div class="rsvp-num ${s.sibling_count===n?'selected':''}"
-        onclick="rsvpSetSibling(${n})">${n===0?'なし':n+'人'}</div>`).join('')}
-    </div>
-    <button class="btn btn-outline btn-small" onclick="rsvpState.step=2;renderRsvpStep()" style="margin-top:16px">戻る</button>`;
-    return;
-  }
+    <!-- 参加の場合の詳細 -->
+    <div id="rsvpAttendSection" style="display:${att===true?'':'none'}">
+      ${nudgeHtml}
 
-  // Step 4: Transport
-  if (actualStep === 4) {
-    // Check zone driver shortage for nudge
-    let nudgeHtml = '';
-    if (selectedMemberId && mem.zone_id) {
-      const rsvp = e.rsvp || {};
-      const zoneDrivers = Object.entries(rsvp).filter(([mid, r]) =>
-        r.attending && r.transport === 'drive' && membersData[mid]?.zone_id === mem.zone_id
-      ).length;
-      if (zoneDrivers === 0) {
-        const zoneName = zonesData[mem.zone_id]?.name || '';
-        nudgeHtml = `<div class="rsvp-nudge">⚠ ${zoneName}エリアにまだドライバーがいません</div>`;
-      }
-    }
-
-    c.innerHTML = `<div class="rsvp-question">移動手段は？</div>
-    ${nudgeHtml}
-    <div class="rsvp-choices">
-      <div class="rsvp-choice" onclick="rsvpSetTransport('drive')">
-        <div class="rsvp-choice-icon">🚗</div>車を出す
-      </div>
-      <div class="rsvp-choice" onclick="rsvpSetTransport('ride')">
-        <div class="rsvp-choice-icon">🙋</div>乗せてほしい
-      </div>
-      <div class="rsvp-choice" onclick="rsvpSetTransport('direct')">
-        <div class="rsvp-choice-icon">🏃</div>現地集合
-      </div>
-    </div>
-    <button class="btn btn-outline btn-small" onclick="rsvpState.step=${s.parent_coming?3:2};renderRsvpStep()" style="margin-top:16px">戻る</button>`;
-    return;
-  }
-
-  // Step 5: Driver details (seats + equipment + note)
-  if (actualStep === 5 && s.transport === 'drive') {
-    const hasCar = mem.car_type && CAR_TYPES[mem.car_type];
-    let suggestedSeats = 0;
-    if (hasCar) {
-      suggestedSeats = (mem.car_max_passengers || CAR_TYPES[mem.car_type].maxPassengers) - s.sibling_count;
-      // Subtract equipment seats
-      if (s.bring_equipment) {
-        Object.keys(s.bring_equipment).forEach(eid => {
-          if (s.bring_equipment[eid] && equipmentTypesData[eid]) {
-            suggestedSeats -= (equipmentTypesData[eid].seats_used || 0);
-          }
-        });
-      }
-      suggestedSeats = Math.max(0, suggestedSeats);
-    }
-    if (s.extra_seats === 0 && suggestedSeats > 0) s.extra_seats = suggestedSeats;
-
-    const maxDisplay = hasCar ? Math.max(5, (mem.car_max_passengers || 5)) : 6;
-    const seatNums = [];
-    for (let i = 0; i <= maxDisplay; i++) seatNums.push(i);
-
-    // Equipment checkboxes
-    const eqNeeded = e.equipment_needed || {};
-    const availEq = Object.entries(equipmentTypesData)
-      .filter(([eid]) => mem.equipment && mem.equipment[eid])
-      .sort((a,b) => (a[1].order||0) - (b[1].order||0));
-
-    c.innerHTML = `<div class="rsvp-question">あと何人乗せられますか？</div>
-    ${hasCar ? `<div style="text-align:center;font-size:13px;color:var(--text-sub);margin-bottom:12px">${CAR_TYPES[mem.car_type].label} → 提案: ${suggestedSeats}人</div>` : ''}
-    <div class="rsvp-number-choices" style="flex-wrap:wrap">
-      ${seatNums.map(n => `<div class="rsvp-num ${s.extra_seats===n?'selected':''}"
-        onclick="rsvpSetExtraSeats(${n})">${n === 0 ? '0' : n}${n >= 5 ? '+' : ''}</div>`).join('')}
-    </div>
-    ${availEq.length > 0 ? `
-      <div style="margin-top:16px">
-        <div class="form-label">荷物を持っていけますか？</div>
-        <div class="checkbox-group">
-          ${availEq.map(([eid, eq]) => `<div class="checkbox-item ${s.bring_equipment[eid]?'checked':''}"
-            data-eq="${eid}" onclick="toggleRsvpEquip(this,'${eid}')">${eq.name}</div>`).join('')}
+      <!-- 保護者 -->
+      <div class="form-label">保護者も行きますか？</div>
+      <div class="rsvp-choices" style="margin-bottom:16px">
+        <div class="rsvp-choice ${parentComing===true?'selected':''}" onclick="rsvpToggleParent(true)">
+          <div class="rsvp-choice-icon">👨</div>同行する
         </div>
-      </div>` : ''}
-    <div class="form-group" style="margin-top:16px">
-      <label class="form-label">備考</label>
-      <textarea id="rsvpNote" placeholder="メモがあれば">${s.note}</textarea>
+        <div class="rsvp-choice ${parentComing===false?'selected':''}" onclick="rsvpToggleParent(false)">
+          <div class="rsvp-choice-icon">👋</div>子供だけ
+        </div>
+      </div>
+
+      <!-- 弟妹 -->
+      <div id="rsvpSiblingSection" style="display:${parentComing===true?'':'none'}">
+        <div class="form-label">弟妹の同乗</div>
+        <div class="rsvp-number-choices" style="margin-bottom:16px">
+          ${[0,1,2,3].map(n => `<div class="rsvp-num ${sibCount===n?'selected':''}"
+            onclick="rsvpPickSibling(${n})">${n===0?'なし':n+'人'}</div>`).join('')}
+        </div>
+      </div>
+
+      <!-- 移動手段（親同行の場合のみ） -->
+      <div id="rsvpTransportSection" style="display:${parentComing===true?'':'none'}">
+        <div class="form-label">移動手段</div>
+        <div class="rsvp-choices" style="margin-bottom:16px">
+          <div class="rsvp-choice ${transport==='drive'?'selected':''}" onclick="rsvpPickTransport('drive')">
+            <div class="rsvp-choice-icon">🚗</div>車を出す
+          </div>
+          <div class="rsvp-choice ${transport==='ride'?'selected':''}" onclick="rsvpPickTransport('ride')">
+            <div class="rsvp-choice-icon">🙋</div>乗せて
+          </div>
+          <div class="rsvp-choice ${transport==='direct'?'selected':''}" onclick="rsvpPickTransport('direct')">
+            <div class="rsvp-choice-icon">🏃</div>現地集合
+          </div>
+        </div>
+      </div>
+
+      <!-- 車出しの詳細 -->
+      <div id="rsvpDriverSection" style="display:${transport==='drive'?'':'none'}">
+        <div class="form-label">あと何人乗せられますか？${hasCar ? ' <span style="font-weight:400;color:var(--text-sub)">(提案: '+suggestedSeats+'人)</span>' : ''}</div>
+        <div class="rsvp-number-choices" style="margin-bottom:12px;flex-wrap:wrap" id="rsvpSeatChoices">
+          ${[0,1,2,3,4,5].map(n => `<div class="rsvp-num ${(extraSeats||suggestedSeats)===n?'selected':''}"
+            onclick="rsvpPickSeats(${n})">${n}</div>`).join('')}
+        </div>
+        ${availEq.length > 0 ? `
+          <div class="form-label">荷物</div>
+          <div class="checkbox-group" style="margin-bottom:12px" id="rsvpEquipGroup">
+            ${availEq.map(([eid, eq]) => `<div class="checkbox-item ${bringEq[eid]?'checked':''}"
+              data-eq="${eid}" onclick="this.classList.toggle('checked')">${eq.name}${eq.seats_used?' ('+eq.seats_used+'席)':''}</div>`).join('')}
+          </div>` : ''}
+      </div>
+
+      <!-- 備考 -->
+      <div class="form-group">
+        <label class="form-label">備考（任意）</label>
+        <textarea id="rsvpNote" placeholder="メモがあれば">${note}</textarea>
+      </div>
+
+      <button class="btn btn-primary" id="rsvpSubmitBtn2" onclick="rsvpSubmit()">回答を送信</button>
+      <button class="btn btn-outline" onclick="closeModal('rsvpModal')" style="margin-top:8px">キャンセル</button>
     </div>
-    <button class="btn btn-primary" onclick="rsvpSubmit()">回答を送信</button>
-    <button class="btn btn-outline" onclick="rsvpState.step=4;renderRsvpStep()" style="margin-top:8px">戻る</button>`;
-    return;
-  }
 
-  // Step 5: Ride/Direct → note only then submit
-  if (actualStep === 5) {
-    c.innerHTML = `<div class="rsvp-question">備考（任意）</div>
-    <div class="form-group">
-      <textarea id="rsvpNote" placeholder="メモがあれば">${s.note}</textarea>
-    </div>
-    <button class="btn btn-primary" onclick="rsvpSubmit()">回答を送信</button>
-    <button class="btn btn-outline" onclick="rsvpState.step=4;renderRsvpStep()" style="margin-top:8px">戻る</button>`;
-    return;
-  }
+    <!-- 未選択時 -->
+    <div id="rsvpInitSection" style="display:${att===null?'':'none'}">
+      <button class="btn btn-outline" onclick="closeModal('rsvpModal')">キャンセル</button>
+    </div>`;
 }
 
-function rsvpSetAttending(val) {
-  rsvpState.attending = val;
-  rsvpState.step = 2;
-  if (!val) {
-    // Not attending → reason step
-    renderRsvpStep();
-    return;
-  }
-  renderRsvpStep();
-}
-
-function rsvpSetParent(val) {
-  rsvpState.parent_coming = val;
-  if (!val) {
-    // Child only → skip sibling, transport = ride auto
-    rsvpState.sibling_count = 0;
-    rsvpState.transport = 'ride';
-    rsvpState.step = 5;
-    renderRsvpStep();
-    return;
-  }
-  rsvpState.step = 3;
-  renderRsvpStep();
-}
-
-function rsvpSetSibling(n) {
-  rsvpState.sibling_count = n;
-  rsvpState.step = 4;
-  renderRsvpStep();
-}
-
-function rsvpSetTransport(t) {
-  rsvpState.transport = t;
-  rsvpState.step = 5;
-  // Recalculate suggested seats for driver
-  if (t === 'drive') {
-    const mem = rsvpState.member;
-    const hasCar = mem.car_type && CAR_TYPES[mem.car_type];
-    if (hasCar) {
-      rsvpState.extra_seats = Math.max(0, (mem.car_max_passengers || CAR_TYPES[mem.car_type].maxPassengers) - rsvpState.sibling_count);
-    }
-  }
-  renderRsvpStep();
-}
-
-function rsvpSetExtraSeats(n) {
-  rsvpState.extra_seats = n;
-  document.querySelectorAll('.rsvp-number-choices .rsvp-num').forEach(el => {
-    el.classList.toggle('selected', parseInt(el.textContent) === n || (el.textContent.includes('+') && n >= 5 && parseInt(el.textContent) === n));
+function rsvpToggleAttending(val) {
+  document.querySelectorAll('#rsvpContent > .rsvp-choices:first-of-type .rsvp-choice').forEach((el, i) => {
+    el.classList.toggle('selected', (i === 0 && val) || (i === 1 && !val));
   });
-  // Re-render to update selected state properly
-  renderRsvpStep();
+  document.getElementById('rsvpNotAttendSection').style.display = val === false ? '' : 'none';
+  document.getElementById('rsvpAttendSection').style.display = val === true ? '' : 'none';
+  document.getElementById('rsvpInitSection').style.display = 'none';
+  // Store in DOM
+  document.getElementById('rsvpContent').dataset.attending = val;
 }
 
-function toggleRsvpEquip(el, eid) {
-  el.classList.toggle('checked');
-  rsvpState.bring_equipment[eid] = el.classList.contains('checked');
-}
-
-async function rsvpSubmitNotAttending() {
-  const reason = document.getElementById('rsvpNotAttendReason')?.value.trim() || '';
-  const data = {
-    attending: false,
-    not_attending_reason: reason,
-    answered_at: new Date().toISOString()
-  };
-  try {
-    await db.ref(ROOT + '/events/' + rsvpState.eventId + '/rsvp/' + rsvpState.memberId).set(data);
-    closeModal('rsvpModal');
-    showToast('不参加で回答しました');
-  } catch (err) {
-    showToast('エラー: ' + err.message, 'error');
+function rsvpToggleParent(val) {
+  document.querySelectorAll('#rsvpAttendSection > .rsvp-choices:first-of-type .rsvp-choice').forEach((el, i) => {
+    el.classList.toggle('selected', (i === 0 && val) || (i === 1 && !val));
+  });
+  document.getElementById('rsvpSiblingSection').style.display = val ? '' : 'none';
+  document.getElementById('rsvpTransportSection').style.display = val ? '' : 'none';
+  if (!val) {
+    // Child only → auto ride, hide driver section
+    document.getElementById('rsvpDriverSection').style.display = 'none';
   }
+  document.getElementById('rsvpContent').dataset.parentComing = val;
+}
+
+function rsvpPickSibling(n) {
+  document.querySelectorAll('#rsvpSiblingSection .rsvp-num').forEach((el, i) => el.classList.toggle('selected', i === n));
+  document.getElementById('rsvpContent').dataset.siblingCount = n;
+}
+
+function rsvpPickTransport(t) {
+  document.querySelectorAll('#rsvpTransportSection .rsvp-choice').forEach(el => {
+    el.classList.toggle('selected', el.textContent.includes(
+      t === 'drive' ? '車を出す' : t === 'ride' ? '乗せて' : '現地集合'
+    ));
+  });
+  document.getElementById('rsvpDriverSection').style.display = t === 'drive' ? '' : 'none';
+  document.getElementById('rsvpContent').dataset.transport = t;
+}
+
+function rsvpPickSeats(n) {
+  document.querySelectorAll('#rsvpSeatChoices .rsvp-num').forEach((el, i) => el.classList.toggle('selected', i === n));
+  document.getElementById('rsvpContent').dataset.extraSeats = n;
 }
 
 async function rsvpSubmit() {
-  const s = rsvpState;
-  const note = document.getElementById('rsvpNote')?.value.trim() || '';
-  const data = {
-    attending: true,
-    parent_coming: s.parent_coming || false,
-    sibling_count: s.sibling_count || 0,
-    transport: s.transport,
-    extra_seats: s.transport === 'drive' ? s.extra_seats : 0,
-    bring_equipment: s.transport === 'drive' ? s.bring_equipment : {},
-    note,
-    answered_at: new Date().toISOString()
-  };
+  const c = document.getElementById('rsvpContent');
+  const attending = c.dataset.attending === 'true';
+  const btn = c.querySelector('.btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = '送信中...'; }
+
   try {
-    await db.ref(ROOT + '/events/' + s.eventId + '/rsvp/' + s.memberId).set(data);
+    if (!attending && c.dataset.attending === 'false') {
+      // Not attending
+      const data = {
+        attending: false,
+        not_attending_reason: document.getElementById('rsvpReason')?.value.trim() || '',
+        answered_at: new Date().toISOString()
+      };
+      await db.ref(ROOT + '/events/' + rsvpEventId + '/rsvp/' + selectedMemberId).set(data);
+      closeModal('rsvpModal');
+      showToast('不参加で回答しました');
+      return;
+    }
+
+    const parentComing = c.dataset.parentComing === 'true';
+    let transport = parentComing ? (c.dataset.transport || 'ride') : 'ride';
+    const siblingCount = parseInt(c.dataset.siblingCount) || 0;
+    const extraSeats = parseInt(c.dataset.extraSeats) || 0;
+
+    // Collect equipment
+    const bringEquipment = {};
+    document.querySelectorAll('#rsvpEquipGroup .checkbox-item.checked').forEach(el => {
+      bringEquipment[el.dataset.eq] = true;
+    });
+
+    const data = {
+      attending: true,
+      parent_coming: parentComing,
+      sibling_count: siblingCount,
+      transport,
+      extra_seats: transport === 'drive' ? extraSeats : 0,
+      bring_equipment: transport === 'drive' ? bringEquipment : {},
+      note: document.getElementById('rsvpNote')?.value.trim() || '',
+      answered_at: new Date().toISOString()
+    };
+
+    await db.ref(ROOT + '/events/' + rsvpEventId + '/rsvp/' + selectedMemberId).set(data);
     closeModal('rsvpModal');
-    const transport = s.transport === 'drive' ? '車出し' : s.transport === 'ride' ? '乗せてほしい' : '現地集合';
-    showToast(`参加（${transport}）で回答しました`);
+    const tLabel = transport === 'drive' ? '車出し' : transport === 'ride' ? '乗せてほしい' : '現地集合';
+    showToast(`参加（${tLabel}）で回答しました`);
   } catch (err) {
     showToast('エラー: ' + err.message, 'error');
+    if (btn) { btn.disabled = false; btn.textContent = '回答を送信'; }
   }
+}
+
+// ── 催促テキスト生成 ──
+function generateNudgeText(eventId) {
+  const e = eventsData[eventId];
+  if (!e) return;
+  const rsvp = e.rsvp || {};
+  const unanswered = Object.entries(membersData)
+    .filter(([id, m]) => m.active !== false && !rsvp[id])
+    .map(([, m]) => m.name);
+
+  if (unanswered.length === 0) {
+    showToast('全員回答済みです！');
+    return;
+  }
+
+  const dateStr = formatEventDate(e.date);
+  const text = `【出欠未回答のお知らせ】\n⚽ ${dateStr} ${e.title}\nまだ回答がありません:\n${unanswered.map(n => '・' + n).join('\n')}\nアプリから回答をお願いします\nhttps://jonyjean21.github.io/sp-projects/teamride/`;
+
+  navigator.clipboard.writeText(text).then(() => {
+    showToast(`催促テキストをコピーしました（${unanswered.length}人未回答）`);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast(`催促テキストをコピーしました（${unanswered.length}人未回答）`);
+  });
 }
 
 // ── Auto Assignment Algorithm ──
