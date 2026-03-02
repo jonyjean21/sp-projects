@@ -178,8 +178,6 @@ textarea{resize:vertical;min-height:60px}
 .rsvp-summary{background:var(--accent-light);border-radius:var(--radius);padding:16px;text-align:center}
 .rsvp-summary-title{font-size:16px;font-weight:700;color:var(--accent);margin-bottom:8px}
 .rsvp-summary-detail{font-size:14px;color:var(--text-sub);line-height:1.8}
-.rsvp-nudge{background:#fff3e0;border:1px solid var(--warning);border-radius:var(--radius);
-  padding:12px 16px;margin:12px 0;font-size:14px;display:flex;align-items:center;gap:8px}
 
 /* Progress bar */
 .progress-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin:8px 0}
@@ -456,8 +454,10 @@ textarea{resize:vertical;min-height:60px}
 <!-- Modal: Event Create/Edit -->
 <div class="modal-overlay" id="eventModal">
   <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="eventModalTitle">イベント作成</div>
+    <div style="display:flex;align-items:center;gap:12px;padding:16px 0 12px;border-bottom:1px solid var(--border);margin-bottom:16px;position:sticky;top:0;background:var(--bg-card);z-index:1">
+      <button onclick="closeModal('eventModal')" style="background:none;border:none;font-size:22px;cursor:pointer;padding:4px;color:var(--accent);line-height:1">←</button>
+      <span id="eventModalTitle" style="font-size:18px;font-weight:700">イベント作成</span>
+    </div>
     <input type="hidden" id="eventEditId">
 
     <div class="form-group">
@@ -491,7 +491,6 @@ textarea{resize:vertical;min-height:60px}
     </div>
 
     <button class="btn btn-primary" onclick="saveEvent()">保存</button>
-    <button class="btn btn-outline" onclick="closeModal('eventModal')" style="margin-top:8px">キャンセル</button>
     <div id="eventDeleteBtn" class="hidden" style="margin-top:16px;text-align:center">
       <button class="btn btn-small" style="color:var(--danger);background:none" onclick="deleteEvent()">このイベントを削除</button>
     </div>
@@ -1263,10 +1262,7 @@ function renderEventCard(id, e, isPast) {
 }
 
 function calcSeatsNeeded(memberId, rsvp) {
-  let seats = 1; // the child
-  if (rsvp.parent_coming) seats++;
-  seats += (rsvp.sibling_count || 0);
-  return seats;
+  return rsvp.family_count || (rsvp.parent_coming ? 2 : 1);
 }
 
 function renderMyRsvpSummary(r) {
@@ -1278,7 +1274,7 @@ function renderMyRsvpSummary(r) {
   }
   const transport = r.transport === 'drive' ? '車出し' : r.transport === 'ride' ? '乗せてほしい' : '現地集合';
   const parent = r.parent_coming ? '同行' : '子供だけ';
-  const sib = r.sibling_count > 0 ? ` / 弟妹${r.sibling_count}人` : '';
+  const familyStr = (r.family_count || 1) > 1 ? ` / ${r.family_count}人` : '';
   const extra = r.transport === 'drive' ? ` / 他${r.extra_seats}人OK` : '';
   const eqNames = r.bring_equipment ? Object.keys(r.bring_equipment)
     .filter(k => r.bring_equipment[k] && equipmentTypesData[k])
@@ -1286,7 +1282,7 @@ function renderMyRsvpSummary(r) {
   const eqStr = eqNames.length ? ' / ' + eqNames.join('・') : '';
   return `<div class="rsvp-summary" style="margin-top:10px">
     <div class="rsvp-summary-title">✅ 回答済み</div>
-    <div class="rsvp-summary-detail">参加（${parent}・${transport}${sib}${extra}${eqStr}）</div>
+    <div class="rsvp-summary-detail">参加（${parent}・${transport}${familyStr}${extra}${eqStr}）</div>
     ${r.note ? '<div class="rsvp-summary-detail">備考: '+r.note+'</div>' : ''}
   </div>`;
 }
@@ -1518,29 +1514,16 @@ function renderRsvpForm() {
   // Defaults from existing
   const att = existing ? existing.attending : null;
   const parentComing = existing?.parent_coming ?? null;
-  const sibCount = existing?.sibling_count || 0;
+  const familyCount = existing?.family_count || (parentComing ? 2 : 1);
   const transport = existing?.transport || null;
   const extraSeats = existing?.extra_seats || 0;
   const bringEq = existing?.bring_equipment || {};
   const note = existing?.note || '';
   const reason = existing?.not_attending_reason || '';
 
-  // Nudge check
-  let nudgeHtml = '';
-  if (mem.zone_id) {
-    const rsvp = e.rsvp || {};
-    const zoneDrivers = Object.entries(rsvp).filter(([mid, r]) =>
-      r.attending && r.transport === 'drive' && membersData[mid]?.zone_id === mem.zone_id
-    ).length;
-    if (zoneDrivers === 0) {
-      const zn = zonesData[mem.zone_id]?.name || '';
-      nudgeHtml = `<div class="rsvp-nudge">⚠ ${zn}エリアにまだドライバーがいません</div>`;
-    }
-  }
-
   // Seat suggestion for driver
   const hasCar = mem.car_type && CAR_TYPES[mem.car_type] && mem.car_type !== 'other';
-  let suggestedSeats = hasCar ? Math.max(0, (mem.car_max_passengers || CAR_TYPES[mem.car_type].maxPassengers) - sibCount) : 0;
+  let suggestedSeats = hasCar ? Math.max(0, (mem.car_max_passengers || CAR_TYPES[mem.car_type].maxPassengers) - familyCount + 1) : 0;
 
   // Equipment available for this member
   const availEq = Object.entries(equipmentTypesData)
@@ -1577,7 +1560,6 @@ function renderRsvpForm() {
 
     <!-- 参加の場合の詳細 -->
     <div id="rsvpAttendSection" style="display:${att===true?'':'none'}">
-      ${nudgeHtml}
 
       <!-- 保護者 -->
       <div class="form-label">保護者も行きますか？</div>
@@ -1590,12 +1572,12 @@ function renderRsvpForm() {
         </div>
       </div>
 
-      <!-- 弟妹 -->
-      <div id="rsvpSiblingSection" style="display:${parentComing===true?'':'none'}">
-        <div class="form-label">弟妹の同乗</div>
-        <div class="rsvp-number-choices" style="margin-bottom:16px">
-          ${[0,1,2,3].map(n => `<div class="rsvp-num ${sibCount===n?'selected':''}"
-            onclick="rsvpPickSibling(${n})">${n===0?'なし':n+'人'}</div>`).join('')}
+      <!-- 行く人数 -->
+      <div id="rsvpFamilySection">
+        <div class="form-label">行く人数（お子さん含む）</div>
+        <div class="rsvp-number-choices" style="margin-bottom:16px" id="rsvpFamilyChoices">
+          ${[1,2,3,4,5].map(n => `<div class="rsvp-num ${familyCount===n?'selected':''}"
+            onclick="rsvpPickFamily(${n})">${n}人</div>`).join('')}
         </div>
       </div>
 
@@ -1661,18 +1643,21 @@ function rsvpToggleParent(val) {
   document.querySelectorAll('#rsvpAttendSection > .rsvp-choices:first-of-type .rsvp-choice').forEach((el, i) => {
     el.classList.toggle('selected', (i === 0 && val) || (i === 1 && !val));
   });
-  document.getElementById('rsvpSiblingSection').style.display = val ? '' : 'none';
   document.getElementById('rsvpTransportSection').style.display = val ? '' : 'none';
   if (!val) {
     // Child only → auto ride, hide driver section
     document.getElementById('rsvpDriverSection').style.display = 'none';
   }
   document.getElementById('rsvpContent').dataset.parentComing = val;
+  // Auto-set family count default
+  const currentFamily = parseInt(document.getElementById('rsvpContent').dataset.familyCount) || 0;
+  const newDefault = val ? Math.max(currentFamily, 2) : 1;
+  rsvpPickFamily(newDefault);
 }
 
-function rsvpPickSibling(n) {
-  document.querySelectorAll('#rsvpSiblingSection .rsvp-num').forEach((el, i) => el.classList.toggle('selected', i === n));
-  document.getElementById('rsvpContent').dataset.siblingCount = n;
+function rsvpPickFamily(n) {
+  document.querySelectorAll('#rsvpFamilyChoices .rsvp-num').forEach((el, i) => el.classList.toggle('selected', i === (n - 1)));
+  document.getElementById('rsvpContent').dataset.familyCount = n;
 }
 
 function rsvpPickTransport(t) {
@@ -1712,7 +1697,7 @@ async function rsvpSubmit() {
 
     const parentComing = c.dataset.parentComing === 'true';
     let transport = parentComing ? (c.dataset.transport || 'ride') : 'ride';
-    const siblingCount = parseInt(c.dataset.siblingCount) || 0;
+    const familyCount = parseInt(c.dataset.familyCount) || (parentComing ? 2 : 1);
     const extraSeats = parseInt(c.dataset.extraSeats) || 0;
 
     // Collect equipment
@@ -1724,7 +1709,7 @@ async function rsvpSubmit() {
     const data = {
       attending: true,
       parent_coming: parentComing,
-      sibling_count: siblingCount,
+      family_count: familyCount,
       transport,
       extra_seats: transport === 'drive' ? extraSeats : 0,
       bring_equipment: transport === 'drive' ? bringEquipment : {},
@@ -1802,7 +1787,7 @@ function runAutoAssign(eventId) {
         id: mid, name: mem.name, zone_id: mem.zone_id || '',
         seats_needed: calcSeatsNeeded(mid, r),
         with_parent: r.parent_coming || false,
-        sibling_count: r.sibling_count || 0
+        family_count: r.family_count || (r.parent_coming ? 2 : 1)
       });
     } else if (r.transport === 'direct') {
       directs.push({ id: mid, name: mem.name });
@@ -1881,18 +1866,6 @@ function runAutoAssign(eventId) {
     warnings.push(`⚠ 席が足りません: ${unassigned.length}人が未割り当て`);
   }
 
-  zoneIds.forEach(zid => {
-    if (!zid) return;
-    const hasDriver = drivers.some(d => d.zone_id === zid);
-    const hasRider = Object.entries(rsvp).some(([mid, r]) =>
-      r.attending && membersData[mid]?.zone_id === zid
-    );
-    if (!hasDriver && hasRider) {
-      const zoneName = zonesData[zid]?.name || zid;
-      warnings.push(`⚠ ${zoneName}エリアにドライバーがいません`);
-    }
-  });
-
   currentAssignment = { drivers, directs, unassigned, warnings };
   currentAssignEventId = eventId;
   showAssignmentResult();
@@ -1936,7 +1909,7 @@ function showAssignmentResult() {
       d.passengers.forEach((p, pi) => {
         const detail = [];
         if (p.with_parent) detail.push('保護者同行');
-        if (p.sibling_count > 0) detail.push(`弟妹${p.sibling_count}人`);
+        if (p.family_count > 2) detail.push(`${p.family_count}人`);
         html += `<div class="assign-passenger">
           <span>${p.name}${detail.length ? ' ('+detail.join('・')+')' : ''}</span>
           ${isAdmin ? `<span class="passenger-move-btn" onclick="openMoveRider('${currentAssignEventId}',${di},${pi})">移動</span>` : ''}
@@ -2049,7 +2022,7 @@ async function confirmAssignment(eventId) {
     assignData.drivers[d.id] = {
       passengers: d.passengers.map(p => ({
         id: p.id, name: p.name, with_parent: p.with_parent,
-        sibling_count: p.sibling_count, seats_needed: p.seats_needed
+        family_count: p.family_count, seats_needed: p.seats_needed
       })),
       equipment: d.assigned_equipment || []
     };
@@ -2106,16 +2079,15 @@ function generateLineText(eventId) {
     text += `🚗 ${d.name}家${zone ? ' (' + zone.name + ')' : ''}\n`;
 
     const allPassengers = [];
-    // Driver's own child + sibling info
+    // Driver's own family
     const dRsvp = rsvp[d.id];
-    const driverInfo = d.name;
-    const dSibCount = dRsvp?.sibling_count || 0;
-    allPassengers.push(driverInfo + (dSibCount > 0 ? `+弟妹${dSibCount}人` : ''));
+    const dFamily = dRsvp?.family_count || 1;
+    allPassengers.push(d.name + (dFamily > 1 ? `(${dFamily}人)` : ''));
 
     d.passengers.forEach(p => {
       let pLabel = p.name;
-      if (p.with_parent) pLabel += '+保護者';
-      if (p.sibling_count > 0) pLabel += `+弟妹${p.sibling_count}人`;
+      const fc = p.family_count || 1;
+      if (fc > 1) pLabel += `(${fc}人)`;
       allPassengers.push(pLabel);
     });
 
@@ -2189,7 +2161,7 @@ function viewAssignment(eventId) {
       assigned_equipment: d.equipment || [],
       passengers: (d.passengers || []).map(p => ({
         id: p.id, name: p.name, with_parent: p.with_parent,
-        sibling_count: p.sibling_count || 0, seats_needed: p.seats_needed || 1
+        family_count: p.family_count || 1, seats_needed: p.seats_needed || 1
       }))
     });
   });
