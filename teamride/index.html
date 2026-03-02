@@ -828,8 +828,9 @@ function saveTeamName() {
 }
 
 function closeMemberSelect() {
+  if (!selectedMemberId) return;
   document.getElementById('memberSelectOverlay').classList.add('hidden');
-  if (selectedMemberId) showMainApp();
+  showMainApp();
 }
 
 // ── Members ──
@@ -1284,7 +1285,7 @@ function renderMyRsvpSummary(r) {
   const transport = r.transport === 'drive' ? '車出し' : r.transport === 'ride' ? '乗せてほしい' : '現地集合';
   const parent = r.parent_coming ? '同行' : '子供だけ';
   const familyStr = (r.family_count || 1) > 1 ? ` / ${r.family_count}人` : '';
-  const extra = r.transport === 'drive' ? ` / 他${r.extra_seats}人OK` : '';
+  const extra = r.transport === 'drive' && r.extra_seats > 0 ? ` / 他${r.extra_seats}人OK` : '';
   const eqNames = r.bring_equipment ? Object.keys(r.bring_equipment)
     .filter(k => r.bring_equipment[k] && equipmentTypesData[k])
     .map(k => equipmentTypesData[k].name) : [];
@@ -1330,13 +1331,17 @@ function renderRsvpList(eventId, e) {
   return html;
 }
 
+let _autoMarkDone = false;
 function autoMarkDoneEvents() {
+  if (_autoMarkDone) return;
+  _autoMarkDone = true;
   const today = new Date().toISOString().slice(0,10);
   Object.entries(eventsData).forEach(([id, e]) => {
     if (e.date && e.date < today && e.status !== 'done') {
       db.ref(ROOT + '/events/' + id + '/status').set('done');
     }
   });
+  setTimeout(() => { _autoMarkDone = false; }, 5000);
 }
 
 // ── Event Create/Edit ──
@@ -1538,7 +1543,7 @@ function renderRsvpForm() {
 
   // Seat suggestion for driver
   const hasCar = mem.car_type && CAR_TYPES[mem.car_type] && mem.car_type !== 'other';
-  let suggestedSeats = hasCar ? Math.max(0, (mem.car_max_passengers || CAR_TYPES[mem.car_type].maxPassengers) - familyCount + 1) : 0;
+  let suggestedSeats = hasCar ? Math.max(0, (mem.car_max_passengers || CAR_TYPES[mem.car_type].maxPassengers) - Math.max(0, familyCount - 2)) : 0;
 
   // Equipment available for this member
   const availEq = Object.entries(equipmentTypesData)
@@ -1679,8 +1684,12 @@ function rsvpToggleParent(val) {
 }
 
 function rsvpPickFamily(n) {
-  document.querySelectorAll('#rsvpFamilyChoices .rsvp-num').forEach((el, i) => el.classList.toggle('selected', i === (n - 1)));
-  document.getElementById('rsvpContent').dataset.familyCount = n;
+  const c = document.getElementById('rsvpContent');
+  const parentComing = c.dataset.parentComing === 'true';
+  const min = parentComing ? 2 : 1;
+  const val = Math.max(n, min);
+  document.querySelectorAll('#rsvpFamilyChoices .rsvp-num').forEach((el, i) => el.classList.toggle('selected', i === (val - 1)));
+  c.dataset.familyCount = val;
 }
 
 function rsvpPickTransport(t) {
@@ -1716,6 +1725,11 @@ async function rsvpSubmit() {
       return;
     }
 
+    if (!c.dataset.parentComing) {
+      showToast('保護者の同行を選択してください', 'error');
+      if (btn) { btn.disabled = false; btn.textContent = '回答を送信'; }
+      return;
+    }
     const parentComing = c.dataset.parentComing === 'true';
     let transport = parentComing ? (c.dataset.transport || 'ride') : 'ride';
     const familyCount = parseInt(c.dataset.familyCount) || (parentComing ? 2 : 1);
@@ -1793,7 +1807,7 @@ function runAutoAssign(eventId) {
   Object.entries(rsvp).forEach(([mid, r]) => {
     if (!r.attending) return;
     const mem = membersData[mid];
-    if (!mem) return;
+    if (!mem || mem.active === false) return;
 
     if (r.transport === 'drive') {
       drivers.push({
@@ -2020,7 +2034,7 @@ function moveRiderToUnassigned(fromIdx, pIdx) {
   a.drivers[fromIdx].available_seats += rider.seats_needed;
   a.unassigned.push(rider);
   a.warnings = a.warnings.filter(w => !w.includes('未割り当て'));
-  a.warnings.push(`⚠ 席が足りません: ${a.unassigned.length}人が未割り当て`);
+  a.warnings.push(`⚠ ${a.unassigned.length}人が未割り当てです`);
   closeModal('moveRiderModal');
   showAssignmentResult();
 }
@@ -2029,6 +2043,8 @@ function moveRiderToUnassigned(fromIdx, pIdx) {
 async function confirmAssignment(eventId) {
   const a = currentAssignment;
   if (!a) return;
+  const confirmBtn = document.querySelector('#assignActions .btn-primary');
+  if (confirmBtn) { confirmBtn.disabled = true; confirmBtn.textContent = '確定中...'; }
 
   const assignData = {
     status: 'confirmed',
@@ -2061,11 +2077,14 @@ async function confirmAssignment(eventId) {
     closeModal('assignModal');
   } catch (err) {
     showToast('エラー: ' + err.message, 'error');
+    if (confirmBtn) { confirmBtn.disabled = false; confirmBtn.textContent = '✅ 配車を確定'; }
   }
 }
 
 async function resetAssignment(eventId) {
   if (!confirm('配車をリセットして募集中に戻しますか？')) return;
+  const resetBtn = document.querySelector('#assignActions .btn-danger');
+  if (resetBtn) { resetBtn.disabled = true; resetBtn.textContent = 'リセット中...'; }
   try {
     await db.ref(ROOT + '/events/' + eventId + '/assignments').remove();
     await db.ref(ROOT + '/events/' + eventId + '/status').set('open');
@@ -2075,6 +2094,7 @@ async function resetAssignment(eventId) {
     showToast('配車をリセットしました');
   } catch (err) {
     showToast('エラー: ' + err.message, 'error');
+    if (resetBtn) { resetBtn.disabled = false; resetBtn.textContent = '🔄 配車をリセット'; }
   }
 }
 
