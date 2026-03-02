@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#2e7d32">
 <title>チームライド</title>
@@ -154,7 +154,7 @@ textarea{resize:vertical;min-height:60px}
 
 /* Badge */
 .badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
-.badge-match{background:#fff3e0;color:var(--match)}
+.badge-match{background:#fff3e0;color:#c45000}
 .badge-practice{background:#e8f5e9;color:var(--practice)}
 
 /* Siblings row */
@@ -254,7 +254,7 @@ textarea{resize:vertical;min-height:60px}
 <body>
 
 <!-- Toast -->
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="alert" aria-live="assertive"></div>
 
 <!-- Wizard (initial setup) -->
 <div class="wizard-overlay hidden" id="wizardOverlay">
@@ -573,6 +573,10 @@ const CAR_TYPES = {
 };
 
 // ── Helpers ──
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 function gradeLabel(g) {
   const n = parseInt(g);
   if (n === 0 || isNaN(n)) return '年長';
@@ -625,7 +629,7 @@ function loadAll() {
     membersData = snap.val() || {};
     renderMembers();
     updateMemberSelect();
-    if (selectedMemberId && !membersData[selectedMemberId]) {
+    if (selectedMemberId && (!membersData[selectedMemberId] || membersData[selectedMemberId].active === false)) {
       selectedMemberId = null;
       localStorage.removeItem('teamride_member');
     }
@@ -805,10 +809,10 @@ function updateMemberSelect() {
   list.innerHTML = entries.map(([id, m]) => {
     const z = m.zone_id && zonesData[m.zone_id] ? zonesData[m.zone_id] : null;
     return `<div class="member-select-item" onclick="selectMember('${id}')">
-      ${z ? '<span class="zone-dot" style="background:' + z.color + '"></span>' : ''}
+      ${z ? '<span class="zone-dot" style="background:'+escapeHtml(z.color)+'"></span>' : ''}
       <div>
-        <div class="name">${m.name}</div>
-        <div class="school">${m.school || ''}${z ? ' · ' + z.name : ''}</div>
+        <div class="name">${escapeHtml(m.name)}</div>
+        <div class="school">${escapeHtml(m.school)}${z ? ' · '+escapeHtml(z.name) : ''}</div>
       </div>
     </div>`;
   }).join('');
@@ -856,10 +860,10 @@ function renderMembers() {
     if (car) icons.push('🚗');
     if (eqList.length) icons.push('📦');
     return `<div class="list-item" onclick="editMember('${id}')">
-      ${z ? '<span class="zone-dot" style="background:'+z.color+'"></span>' : '<span style="width:10px"></span>'}
+      ${z ? '<span class="zone-dot" style="background:'+escapeHtml(z.color)+'"></span>' : '<span style="width:10px"></span>'}
       <div class="list-item-info">
-        <div class="list-item-name">${m.name}</div>
-        <div class="list-item-sub">${m.school || ''} · ${gradeLabel(m.grade)}${car ? ' · '+car : ''}</div>
+        <div class="list-item-name">${escapeHtml(m.name)}</div>
+        <div class="list-item-sub">${escapeHtml(m.school)} · ${gradeLabel(m.grade)}${car ? ' · '+car : ''}</div>
       </div>
       <div class="list-item-icons">${icons.join(' ')}</div>
     </div>`;
@@ -876,7 +880,7 @@ function openMemberModal(id) {
   const zoneSelect = document.getElementById('memberZone');
   zoneSelect.innerHTML = '<option value="">未設定</option>' +
     Object.entries(zonesData).sort((a,b) => (a[1].order||0) - (b[1].order||0))
-      .map(([zid, z]) => `<option value="${zid}">${z.name}</option>`).join('');
+      .map(([zid, z]) => `<option value="${zid}">${escapeHtml(z.name)}</option>`).join('');
 
   // Populate car type select
   const carSelect = document.getElementById('memberCarType');
@@ -888,7 +892,7 @@ function openMemberModal(id) {
   eqList.innerHTML = Object.entries(equipmentTypesData)
     .sort((a,b) => (a[1].order||0) - (b[1].order||0))
     .map(([eid, eq]) => `<div class="checkbox-item" data-eq="${eid}" onclick="toggleCheckbox(this)">
-      ${eq.name}${eq.seats_used ? ' ('+eq.seats_used+'席)' : ''}</div>`).join('');
+      ${escapeHtml(eq.name)}${eq.seats_used ? ' ('+eq.seats_used+'席)' : ''}</div>`).join('');
 
   if (id && membersData[id]) {
     const m = membersData[id];
@@ -947,9 +951,9 @@ function addSiblingRow(name, age) {
   const c = document.getElementById('siblingsContainer');
   const row = document.createElement('div');
   row.className = 'sibling-row';
-  row.innerHTML = `<input type="text" placeholder="名前" value="${name||''}" class="sib-name">
-    <input type="number" placeholder="歳" value="${age||''}" class="sib-age" style="width:70px" inputmode="numeric">
-    <button class="btn-icon btn-outline" onclick="this.parentElement.remove()" style="font-size:14px;width:36px;height:36px">✕</button>`;
+  row.innerHTML = `<input type="text" placeholder="名前" value="${escapeHtml(name)}" class="sib-name">
+    <input type="number" placeholder="歳" value="${escapeHtml(age)}" class="sib-age" style="width:70px" inputmode="numeric">
+    <button class="btn-icon btn-outline" onclick="this.parentElement.remove()" style="font-size:14px;width:44px;height:44px">✕</button>`;
   c.appendChild(row);
 }
 
@@ -1055,9 +1059,9 @@ function renderZoneList() {
   }
   list.innerHTML = entries.map(([id, z]) =>
     `<div class="list-item" style="cursor:default">
-      <span class="zone-dot" style="background:${z.color}"></span>
-      <span style="flex:1;font-weight:600">${z.name}</span>
-      <button class="btn-icon btn-outline" onclick="deleteZone('${id}')" style="font-size:12px;width:32px;height:32px">✕</button>
+      <span class="zone-dot" style="background:${escapeHtml(z.color)}"></span>
+      <span style="flex:1;font-weight:600">${escapeHtml(z.name)}</span>
+      <button class="btn-icon btn-outline" onclick="deleteZone('${id}')" style="font-size:12px;width:44px;height:44px">✕</button>
     </div>`
   ).join('');
 }
@@ -1095,8 +1099,8 @@ function renderEquipmentList() {
   }
   list.innerHTML = entries.map(([id, eq]) =>
     `<div class="list-item" style="cursor:default">
-      <span style="flex:1;font-weight:600">${eq.name} <span style="font-size:12px;color:var(--text-sub)">${eq.seats_used}席使用</span></span>
-      <button class="btn-icon btn-outline" onclick="deleteEquipment('${id}')" style="font-size:12px;width:32px;height:32px">✕</button>
+      <span style="flex:1;font-weight:600">${escapeHtml(eq.name)} <span style="font-size:12px;color:var(--text-sub)">${eq.seats_used}席使用</span></span>
+      <button class="btn-icon btn-outline" onclick="deleteEquipment('${id}')" style="font-size:12px;width:44px;height:44px">✕</button>
     </div>`
   ).join('');
 }
@@ -1182,10 +1186,12 @@ function renderEventCard(id, e, isPast) {
   const answeredCount = Object.keys(rsvp).length;
   const myRsvp = selectedMemberId ? rsvp[selectedMemberId] : null;
 
-  // Compute stats
+  // Compute stats (exclude inactive members)
   let drivers = 0, driverSeats = 0, riders = 0, riderSeats = 0, directs = 0;
   Object.entries(rsvp).forEach(([mid, r]) => {
     if (!r.attending) return;
+    const mem = membersData[mid];
+    if (!mem || mem.active === false) return;
     if (r.transport === 'drive') { drivers++; driverSeats += (r.extra_seats || 0); }
     else if (r.transport === 'ride') { riders++; riderSeats += calcSeatsNeeded(mid, r); }
     else if (r.transport === 'direct') directs++;
@@ -1194,18 +1200,18 @@ function renderEventCard(id, e, isPast) {
   let html = `<div class="card" style="border-left:4px solid ${e.type==='match'?'var(--match)':'var(--practice)'}">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
       <span class="badge ${typeClass}">${typeLabel}</span>
-      <span style="font-size:16px;font-weight:700;flex:1">${e.title || 'イベント'}</span>
-      ${isAdmin && !isPast ? `<button class="btn-icon btn-outline" onclick="openEventModal('${id}')" style="font-size:14px;width:32px;height:32px">✏️</button>` : ''}
+      <span style="font-size:16px;font-weight:700;flex:1">${escapeHtml(e.title) || 'イベント'}</span>
+      ${isAdmin && !isPast ? `<button class="btn-icon btn-outline" onclick="openEventModal('${id}')" style="font-size:14px;width:44px;height:44px">✏️</button>` : ''}
     </div>
     <div style="font-size:14px;color:var(--text-sub);margin-bottom:8px">
-      📅 ${dateStr} ${e.meet_time ? '🕗 '+e.meet_time : ''} ${e.location ? '📍 '+e.location : ''}
+      📅 ${dateStr} ${e.meet_time ? '🕗 '+escapeHtml(e.meet_time) : ''} ${e.location ? '📍 '+escapeHtml(e.location) : ''}
     </div>`;
 
   // Equipment needed
   if (e.equipment_needed) {
     const eqNames = Object.entries(e.equipment_needed)
       .filter(([,q]) => q > 0)
-      .map(([eid,q]) => (equipmentTypesData[eid]?.name || eid) + '×' + q);
+      .map(([eid,q]) => escapeHtml(equipmentTypesData[eid]?.name || eid) + '×' + q);
     if (eqNames.length) html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">📦 ${eqNames.join('、')}</div>`;
   }
 
@@ -1279,7 +1285,7 @@ function renderMyRsvpSummary(r) {
   if (!r.attending) {
     return `<div class="rsvp-summary" style="margin-top:10px;background:#fce4ec">
       <div class="rsvp-summary-title" style="color:var(--danger)">❌ 不参加</div>
-      ${r.not_attending_reason ? '<div class="rsvp-summary-detail">理由: '+r.not_attending_reason+'</div>' : ''}
+      ${r.not_attending_reason ? '<div class="rsvp-summary-detail">理由: '+escapeHtml(r.not_attending_reason)+'</div>' : ''}
     </div>`;
   }
   const transport = r.transport === 'drive' ? '車出し' : r.transport === 'ride' ? '乗せてほしい' : '現地集合';
@@ -1288,12 +1294,12 @@ function renderMyRsvpSummary(r) {
   const extra = r.transport === 'drive' && r.extra_seats > 0 ? ` / 他${r.extra_seats}人OK` : '';
   const eqNames = r.bring_equipment ? Object.keys(r.bring_equipment)
     .filter(k => r.bring_equipment[k] && equipmentTypesData[k])
-    .map(k => equipmentTypesData[k].name) : [];
+    .map(k => escapeHtml(equipmentTypesData[k].name)) : [];
   const eqStr = eqNames.length ? ' / ' + eqNames.join('・') : '';
   return `<div class="rsvp-summary" style="margin-top:10px">
     <div class="rsvp-summary-title">✅ 回答済み</div>
     <div class="rsvp-summary-detail">参加（${parent}・${transport}${familyStr}${extra}${eqStr}）</div>
-    ${r.note ? '<div class="rsvp-summary-detail">備考: '+r.note+'</div>' : ''}
+    ${r.note ? '<div class="rsvp-summary-detail">備考: '+escapeHtml(r.note)+'</div>' : ''}
   </div>`;
 }
 
@@ -1322,8 +1328,8 @@ function renderRsvpList(eventId, e) {
       }
       html += `<div class="rsvp-status-item">
         <div class="rsvp-status-icon">${icon}</div>
-        ${z ? '<span class="zone-dot" style="background:'+z.color+'"></span>' : ''}
-        <div class="rsvp-status-name">${m.name}</div>
+        ${z ? '<span class="zone-dot" style="background:'+escapeHtml(z.color)+'"></span>' : ''}
+        <div class="rsvp-status-name">${escapeHtml(m.name)}</div>
         <div class="rsvp-status-detail">${detail}</div>
       </div>`;
     });
@@ -1334,14 +1340,18 @@ function renderRsvpList(eventId, e) {
 let _autoMarkDone = false;
 function autoMarkDoneEvents() {
   if (_autoMarkDone) return;
-  _autoMarkDone = true;
   const today = new Date().toISOString().slice(0,10);
+  const updates = {};
   Object.entries(eventsData).forEach(([id, e]) => {
     if (e.date && e.date < today && e.status !== 'done') {
-      db.ref(ROOT + '/events/' + id + '/status').set('done');
+      updates[id + '/status'] = 'done';
     }
   });
-  setTimeout(() => { _autoMarkDone = false; }, 5000);
+  if (Object.keys(updates).length > 0) {
+    _autoMarkDone = true;
+    db.ref(ROOT + '/events').update(updates);
+    setTimeout(() => { _autoMarkDone = false; }, 5000);
+  }
 }
 
 // ── Event Create/Edit ──
@@ -1368,7 +1378,7 @@ function openEventModal(eventId) {
   if (eqEntries.length > 0) {
     eqSection.innerHTML = eqEntries.map(([eid, eq]) =>
       `<div class="equip-qty-row">
-        <span class="name">${eq.name}</span>
+        <span class="name">${escapeHtml(eq.name)}</span>
         <input type="number" id="eventEq_${eid}" min="0" max="20" value="0" inputmode="numeric">
       </div>`).join('');
     document.getElementById('eventEquipSection').style.display = '';
@@ -1476,7 +1486,7 @@ async function saveEvent() {
     if (location) {
       const existing = Object.entries(locationsData).find(([,l]) => l.name === location);
       if (existing) {
-        await db.ref(ROOT + '/locations/' + existing[0] + '/used_count').set((existing[1].used_count || 0) + 1);
+        await db.ref(ROOT + '/locations/' + existing[0] + '/used_count').set(firebase.database.ServerValue.increment(1));
       } else {
         await db.ref(ROOT + '/locations').push({ name: location, used_count: 1 });
       }
@@ -1553,12 +1563,12 @@ function renderRsvpForm() {
   c.innerHTML = `
     <div style="text-align:center;margin-bottom:16px">
       <div style="font-size:14px;color:var(--text-sub)">${e.type==='match'?'🟠 試合':'🟢 練習'} ${dateStr} ${e.meet_time||''}</div>
-      <div style="font-size:17px;font-weight:700;margin-top:4px">${e.title}</div>
-      ${e.location ? '<div style="font-size:13px;color:var(--text-sub)">📍 '+e.location+'</div>' : ''}
+      <div style="font-size:17px;font-weight:700;margin-top:4px">${escapeHtml(e.title)}</div>
+      ${e.location ? '<div style="font-size:13px;color:var(--text-sub)">📍 '+escapeHtml(e.location)+'</div>' : ''}
     </div>
 
     <!-- 参加/不参加 -->
-    <div class="form-label">${mem.name}は参加しますか？</div>
+    <div class="form-label">${escapeHtml(mem.name)}は参加しますか？</div>
     <div class="rsvp-choices" style="margin-bottom:16px" id="rsvpAttendChoices">
       <div class="rsvp-choice ${att===true?'selected':''}" onclick="rsvpToggleAttending(true)">
         <div class="rsvp-choice-icon">✅</div>参加
@@ -1572,7 +1582,7 @@ function renderRsvpForm() {
     <div id="rsvpNotAttendSection" style="display:${att===false?'':'none'}">
       <div class="form-group">
         <label class="form-label">理由（任意）</label>
-        <textarea id="rsvpReason" placeholder="理由があれば">${reason}</textarea>
+        <textarea id="rsvpReason" placeholder="理由があれば">${escapeHtml(reason)}</textarea>
       </div>
       <button class="btn btn-primary" id="rsvpSubmitBtn" onclick="rsvpSubmit()">回答を送信</button>
       <button class="btn btn-outline" onclick="closeModal('rsvpModal')" style="margin-top:8px">キャンセル</button>
@@ -1628,14 +1638,14 @@ function renderRsvpForm() {
           <div class="form-label">荷物</div>
           <div class="checkbox-group" style="margin-bottom:12px" id="rsvpEquipGroup">
             ${availEq.map(([eid, eq]) => `<div class="checkbox-item ${bringEq[eid]?'checked':''}"
-              data-eq="${eid}" onclick="this.classList.toggle('checked')">${eq.name}${eq.seats_used?' ('+eq.seats_used+'席)':''}</div>`).join('')}
+              data-eq="${eid}" onclick="this.classList.toggle('checked')">${escapeHtml(eq.name)}${eq.seats_used?' ('+eq.seats_used+'席)':''}</div>`).join('')}
           </div>` : ''}
       </div>
 
       <!-- 備考 -->
       <div class="form-group">
         <label class="form-label">備考（任意）</label>
-        <textarea id="rsvpNote" placeholder="メモがあれば">${note}</textarea>
+        <textarea id="rsvpNote" placeholder="メモがあれば">${escapeHtml(note)}</textarea>
       </div>
 
       <button class="btn btn-primary" id="rsvpSubmitBtn2" onclick="rsvpSubmit()">回答を送信</button>
@@ -1916,26 +1926,26 @@ function showAssignmentResult() {
 
   // Warnings
   a.warnings.forEach(w => {
-    html += `<div class="assign-warning">${w}</div>`;
+    html += `<div class="assign-warning">${escapeHtml(w)}</div>`;
   });
 
   // Unassigned
   if (a.unassigned.length > 0) {
     html += `<div class="assign-unassigned">
       <div style="font-weight:700;margin-bottom:4px">❌ 未割り当て</div>
-      ${a.unassigned.map(r => `<div>${r.name}（${r.seats_needed}席必要）</div>`).join('')}
+      ${a.unassigned.map(r => `<div>${escapeHtml(r.name)}（${r.seats_needed}席必要）</div>`).join('')}
     </div>`;
   }
 
   // Drivers
   a.drivers.forEach((d, di) => {
     const zone = d.zone_id && zonesData[d.zone_id] ? zonesData[d.zone_id] : null;
-    const zoneDot = zone ? `<span class="zone-dot" style="background:${zone.color}"></span>` : '';
-    const zoneLabel = zone ? `(${zone.name})` : '';
+    const zoneDot = zone ? `<span class="zone-dot" style="background:${escapeHtml(zone.color)}"></span>` : '';
+    const zoneLabel = zone ? `(${escapeHtml(zone.name)})` : '';
     const usedSeats = d.original_seats - d.available_seats;
 
     html += `<div class="assign-card">
-      <div class="assign-driver">${zoneDot}🚗 ${d.name}家 ${zoneLabel}
+      <div class="assign-driver">${zoneDot}🚗 ${escapeHtml(d.name)}家 ${zoneLabel}
         <span style="font-size:12px;font-weight:400;color:var(--text-sub)">${usedSeats}/${d.original_seats}席</span>
       </div>`;
 
@@ -1947,14 +1957,14 @@ function showAssignmentResult() {
         if (p.with_parent) detail.push('保護者同行');
         if (p.family_count > 1) detail.push(`${p.family_count}人`);
         html += `<div class="assign-passenger">
-          <span>${p.name}${detail.length ? ' ('+detail.join('・')+')' : ''}</span>
-          ${isAdmin ? `<span class="passenger-move-btn" onclick="openMoveRider('${currentAssignEventId}',${di},${pi})">移動</span>` : ''}
+          <span>${escapeHtml(p.name)}${detail.length ? ' ('+detail.join('・')+')' : ''}</span>
+          ${isAdmin ? `<span class="passenger-move-btn" onclick="openMoveRider('${currentAssignEventId}',${di},${pi})" style="min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center">移動</span>` : ''}
         </div>`;
       });
     }
 
     if (d.assigned_equipment && d.assigned_equipment.length > 0) {
-      const eqNames = d.assigned_equipment.map(eid => equipmentTypesData[eid]?.name || eid);
+      const eqNames = d.assigned_equipment.map(eid => escapeHtml(equipmentTypesData[eid]?.name || eid));
       html += `<div class="assign-equip">📦 ${eqNames.join('、')}</div>`;
     }
     html += '</div>';
@@ -1964,7 +1974,7 @@ function showAssignmentResult() {
   if (a.directs.length > 0) {
     html += `<div class="assign-card" style="border-left-color:var(--text-sub)">
       <div class="assign-driver">🏃 現地集合</div>
-      ${a.directs.map(d => `<div class="assign-passenger">${d.name}</div>`).join('')}
+      ${a.directs.map(d => `<div class="assign-passenger">${escapeHtml(d.name)}</div>`).join('')}
     </div>`;
   }
 
@@ -1996,7 +2006,7 @@ function openMoveRider(eventId, driverIdx, passengerIdx) {
   if (!a) return;
   const rider = a.drivers[driverIdx].passengers[passengerIdx];
 
-  let html = `<div style="font-size:15px;font-weight:700;margin-bottom:12px">${rider.name}（${rider.seats_needed}席）</div>`;
+  let html = `<div style="font-size:15px;font-weight:700;margin-bottom:12px">${escapeHtml(rider.name)}（${rider.seats_needed}席）</div>`;
   html += '<div style="font-size:14px;color:var(--text-sub);margin-bottom:12px">移動先を選んでください:</div>';
 
   a.drivers.forEach((d, di) => {
@@ -2004,7 +2014,7 @@ function openMoveRider(eventId, driverIdx, passengerIdx) {
     const canFit = d.available_seats >= rider.seats_needed;
     html += `<div class="list-item" style="${canFit ? '' : 'opacity:0.5;pointer-events:none'}"
       onclick="moveRider(${driverIdx},${passengerIdx},${di})">
-      <span>🚗 ${d.name}家</span>
+      <span>🚗 ${escapeHtml(d.name)}家</span>
       <span style="font-size:13px;color:var(--text-sub);margin-left:auto">空き${d.available_seats}席</span>
     </div>`;
   });
@@ -2071,8 +2081,7 @@ async function confirmAssignment(eventId) {
   assignData.line_text = generateLineText(eventId);
 
   try {
-    await db.ref(ROOT + '/events/' + eventId + '/assignments').set(assignData);
-    await db.ref(ROOT + '/events/' + eventId + '/status').set('assigned');
+    await db.ref(ROOT + '/events/' + eventId).update({ assignments: assignData, status: 'assigned' });
     showToast('配車を確定しました');
     closeModal('assignModal');
   } catch (err) {
@@ -2086,8 +2095,7 @@ async function resetAssignment(eventId) {
   const resetBtn = document.querySelector('#assignActions .btn-danger');
   if (resetBtn) { resetBtn.disabled = true; resetBtn.textContent = 'リセット中...'; }
   try {
-    await db.ref(ROOT + '/events/' + eventId + '/assignments').remove();
-    await db.ref(ROOT + '/events/' + eventId + '/status').set('open');
+    await db.ref(ROOT + '/events/' + eventId).update({ assignments: null, status: 'open' });
     currentAssignment = null;
     currentAssignEventId = null;
     closeModal('assignModal');
