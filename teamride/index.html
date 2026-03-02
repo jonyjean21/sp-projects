@@ -1203,18 +1203,7 @@ function renderEventCard(id, e, isPast) {
     if (!r.attending) return;
     const mem = membersData[mid];
     if (!mem || mem.active === false) return;
-    if (r.transport === 'drive') {
-      drivers++;
-      let seats = r.extra_seats || 0;
-      if (r.bring_equipment && e.equipment_needed) {
-        Object.keys(r.bring_equipment).forEach(eid => {
-          if (r.bring_equipment[eid] && e.equipment_needed[eid] && equipmentTypesData[eid]) {
-            seats -= (equipmentTypesData[eid].seats_used || 0);
-          }
-        });
-      }
-      driverSeats += Math.max(0, seats);
-    }
+    if (r.transport === 'drive') { drivers++; driverSeats += (r.extra_seats || 0); }
     else if (r.transport === 'ride') { riders++; riderSeats += calcSeatsNeeded(mid, r); }
     else if (r.transport === 'direct') directs++;
   });
@@ -1955,8 +1944,6 @@ function runAutoAssign(eventId) {
       if (d.equipment[eid]) {
         d.assigned_equipment = d.assigned_equipment || [];
         d.assigned_equipment.push(eid);
-        d.available_seats -= (eqType.seats_used || 0);
-        d.available_seats = Math.max(0, d.available_seats);
         remaining--;
       }
     });
