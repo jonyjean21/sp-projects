@@ -1,0 +1,30 @@
+{
+  "name": "sp-income-engine",
+  "version": "1.0.0",
+  "description": "SP 全自動収入エンジン - Claude Code で副業収入を完全自動化",
+  "type": "module",
+  "scripts": {
+    "morning": "bash run-all.sh morning",
+    "evening": "bash run-all.sh evening",
+    "weekly": "bash run-all.sh weekly",
+    "article": "node 01-molkky-affiliate/article-generator.js",
+    "tweet": "node 06-x-auto-post/x-affiliate-poster.js",
+    "tweet:dry": "node 06-x-auto-post/x-affiliate-poster.js --dry-run",
+    "note": "node 02-note-magazine/content-generator.js",
+    "note:list": "node 02-note-magazine/content-generator.js --list",
+    "booth": "node 03-booth-prompts/generate-product.js --all",
+    "blog": "node 05-affiliate-blogs/blog-generator.js",
+    "saas:demo": "node 04-sports-saas/tournament-saas.js --demo",
+    "saas:landing": "node 04-sports-saas/tournament-saas.js --landing",
+    "freelance": "node tools/freelance-auto-apply.js --generate"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.36.0"
+  },
+  "optionalDependencies": {
+    "twitter-api-v2": "^1.18.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
