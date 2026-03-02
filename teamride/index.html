@@ -193,6 +193,17 @@ textarea{resize:vertical;min-height:60px}
 .rsvp-status-icon{font-size:16px;width:24px;text-align:center}
 .rsvp-status-name{font-weight:600;flex:1}
 .rsvp-status-detail{color:var(--text-sub);font-size:13px}
+.rsvp-section-header{display:flex;align-items:center;gap:6px;padding:7px 12px;
+  font-size:12px;font-weight:700;color:var(--text-sub);background:var(--bg);
+  border-bottom:1px solid var(--border)}
+.rsvp-section-count{font-weight:400;color:var(--text-light)}
+.rsvp-detail-line{font-size:12px;color:var(--text-sub);display:flex;align-items:center;gap:4px;flex-wrap:wrap;
+  width:100%;padding-left:34px;margin-top:-2px}
+.rsvp-eq-badge{display:inline-block;font-size:10px;font-weight:600;padding:1px 6px;
+  border-radius:8px;background:#fff3e0;color:#c45000}
+.rsvp-seats-badge{font-size:11px;font-weight:600;padding:1px 6px;border-radius:8px}
+.rsvp-seats-ok{background:#e8f5e9;color:var(--success)}
+.rsvp-seats-zero{background:var(--bg);color:var(--text-light)}
 
 /* Event form */
 .event-type-toggle{display:flex;gap:8px;margin-bottom:16px}
@@ -1319,31 +1330,115 @@ function renderRsvpList(eventId, e) {
   const activeMembers = Object.entries(membersData).filter(([,m]) => m.active !== false);
   if (activeMembers.length === 0) return '';
 
+  // Partition into groups
+  const groups = { drivers: [], riders: [], directs: [], unanswered: [], declined: [] };
+  activeMembers.forEach(([mid, m]) => {
+    const r = rsvp[mid];
+    if (!r) { groups.unanswered.push([mid, m, r]); return; }
+    if (!r.attending) { groups.declined.push([mid, m, r]); return; }
+    if (r.transport === 'drive') groups.drivers.push([mid, m, r]);
+    else if (r.transport === 'ride') groups.riders.push([mid, m, r]);
+    else if (r.transport === 'direct') groups.directs.push([mid, m, r]);
+    else groups.unanswered.push([mid, m, r]);
+  });
+
+  // Sort
+  groups.drivers.sort((a, b) => {
+    const aEq = a[2].bring_equipment && Object.values(a[2].bring_equipment).some(v => v) ? 1 : 0;
+    const bEq = b[2].bring_equipment && Object.values(b[2].bring_equipment).some(v => v) ? 1 : 0;
+    if (bEq !== aEq) return bEq - aEq;
+    return (b[2].extra_seats || 0) - (a[2].extra_seats || 0);
+  });
+  groups.riders.sort((a, b) => calcSeatsNeeded(b[0], b[2]) - calcSeatsNeeded(a[0], a[2]));
+  const alpha = (a, b) => a[1].name.localeCompare(b[1].name);
+  groups.directs.sort(alpha);
+  groups.unanswered.sort(alpha);
+  groups.declined.sort(alpha);
+
+  function zoneDot(m) {
+    const z = m.zone_id && zonesData[m.zone_id] ? zonesData[m.zone_id] : null;
+    return z ? '<span class="zone-dot" style="background:'+escapeHtml(z.color)+'"></span>' : '';
+  }
+
   let html = '<div style="margin-top:10px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">';
-  activeMembers
-    .sort((a,b) => {
-      const ra = rsvp[a[0]], rb = rsvp[b[0]];
-      if (!ra && rb) return 1;
-      if (ra && !rb) return -1;
-      return a[1].name.localeCompare(b[1].name);
-    })
-    .forEach(([mid, m]) => {
-      const r = rsvp[mid];
-      const z = m.zone_id && zonesData[m.zone_id] ? zonesData[m.zone_id] : null;
-      let icon = '⚠', detail = '未回答';
-      if (r) {
-        if (!r.attending) { icon = '❌'; detail = '不参加'; }
-        else if (r.transport === 'drive') { icon = '🚗'; detail = `車出し/${r.extra_seats}席`; }
-        else if (r.transport === 'ride') { icon = '🙋'; detail = (r.parent_coming ? '乗せて/親子' : '乗せて/子のみ') + (r.family_count > 1 ? '/'+r.family_count+'人' : ''); }
-        else if (r.transport === 'direct') { icon = '🏃'; detail = '現地集合'; }
-      }
-      html += `<div class="rsvp-status-item">
-        <div class="rsvp-status-icon">${icon}</div>
-        ${z ? '<span class="zone-dot" style="background:'+escapeHtml(z.color)+'"></span>' : ''}
+
+  // Drivers
+  if (groups.drivers.length) {
+    html += `<div class="rsvp-section-header">🚗 車出し <span class="rsvp-section-count">(${groups.drivers.length}台)</span></div>`;
+    groups.drivers.forEach(([mid, m, r]) => {
+      const fc = r.family_count || (r.parent_coming ? 2 : 1);
+      const seats = r.extra_seats || 0;
+      const carLabel = m.car_type && CAR_TYPES[m.car_type] ? CAR_TYPES[m.car_type].label : '';
+      const eqNames = r.bring_equipment ? Object.keys(r.bring_equipment)
+        .filter(k => r.bring_equipment[k] && equipmentTypesData[k])
+        .map(k => equipmentTypesData[k].name) : [];
+      const seatsCls = seats > 0 ? 'rsvp-seats-ok' : 'rsvp-seats-zero';
+      const seatsText = seats > 0 ? '空'+seats+'席' : '満席';
+      html += `<div class="rsvp-status-item" style="flex-wrap:wrap">
+        <div class="rsvp-status-icon">🚗</div>
+        ${zoneDot(m)}
         <div class="rsvp-status-name">${escapeHtml(m.name)}</div>
-        <div class="rsvp-status-detail">${detail}</div>
+        <span class="rsvp-seats-badge ${seatsCls}">${seatsText}</span>
+        <div class="rsvp-detail-line">
+          ${carLabel ? escapeHtml(carLabel)+' / ' : ''}家族${fc}人${eqNames.map(n => ' <span class="rsvp-eq-badge">📦'+escapeHtml(n)+'</span>').join('')}
+        </div>
       </div>`;
     });
+  }
+
+  // Riders
+  if (groups.riders.length) {
+    html += `<div class="rsvp-section-header">🙋 乗せて <span class="rsvp-section-count">(${groups.riders.length}人)</span></div>`;
+    groups.riders.forEach(([mid, m, r]) => {
+      const sn = calcSeatsNeeded(mid, r);
+      const fc = r.family_count || (r.parent_coming ? 2 : 1);
+      const parentLabel = r.parent_coming ? '親子' : '子のみ';
+      html += `<div class="rsvp-status-item">
+        <div class="rsvp-status-icon">🙋</div>
+        ${zoneDot(m)}
+        <div class="rsvp-status-name">${escapeHtml(m.name)}</div>
+        <div class="rsvp-status-detail">${parentLabel}${fc > 1 ? ' '+fc+'人' : ''} (${sn}席)</div>
+      </div>`;
+    });
+  }
+
+  // Direct
+  if (groups.directs.length) {
+    html += `<div class="rsvp-section-header">🏃 現地集合 <span class="rsvp-section-count">(${groups.directs.length}人)</span></div>`;
+    groups.directs.forEach(([mid, m]) => {
+      html += `<div class="rsvp-status-item">
+        <div class="rsvp-status-icon">🏃</div>
+        ${zoneDot(m)}
+        <div class="rsvp-status-name">${escapeHtml(m.name)}</div>
+      </div>`;
+    });
+  }
+
+  // Unanswered
+  if (groups.unanswered.length) {
+    html += `<div class="rsvp-section-header">⚠ 未回答 <span class="rsvp-section-count">(${groups.unanswered.length}人)</span></div>`;
+    groups.unanswered.forEach(([mid, m]) => {
+      html += `<div class="rsvp-status-item" style="opacity:0.6">
+        <div class="rsvp-status-icon">⚠</div>
+        ${zoneDot(m)}
+        <div class="rsvp-status-name">${escapeHtml(m.name)}</div>
+      </div>`;
+    });
+  }
+
+  // Declined
+  if (groups.declined.length) {
+    html += `<div class="rsvp-section-header">❌ 不参加 <span class="rsvp-section-count">(${groups.declined.length}人)</span></div>`;
+    groups.declined.forEach(([mid, m, r]) => {
+      html += `<div class="rsvp-status-item" style="opacity:0.6">
+        <div class="rsvp-status-icon">❌</div>
+        ${zoneDot(m)}
+        <div class="rsvp-status-name">${escapeHtml(m.name)}</div>
+        ${r && r.not_attending_reason ? '<div class="rsvp-status-detail">'+escapeHtml(r.not_attending_reason)+'</div>' : ''}
+      </div>`;
+    });
+  }
+
   html += '</div>';
   return html;
 }
