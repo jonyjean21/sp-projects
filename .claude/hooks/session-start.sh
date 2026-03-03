@@ -38,6 +38,24 @@ if data:
   fi
 fi
 
+# ===== 月次インサイトレポートのリマインダー =====
+TODAY=$(date +%d)
+CURRENT_MONTH=$(date +%Y-%m)
+REPORT_FILE="/home/user/sp-projects/docs/monthly-reports/${CURRENT_MONTH}.md"
+PREV_MONTH=$(date -d "$(date +%Y-%m-01) -1 day" +%Y-%m 2>/dev/null || date -v-1m +%Y-%m 2>/dev/null || echo "")
+
+# 月初1〜7日で、今月のレポートがまだない場合に通知
+if [ "$TODAY" -le 7 ] && [ -n "$PREV_MONTH" ] && [ ! -f "$REPORT_FILE" ]; then
+  echo ""
+  echo "===== 月次レポート未作成 ====="
+  echo "先月（${PREV_MONTH}）の記事インサイトレポートがまだ生成されていません。"
+  echo ""
+  echo "実行コマンド: /review-article-insights"
+  echo "内容: GA4データ + Search Console → 月次レポート生成 → docs/monthly-reports/${PREV_MONTH}.md に保存"
+  echo "=============================="
+  echo ""
+fi
+
 # ===== 大会情報キューの自動チェック =====
 T_QUEUE=$(curl -sf "${FIREBASE_URL}/tournament-queue.json?orderBy=%22status%22&equalTo=%22pending%22" 2>/dev/null || echo "{}")
 
