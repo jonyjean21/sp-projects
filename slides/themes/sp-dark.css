@@ -1,0 +1,141 @@
+/* @theme sp-dark */
+/* SP-Projects ダーク/サイバーパンク風 Marp テーマ */
+
+@import 'default';
+
+:root {
+  --color-bg: #0d1117;
+  --color-bg-secondary: #161b22;
+  --color-text: #e6edf3;
+  --color-accent: #58a6ff;
+  --color-accent-alt: #7ee787;
+  --color-border: #30363d;
+  --color-muted: #8b949e;
+}
+
+section {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: 'Noto Sans JP', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 28px;
+  padding: 40px 60px;
+}
+
+/* タイトルスライド */
+section.lead {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #1a1f2e 100%);
+}
+
+section.lead h1 {
+  font-size: 2.2em;
+  color: var(--color-accent);
+  border-bottom: 3px solid var(--color-accent);
+  padding-bottom: 16px;
+}
+
+section.lead h2 {
+  color: var(--color-muted);
+  font-weight: 400;
+  font-size: 1.1em;
+}
+
+/* 見出し */
+h1 {
+  color: var(--color-accent);
+  font-size: 1.6em;
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: 8px;
+}
+
+h2 {
+  color: var(--color-accent-alt);
+  font-size: 1.3em;
+}
+
+h3 {
+  color: var(--color-text);
+  font-size: 1.1em;
+}
+
+/* リスト */
+ul, ol {
+  line-height: 1.8;
+}
+
+li::marker {
+  color: var(--color-accent);
+}
+
+/* コードブロック */
+code {
+  background: var(--color-bg-secondary);
+  color: var(--color-accent-alt);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
+pre {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+pre code {
+  background: transparent;
+  padding: 0;
+}
+
+/* 強調 */
+strong {
+  color: var(--color-accent);
+}
+
+em {
+  color: var(--color-accent-alt);
+}
+
+/* テーブル */
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th {
+  background: var(--color-bg-secondary);
+  color: var(--color-accent);
+  border: 1px solid var(--color-border);
+  padding: 8px 12px;
+}
+
+td {
+  border: 1px solid var(--color-border);
+  padding: 8px 12px;
+}
+
+/* 引用 */
+blockquote {
+  border-left: 4px solid var(--color-accent);
+  background: var(--color-bg-secondary);
+  padding: 12px 20px;
+  border-radius: 0 8px 8px 0;
+  color: var(--color-muted);
+}
+
+/* フッター */
+footer {
+  color: var(--color-muted);
+  font-size: 0.7em;
+}
+
+/* ページ番号 */
+section::after {
+  color: var(--color-muted);
+  font-size: 0.6em;
+}

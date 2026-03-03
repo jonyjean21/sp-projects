@@ -1,0 +1,15 @@
+{
+  "name": "sp-slides",
+  "version": "1.0.0",
+  "description": "Marp スライド作成環境（Claude Code連携）",
+  "scripts": {
+    "preview": "npx @marp-team/marp-cli --preview",
+    "build:pdf": "npx @marp-team/marp-cli --pdf --allow-local-files",
+    "build:pptx": "npx @marp-team/marp-cli --pptx --allow-local-files",
+    "build:html": "npx @marp-team/marp-cli --html --allow-local-files",
+    "build:all": "npm run build:pdf -- -o output/ && npm run build:pptx -- -o output/ && npm run build:html -- -o output/"
+  },
+  "devDependencies": {
+    "@marp-team/marp-cli": "^4"
+  }
+}

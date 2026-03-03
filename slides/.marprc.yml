@@ -1,0 +1,4 @@
+theme: sp-dark
+html: true
+allowLocalFiles: true
+output: output/

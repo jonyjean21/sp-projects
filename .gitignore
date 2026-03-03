@@ -21,5 +21,8 @@ data/notion_extracted_text.txt
 # Node
 node_modules/
 
+# Marp ビルド出力
+slides/output/
+
 # OS
 .DS_Store

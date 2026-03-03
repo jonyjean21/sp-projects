@@ -36,6 +36,41 @@
 - チャプ会議事録: Firebase `/chapche-queue` のpendingを取得→テキストDL→議事録変換→Notion投稿→ローカル保存→git push を全自動で行う
 - 大会情報: Firebase `/tournament-queue` のpendingも同様に自動処理
 
+## 仕様駆動開発（Spec-Driven Development）
+
+新規開発・大きな変更の前に `.spec/` の仕様ファイルを参照・更新する。
+
+### 原則
+1. **実装前に spec を読む** — `.spec/` 内の該当ファイルを確認してから作業開始
+2. **ゼロ生成より構造化** — ユーザーのインプットを整理・構造化して実装に落とす
+3. **spec と実装を同期** — 実装が変わったら spec も更新する
+
+### ファイル構成
+- `.spec/_template.md` — 新規spec作成用テンプレート
+- `.spec/teamride.md` — TeamRide アプリ
+- `.spec/tournament-submit.md` — 大会投稿フォーム
+- `.spec/income-engine.md` — 収入エンジン
+- `.spec/molkky-dome.md` — モルック・ドーム
+
+## スライド作成（Marp）
+
+Markdown → PDF/PPTX/HTML のプレゼン資料作成環境。
+
+### 使い方
+- `/slides <テーマ>` でスライド新規作成
+- `/slides build <ファイル>` でビルド（PDF/PPTX/HTML）
+- スライドは `slides/` ディレクトリに保存
+- テーマ: `sp-dark`（ダーク基調、SP-Projectsデザイン統一）
+
+### 構成
+```
+slides/
+├── themes/sp-dark.css  # カスタムテーマ
+├── output/             # ビルド出力（gitignore対象）
+├── sample.md           # サンプルスライド
+└── package.json        # Marp CLI
+```
+
 ## プロジェクト構成
 
 - **サイト**: GitHub Pages（main ブランチ / ルート）
