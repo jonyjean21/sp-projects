@@ -21,7 +21,8 @@
     "cron:setup": "bash scripts/setup-cron.sh"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.36.0"
+    "@anthropic-ai/sdk": "^0.36.0",
+    "puppeteer-core": "^24.37.5"
   },
   "engines": {
     "node": ">=18.0.0"
