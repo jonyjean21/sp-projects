@@ -61,9 +61,29 @@ function checkNewTranscripts() {
 }
 
 function processTranscript_(file, year, month, day, dateLabel) {
-  // テキスト抽出（DriveApp経由 — DocumentAppより権限要件が緩い）
-  const blob = file.getAs('text/plain');
-  const fullText = blob.getDataAsString();
+  // ショートカットの場合は実体ファイルを取得
+  let targetFile = file;
+  if (file.getMimeType() === 'application/vnd.google-apps.shortcut') {
+    const meta = JSON.parse(UrlFetchApp.fetch(
+      'https://www.googleapis.com/drive/v3/files/' + file.getId() + '?fields=shortcutDetails',
+      { headers: { 'Authorization': 'Bearer ' + ScriptApp.getOAuthToken() } }
+    ).getContentText());
+    targetFile = DriveApp.getFileById(meta.shortcutDetails.targetId);
+  }
+
+  // テキスト抽出（Google Docsはエクスポート、それ以外は直接読み取り）
+  let fullText;
+  const mime = targetFile.getMimeType();
+  if (mime === 'application/vnd.google-apps.document') {
+    // Google Docs → Drive APIでテキストエクスポート
+    const exported = UrlFetchApp.fetch(
+      'https://www.googleapis.com/drive/v3/files/' + targetFile.getId() + '/export?mimeType=text/plain',
+      { headers: { 'Authorization': 'Bearer ' + ScriptApp.getOAuthToken() } }
+    );
+    fullText = exported.getContentText();
+  } else {
+    fullText = targetFile.getBlob().getDataAsString();
+  }
   const marker = fullText.indexOf('📖 文字起こし');
   const notes = marker > 0 ? fullText.substring(0, marker) : fullText.substring(0, 15000);
 
