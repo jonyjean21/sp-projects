@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MACHAP 事業計画書 v1</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0B1628; --card: #132240; --card2: #1A2D52;
+  --blue: #1A56DB; --cyan: #06B6D4; --orange: #F97316;
+  --green: #10B981; --purple: #A78BFA; --red: #F43F5E;
+  --white: #F0F4FF; --sub: #7FAACC; --border: #1A56DB33;
+}
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', sans-serif;
+  background: var(--bg); color: var(--white);
+  max-width: 640px; margin: 0 auto; padding: 0 16px 48px;
+  line-height: 1.7; -webkit-font-smoothing: antialiased;
+}
+
+/* Hero */
+.hero {
+  text-align: center; padding: 56px 0 40px;
+  position: relative;
+}
+.hero::after {
+  content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 80px; height: 2px; background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+}
+.hero-label {
+  font-size: 11px; letter-spacing: 0.2em; color: var(--cyan);
+  font-weight: 600; text-transform: uppercase; margin-bottom: 12px;
+}
+.hero h1 {
+  font-size: 48px; font-weight: 800; letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--white) 40%, var(--cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; margin-bottom: 12px;
+}
+.hero-sub { font-size: 14px; color: var(--sub); line-height: 1.6; }
+.hero-ver { font-size: 11px; color: var(--sub); margin-top: 12px; opacity: 0.6; }
+
+/* Cycle bar */
+.cycle {
+  display: flex; gap: 4px; align-items: center; justify-content: center;
+  flex-wrap: wrap; margin: 32px 0;
+}
+.cycle-step {
+  padding: 5px 12px; border-radius: 6px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
+}
+.cycle-arrow { color: var(--sub); font-size: 12px; }
+
+/* Section */
+.section { margin-top: 48px; }
+.section-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 20px; padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.section-num {
+  font-size: 11px; font-weight: 800; color: var(--cyan);
+  background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.2);
+  padding: 4px 10px; border-radius: 6px; letter-spacing: 0.1em;
+}
+.section-title { font-size: 18px; font-weight: 800; }
+
+/* Cards */
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px; margin-bottom: 10px;
+}
+.card-icon { font-size: 28px; margin-bottom: 10px; }
+.card-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+  margin-bottom: 6px; text-transform: uppercase;
+}
+.card-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.card-desc { font-size: 13px; color: var(--sub); line-height: 1.7; }
+
+/* Grid */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+@media (max-width: 400px) {
+  .grid-2 { grid-template-columns: 1fr; }
+  .grid-3 { grid-template-columns: 1fr; }
+}
+
+/* Value cards */
+.val-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px; text-align: center;
+}
+.val-label {
+  font-size: 11px; font-weight: 800; letter-spacing: 0.15em;
+  margin-bottom: 4px;
+}
+.val-title { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+.val-desc { font-size: 12px; color: var(--sub); line-height: 1.6; }
+
+/* STP */
+.stp-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px; margin-bottom: 10px;
+}
+.stp-label {
+  font-size: 12px; font-weight: 800; padding: 3px 10px;
+  border-radius: 6px; display: inline-block; margin-bottom: 10px;
+}
+.stp-list { list-style: none; padding: 0; }
+.stp-list li {
+  font-size: 13px; color: var(--sub); padding: 4px 0;
+  padding-left: 16px; position: relative;
+}
+.stp-list li::before {
+  content: '·'; position: absolute; left: 0; color: var(--cyan);
+  font-weight: 700;
+}
+
+/* 5STEP flow */
+.step-flow { display: flex; flex-direction: column; gap: 0; }
+.step-item {
+  display: flex; align-items: flex-start; gap: 14px; padding: 16px 0;
+}
+.step-badge {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800; flex-shrink: 0;
+}
+.step-content { flex: 1; }
+.step-name { font-size: 11px; font-weight: 800; letter-spacing: 0.1em; margin-bottom: 2px; }
+.step-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.step-desc { font-size: 12px; color: var(--sub); line-height: 1.6; }
+.step-connector {
+  width: 2px; height: 12px; margin-left: 19px;
+  background: linear-gradient(180deg, var(--cyan), transparent);
+}
+
+/* 3C */
+.c3-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px; margin-bottom: 10px;
+  border-left: 3px solid var(--cyan);
+}
+.c3-title { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+.c3-list { list-style: none; padding: 0; }
+.c3-list li {
+  font-size: 12px; color: var(--sub); padding: 3px 0;
+  line-height: 1.6;
+}
+
+/* Money */
+.money-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px; margin-bottom: 10px;
+  display: flex; gap: 14px; align-items: flex-start;
+}
+.money-num {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--card2); display: flex; align-items: center;
+  justify-content: center; font-size: 14px; font-weight: 800;
+  color: var(--orange); flex-shrink: 0;
+}
+.money-body { flex: 1; }
+.money-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.money-desc { font-size: 12px; color: var(--sub); line-height: 1.6; }
+
+/* Split bar */
+.split-bar {
+  display: flex; gap: 8px; margin-top: 16px;
+}
+.split-item {
+  flex: 1; background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px; text-align: center;
+}
+.split-pct { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+.split-label { font-size: 11px; color: var(--sub); line-height: 1.4; }
+
+/* Team */
+.team-grid { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.team-member { text-align: center; }
+.team-avatar {
+  width: 56px; height: 56px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 800; color: var(--white);
+  margin: 0 auto 8px;
+}
+.team-name { font-size: 15px; font-weight: 700; }
+.team-role { font-size: 11px; color: var(--sub); margin-top: 2px; max-width: 120px; }
+
+/* Phase */
+.phase-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px; margin-bottom: 10px;
+}
+.phase-label {
+  font-size: 11px; font-weight: 800; padding: 3px 10px;
+  border-radius: 6px; display: inline-block; margin-bottom: 4px;
+}
+.phase-sub { font-size: 12px; color: var(--sub); margin-bottom: 10px; }
+.phase-list { list-style: none; padding: 0; }
+.phase-list li {
+  font-size: 13px; color: var(--sub); padding: 4px 0;
+  padding-left: 20px; position: relative;
+}
+.phase-list li::before {
+  content: '▸'; position: absolute; left: 0; color: var(--cyan);
+}
+
+/* Discussion */
+.disc-item {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px; margin-bottom: 10px;
+}
+.disc-q { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+.disc-opt { font-size: 12px; color: var(--sub); padding: 3px 0; }
+
+/* Action */
+.action-card {
+  background: var(--card2); border: 1px solid var(--cyan);
+  border-radius: 12px; padding: 18px; margin-bottom: 10px;
+  display: flex; gap: 14px; align-items: flex-start;
+}
+.action-num {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--cyan); color: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800; flex-shrink: 0;
+}
+.action-body { flex: 1; }
+.action-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.action-desc { font-size: 12px; color: var(--sub); line-height: 1.6; }
+
+/* Closing */
+.closing {
+  text-align: center; padding: 56px 0 24px;
+  border-top: 1px solid var(--border); margin-top: 56px;
+}
+.closing h2 {
+  font-size: 36px; font-weight: 800;
+  background: linear-gradient(135deg, var(--white) 40%, var(--cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; margin-bottom: 12px;
+}
+.closing p { font-size: 14px; color: var(--sub); }
+
+.footer {
+  text-align: center; font-size: 11px; color: var(--sub);
+  margin-top: 40px; opacity: 0.5;
+}
+
+/* Download link */
+.dl-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--sub); text-decoration: none;
+  padding: 6px 14px; border-radius: 8px;
+  background: var(--card); border: 1px solid var(--border);
+  margin-top: 12px; transition: border-color 0.2s;
+}
+.dl-link:hover { border-color: var(--cyan); color: var(--cyan); }
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-label">MACHAP — マチャップ</div>
+  <h1>MACHAP</h1>
+  <div class="hero-sub">FIND → MAKE → OFFER → PRESENT → CONSULT</div>
+  <div class="hero-ver">2026年3月 | Ver. 1.0（内部ドラフト）</div>
+  <a class="dl-link" href="./MACHAP_事業計画_v1_draft.pptx" download>⬇ PPTX版をダウンロード</a>
+</div>
+
+<!-- Cycle -->
+<div class="cycle">
+  <span class="cycle-step" style="background:#1A56DB22;color:#1A56DB;border:1px solid #1A56DB55">FIND</span>
+  <span class="cycle-arrow">→</span>
+  <span class="cycle-step" style="background:#7C3AED22;color:#A78BFA;border:1px solid #7C3AED55">MAKE</span>
+  <span class="cycle-arrow">→</span>
+  <span class="cycle-step" style="background:#06B6D422;color:#06B6D4;border:1px solid #06B6D455">OFFER</span>
+  <span class="cycle-arrow">→</span>
+  <span class="cycle-step" style="background:#F9731622;color:#F97316;border:1px solid #F9731655">PRESENT</span>
+  <span class="cycle-arrow">→</span>
+  <span class="cycle-step" style="background:#10B98122;color:#10B981;border:1px solid #10B98155">CONSULT</span>
+</div>
+
+<!-- 01: WHY -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <span class="section-title">WHY — 私たちが解決する課題</span>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-icon">💡</div>
+      <div class="card-title">アイデアはあるのに</div>
+      <div class="card-desc">形にできずに終わる。スキル・時間・仲間がいない。</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">⏱️</div>
+      <div class="card-title">意思決定が遅い</div>
+      <div class="card-desc">考えすぎて動けない。PoCまでの時間が長すぎる。</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📣</div>
+      <div class="card-title">作っても広がらない</div>
+      <div class="card-desc">いいものを作っても届け方がわからず埋もれる。</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">💰</div>
+      <div class="card-title">収益化まで遠い</div>
+      <div class="card-desc">価値提供からマネタイズへの道筋が不明確なまま。</div>
+    </div>
+  </div>
+</div>
+
+<!-- 02: WHO -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <span class="section-title">WHO — ターゲット顧客</span>
+  </div>
+
+  <div class="stp-card">
+    <span class="stp-label" style="background:#1A56DB22;color:#1A56DB">S セグメンテーション</span>
+    <ul class="stp-list">
+      <li>副業・個人事業主</li>
+      <li>スモールチーム</li>
+      <li>個人クリエイター</li>
+      <li>課題を抱えた会社員</li>
+      <li>IT活用したい中小企業</li>
+    </ul>
+  </div>
+
+  <div class="stp-card" style="border-color: var(--orange);">
+    <span class="stp-label" style="background:#F9731622;color:#F97316">T ターゲティング ★</span>
+    <div class="card-title">アイデアや課題感はあるが「形にする手段」がない人</div>
+    <div class="card-desc">副業・フリーランスとして動いている個人・小チーム</div>
+  </div>
+
+  <div class="stp-card">
+    <span class="stp-label" style="background:#10B98122;color:#10B981">P ポジショニング</span>
+    <div class="card-title" style="color: var(--green);">「最速でアイデアをプロダクトに変える＋届ける＋広める」</div>
+    <div class="card-desc">一気通貫で伴走できる実行チームとして差別化</div>
+  </div>
+</div>
+
+<!-- 03: WHAT -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <span class="section-title">WHAT — 提供する価値</span>
+  </div>
+
+  <div class="card" style="text-align: center; margin-bottom: 16px;">
+    <div class="card-title" style="font-size: 16px;">「やりたいこと」を1週間でプロダクトに変え、届けて、広げる。</div>
+  </div>
+
+  <div class="grid-3">
+    <div class="val-card">
+      <div class="val-label" style="color: var(--blue);">SPEED</div>
+      <div class="val-title">スピード</div>
+      <div class="val-desc">FindからMakeまで最速。意思決定を速くし、アイデアをすぐ形にする。</div>
+    </div>
+    <div class="val-card">
+      <div class="val-label" style="color: var(--orange);">ALL-IN</div>
+      <div class="val-title">一気通貫</div>
+      <div class="val-desc">開発・価値提供・発信・コンサルを1チームでカバー。外注不要。</div>
+    </div>
+    <div class="val-card">
+      <div class="val-label" style="color: var(--green);">CYCLE</div>
+      <div class="val-title">サイクル設計</div>
+      <div class="val-desc">口コミと紹介が回り続ける仕組みを設計し、資産を積み上げる。</div>
+    </div>
+  </div>
+</div>
+
+<!-- 04: HOW -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <span class="section-title">HOW — 5STEPビジネスサイクル</span>
+  </div>
+
+  <div class="step-flow">
+    <div class="step-item">
+      <div class="step-badge" style="background:#1A56DB33;color:#1A56DB;border:1px solid #1A56DB55">1</div>
+      <div class="step-content">
+        <div class="step-name" style="color:#1A56DB">FIND</div>
+        <div class="step-title">見つける</div>
+        <div class="step-desc">アイデア・面倒事を集める</div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-badge" style="background:#7C3AED33;color:#A78BFA;border:1px solid #7C3AED55">2</div>
+      <div class="step-content">
+        <div class="step-name" style="color:#A78BFA">MAKE</div>
+        <div class="step-title">作る</div>
+        <div class="step-desc">最速でプロダクト化</div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-badge" style="background:#06B6D433;color:#06B6D4;border:1px solid #06B6D455">3</div>
+      <div class="step-content">
+        <div class="step-name" style="color:#06B6D4">OFFER</div>
+        <div class="step-title">提供する</div>
+        <div class="step-desc">価値体験を届ける</div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-badge" style="background:#F9731633;color:#F97316;border:1px solid #F9731655">4</div>
+      <div class="step-content">
+        <div class="step-name" style="color:#F97316">PRESENT</div>
+        <div class="step-title">広める</div>
+        <div class="step-desc">SNS・一覧ページ・発信自動化</div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-badge" style="background:#10B98133;color:#10B981;border:1px solid #10B98155">5</div>
+      <div class="step-content">
+        <div class="step-name" style="color:#10B981">CONSULT</div>
+        <div class="step-title">相談受ける</div>
+        <div class="step-desc">全ステップのコンサル提供</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 12px; text-align: center;">
+    <div class="card-desc" style="font-size: 12px;">↩ このサイクルを高速で繰り返す。OFFER / PRESENTのフィードバックがFINDに戻り、サイクルが加速する。</div>
+  </div>
+</div>
+
+<!-- 05: MARKET -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <span class="section-title">MARKET — 3C分析</span>
+  </div>
+
+  <div class="c3-card" style="border-left-color: var(--blue);">
+    <div class="c3-title" style="color: var(--blue);">Customer — 顧客</div>
+    <ul class="c3-list">
+      <li>個人・副業層：自分のアイデアを形にしたいが手段がない</li>
+      <li>小規模事業者：業務の面倒事をツールで解決したい</li>
+      <li>コンテンツ発信者：発信・運用の自動化ニーズが高い</li>
+      <li>課題：スキル・コスト・時間・仲間の不足</li>
+    </ul>
+  </div>
+
+  <div class="c3-card" style="border-left-color: var(--orange);">
+    <div class="c3-title" style="color: var(--orange);">Competitor — 競合</div>
+    <ul class="c3-list">
+      <li>フリーランス開発者：単発契約が多く、継続支援が弱い</li>
+      <li>SaaSツール群：汎用的すぎてカスタマイズが難しい</li>
+      <li>Notionテンプレ販売：提供後のサポートなし</li>
+      <li>差別化：開発→提供→発信→相談まで一気通貫</li>
+    </ul>
+  </div>
+
+  <div class="c3-card" style="border-left-color: var(--green);">
+    <div class="c3-title" style="color: var(--green);">Company — 自社</div>
+    <ul class="c3-list">
+      <li>強み：スピード実行力・多形式対応（Web/LINE/Notion）</li>
+      <li>強み：アイデア収集→収益化サイクルの設計力</li>
+      <li>課題：副業制約・法人形態未定・認知度ゼロからのスタート</li>
+      <li>機会：AI活用コスト低下で小チームでもサービス提供可能</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 06: MONEY -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <span class="section-title">MONEY — マネタイズ戦略</span>
+  </div>
+
+  <div class="money-card">
+    <div class="money-num">1</div>
+    <div class="money-body">
+      <div class="money-title">直接販売</div>
+      <div class="money-desc">買い切り / 月額サブスク / 従量課金の3形態。まず買い切りで価値検証し、継続利用者にはサブスク移行を促す。</div>
+    </div>
+  </div>
+
+  <div class="money-card">
+    <div class="money-num">2</div>
+    <div class="money-body">
+      <div class="money-title">仲介・紹介（アフィリエイト型）</div>
+      <div class="money-desc">パートナーや口コミ経由で集客し成果報酬で還元。紹介者にもメリットが発生する構造で拡散を促す。</div>
+    </div>
+  </div>
+
+  <div class="money-card">
+    <div class="money-num">3</div>
+    <div class="money-body">
+      <div class="money-title">プレゼント型（ギフト購入）</div>
+      <div class="money-desc">AさんがBさんへ贈る形で購入。例:「このLINEボットを友達にプレゼントする」ギフトURLで注文・送付が完結。感情的な拡散が起きやすい。</div>
+    </div>
+  </div>
+
+  <div class="money-card">
+    <div class="money-num">4</div>
+    <div class="money-body">
+      <div class="money-title">コンサルティング</div>
+      <div class="money-desc">単発相談（1時間固定額）〜 月額顧問契約まで。全5ステップが対象。実績が積み上がるほど単価UP。</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 16px;">
+    <div class="card-label" style="color: var(--orange);">収益の使い方</div>
+    <div class="card-desc" style="margin-bottom: 12px;">プロジェクト単位で純利益から配分</div>
+    <div class="split-bar">
+      <div class="split-item">
+        <div class="split-pct" style="color: var(--blue);">30%</div>
+        <div class="split-label">チーム運営・開発費用</div>
+      </div>
+      <div class="split-item">
+        <div class="split-pct" style="color: var(--cyan);">30%</div>
+        <div class="split-label">メンバー個人分配</div>
+      </div>
+      <div class="split-item">
+        <div class="split-pct" style="color: var(--green);">40%</div>
+        <div class="split-label">中が指定する外部還元先へ</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 07: TEAM -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <span class="section-title">TEAM — チーム体制</span>
+  </div>
+
+  <div class="team-grid">
+    <div class="team-member">
+      <div class="team-avatar" style="background: var(--blue);">サ</div>
+      <div class="team-name">サノ</div>
+      <div class="team-role">全体管理 ＋ コンセプト展開</div>
+    </div>
+    <div class="team-member">
+      <div class="team-avatar" style="background: var(--cyan);">中</div>
+      <div class="team-name">中</div>
+      <div class="team-role">プロダクト開発 ＋ 各フェーズ主導</div>
+    </div>
+    <div class="team-member">
+      <div class="team-avatar" style="background: var(--orange);">師</div>
+      <div class="team-name">ししょー</div>
+      <div class="team-role">意見出し ＋ 拡散</div>
+    </div>
+  </div>
+</div>
+
+<!-- 08: CASE -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <span class="section-title">CASE — 村ポータルの横展開</span>
+  </div>
+
+  <div class="card" style="margin-bottom: 16px;">
+    <div class="card-desc">実績：マルタ村（川モル用）を起点に、あらゆるコミュニティへ展開する5STEPフロー</div>
+  </div>
+
+  <div class="step-flow">
+    <div class="step-item">
+      <div class="step-badge" style="background:#1A56DB33;color:#1A56DB;border:1px solid #1A56DB55">1</div>
+      <div class="step-content">
+        <div class="step-name" style="color:#1A56DB">FIND</div>
+        <div class="step-title">課題を発見する</div>
+        <div class="step-desc">モルックコミュニティで「大会申込・集計・連絡をひとまとめにしたい」というニーズを発見。同じ課題を抱えるコミュニティは全国に多数。</div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-badge" style="background:#7C3AED33;color:#A78BFA;border:1px solid #7C3AED55">2</div>
+      <div class="step-content">
+        <div class="step-name" style="color:#A78BFA">MAKE</div>
+        <div class="step-title">マルタ村を開発・テンプレ化</div>
+        <div class="step-desc">Manusを使って短期間で多機能ポータルを実装。大会申込・集計・SNS・DM機能など。テンプレ化して横展開できる形に。</div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-badge" style="background:#06B6D433;color:#06B6D4;border:1px solid #06B6D455">3</div>
+      <div class="step-content">
+        <div class="step-name" style="color:#06B6D4">OFFER</div>
+        <div class="step-title">新コミュニティに提供</div>
+        <div class="step-desc">少年サッカー・地域スポーツ・趣味コミュニティなどにカスタマイズして提供。配車・エントリー・集計を一括管理。</div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-badge" style="background:#F9731633;color:#F97316;border:1px solid #F9731655">4</div>
+      <div class="step-content">
+        <div class="step-name" style="color:#F97316">PRESENT</div>
+        <div class="step-title">事例として発信・拡散</div>
+        <div class="step-desc">「○○チーム用ポータル作りました」とSNS・Noteで発信。使ったメンバーが口コミで紹介→新たなコミュニティへ波及するサイクルが生まれる。</div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-badge" style="background:#10B98133;color:#10B981;border:1px solid #10B98155">5</div>
+      <div class="step-content">
+        <div class="step-name" style="color:#10B981">CONSULT</div>
+        <div class="step-title">横展開のコンサルを受注</div>
+        <div class="step-desc">「うちにも作りたい」という相談が届く。カスタマイズ・仕組み化・運用サポートを有料で提供。実績が増えるほど次のFINDにもつながる。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 12px; text-align: center; border-color: var(--cyan);">
+    <div class="card-desc" style="font-size: 12px;">このフローは「モルック関連」「少年サッカー配車」「YouTube/SNSダッシュボード」など他のプロジェクトにも全て同様に適用できる。</div>
+  </div>
+</div>
+
+<!-- 09: PLAN -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">09</span>
+    <span class="section-title">PLAN — アクションプラン</span>
+  </div>
+
+  <div class="phase-card">
+    <span class="phase-label" style="background:#06B6D422;color:var(--cyan)">Phase 1</span>
+    <div class="phase-sub">START — 箱を作って1回回す</div>
+    <ul class="phase-list">
+      <li>FINDの箱アプリをMAKEする</li>
+      <li>マルタ村ポータルをテンプレ化</li>
+      <li>横展開先の第1コミュニティを選定</li>
+      <li>アウトプット一覧ページを公開</li>
+    </ul>
+  </div>
+
+  <div class="phase-card">
+    <span class="phase-label" style="background:#F9731622;color:var(--orange)">Phase 2</span>
+    <div class="phase-sub">SCALE — 広めて収益化</div>
+    <ul class="phase-list">
+      <li>横展開1件目をOFFER</li>
+      <li>SNS・Noteで事例を発信</li>
+      <li>コンサル1件を試験受付</li>
+      <li>2〜3件目のFINDを同時進行</li>
+    </ul>
+  </div>
+
+  <div class="phase-card">
+    <span class="phase-label" style="background:#10B98122;color:var(--green)">Phase 3</span>
+    <div class="phase-sub">REPEAT — 仕組みにする</div>
+    <ul class="phase-list">
+      <li>サイクル振り返り・改善</li>
+      <li>CONSULT体制を定常化</li>
+      <li>収益配分ルールを確定</li>
+      <li>法人化の要否を議論</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 10: NEXT -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">10</span>
+    <span class="section-title">NEXT — 論点整理</span>
+  </div>
+
+  <div class="disc-item">
+    <div class="disc-q">1. 法人形態（個人 or 法人化）</div>
+    <div class="disc-opt">A: 個人事業主の集合体でスタート</div>
+    <div class="disc-opt">B: 売上が立ち始めたら法人化を検討</div>
+  </div>
+
+  <div class="disc-item">
+    <div class="disc-q">2. 収益配分ルールの合意</div>
+    <div class="disc-opt">A: プロジェクト単位で都度3名で合意</div>
+    <div class="disc-opt">B: 固定ルール（30/30/40）を先に決める</div>
+  </div>
+
+  <div class="disc-item">
+    <div class="disc-q">3. 最初のプロジェクトを何にするか</div>
+    <div class="disc-opt">A: 3人でブレスト → FINDの箱に入れて選ぶ</div>
+    <div class="disc-opt">B: サノ or 中が持込みでスタート</div>
+  </div>
+
+  <div style="margin-top: 20px;">
+    <div class="card-label" style="color: var(--cyan); margin-bottom: 12px;">まず動くこと</div>
+
+    <div class="action-card">
+      <div class="action-num">1</div>
+      <div class="action-body">
+        <div class="action-title">FINDの箱を作る</div>
+        <div class="action-desc">Notion or スプレッドシートでOK。アイデア・面倒事をとにかく放り込む場所を整備する。</div>
+      </div>
+    </div>
+
+    <div class="action-card">
+      <div class="action-num">2</div>
+      <div class="action-body">
+        <div class="action-title">最初のプロジェクトを1つ決めてMAKEへ</div>
+        <div class="action-desc">FINDしたら1週間以内にMAKEを開始。サイクルを1回まず回しきることが最優先。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Closing -->
+<div class="closing">
+  <h2>Let's build.</h2>
+  <p>FIND → MAKE → OFFER → PRESENT → CONSULT</p>
+  <p style="margin-top: 8px;">速く、小さく、確実に回す。</p>
+</div>
+
+<div class="footer">MACHAP | 2026 | Confidential</div>
+
+</body>
+</html>
