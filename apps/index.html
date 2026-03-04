@@ -124,7 +124,7 @@ body {
   <h1>SP Output Catalog</h1>
   <p>SPが作ってきたもの全部。カテゴリ別・時系列で管理。</p>
   <div class="stats-bar">
-    <div class="stat"><strong>15</strong>公開中</div>
+    <div class="stat"><strong>17</strong>公開中</div>
     <div class="stat"><strong>4</strong>自動化</div>
     <div class="stat"><strong>1</strong>倉庫</div>
   </div>
@@ -135,7 +135,7 @@ body {
   <div class="cat-header" onclick="this.classList.toggle('collapsed')">
     <span class="cat-icon">📰</span>
     <span class="cat-title">MOLKKY HUB メディア</span>
-    <span class="cat-count">6</span>
+    <span class="cat-count">7</span>
     <span class="cat-toggle">▾</span>
   </div>
   <div class="cat-body">
@@ -206,6 +206,21 @@ body {
         <div class="app-meta">
           <span class="badge badge-pages">GitHub Pages</span>
           <span class="badge badge-date">2026.02</span>
+        </div>
+      </div>
+      <span class="arrow">›</span>
+    </a>
+
+    <a class="app-card" href="https://jonyjean21.github.io/sp-projects/molkky-admin/" target="_blank">
+      <div class="app-icon" style="background:#1a2a2a">🎛</div>
+      <div class="app-body">
+        <div class="app-name"><span class="status-dot status-live"></span>MOLKKY HUB 統合管理</div>
+        <div class="app-desc">大会キュー処理・Xポスト・リポスト・ステータス管理の4タブ統合パネル</div>
+        <div class="app-meta">
+          <span class="badge badge-pages">GitHub Pages</span>
+          <span class="badge badge-wp">WP REST API</span>
+          <span class="badge badge-firebase">Firebase</span>
+          <span class="badge badge-date">2026.03</span>
         </div>
       </div>
       <span class="arrow">›</span>
@@ -335,10 +350,24 @@ body {
   <div class="cat-header" onclick="this.classList.toggle('collapsed')">
     <span class="cat-icon">🛠</span>
     <span class="cat-title">ライフツール</span>
-    <span class="cat-count">2</span>
+    <span class="cat-count">3</span>
     <span class="cat-toggle">▾</span>
   </div>
   <div class="cat-body">
+    <a class="app-card" href="https://jonyjean21.github.io/sp-projects/teamride/" target="_blank">
+      <div class="app-icon" style="background:#1a2a1a">🚗</div>
+      <div class="app-body">
+        <div class="app-name"><span class="status-dot status-live"></span>チームライド</div>
+        <div class="app-desc">少年サッカー配車アプリ（RSVP・自動配車・催促テキスト生成）</div>
+        <div class="app-meta">
+          <span class="badge badge-pages">GitHub Pages</span>
+          <span class="badge badge-firebase">Firebase RTDB</span>
+          <span class="badge badge-date">2026.03</span>
+        </div>
+      </div>
+      <span class="arrow">›</span>
+    </a>
+
     <a class="app-card" href="https://jonyjean21.github.io/sp-projects/meguri/" target="_blank">
       <div class="app-icon" style="background:#1a2417">🍃</div>
       <div class="app-body">
@@ -374,7 +403,7 @@ body {
   <div class="cat-header" onclick="this.classList.toggle('collapsed')">
     <span class="cat-icon">⚡</span>
     <span class="cat-title">自動化基盤</span>
-    <span class="cat-count">4</span>
+    <span class="cat-count">5</span>
     <span class="cat-toggle">▾</span>
   </div>
   <div class="cat-body">
@@ -388,6 +417,19 @@ body {
           <span class="badge badge-firebase">Firebase</span>
           <span class="badge badge-cli">Claude Code</span>
           <span class="badge badge-date">2026.02</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="auto-card">
+      <div class="app-icon" style="background:#1a2a2a">📡</div>
+      <div class="app-body">
+        <div class="app-name"><span class="status-dot status-live"></span>大会情報 RSS自動収集</div>
+        <div class="app-desc">JMA公式 + こくちーずを毎日自動巡回 → Firebase キューに登録</div>
+        <div class="app-meta">
+          <span class="badge badge-gas">GAS</span>
+          <span class="badge badge-firebase">Firebase</span>
+          <span class="badge badge-date">2026.03</span>
         </div>
       </div>
     </div>
@@ -465,9 +507,10 @@ body {
   </div>
   <div class="cat-body">
     <div class="timeline">
-      <div class="tl-item"><div class="tl-date">2026.03.04</div><div class="tl-text">シーズン大会 & 新人年間王ページ分割、開催条件ルール追加</div></div>
-      <div class="tl-item"><div class="tl-date">2026.03.02</div><div class="tl-text">日本選手権トラッカー（公開ページ + 管理画面）構築、IFTTT動作確認</div></div>
-      <div class="tl-item"><div class="tl-date">2026.03.01</div><div class="tl-text">セキュリティ修正（APIキー非公開化）、ハッシュ化</div></div>
+      <div class="tl-item"><div class="tl-date">2026.03.04</div><div class="tl-text">シーズン大会 & 新人年間王ページ分割、appsカタログ棚卸し</div></div>
+      <div class="tl-item"><div class="tl-date">2026.03.03</div><div class="tl-text">チームライド配車アプリ構築（RSVP・自動配車・QA 4ラウンド完了）</div></div>
+      <div class="tl-item"><div class="tl-date">2026.03.02</div><div class="tl-text">日本選手権トラッカー構築、IFTTT動作確認、molkky-admin統合管理パネル</div></div>
+      <div class="tl-item"><div class="tl-date">2026.03.01</div><div class="tl-text">セキュリティ修正（APIキー非公開化）、大会RSS自動収集GAS</div></div>
       <div class="tl-item"><div class="tl-date">2026.02.28</div><div class="tl-text">パートナーLP、向上委員会ダッシュボード、ナイモル結果HTML生成ツール構築</div></div>
       <div class="tl-item"><div class="tl-date">2026.02.27</div><div class="tl-text">レシピBOX URL取込機能、ダークテーマスライド、パートナー記事投稿</div></div>
       <div class="tl-item"><div class="tl-date">2026.02.26</div><div class="tl-text">promoteツール文字数緩和、レシピBOX家族共有、Xペルソナ適用</div></div>
