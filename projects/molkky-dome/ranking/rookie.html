@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>川西モルックの会 新人年間王決定戦</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+::selection { background: rgba(22,163,74,0.2); color: #1a1a2e; }
+:root {
+  --bg: #f5f5f7; --card: #ffffff; --card2: #f0f1f3;
+  --border: #e0e2e6; --text: #1a1a2e; --sub: #6b7280;
+  --accent: #2563eb; --gold: #d97706; --silver: #6b7280;
+  --bronze: #b45309; --fire: #ea580c; --green: #16a34a;
+  --purple: #7c3aed; --red: #dc2626; --cyan: #0891b2;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', sans-serif;
+  background: var(--bg); color: var(--text);
+  max-width: 640px; margin: 0 auto; padding: 0 16px 40px;
+  min-height: 100vh;
+  line-height: 1.8; letter-spacing: 0.03em;
+  font-feature-settings: "palt";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Keyframes */
+@keyframes heroGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Hero */
+.hero {
+  text-align: center; padding: 48px 0 36px;
+  background: linear-gradient(135deg, #0a1a10 0%, #102a18 50%, #0a1a10 100%);
+  background-size: 300% 300%;
+  animation: heroGradient 12s ease infinite;
+  margin: 0 -16px; padding-left: 16px; padding-right: 16px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 0 0 16px 16px;
+}
+.hero::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(22,163,74,0.1) 0%, transparent 60%);
+  pointer-events: none;
+}
+.hero-badge {
+  display: inline-block; font-size: 11px; font-weight: 700;
+  color: #3fb950; background: rgba(22,163,74,0.15); padding: 4px 14px;
+  border-radius: 20px; letter-spacing: 1px; margin-bottom: 16px;
+  border: 1px solid rgba(22,163,74,0.3);
+  animation: fadeInUp 0.4s ease both;
+}
+.hero h1 {
+  font-size: 24px; font-weight: 800; line-height: 1.3;
+  background: linear-gradient(135deg, #3fb950 0%, #a3e635 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: fadeInUp 0.5s ease 0.1s both;
+}
+.hero p {
+  font-size: 14px; color: #8b949e; margin-top: 8px; line-height: 1.6;
+  animation: fadeInUp 0.5s ease 0.2s both;
+}
+
+/* Hero Stats Row */
+.hero-stats {
+  display: flex; justify-content: center; gap: 10px;
+  margin-top: 20px; flex-wrap: wrap;
+  animation: fadeInUp 0.5s ease 0.3s both;
+}
+.hero-stat {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px; padding: 10px 14px; text-align: center;
+  min-width: 70px; backdrop-filter: blur(4px);
+}
+.hero-stat .stat-value {
+  font-size: 16px; font-weight: 800; color: #e0e6ed;
+  line-height: 1.2;
+}
+.hero-stat .stat-label {
+  font-size: 10px; color: #8b949e; margin-top: 3px;
+  letter-spacing: 0.5px;
+}
+
+/* Section */
+.section {
+  margin-top: 32px;
+  animation: fadeInUp 0.5s ease both;
+}
+.section-title {
+  font-size: 13px; font-weight: 700; color: var(--sub);
+  text-transform: uppercase; letter-spacing: 1.5px;
+  margin-bottom: 14px; padding-left: 2px;
+  display: flex; align-items: center; gap: 8px;
+  position: relative; padding-bottom: 10px;
+}
+.section-title::before {
+  content: ''; display: block; width: 3px; height: 16px;
+  border-radius: 2px; background: var(--green);
+}
+.section-title::after {
+  content: ''; position: absolute; bottom: 0; left: 0;
+  width: 40px; height: 2px; border-radius: 1px;
+  background: linear-gradient(90deg, var(--green), transparent);
+}
+
+/* Cards */
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px; margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.card:hover {
+  transform: translateY(-2px); border-color: rgba(22,163,74,0.2);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+.card-title {
+  font-size: 15px; font-weight: 700; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 8px;
+}
+.card-desc { font-size: 13px; color: var(--sub); line-height: 1.6; }
+
+/* Event badges */
+.event-badge {
+  display: inline-block; font-size: 10px; font-weight: 700;
+  padding: 3px 10px; border-radius: 10px;
+}
+.event-rookie { background: #f0fdf4; color: var(--green); border: 1px solid #bbf7d0; }
+.event-main { background: #fff7ed; color: var(--fire); border: 1px solid #fed7aa; }
+
+/* Tournament cards */
+.tourney-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden; margin-bottom: 12px;
+  border-top: 3px solid var(--green);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.tourney-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+.tourney-header {
+  padding: 14px 18px; display: flex; align-items: center; gap: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.tourney-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.tourney-header-text h3 { font-size: 15px; font-weight: 700; }
+.tourney-header-text p { font-size: 11px; color: var(--sub); margin-top: 2px; }
+.tourney-body { padding: 16px 18px; }
+
+/* Qualification list */
+.qual-list { list-style: none; padding: 0; }
+.qual-list li {
+  font-size: 13px; padding: 8px 0; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px; color: var(--sub);
+}
+.qual-list li:last-child { border-bottom: none; }
+.qual-icon {
+  width: 24px; height: 24px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; flex-shrink: 0;
+}
+.qual-pass { background: #f0fdf4; color: var(--green); border: 1px solid #bbf7d0; }
+.qual-sub { background: #f5f3ff; color: var(--purple); border: 1px solid #ddd6fe; }
+
+/* Flow */
+.flow-steps {
+  display: flex; flex-direction: column; gap: 0;
+  position: relative;
+}
+.flow-step {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 14px 0;
+}
+.flow-num {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 800; flex-shrink: 0;
+  background: #f0fdf4; color: var(--green); border: 2px solid #bbf7d0;
+  box-shadow: 0 2px 8px rgba(22,163,74,0.08);
+  position: relative; z-index: 1;
+}
+.flow-content { flex: 1; }
+.flow-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.flow-desc { font-size: 12px; color: var(--sub); line-height: 1.6; }
+.flow-connector {
+  width: 2px; height: 16px;
+  background: linear-gradient(180deg, var(--green), rgba(22,163,74,0.15));
+  margin-left: 17px; border-radius: 1px;
+}
+
+/* Info boxes */
+.info-box {
+  background: #f0fdf4; border: 1px solid #bbf7d0;
+  border-left: 3px solid var(--green);
+  border-radius: 10px; padding: 16px 20px; margin-top: 10px;
+}
+.info-box p { font-size: 12px; color: #166534; line-height: 1.7; }
+.info-box strong { color: var(--text); }
+.info-box-blue {
+  background: #eff6ff; border: 1px solid #bfdbfe;
+  border-left: 3px solid var(--accent);
+}
+.info-box-blue p { color: #1e40af; }
+
+/* Checklist */
+.checklist { list-style: none; padding: 0; }
+.checklist li {
+  font-size: 13px; padding: 10px 0; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px; color: var(--sub);
+}
+.checklist li:last-child { border-bottom: none; }
+.check-box {
+  width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0;
+  border: 1.5px solid var(--border); display: flex;
+  align-items: center; justify-content: center;
+}
+
+/* Footer */
+.footer {
+  text-align: center; padding: 40px 0 20px;
+  font-size: 11px; color: var(--sub);
+  border-top: 1px solid var(--border);
+  margin-top: 48px;
+}
+
+/* Mobile adjustments */
+@media (max-width: 400px) {
+  .hero-stats { gap: 6px; }
+  .hero-stat { padding: 8px 10px; min-width: 60px; }
+  .hero-stat .stat-value { font-size: 14px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-badge">ROOKIE KING</div>
+  <h1>川西モルックの会<br>新人年間王決定戦</h1>
+  <p>毎月の新人戦で結果を残した選手が年末に集結<br>新人の中の年間最強を決める</p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="stat-value" style="color: #3fb950;">年1回</div>
+      <div class="stat-label">12月開催</div>
+    </div>
+    <div class="hero-stat">
+      <div class="stat-value" style="color: #58a6ff;">最大24名</div>
+      <div class="stat-label">出場</div>
+    </div>
+    <div class="hero-stat">
+      <div class="stat-value" style="color: #ffd700;">年間王</div>
+      <div class="stat-label">決定</div>
+    </div>
+  </div>
+</div>
+
+<!-- コンセプト -->
+<div class="section">
+  <div class="section-title">コンセプト</div>
+  <div class="card">
+    <div class="card-title">新人の中で最強は誰だ？ 1年の集大成</div>
+    <div class="card-desc">
+      毎月の新人戦で結果を残した選手が年末に集結。
+      1月〜12月の<strong>新人戦 優勝者・準優勝者</strong>による個人戦で、
+      新人の中の年間最強を決める。
+    </div>
+  </div>
+  <div class="info-box">
+    <p><strong>目的:</strong> 新人の年間を通じた参加モチベーション維持 + 新人にもスポットライトを<br>
+    <strong>開催時期:</strong> 毎年12月</p>
+  </div>
+</div>
+
+<!-- 出場資格 -->
+<div class="section">
+  <div class="section-title">出場資格</div>
+
+  <div class="tourney-card">
+    <div class="tourney-header">
+      <div class="tourney-icon" style="background: #f0fdf4; border: 1px solid #bbf7d0;">👑</div>
+      <div class="tourney-header-text">
+        <h3 style="color: var(--green);">年間新人王決定戦</h3>
+        <p>1月〜12月の新人戦 優勝者 / 準優勝者による個人戦</p>
+      </div>
+    </div>
+    <div class="tourney-body">
+      <div class="card-desc" style="margin-bottom: 12px;">
+        毎月の新人戦で優勝・準優勝を勝ち取った選手が年末に集結。
+        新人の中で最強は誰なのか、1年の総決算として決着をつける。
+      </div>
+      <ul class="qual-list">
+        <li>
+          <span class="qual-icon qual-pass">優</span>
+          各月 新人戦 優勝者（最大12名）
+        </li>
+        <li>
+          <span class="qual-icon qual-sub">準</span>
+          各月 新人戦 準優勝者（最大12名）
+        </li>
+      </ul>
+      <div class="info-box" style="margin-top: 12px;">
+        <p>最大<strong>24名</strong>が出場権を獲得（重複出場者がいれば実人数は減少）</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 大会フォーマット -->
+<div class="section">
+  <div class="section-title">大会フォーマット</div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="event-badge event-rookie">個人戦</span>
+      新人年間王決定戦
+    </div>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-content">
+          <div class="flow-title">予選リーグ（ブロック分け）</div>
+          <div class="flow-desc">出場者を4名ずつのブロックに分割。各ブロック内で総当たり戦。</div>
+        </div>
+      </div>
+      <div class="flow-connector"></div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-content">
+          <div class="flow-title">各ブロック上位者が決勝トーナメント進出</div>
+          <div class="flow-desc">参加人数に応じて通過枠を調整。シード権は年間成績上位者に付与。</div>
+        </div>
+      </div>
+      <div class="flow-connector"></div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-content">
+          <div class="flow-title">決勝トーナメント</div>
+          <div class="flow-desc">1対1のタイマン勝負。準決勝・決勝は3本先取で白熱の展開に。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 年間スケジュール -->
+<div class="section">
+  <div class="section-title">年間スケジュール</div>
+
+  <div class="card">
+    <div class="card-desc" style="line-height: 2.2; font-size: 13px;">
+      <strong style="color: var(--green);">1月〜12月</strong> — 毎月の新人戦で<strong>優勝・準優勝 = 出場権獲得</strong><br>
+      <span style="color: var(--sub);">　6月: 中間発表（出場権獲得者一覧を公開）</span><br>
+      <span style="color: var(--sub);">　11月: 最終確定（出場者リスト・トーナメント表作成）</span><br>
+      <strong style="color: var(--gold);">12月</strong> — <strong style="color: var(--gold);">新人年間王決定戦 開催</strong><br>
+      <strong style="color: var(--fire);">翌年1月</strong> — <strong style="color: var(--fire);">合戦FINAL 開催</strong>（新人年間王も出場権を獲得）
+    </div>
+  </div>
+</div>
+
+<!-- 合戦FINALとの関係 -->
+<div class="section">
+  <div class="section-title">合戦FINALへの道</div>
+  <div class="card">
+    <div class="card-title">
+      <span class="event-badge event-main">FINAL</span>
+      新人年間王 → 合戦FINALへ出場
+    </div>
+    <div class="card-desc">
+      新人年間王決定戦で優勝すると、翌年1月の<strong>合戦FINAL</strong>への出場権を獲得。<br>
+      合戦決勝進出者やシーズン大会優勝者と肩を並べて、年間最強を争う舞台に立てる。
+    </div>
+  </div>
+  <div class="info-box info-box-blue">
+    <p><strong>合戦FINAL出場資格:</strong><br>
+    ① 3月〜12月のモルック合戦で決勝に進出<br>
+    ② シーズン大会で優勝（年4回チャンスあり）<br>
+    ③ <strong style="color: var(--green);">新人年間王決定戦で優勝</strong><br>
+    <strong>開催時期:</strong> 翌年1月 / <strong>会場:</strong> 満願寺</p>
+  </div>
+</div>
+
+<!-- 決めること -->
+<div class="section">
+  <div class="section-title">決めておくこと</div>
+  <div class="card">
+    <ul class="checklist">
+      <li><span class="check-box"></span>新人戦の定義（何年目まで「新人」とするか）</li>
+      <li><span class="check-box"></span>重複出場者が多い場合の繰り上げルール</li>
+      <li><span class="check-box"></span>出場権獲得者の辞退時の対応</li>
+      <li><span class="check-box"></span>大会当日のフォーマット詳細（ブロック数・通過枠）</li>
+    </ul>
+  </div>
+</div>
+
+<div class="footer">
+  川西モルックの会 新人年間王決定戦 企画書<br>
+  2026年2月 Draft
+</div>
+
+</body>
+</html>
