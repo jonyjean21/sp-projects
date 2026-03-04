@@ -39,8 +39,9 @@ SP Portalは「SPの全てを管理する場所」を目指しているが、実
 - **MACHAPポータル**: チーム3人共有。SP専用ではない
 - **めぐり帳**: 完全に個人用
 - **レシピBOX**: 家族用
-- **パートナーLP / partner-portal**: 外部向け
 - **公開ページ群**: championship/, viisi-master/ 等
+
+※ **パートナーLP / partner-portal** はモルハブの活動なので、モルハブポータルに含める
 
 ---
 
@@ -96,8 +97,12 @@ Analytics
   コンテンツパフォーマンス
   Search Console（← hub-dashboardから移植、連携済み）
 
-Operations
+Partners
   パートナー管理
+  パートナーLP（partner/）
+  パートナーポータル（partner-portal/）
+
+Operations
   大会結果（ナイモル統合）
   選手権トラッカー（管理側）
   自動化パイプライン
