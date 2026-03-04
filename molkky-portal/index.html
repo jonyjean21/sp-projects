@@ -1,0 +1,1803 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOLKKY HUB Portal</title>
+<style>
+:root {
+  --bg: #0a0a12; --bg2: #0e0e1a; --card: #12121e; --card-hover: #181830;
+  --border: #1e1e30; --border-active: #2e2e50;
+  --text: #e8e8f0; --sub: #6a6a80; --dim: #3a3a50;
+  --accent: #06B6D4; --accent2: #22D3EE; --accent-dim: rgba(6,182,212,0.12);
+  --success: #22c55e; --success-dim: rgba(34,197,94,0.12);
+  --warning: #f59e0b; --warning-dim: rgba(245,158,11,0.12);
+  --error: #ef4444; --error-dim: rgba(239,68,68,0.12);
+  --blue: #4a9eff; --blue-dim: rgba(74,158,255,0.1);
+  --purple: #a78bfa; --purple-dim: rgba(167,139,250,0.12);
+  --orange: #f59e0b; --orange-dim: rgba(245,158,11,0.12);
+  --sidebar-w: 230px; --header-h: 48px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Kaku Gothic ProN',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow:hidden;}
+a{color:var(--accent);text-decoration:none;}
+a:hover{text-decoration:underline;}
+
+/* Layout */
+.app{display:flex;height:100vh;}
+.sidebar{width:var(--sidebar-w);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;transition:transform .25s;}
+.sidebar::-webkit-scrollbar{width:4px;} .sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.sidebar-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.sidebar-logo{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#0891b2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#fff;}
+.sidebar-title{font-size:13px;font-weight:700;} .sidebar-sub{font-size:9px;color:var(--sub);letter-spacing:.06em;text-transform:uppercase;}
+.nav-group{padding:10px 0;} .nav-group-label{font-size:9px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;padding:4px 16px 6px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 16px;font-size:12px;color:var(--sub);cursor:pointer;transition:all .15s;position:relative;border:none;background:none;width:100%;text-align:left;}
+.nav-item:hover{color:var(--text);background:rgba(255,255,255,.03);}
+.nav-item.active{color:var(--accent);background:var(--accent-dim);}
+.nav-item.active::before{content:'';position:absolute;left:0;top:4px;bottom:4px;width:3px;background:var(--accent);border-radius:0 3px 3px 0;}
+.nav-icon{width:16px;text-align:center;font-size:13px;flex-shrink:0;}
+.nav-badge{font-size:9px;background:var(--error);color:#fff;border-radius:8px;padding:1px 6px;margin-left:auto;font-weight:600;}
+.nav-ext{font-size:9px;color:var(--dim);margin-left:auto;}
+.sidebar-footer{margin-top:auto;padding:10px 16px;border-top:1px solid var(--border);font-size:10px;color:var(--dim);}
+
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.main-header{height:var(--header-h);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;gap:12px;flex-shrink:0;background:var(--bg2);}
+.main-header h2{font-size:14px;font-weight:600;flex:1;}
+.hamburger{display:none;background:none;border:none;color:var(--text);font-size:18px;cursor:pointer;padding:4px;}
+.main-body{flex:1;overflow-y:auto;padding:20px;}
+.main-body::-webkit-scrollbar{width:6px;} .main-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+.section{display:none;} .section.active{display:block;}
+
+/* Components */
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:14px;}
+.card:hover{border-color:var(--border-active);}
+.card h3{font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.card-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+.card-header h3{margin:0;flex:1;}
+
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:16px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;}
+.stat-card .sv{font-size:26px;font-weight:700;} .stat-card .sl{font-size:10px;color:var(--sub);margin-top:3px;}
+.stat-card .sc{font-size:10px;margin-top:3px;} .sc.up{color:var(--success);} .sc.down{color:var(--error);}
+
+.btn{padding:6px 14px;border:none;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px;font-family:inherit;}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover:not(:disabled){background:#0891b2;}
+.btn-sm{padding:4px 9px;font-size:10px;}
+.btn-outline{background:transparent;color:var(--sub);border:1px solid var(--border);} .btn-outline:hover:not(:disabled){border-color:var(--sub);color:var(--text);}
+.btn-success{background:var(--success);color:#fff;} .btn-danger{background:var(--error);color:#fff;}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+
+.pill{display:inline-block;font-size:9px;padding:2px 7px;border-radius:10px;font-weight:500;}
+.pill-accent{background:var(--accent-dim);color:var(--accent);}
+.pill-green{background:var(--success-dim);color:var(--success);}
+.pill-orange{background:var(--warning-dim);color:var(--warning);}
+.pill-red{background:var(--error-dim);color:var(--error);}
+.pill-blue{background:var(--blue-dim);color:var(--blue);}
+.pill-purple{background:var(--purple-dim);color:var(--purple);}
+.pill-dim{background:rgba(255,255,255,.05);color:var(--sub);}
+
+label{font-size:11px;color:var(--sub);display:block;margin-bottom:3px;}
+input[type="text"],input[type="password"],input[type="url"],input[type="date"],input[type="number"],select,textarea{width:100%;padding:7px 10px;background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);font-size:12px;font-family:inherit;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);}
+textarea{resize:vertical;min-height:70px;}
+.field{margin-bottom:10px;} .field-row{display:flex;gap:10px;} .field-row .field{flex:1;}
+
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);}
+th{font-size:10px;color:var(--sub);text-transform:uppercase;letter-spacing:.05em;font-weight:600;}
+tr:hover{background:rgba(255,255,255,.02);}
+
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--card);border:1px solid var(--border);color:var(--text);padding:10px 20px;border-radius:10px;font-size:12px;z-index:999;transition:transform .3s;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.toast-err{border-color:var(--error);}
+
+.empty{text-align:center;color:var(--sub);padding:28px;font-size:12px;}
+.links-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;}
+.link-card{display:flex;align-items:center;gap:9px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:9px;color:var(--text);font-size:12px;transition:all .15s;cursor:pointer;}
+.link-card:hover{border-color:var(--accent);background:var(--accent-dim);text-decoration:none;}
+.link-icon{font-size:16px;}
+
+/* Tabs */
+.tabs{display:flex;gap:2px;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:0;}
+.tab{padding:7px 14px;font-size:11px;color:var(--sub);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.tab .tab-count{font-size:9px;background:var(--border);color:var(--sub);border-radius:8px;padding:1px 5px;margin-left:4px;}
+.tab.active .tab-count{background:var(--accent-dim);color:var(--accent);}
+
+/* Tournament cards */
+.t-card{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:all .15s;}
+.t-card:hover{border-color:var(--accent);background:rgba(6,182,212,.03);}
+.t-card-top{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+.t-card-title{font-size:13px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.t-card-meta{font-size:11px;color:var(--sub);display:flex;gap:12px;flex-wrap:wrap;}
+.t-source{font-size:9px;padding:1px 6px;border-radius:6px;font-weight:600;}
+.src-ifttt{background:rgba(74,158,255,.12);color:var(--blue);}
+.src-gas{background:rgba(34,197,94,.12);color:var(--success);}
+.src-manual{background:rgba(167,139,250,.12);color:var(--purple);}
+
+/* Detail panel */
+.detail-panel{background:var(--card);border:1px solid var(--accent);border-radius:10px;padding:18px;margin-bottom:14px;}
+.detail-section{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+.detail-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.source-box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:8px;}
+.source-text{font-size:12px;line-height:1.6;white-space:pre-wrap;word-break:break-word;color:var(--text);margin:6px 0;}
+.source-images{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.source-img{width:80px;height:80px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid var(--border);transition:transform .15s;}
+.source-img:hover{transform:scale(1.05);}
+.warn-box{background:var(--warning-dim);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:10px;font-size:12px;color:var(--warning);margin-bottom:10px;}
+
+/* Chart bars */
+.chart-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:10px;}
+.chart-label{width:36px;color:var(--sub);flex-shrink:0;text-align:right;}
+.chart-bar-bg{flex:1;height:20px;background:rgba(255,255,255,.03);border-radius:4px;overflow:hidden;}
+.chart-bar{height:100%;border-radius:4px;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;font-size:9px;font-weight:600;color:rgba(255,255,255,.9);min-width:28px;transition:width .6s;}
+.bar-accent{background:linear-gradient(90deg,#0891b2,var(--accent2));}
+.bar-green{background:linear-gradient(90deg,#16a34a,var(--success));}
+.bar-blue{background:linear-gradient(90deg,#2563eb,var(--blue));}
+.bar-purple{background:linear-gradient(90deg,#7c3aed,var(--purple));}
+.bar-orange{background:linear-gradient(90deg,#d97706,var(--warning));}
+
+/* Source breakdown */
+.src-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:11px;}
+.src-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.src-lbl{width:80px;flex-shrink:0;}
+.src-bar-bg{flex:1;height:22px;background:rgba(255,255,255,.03);border-radius:4px;overflow:hidden;}
+.src-bar{height:100%;border-radius:4px;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;font-size:10px;font-weight:600;color:rgba(255,255,255,.9);min-width:36px;transition:width .6s;}
+.src-pct{width:36px;text-align:right;font-size:10px;color:var(--sub);flex-shrink:0;}
+
+/* Top pages */
+.page-item{display:flex;align-items:center;gap:9px;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:7px;font-size:11px;margin-bottom:5px;}
+.page-rank{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;background:rgba(255,255,255,.04);color:var(--sub);}
+.page-rank-1{background:#3d2e00;color:#ffd700;} .page-rank-2{background:#2a2d30;color:#c0c0c0;} .page-rank-3{background:#2d1f0f;color:#cd7f32;}
+.page-path{flex:1;color:var(--accent);word-break:break-all;} .page-pv{font-weight:700;flex-shrink:0;} .page-users{font-size:9px;color:var(--sub);flex-shrink:0;}
+
+/* Goals */
+.goal-card{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;}
+.goal-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+.goal-label{font-size:11px;color:var(--sub);} .goal-nums{font-size:11px;} .goal-current{font-weight:700;} .goal-target{color:var(--sub);}
+.goal-bar-bg{height:7px;background:rgba(255,255,255,.04);border-radius:3px;overflow:hidden;}
+.goal-bar{height:100%;border-radius:3px;transition:width .6s;}
+.goal-pct{font-size:10px;font-weight:600;margin-top:3px;text-align:right;}
+
+/* SC query table */
+.q-good{color:var(--success);} .q-mid{color:var(--warning);} .q-low{color:var(--sub);}
+
+/* Partner */
+.partner-item{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.partner-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.partner-name{font-size:12px;font-weight:600;flex:1;}
+.partner-plan{font-size:9px;padding:2px 7px;border-radius:8px;font-weight:600;}
+.plan-std{background:rgba(6,182,212,.15);color:var(--accent);} .plan-light{background:rgba(34,197,94,.15);color:var(--success);}
+
+/* Post cards (Xpost) */
+.post-card{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;}
+.post-type{font-size:10px;color:var(--accent);margin-bottom:4px;font-weight:600;}
+.post-body{font-size:12px;line-height:1.7;white-space:pre-wrap;word-break:break-word;}
+
+/* Pagination */
+.pager{display:flex;gap:4px;justify-content:center;margin-top:12px;flex-wrap:wrap;}
+.pager-btn{padding:4px 10px;font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--sub);cursor:pointer;font-family:inherit;}
+.pager-btn:hover{border-color:var(--accent);color:var(--accent);}
+.pager-btn.active{background:var(--accent-dim);color:var(--accent);border-color:var(--accent);}
+
+/* Image modal */
+.img-modal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.img-modal img{max-width:90vw;max-height:90vh;border-radius:8px;}
+
+/* Auth modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:flex;align-items:center;justify-content:center;}
+.modal-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;width:90vw;max-width:360px;}
+.modal-box h3{font-size:14px;margin-bottom:14px;}
+
+/* Responsive */
+@media(max-width:768px){
+  .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:50;transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:49;display:none;}
+  .sidebar-overlay.show{display:block;}
+  .hamburger{display:block;}
+  .main-body{padding:14px;}
+  .stat-grid{grid-template-columns:1fr 1fr;}
+  .field-row{flex-direction:column;gap:0;}
+  .links-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">MH</div>
+    <div><div class="sidebar-title">MOLKKY HUB</div><div class="sidebar-sub">Management Portal</div></div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Overview</div>
+    <button class="nav-item active" data-section="dashboard" onclick="nav('dashboard')"><span class="nav-icon">&#9632;</span> Dashboard</button>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Content</div>
+    <button class="nav-item" data-section="articles" onclick="nav('articles')"><span class="nav-icon">&#9998;</span> 記事管理</button>
+    <button class="nav-item" data-section="xpost" onclick="nav('xpost')"><span class="nav-icon">&#10070;</span> Xポスト生成</button>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Tournament</div>
+    <button class="nav-item" data-section="tournaments" onclick="nav('tournaments')"><span class="nav-icon">&#9878;</span> 大会管理 <span class="nav-badge" id="navQBadge" style="display:none">0</span></button>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Analytics</div>
+    <button class="nav-item" data-section="traffic" onclick="nav('traffic')"><span class="nav-icon">&#9636;</span> トラフィック</button>
+    <button class="nav-item" data-section="sc" onclick="nav('sc')"><span class="nav-icon">&#128270;</span> Search Console</button>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Partners</div>
+    <button class="nav-item" data-section="partners" onclick="nav('partners')"><span class="nav-icon">&#9829;</span> パートナー管理</button>
+    <a class="nav-item" href="https://jonyjean21.github.io/sp-projects/partner/" target="_blank"><span class="nav-icon">&#128196;</span> パートナーLP <span class="nav-ext">&#8599;</span></a>
+    <a class="nav-item" href="https://jonyjean21.github.io/sp-projects/partner-portal/" target="_blank"><span class="nav-icon">&#128203;</span> パートナーポータル <span class="nav-ext">&#8599;</span></a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Operations</div>
+    <a class="nav-item" href="https://jonyjean21.github.io/sp-projects/naimol-admin/" target="_blank"><span class="nav-icon">&#127923;</span> 大会結果 (ナイモル) <span class="nav-ext">&#8599;</span></a>
+    <a class="nav-item" href="https://jonyjean21.github.io/sp-projects/championship-admin/" target="_blank"><span class="nav-icon">&#127942;</span> 選手権トラッカー <span class="nav-ext">&#8599;</span></a>
+    <button class="nav-item" data-section="automation" onclick="nav('automation')"><span class="nav-icon">&#9889;</span> 自動化パイプライン</button>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Settings</div>
+    <button class="nav-item" data-section="settings" onclick="nav('settings')"><span class="nav-icon">&#9881;</span> 設定</button>
+  </div>
+
+  <div class="sidebar-footer"><span id="connStatus" style="cursor:pointer" onclick="showAuthModal()">未接続</span></div>
+</div>
+
+<!-- Main -->
+<div class="main">
+  <div class="main-header">
+    <button class="hamburger" onclick="toggleSidebar()">&#9776;</button>
+    <h2 id="pageTitle">Dashboard</h2>
+    <span class="pill pill-dim" id="dateDisp"></span>
+  </div>
+  <div class="main-body">
+
+<!-- ===== DASHBOARD ===== -->
+<div class="section active" id="sec-dashboard">
+  <div class="stat-grid" id="dashStats">
+    <div class="stat-card"><div class="sv" style="color:var(--accent)" id="dSessions">-</div><div class="sl">月間セッション</div></div>
+    <div class="stat-card"><div class="sv" style="color:var(--success)" id="dPV">-</div><div class="sl">月間PV</div></div>
+    <div class="stat-card"><div class="sv" style="color:var(--blue)" id="dArticles">-</div><div class="sl">総記事数</div></div>
+    <div class="stat-card"><div class="sv" style="color:var(--orange)" id="dTournaments">-</div><div class="sl">大会情報</div></div>
+    <div class="stat-card"><div class="sv" style="color:var(--purple)" id="dPartners">-</div><div class="sl">パートナー</div></div>
+  </div>
+
+  <!-- Goals -->
+  <div class="card">
+    <div class="card-header"><h3>月次目標</h3><button class="btn btn-sm btn-outline" onclick="editGoals()">目標設定</button></div>
+    <div id="goalsGrid"></div>
+  </div>
+
+  <!-- Traffic mini chart -->
+  <div class="card">
+    <div class="card-header"><h3>トラフィック推移</h3><span class="pill pill-dim" id="dTrafficSrc">-</span></div>
+    <div id="dTrafficChart"><div class="empty"><span class="spinner"></span> 読み込み中...</div></div>
+  </div>
+
+  <!-- SNS -->
+  <div class="card">
+    <div class="card-header"><h3>SNS (@molkkyhub)</h3><button class="btn btn-sm btn-outline" onclick="editSNS()">更新</button></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="snsGrid">
+      <div class="stat-card"><div class="sv" style="color:var(--blue)" id="dFollowers">-</div><div class="sl">フォロワー</div></div>
+      <div class="stat-card"><div class="sv" style="color:var(--purple)" id="dImpressions">-</div><div class="sl">月間インプレッション</div></div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="card">
+    <h3>クイックアクション</h3>
+    <div class="links-grid">
+      <a class="link-card" onclick="nav('tournaments')"><span class="link-icon">&#128203;</span><div><div>大会キュー処理</div><div style="font-size:10px;color:var(--sub)">未処理を確認</div></div></a>
+      <a class="link-card" onclick="nav('xpost')"><span class="link-icon">&#128172;</span><div><div>Xポスト生成</div><div style="font-size:10px;color:var(--sub)">記事の宣伝</div></div></a>
+      <a class="link-card" onclick="nav('articles')"><span class="link-icon">&#9998;</span><div><div>記事を書く</div><div style="font-size:10px;color:var(--sub)">WP下書き作成</div></div></a>
+      <a class="link-card" href="https://molkky-hub.com/wp-admin/" target="_blank"><span class="link-icon">&#127760;</span><div><div>WP管理画面</div><div style="font-size:10px;color:var(--sub)">WordPress直接操作</div></div></a>
+    </div>
+  </div>
+
+  <!-- Quick links -->
+  <div class="card">
+    <h3>外部サービス</h3>
+    <div class="links-grid">
+      <a class="link-card" href="https://analytics.google.com/" target="_blank"><span class="link-icon">&#128200;</span> GA4</a>
+      <a class="link-card" href="https://search.google.com/search-console" target="_blank"><span class="link-icon">&#128270;</span> Search Console</a>
+      <a class="link-card" href="https://console.firebase.google.com/project/viisi-master-app/database" target="_blank"><span class="link-icon">&#128293;</span> Firebase</a>
+      <a class="link-card" href="https://ifttt.com/my_applets" target="_blank"><span class="link-icon">&#9889;</span> IFTTT</a>
+      <a class="link-card" href="https://vercel.com/dashboard" target="_blank"><span class="link-icon">&#9650;</span> Vercel</a>
+      <a class="link-card" href="https://www.notion.so/" target="_blank"><span class="link-icon">&#128466;</span> Notion</a>
+    </div>
+  </div>
+
+  <!-- Meeting Agenda -->
+  <div class="card" id="agendaCard" style="display:none">
+    <div class="card-header"><h3>向上委員会アジェンダ</h3><button class="btn btn-sm btn-outline" onclick="agendaCard.style.display=agendaCard.style.display==='none'?'block':'none'">折りたたみ</button></div>
+    <div id="agendaBody"></div>
+  </div>
+</div>
+
+<!-- ===== ARTICLES ===== -->
+<div class="section" id="sec-articles">
+  <div class="card">
+    <div class="card-header">
+      <h3>WP記事一覧</h3>
+      <select id="artFilter" onchange="loadArticles()" style="width:auto;padding:4px 8px;font-size:11px">
+        <option value="any">全ステータス</option><option value="publish">公開中</option><option value="draft">下書き</option>
+      </select>
+      <select id="artCatFilter" onchange="loadArticles()" style="width:auto;padding:4px 8px;font-size:11px">
+        <option value="">全カテゴリ</option>
+        <option value="8">大会情報</option><option value="56">チーム紹介</option><option value="122">寄稿</option>
+        <option value="2">ルール・遊び方</option><option value="117">商品紹介</option><option value="57">YouTube動画</option>
+      </select>
+      <button class="btn btn-sm btn-outline" onclick="loadArticles()">更新</button>
+    </div>
+    <div id="artList"><div class="empty"><span class="spinner"></span> 読み込み中...</div></div>
+    <div class="pager" id="artPager"></div>
+  </div>
+  <div class="card">
+    <h3>記事作成（下書き）</h3>
+    <div class="field"><label>タイトル</label><input type="text" id="newArtTitle" placeholder="記事タイトルを入力"></div>
+    <div class="field"><label>カテゴリ</label><select id="newArtCat"><option value="">-- 選択 --</option><option value="8">大会情報</option><option value="56">チーム紹介</option><option value="122">寄稿</option><option value="2">ルール・遊び方</option><option value="117">商品紹介</option><option value="57">YouTube動画</option></select></div>
+    <div class="field"><label>コンテンツ（HTML）</label><textarea id="newArtContent" rows="6" placeholder="記事の内容をHTMLで入力..."></textarea></div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="createArticle()">下書き作成</button></div>
+    <div id="artCreateResult" style="margin-top:8px;font-size:12px"></div>
+  </div>
+</div>
+
+<!-- ===== XPOST ===== -->
+<div class="section" id="sec-xpost">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div class="card">
+      <h3>Xポスト生成 (Promote)</h3>
+      <div class="field"><label>記事URL</label><div style="display:flex;gap:6px"><input type="url" id="xpUrl" placeholder="https://molkky-hub.com/..." style="flex:1"><button class="btn btn-primary" onclick="xpGenerate()">生成</button></div></div>
+      <div id="xpPreview" style="display:none;margin-top:6px;font-size:12px;background:var(--bg);border-radius:7px;padding:10px"><div style="font-weight:600" id="xpTitle"></div><div style="font-size:11px;color:var(--sub);margin-top:3px" id="xpExcerpt"></div></div>
+    </div>
+    <div class="card">
+      <h3>引用リポスト生成</h3>
+      <div class="field"><label>ツイートURL</label><div style="display:flex;gap:6px"><input type="url" id="xrUrl" placeholder="https://x.com/..." style="flex:1"><button class="btn btn-primary" onclick="xrGenerate()">生成</button></div></div>
+      <div id="xrPreview" style="display:none;margin-top:6px;font-size:12px;background:var(--bg);border-radius:7px;padding:10px"><div id="xrText" style="white-space:pre-wrap;word-break:break-word"></div><div style="font-size:10px;color:var(--dim);margin-top:3px" id="xrMeta"></div></div>
+    </div>
+  </div>
+  <div id="xpResults" style="margin-top:12px"></div>
+  <div id="xrResults" style="margin-top:12px"></div>
+</div>
+
+<!-- ===== TOURNAMENTS ===== -->
+<div class="section" id="sec-tournaments">
+  <div class="stat-grid">
+    <div class="stat-card"><div class="sv" style="color:var(--orange)" id="tPending">-</div><div class="sl">未処理キュー</div></div>
+    <div class="stat-card"><div class="sv" style="color:var(--success)" id="tTotal">-</div><div class="sl">WP大会総数</div></div>
+    <div class="stat-card"><div class="sv" style="color:var(--error)" id="tWarnings">-</div><div class="sl">要確認</div></div>
+    <div class="stat-card"><div class="sv" style="color:var(--blue)" id="tSources">3</div><div class="sl">収集ソース</div></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs" id="tTabs">
+    <button class="tab active" data-tab="all" onclick="tSwitchTab('all')">全件 <span class="tab-count" id="tcAll">-</span></button>
+    <button class="tab" data-tab="pending" onclick="tSwitchTab('pending')">未処理 <span class="tab-count" id="tcPending">-</span></button>
+    <button class="tab" data-tab="warnings" onclick="tSwitchTab('warnings')">要確認 <span class="tab-count" id="tcWarnings">-</span></button>
+    <button class="tab" data-tab="recent" onclick="tSwitchTab('recent')">最近の投稿 <span class="tab-count" id="tcRecent">-</span></button>
+  </div>
+
+  <!-- Filters -->
+  <div class="card" style="padding:12px 14px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <input type="text" id="tSearch" placeholder="検索..." style="width:160px;padding:5px 8px;font-size:11px" onkeydown="if(event.key==='Enter')tApplyFilter()">
+      <select id="tAreaFilter" style="width:auto;padding:5px 8px;font-size:11px" onchange="tApplyFilter()"><option value="">全都道府県</option></select>
+      <select id="tMonthFilter" style="width:auto;padding:5px 8px;font-size:11px" onchange="tApplyFilter()"><option value="">全月</option></select>
+      <select id="tStatusFilter" style="width:auto;padding:5px 8px;font-size:11px" onchange="tApplyFilter()"><option value="">全ステータス</option><option value="publish">公開</option><option value="draft">下書き</option></select>
+      <select id="tSort" style="width:auto;padding:5px 8px;font-size:11px" onchange="tApplyFilter()"><option value="date">投稿日順</option><option value="event_date">開催日順</option><option value="title">名前順</option></select>
+      <button class="btn btn-sm btn-primary" onclick="tManualAdd()" style="margin-left:auto">+ 手動追加</button>
+    </div>
+  </div>
+
+  <!-- List -->
+  <div id="tList"><div class="empty"><span class="spinner"></span> 読み込み中...</div></div>
+  <div class="pager" id="tPager"></div>
+
+  <!-- Detail panel (hidden) -->
+  <div id="tDetail" style="display:none"></div>
+
+  <!-- Manual add form (hidden) -->
+  <div class="card" id="tAddCard" style="display:none">
+    <div class="card-header"><h3>大会情報追加</h3><button class="btn btn-sm btn-outline" onclick="tAddCard.style.display='none'">閉じる</button></div>
+    <div class="field"><label>URLから自動取得</label><div style="display:flex;gap:6px"><input type="url" id="tAddUrl" placeholder="XポストやWebページURL" style="flex:1"><button class="btn btn-primary" onclick="tFetchUrl()">取得</button></div></div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:12px 0">
+    <div class="field"><label>大会名</label><input type="text" id="tfTitle"></div>
+    <div class="field-row">
+      <div class="field"><label>開催日</label><input type="date" id="tfDate"></div>
+      <div class="field"><label>都道府県</label><select id="tfArea"></select></div>
+    </div>
+    <div class="field"><label>主催者</label><input type="text" id="tfOrganizer"></div>
+    <div class="field-row">
+      <div class="field"><label>SNSリンク</label><input type="url" id="tfSns"></div>
+      <div class="field"><label>詳細リンク</label><input type="url" id="tfDetail"></div>
+    </div>
+    <div class="field"><label>規模</label><input type="text" id="tfScale" placeholder="例: 50チーム"></div>
+    <div style="display:flex;gap:16px;margin:8px 0">
+      <label style="display:flex;align-items:center;gap:5px;margin:0"><input type="checkbox" id="tfBeginner" style="width:auto"> 初心者歓迎</label>
+      <label style="display:flex;align-items:center;gap:5px;margin:0"><input type="checkbox" id="tfOfficial" style="width:auto"> 公式大会</label>
+    </div>
+    <div class="btn-row" style="margin-top:10px">
+      <button class="btn btn-success" onclick="tPostTournament()">WPに投稿</button>
+      <button class="btn btn-outline" onclick="tResetForm()">リセット</button>
+    </div>
+    <div id="tAddResult" style="margin-top:8px;font-size:12px"></div>
+  </div>
+
+  <!-- Monthly stats -->
+  <div class="card">
+    <h3>月別投稿数</h3>
+    <div id="tMonthlyChart"><div class="empty">データ読み込み後に表示</div></div>
+  </div>
+  <!-- Prefecture stats -->
+  <div class="card">
+    <h3>都道府県別</h3>
+    <div id="tPrefStats" style="font-size:11px;color:var(--sub)">データ読み込み後に表示</div>
+  </div>
+</div>
+
+<!-- ===== TRAFFIC ===== -->
+<div class="section" id="sec-traffic">
+  <div class="stat-grid">
+    <div class="stat-card"><div class="sv" style="color:var(--accent)" id="anSessions">-</div><div class="sl">月間セッション</div><div class="sc" id="anSessionsC"></div></div>
+    <div class="stat-card"><div class="sv" style="color:var(--success)" id="anPV">-</div><div class="sl">月間PV</div><div class="sc" id="anPVC"></div></div>
+    <div class="stat-card"><div class="sv" style="color:var(--blue)" id="anUsers">-</div><div class="sl">月間ユーザー</div><div class="sc" id="anUsersC"></div></div>
+    <div class="stat-card"><div class="sv" style="color:var(--warning)" id="anBounce">-</div><div class="sl">直帰率</div><div class="sc" id="anBounceC"></div></div>
+  </div>
+  <div class="card"><div class="card-header"><h3>セッション推移（直近6ヶ月）</h3><span class="pill pill-dim" id="anSrc">-</span></div><div id="anTrafficChart"><div class="empty"><span class="spinner"></span> 読み込み中...</div></div></div>
+  <div class="card"><h3>流入元の内訳</h3><div id="anSourcesChart"><div class="empty"><span class="spinner"></span> 読み込み中...</div></div></div>
+  <div class="card"><h3>人気ページ TOP10</h3><div id="anTopPages"><div class="empty"><span class="spinner"></span> 読み込み中...</div></div></div>
+</div>
+
+<!-- ===== SEARCH CONSOLE ===== -->
+<div class="section" id="sec-sc">
+  <div class="stat-grid">
+    <div class="stat-card"><div class="sv" style="color:var(--success)" id="scClicks">-</div><div class="sl">月間クリック</div><div class="sc" id="scClicksC"></div></div>
+    <div class="stat-card"><div class="sv" style="color:var(--purple)" id="scImpr">-</div><div class="sl">月間表示回数</div><div class="sc" id="scImprC"></div></div>
+    <div class="stat-card"><div class="sv" style="color:var(--warning)" id="scPos">-</div><div class="sl">平均掲載順位</div><div class="sc" id="scPosC"></div></div>
+  </div>
+  <div class="card"><h3>クリック数推移</h3><div id="scClicksChart"><div class="empty"><span class="spinner"></span> 読み込み中...</div></div></div>
+  <div class="card"><h3>検索クエリ TOP10</h3><div class="table-wrap"><table><thead><tr><th>クエリ</th><th>クリック</th><th>表示回数</th><th>順位</th></tr></thead><tbody id="scQueryBody"></tbody></table></div></div>
+</div>
+
+<!-- ===== PARTNERS ===== -->
+<div class="section" id="sec-partners">
+  <div class="stat-grid">
+    <div class="stat-card"><div class="sv" style="color:var(--accent)" id="pCount">-</div><div class="sl">パートナー数</div></div>
+    <div class="stat-card"><div class="sv" style="color:var(--success)" id="pStd">-</div><div class="sl">スタンダード</div></div>
+    <div class="stat-card"><div class="sv" style="color:var(--blue)" id="pLight">-</div><div class="sl">ライト</div></div>
+  </div>
+  <div class="card"><h3>パートナー一覧</h3><div id="pList"><div class="empty"><span class="spinner"></span> Firebase取得中...</div></div></div>
+  <div class="card"><h3>関連リンク</h3><div class="links-grid">
+    <a class="link-card" href="https://jonyjean21.github.io/sp-projects/partner/" target="_blank"><span class="link-icon">&#128196;</span> パートナーLP</a>
+    <a class="link-card" href="https://jonyjean21.github.io/sp-projects/partner-portal/" target="_blank"><span class="link-icon">&#128203;</span> パートナーポータル</a>
+  </div></div>
+</div>
+
+<!-- ===== AUTOMATION ===== -->
+<div class="section" id="sec-automation">
+  <div class="card">
+    <h3>自動化パイプライン概要</h3>
+    <div style="font-size:12px;line-height:1.8;color:var(--sub)">
+      <div style="margin-bottom:14px"><div style="font-weight:600;color:var(--text);margin-bottom:4px">大会情報収集パイプライン</div><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span class="pill pill-blue">GAS RSS</span><span class="pill pill-accent">IFTTT X検索</span><span class="pill pill-dim">手動URL</span><span style="color:var(--dim)">→</span><span class="pill pill-orange">Firebase Queue</span><span style="color:var(--dim)">→</span><span class="pill pill-green">WP投稿</span></div><div style="margin-top:3px">GAS: 毎日9時 / IFTTT: 5分間隔</div></div>
+      <div style="margin-bottom:14px"><div style="font-weight:600;color:var(--text);margin-bottom:4px">チャプ会議事録パイプライン</div><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span class="pill pill-purple">Google Meet</span><span style="color:var(--dim)">→</span><span class="pill pill-blue">Geminiメモ</span><span style="color:var(--dim)">→</span><span class="pill pill-orange">GAS検知</span><span style="color:var(--dim)">→</span><span class="pill pill-accent">Notion投稿</span></div><div style="margin-top:3px">GAS: 1時間おき</div></div>
+      <div><div style="font-weight:600;color:var(--text);margin-bottom:4px">Xポスト生成パイプライン</div><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span class="pill pill-blue">WP記事</span><span style="color:var(--dim)">→</span><span class="pill pill-purple">Gemini生成</span><span style="color:var(--dim)">→</span><span class="pill pill-accent">3パターン</span><span style="color:var(--dim)">→</span><span class="pill pill-green">@molkkyhub</span></div></div>
+    </div>
+  </div>
+  <div class="card"><div class="card-header"><h3>パイプライン状態</h3><button class="btn btn-sm btn-outline" onclick="loadAutoStatus()">更新</button></div><div id="autoStatus"><div class="empty"><span class="spinner"></span> 確認中...</div></div></div>
+</div>
+
+<!-- ===== SETTINGS ===== -->
+<div class="section" id="sec-settings">
+  <div class="card">
+    <h3>WordPress接続</h3>
+    <div class="field"><label>ユーザー名</label><input type="text" id="setUser" placeholder="WordPress ユーザー名"></div>
+    <div class="field"><label>アプリケーションパスワード</label><input type="password" id="setPass" placeholder="WP アプリケーションパスワード"></div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="saveWpAuth()">接続テスト & 保存</button><button class="btn btn-outline" onclick="clearWpAuth()">認証クリア</button></div>
+    <div id="setResult" style="margin-top:8px;font-size:11px"></div>
+  </div>
+  <div class="card">
+    <h3>GAS Endpoint</h3>
+    <div class="field"><label>GAS Web App URL</label><input type="url" id="setGas" placeholder="https://script.google.com/macros/s/.../exec"></div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="saveGas()">保存</button><button class="btn btn-outline" onclick="resetGas()">デフォルトに戻す</button></div>
+  </div>
+  <div class="card">
+    <h3>データ管理</h3>
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="exportSettings()">設定エクスポート</button>
+      <button class="btn btn-danger" onclick="if(confirm('全ての設定をクリアしますか?'))localStorage.clear()">全設定クリア</button>
+    </div>
+  </div>
+  <div class="card">
+    <h3>接続情報</h3>
+    <div style="font-size:11px;color:var(--sub);line-height:2">
+      <div>WP API: https://molkky-hub.com/wp-json/wp/v2/</div>
+      <div>Firebase: viisi-master-app-default-rtdb.firebaseio.com</div>
+      <div>Vercel Proxy: vercel-api-orpin-one.vercel.app</div>
+      <div>Gemini: gemini-2.5-flash (Vercel経由)</div>
+    </div>
+  </div>
+</div>
+
+  </div><!-- /main-body -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<div class="toast" id="toast"></div>
+
+<!-- Auth Modal -->
+<div class="modal-overlay" id="authModal" style="display:none">
+  <div class="modal-box">
+    <h3>WordPress接続</h3>
+    <div class="field"><label>ユーザー名</label><input type="text" id="authUser"></div>
+    <div class="field"><label>アプリケーションパスワード</label><input type="password" id="authPass"></div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="doAuth()">接続</button><button class="btn btn-outline" onclick="hideAuthModal()">キャンセル</button></div>
+  </div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+
+<script>
+// ========== CONSTANTS ==========
+const WP = 'https://molkky-hub.com';
+const WP_API = WP + '/wp-json/wp/v2';
+const FB = 'https://viisi-master-app-default-rtdb.firebaseio.com';
+const VERCEL = 'https://vercel-api-orpin-one.vercel.app';
+const TWEET_PROXY = VERCEL + '/api/tweet-proxy';
+const GEMINI_API = VERCEL + '/api/gemini';
+const GAS_DEFAULT = 'https://script.google.com/macros/s/AKfycby_RB6NgSD7zq3Xx7pfsTiPG8JxHw7rtuw-drYYxcMyUwMeFed5zgtLjZimv2ZkFzsACQ/exec';
+const PAGES = 'https://jonyjean21.github.io/sp-projects';
+
+const CATEGORY_MAP = {
+  8:{name:'大会情報',slug:'tournament',tone:'速報・情報提供系',tags:'#モルック #大会情報 #molkky'},
+  56:{name:'チーム紹介',slug:'team',tone:'親しみやすい',tags:'#モルック #チーム紹介 #molkky'},
+  122:{name:'寄稿',slug:'guest',tone:'知的・読み応え訴求',tags:'#モルック #モルハブ #molkky'},
+  126:{name:'寄稿（いとゆう）',slug:'guest',tone:'知的・読み応え訴求',tags:'#モルック #モルハブ #molkky'},
+  2:{name:'ルール・遊び方',slug:'rules',tone:'丁寧・教育的',tags:'#モルック #ルール #molkky'},
+  117:{name:'商品紹介',slug:'product',tone:'情報提供系',tags:'#モルック #molkky'},
+  57:{name:'YouTube動画',slug:'video',tone:'視聴誘導',tags:'#モルック #molkky #YouTube'}
+};
+
+const AREAS = {
+  '北海道':{id:43},'青森県':{id:44},'岩手県':{id:45},'宮城県':{id:46},'秋田県':{id:47},'山形県':{id:48},
+  '福島県':{id:49},'茨城県':{id:50},'栃木県':{id:51},'群馬県':{id:52},'埼玉県':{id:53},'千葉県':{id:54},
+  '東京都':{id:55},'神奈川県':{id:56},'新潟県':{id:57},'富山県':{id:58},'石川県':{id:59},'福井県':{id:60},
+  '山梨県':{id:61},'長野県':{id:62},'岐阜県':{id:63},'静岡県':{id:64},'愛知県':{id:65},'三重県':{id:66},
+  '滋賀県':{id:67},'京都府':{id:68},'大阪府':{id:69},'兵庫県':{id:70},'奈良県':{id:71},'和歌山県':{id:72},
+  '鳥取県':{id:73},'島根県':{id:74},'岡山県':{id:75},'広島県':{id:76},'山口県':{id:77},'徳島県':{id:78},
+  '香川県':{id:79},'愛媛県':{id:80},'高知県':{id:81},'福岡県':{id:82},'佐賀県':{id:83},'長崎県':{id:84},
+  '熊本県':{id:85},'大分県':{id:86},'宮崎県':{id:87},'鹿児島県':{id:88},'沖縄県':{id:89}
+};
+
+// Reverse lookup: area id -> name
+const AREA_BY_ID = {};
+Object.entries(AREAS).forEach(([name, v]) => { AREA_BY_ID[v.id] = name; });
+
+// ========== STATE ==========
+let wpAuth = '';
+let analyticsData = null;
+let tAllData = [];     // merged WP + queue
+let tFiltered = [];
+let tCurrentTab = 'all';
+let tPage = 1;
+const T_PER_PAGE = 20;
+let tQueueData = {};   // Firebase queue raw
+let artPage = 1;
+const ART_PER_PAGE = 20;
+let artTotal = 0;
+
+// ========== FIREBASE ==========
+firebase.initializeApp({
+  apiKey: "AIzaSyALYXDVMecauxwozKtueJBc-6AJXv_CyQc",
+  databaseURL: "https://viisi-master-app-default-rtdb.firebaseio.com",
+  projectId: "viisi-master-app"
+});
+const db = firebase.database();
+
+// ========== UTILITY ==========
+function fmt(n) { return (n||0).toLocaleString(); }
+function esc(s) { const d=document.createElement('div');d.textContent=s||'';return d.innerHTML; }
+function shortMonth(m) { const p=m.split('-'); return parseInt(p[1])+'月'; }
+function changeHTML(cur, prev, invert) {
+  if(!prev) return '';
+  const diff=cur-prev, pct=((diff/prev)*100).toFixed(1);
+  const up=invert?diff<0:diff>0;
+  const cls=diff===0?'':(up?'up':'down');
+  const arrow=diff===0?'→':(up?'↑':'↓');
+  return '<span class="sc '+cls+'">'+arrow+' '+Math.abs(pct)+'%</span>';
+}
+function gasEndpoint() { return localStorage.getItem('hub_gas_endpoint') || GAS_DEFAULT; }
+
+function showToast(msg, err) {
+  const t=document.getElementById('toast');t.textContent=msg;t.className='toast'+(err?' toast-err':'')+' show';
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ========== WP FETCH ==========
+async function wpFetch(endpoint, opts={}) {
+  if(!wpAuth) throw new Error('WP未認証');
+  const res = await fetch(WP + endpoint, {
+    ...opts, headers:{'Authorization':'Basic '+wpAuth,...(opts.headers||{})}
+  });
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  const ct=res.headers.get('content-type');
+  return (ct&&ct.includes('json'))?{data:await res.json(),headers:res.headers}:res;
+}
+// Unauthenticated fetch for public endpoints
+async function wpGet(endpoint) {
+  const res = await fetch(WP_API + endpoint);
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  return {data:await res.json(),headers:res.headers};
+}
+
+// ========== NAVIGATION ==========
+const SEC_TITLES = {dashboard:'Dashboard',articles:'記事管理',xpost:'Xポスト生成',tournaments:'大会管理',traffic:'トラフィック',sc:'Search Console',partners:'パートナー管理',automation:'自動化パイプライン',settings:'設定'};
+const SEC_LOADED = {};
+
+function nav(id) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  const ni=document.querySelector('.nav-item[data-section="'+id+'"]');
+  if(ni)ni.classList.add('active');
+  document.getElementById('pageTitle').textContent=SEC_TITLES[id]||id;
+  // Lazy load
+  if(!SEC_LOADED[id]) { SEC_LOADED[id]=true; lazyLoad(id); }
+  // Close mobile
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+function lazyLoad(id) {
+  if(id==='articles') loadArticles();
+  if(id==='tournaments') loadTournaments();
+  if(id==='traffic') loadAnalyticsData().then(renderTraffic);
+  if(id==='sc') loadAnalyticsData().then(renderSC);
+  if(id==='partners') loadPartners();
+  if(id==='automation') loadAutoStatus();
+}
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+
+// ========== AUTH ==========
+function showAuthModal(){document.getElementById('authModal').style.display='flex';}
+function hideAuthModal(){document.getElementById('authModal').style.display='none';}
+
+function restoreAuth() {
+  const keys=['portal_auth','molkky_admin_auth','naimol_auth'];
+  for(const k of keys){
+    const s=localStorage.getItem(k);
+    if(s){try{
+      const{user,pass}=JSON.parse(s);
+      wpAuth=btoa(user+':'+pass);
+      document.getElementById('setUser').value=user;
+      document.getElementById('setPass').value=pass;
+      const d=JSON.stringify({user,pass});
+      keys.forEach(kk=>localStorage.setItem(kk,d));
+      verifyWp();
+      return;
+    }catch(e){}}
+  }
+  showAuthModal();
+}
+async function doAuth(){
+  const user=document.getElementById('authUser').value.trim();
+  const pass=document.getElementById('authPass').value.trim();
+  if(!user||!pass)return;
+  wpAuth=btoa(user+':'+pass);
+  const d=JSON.stringify({user,pass});
+  ['portal_auth','molkky_admin_auth','naimol_auth'].forEach(k=>localStorage.setItem(k,d));
+  document.getElementById('setUser').value=user;
+  document.getElementById('setPass').value=pass;
+  hideAuthModal();
+  await verifyWp();
+}
+async function verifyWp(){
+  try{
+    await wpFetch('/wp-json/wp/v2/posts?per_page=1');
+    document.getElementById('connStatus').innerHTML='<span style="color:var(--success)">WP接続OK</span>';
+  }catch(e){
+    document.getElementById('connStatus').innerHTML='<span style="color:var(--error)">接続失敗</span>';
+  }
+}
+async function saveWpAuth(){
+  const user=document.getElementById('setUser').value.trim();
+  const pass=document.getElementById('setPass').value.trim();
+  if(!user||!pass)return;
+  wpAuth=btoa(user+':'+pass);
+  const d=JSON.stringify({user,pass});
+  ['portal_auth','molkky_admin_auth','naimol_auth'].forEach(k=>localStorage.setItem(k,d));
+  try{
+    await wpFetch('/wp-json/wp/v2/posts?per_page=1');
+    document.getElementById('setResult').innerHTML='<span style="color:var(--success)">接続成功</span>';
+    document.getElementById('connStatus').innerHTML='<span style="color:var(--success)">WP接続OK</span>';
+  }catch(e){
+    document.getElementById('setResult').innerHTML='<span style="color:var(--error)">失敗: '+esc(e.message)+'</span>';
+  }
+}
+function clearWpAuth(){
+  ['portal_auth','molkky_admin_auth','naimol_auth'].forEach(k=>localStorage.removeItem(k));
+  wpAuth='';document.getElementById('setUser').value='';document.getElementById('setPass').value='';
+  document.getElementById('connStatus').textContent='未接続';showToast('認証クリア');
+}
+function saveGas(){
+  const v=document.getElementById('setGas').value.trim();
+  if(v&&v.startsWith('https://script.google.com/')){localStorage.setItem('hub_gas_endpoint',v);showToast('GAS URL保存');}
+  else showToast('無効なURL',true);
+}
+function resetGas(){localStorage.removeItem('hub_gas_endpoint');document.getElementById('setGas').value='';showToast('デフォルトに戻しました');}
+function exportSettings(){
+  const data={};['portal_auth','hub_gas_endpoint','hub_goals','hub_sns_data'].forEach(k=>{const v=localStorage.getItem(k);if(v)data[k]=v;});
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='molkky-portal-settings.json';a.click();
+}
+
+// ========== DASHBOARD ==========
+async function loadDashboard() {
+  // WP counts
+  try {
+    const [postsRes, tourRes] = await Promise.all([
+      fetch(WP_API+'/posts?per_page=1&_fields=id'),
+      fetch(WP_API+'/tournament?per_page=1&_fields=id')
+    ]);
+    const artCount = parseInt(postsRes.headers.get('x-wp-total'))||0;
+    const tourCount = parseInt(tourRes.headers.get('x-wp-total'))||0;
+    document.getElementById('dArticles').textContent = fmt(artCount);
+    document.getElementById('dTournaments').textContent = fmt(tourCount);
+  } catch(e) { console.error('WP count fail:',e); }
+
+  // Firebase queue + partners
+  try {
+    const snap = await db.ref('tournament-queue').orderByChild('status').equalTo('pending').once('value');
+    const pending = snap.val() ? Object.keys(snap.val()).length : 0;
+    const badge = document.getElementById('navQBadge');
+    if(pending>0){badge.textContent=pending;badge.style.display='inline';}
+  } catch(e){}
+  try {
+    const snap = await db.ref('partner/config/partners').once('value');
+    const partners = snap.val();
+    const count = partners ? Object.keys(partners).length : 0;
+    document.getElementById('dPartners').textContent = fmt(count);
+  } catch(e){}
+
+  // Analytics (sessions/PV)
+  await loadAnalyticsData();
+  if(analyticsData && analyticsData.traffic && analyticsData.traffic.months) {
+    const months = analyticsData.traffic.months;
+    const latest = months[months.length-1];
+    document.getElementById('dSessions').textContent = fmt(latest.sessions);
+    document.getElementById('dPV').textContent = fmt(latest.pv);
+    renderDashTraffic(months);
+    document.getElementById('dTrafficSrc').textContent = 'GA4 API';
+  }
+
+  // SNS
+  renderSNS();
+
+  // Goals
+  renderGoals();
+}
+
+async function loadAnalyticsData() {
+  if(analyticsData) return;
+  const ep = gasEndpoint();
+  try {
+    const res = await fetch(ep);
+    if(res.ok) { analyticsData = await res.json(); if(analyticsData.error) analyticsData=null; }
+  } catch(e) { console.error('GAS fail:',e); }
+}
+
+function renderDashTraffic(months) {
+  const last6 = months.slice(-6);
+  const max = Math.max(...last6.map(m=>m.sessions));
+  let html='';
+  last6.forEach(m=>{
+    const pct=max>0?(m.sessions/max*100).toFixed(0):0;
+    html+=`<div class="chart-row"><span class="chart-label">${shortMonth(m.month)}</span><div class="chart-bar-bg"><div class="chart-bar bar-accent" style="width:${pct}%">${fmt(m.sessions)}</div></div></div>`;
+  });
+  document.getElementById('dTrafficChart').innerHTML=html;
+}
+
+// ========== GOALS ==========
+const DEFAULT_GOALS={sessions:4000,pv:8000,articles:560};
+function getGoals(){return JSON.parse(localStorage.getItem('hub_goals')||'null')||DEFAULT_GOALS;}
+
+function renderGoals(){
+  const goals=getGoals();
+  let curS=0,curP=0,curA=0;
+  if(analyticsData&&analyticsData.traffic&&analyticsData.traffic.months){
+    const l=analyticsData.traffic.months[analyticsData.traffic.months.length-1];
+    curS=l.sessions||0; curP=l.pv||0;
+  }
+  const ae=document.getElementById('dArticles');
+  curA=parseInt(ae?ae.textContent.replace(/,/g,''):0)||0;
+  const items=[
+    {label:'セッション',cur:curS,target:goals.sessions,color:'var(--accent)'},
+    {label:'PV',cur:curP,target:goals.pv,color:'var(--success)'},
+    {label:'総記事数',cur:curA,target:goals.articles,color:'var(--purple)'}
+  ];
+  let html='';
+  items.forEach(i=>{
+    const pct=i.target>0?Math.min(100,(i.cur/i.target*100)).toFixed(0):0;
+    const pc=pct>=100?'var(--success)':pct>=70?'var(--warning)':'var(--error)';
+    html+=`<div class="goal-card"><div class="goal-top"><span class="goal-label">${i.label}</span><span class="goal-nums"><span class="goal-current">${fmt(i.cur)}</span> <span class="goal-target">/ ${fmt(i.target)}</span></span></div><div class="goal-bar-bg"><div class="goal-bar" style="width:${pct}%;background:${i.color}"></div></div><div class="goal-pct" style="color:${pc}">${pct}%</div></div>`;
+  });
+  document.getElementById('goalsGrid').innerHTML=html;
+}
+
+function editGoals(){
+  const g=getGoals();
+  const s=prompt('月間セッション目標:',g.sessions);if(s===null)return;
+  const p=prompt('月間PV目標:',g.pv);if(p===null)return;
+  const a=prompt('総記事数目標:',g.articles);if(a===null)return;
+  localStorage.setItem('hub_goals',JSON.stringify({sessions:parseInt(s)||g.sessions,pv:parseInt(p)||g.pv,articles:parseInt(a)||g.articles}));
+  renderGoals();
+}
+
+// ========== SNS ==========
+function renderSNS(){
+  const stored=JSON.parse(localStorage.getItem('hub_sns_data')||'{}');
+  document.getElementById('dFollowers').textContent=stored.xFollowers?fmt(stored.xFollowers):'-';
+  document.getElementById('dImpressions').textContent=stored.xImpressions?fmt(stored.xImpressions):'-';
+}
+function editSNS(){
+  const s=JSON.parse(localStorage.getItem('hub_sns_data')||'{}');
+  const f=prompt('フォロワー数:',s.xFollowers||'');if(f===null)return;
+  const i=prompt('月間インプレッション:',s.xImpressions||'');if(i===null)return;
+  const d={xFollowers:parseInt(f)||0,xFollowersPrev:s.xFollowers||0,xImpressions:parseInt(i)||0,xImpressionsPrev:s.xImpressions||0};
+  localStorage.setItem('hub_sns_data',JSON.stringify(d));renderSNS();
+}
+
+// ========== ARTICLES ==========
+async function loadArticles(){
+  const list=document.getElementById('artList');
+  list.innerHTML='<div class="empty"><span class="spinner"></span> 読み込み中...</div>';
+  const status=document.getElementById('artFilter').value;
+  const cat=document.getElementById('artCatFilter').value;
+  let ep='/posts?per_page='+ART_PER_PAGE+'&page='+artPage+'&_fields=id,title,date,status,categories,link';
+  if(status!=='any') ep+='&status='+status;
+  if(cat) ep+='&categories='+cat;
+  try{
+    const r=await wpFetch('/wp-json/wp/v2'+ep);
+    artTotal=parseInt(r.headers.get('x-wp-total'))||0;
+    const posts=r.data;
+    if(!posts.length){list.innerHTML='<div class="empty">記事が見つかりません</div>';return;}
+    let html='';
+    posts.forEach(p=>{
+      const date=new Date(p.date).toLocaleDateString('ja-JP');
+      const catNames=(p.categories||[]).map(c=>CATEGORY_MAP[c]?CATEGORY_MAP[c].name:'').filter(Boolean).join(', ')||'-';
+      const stPill=p.status==='publish'?'pill-green':'pill-orange';
+      const stLabel=p.status==='publish'?'公開':'下書き';
+      html+=`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">
+        <span class="pill ${stPill}">${stLabel}</span>
+        <span style="flex:1"><a href="${esc(p.link)}" target="_blank">${esc(p.title.rendered)}</a></span>
+        <span style="color:var(--sub);font-size:10px">${catNames}</span>
+        <span style="color:var(--dim);font-size:10px">${date}</span>
+        <a href="${WP}/wp-admin/post.php?post=${p.id}&action=edit" target="_blank" class="btn btn-sm btn-outline">編集</a>
+      </div>`;
+    });
+    list.innerHTML=html;
+    renderPager('artPager',artPage,Math.ceil(artTotal/ART_PER_PAGE),p=>{artPage=p;loadArticles();});
+  }catch(e){
+    list.innerHTML='<div class="empty" style="color:var(--error)">取得失敗: '+esc(e.message)+'</div>';
+  }
+}
+
+async function createArticle(){
+  const title=document.getElementById('newArtTitle').value.trim();
+  const cat=document.getElementById('newArtCat').value;
+  const content=document.getElementById('newArtContent').value;
+  const result=document.getElementById('artCreateResult');
+  if(!title){result.innerHTML='<span style="color:var(--error)">タイトルを入力してください</span>';return;}
+  try{
+    const body=new FormData();
+    body.append('title',title);body.append('content',content);body.append('status','draft');
+    if(cat)body.append('categories',cat);
+    const res=await fetch(WP_API+'/posts',{method:'POST',headers:{'Authorization':'Basic '+wpAuth},body});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    result.innerHTML='<span style="color:var(--success)">作成成功! ID: '+data.id+' <a href="'+WP+'/wp-admin/post.php?post='+data.id+'&action=edit" target="_blank">編集</a></span>';
+    document.getElementById('newArtTitle').value='';document.getElementById('newArtContent').value='';
+    showToast('下書き作成完了');
+  }catch(e){
+    result.innerHTML='<span style="color:var(--error)">失敗: '+esc(e.message)+'</span>';
+  }
+}
+
+// ========== PAGINATION ==========
+function renderPager(elId,current,total,onPage){
+  const el=document.getElementById(elId);
+  if(total<=1){el.innerHTML='';return;}
+  let html='';
+  if(current>1) html+='<button class="pager-btn" onclick="void(0)">&laquo;</button>';
+  const start=Math.max(1,current-3),end=Math.min(total,current+3);
+  for(let i=start;i<=end;i++){
+    html+='<button class="pager-btn'+(i===current?' active':'')+'" data-p="'+i+'">'+i+'</button>';
+  }
+  if(current<total) html+='<button class="pager-btn" data-p="'+(current+1)+'">&raquo;</button>';
+  el.innerHTML=html;
+  el.querySelectorAll('.pager-btn').forEach(btn=>{
+    btn.onclick=()=>{
+      const p=parseInt(btn.dataset.p);
+      if(p)onPage(p);
+      else if(btn.textContent.includes('«'))onPage(current-1);
+    };
+  });
+}
+
+// ========== XPOST GENERATION ==========
+async function xpGenerate(){
+  const url=document.getElementById('xpUrl').value.trim();
+  if(!url){showToast('URLを入力してください',true);return;}
+  const prev=document.getElementById('xpPreview');
+  const results=document.getElementById('xpResults');
+  results.innerHTML='<div class="empty"><span class="spinner"></span> Gemini生成中...</div>';
+
+  // Fetch article info
+  try{
+    const slug=new URL(url).pathname.replace(/\//g,'');
+    const r=await wpGet('/posts?slug='+slug+'&_fields=id,title,excerpt,categories');
+    if(r.data.length){
+      const p=r.data[0];
+      document.getElementById('xpTitle').textContent=p.title.rendered;
+      document.getElementById('xpExcerpt').textContent=p.excerpt.rendered.replace(/<[^>]+>/g,'').substring(0,100);
+      prev.style.display='block';
+    }
+  }catch(e){}
+
+  // Generate via Gemini
+  try{
+    const catInfo = '記事宣伝用Xポストを3パターン生成。1行目は必ず「記事更新!」+タイトル。改行してから本文。';
+    const prompt = catInfo + '\n記事URL: ' + url + '\nモルハブ(@molkkyhub)のXポストとして。ハッシュタグ: #モルック #molkky を含める。各ポスト間は---で区切る。';
+    const res = await fetch(GEMINI_API, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({prompt})
+    });
+    const data = await res.json();
+    const text = data.text || data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const posts = text.split('---').map(s=>s.trim()).filter(Boolean);
+    let html='';
+    posts.forEach((p,i)=>{
+      html+=`<div class="post-card"><div class="post-type">パターン ${i+1}</div><div class="post-body">${esc(p)}</div><button class="btn btn-sm btn-outline" style="margin-top:6px" onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent);showToast('コピーしました')">コピー</button></div>`;
+    });
+    results.innerHTML=html||'<div class="empty">生成結果なし</div>';
+  }catch(e){
+    results.innerHTML='<div class="empty" style="color:var(--error)">生成失敗: '+esc(e.message)+'</div>';
+  }
+}
+
+async function xrGenerate(){
+  const url=document.getElementById('xrUrl').value.trim();
+  if(!url){showToast('URLを入力してください',true);return;}
+  const results=document.getElementById('xrResults');
+  results.innerHTML='<div class="empty"><span class="spinner"></span> 生成中...</div>';
+
+  // Fetch tweet via proxy
+  let tweetText='';
+  try{
+    const tweetId=url.match(/status\/(\d+)/)?.[1];
+    if(tweetId){
+      const res=await fetch(TWEET_PROXY+'?id='+tweetId);
+      const data=await res.json();
+      tweetText=data.text||data.tweet?.text||'';
+      document.getElementById('xrText').textContent=tweetText;
+      document.getElementById('xrMeta').textContent=data.user?.name||data.tweet?.user?.name||'';
+      document.getElementById('xrPreview').style.display='block';
+    }
+  }catch(e){console.error('tweet fetch:',e);}
+
+  try{
+    const prompt = '以下のツイートへの引用リポストを3パターン生成（モルハブ @molkkyhub として）。つながり型・応援型のトーンで。各パターンは---で区切る。\n\n元ツイート:\n'+tweetText+'\n\nURL: '+url;
+    const res=await fetch(GEMINI_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
+    const data=await res.json();
+    const text=data.text||data.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    const posts=text.split('---').map(s=>s.trim()).filter(Boolean);
+    let html='';
+    posts.forEach((p,i)=>{
+      html+=`<div class="post-card"><div class="post-type">パターン ${i+1}</div><div class="post-body">${esc(p)}</div><button class="btn btn-sm btn-outline" style="margin-top:6px" onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent);showToast('コピーしました')">コピー</button></div>`;
+    });
+    results.innerHTML=html||'<div class="empty">生成結果なし</div>';
+  }catch(e){
+    results.innerHTML='<div class="empty" style="color:var(--error)">生成失敗: '+esc(e.message)+'</div>';
+  }
+}
+
+// ========== TRAFFIC (Analytics) ==========
+function renderTraffic(){
+  if(!analyticsData||!analyticsData.traffic||!analyticsData.traffic.months) {
+    document.getElementById('anTrafficChart').innerHTML='<div class="empty">GA4データなし。<a href="#" onclick="nav(\'settings\')">GAS設定</a>を確認してください。</div>';
+    return;
+  }
+  const months=analyticsData.traffic.months;
+  const latest=months[months.length-1], prev=months[months.length-2];
+  document.getElementById('anSessions').textContent=fmt(latest.sessions);
+  document.getElementById('anSessionsC').innerHTML=changeHTML(latest.sessions,prev?.sessions);
+  document.getElementById('anPV').textContent=fmt(latest.pv);
+  document.getElementById('anPVC').innerHTML=changeHTML(latest.pv,prev?.pv);
+  document.getElementById('anUsers').textContent=fmt(latest.users);
+  document.getElementById('anUsersC').innerHTML=changeHTML(latest.users,prev?.users);
+  if(latest.bounceRate!==undefined){
+    document.getElementById('anBounce').textContent=latest.bounceRate+'%';
+    document.getElementById('anBounceC').innerHTML=prev?.bounceRate!==undefined?changeHTML(latest.bounceRate,prev.bounceRate,true):'';
+  }
+  document.getElementById('anSrc').textContent='GA4 API';
+
+  // Sessions chart
+  const max=Math.max(...months.map(m=>m.sessions));
+  let html='';
+  months.forEach(m=>{
+    const pct=max>0?(m.sessions/max*100).toFixed(0):0;
+    html+=`<div class="chart-row"><span class="chart-label">${shortMonth(m.month)}</span><div class="chart-bar-bg"><div class="chart-bar bar-accent" style="width:${pct}%">${fmt(m.sessions)}</div></div></div>`;
+  });
+  document.getElementById('anTrafficChart').innerHTML=html;
+
+  // Traffic sources
+  if(analyticsData.trafficSources&&analyticsData.trafficSources.length){
+    const SRC_LABELS={'Organic Search':'検索','Organic Social':'SNS','Direct':'ダイレクト','Referral':'参照元'};
+    const SRC_COLORS={'Organic Search':['#16a34a','#22c55e'],'Organic Social':['#2563eb','#4a9eff'],'Direct':['#7c3aed','#a78bfa'],'Referral':['#d97706','#f59e0b']};
+    const SRC_DOTS={'Organic Search':'#22c55e','Organic Social':'#4a9eff','Direct':'#a78bfa','Referral':'#f59e0b'};
+    const sources=analyticsData.trafficSources;
+    const total=sources.reduce((s,x)=>s+x.sessions,0);
+    const maxS=sources[0]?sources[0].sessions:1;
+    let shtml='';
+    sources.forEach(s=>{
+      const label=SRC_LABELS[s.source]||s.source;
+      const pct=total>0?(s.sessions/total*100).toFixed(1):'0';
+      const bpct=(s.sessions/maxS*100).toFixed(0);
+      const colors=SRC_COLORS[s.source]||['#484f58','#8b949e'];
+      const dot=SRC_DOTS[s.source]||'#8b949e';
+      shtml+=`<div class="src-row"><div class="src-lbl" style="display:flex;align-items:center;gap:5px"><span class="src-dot" style="background:${dot}"></span>${label}</div><div class="src-bar-bg"><div class="src-bar" style="width:${bpct}%;background:linear-gradient(90deg,${colors[0]},${colors[1]})">${fmt(s.sessions)}</div></div><span class="src-pct">${pct}%</span></div>`;
+    });
+    document.getElementById('anSourcesChart').innerHTML=shtml;
+  } else {
+    document.getElementById('anSourcesChart').innerHTML='<div class="empty">流入元データなし</div>';
+  }
+
+  // Top pages
+  if(analyticsData.topPages&&analyticsData.topPages.length){
+    let phtml='';
+    analyticsData.topPages.slice(0,10).forEach((p,i)=>{
+      const rank=i+1;
+      const rc=rank<=3?' page-rank-'+rank:'';
+      const path=p.path.length>40?p.path.substring(0,38)+'...':p.path;
+      phtml+=`<div class="page-item"><span class="page-rank${rc}">${rank}</span><span class="page-path"><a href="${WP}${p.path}" target="_blank">${esc(path)}</a></span><span class="page-pv">${fmt(p.pv)}</span><span class="page-users">${fmt(p.users)}人</span></div>`;
+    });
+    document.getElementById('anTopPages').innerHTML=phtml;
+  } else {
+    document.getElementById('anTopPages').innerHTML='<div class="empty">ページデータなし</div>';
+  }
+}
+
+// ========== SEARCH CONSOLE ==========
+function renderSC(){
+  if(!analyticsData||!analyticsData.searchConsole||!analyticsData.searchConsole.months){
+    document.getElementById('scClicksChart').innerHTML='<div class="empty">Search Consoleデータなし</div>';
+    return;
+  }
+  const sc=analyticsData.searchConsole;
+  const months=sc.months;
+  const latest=months[months.length-1],prev=months[months.length-2];
+  document.getElementById('scClicks').textContent=fmt(latest.clicks);
+  document.getElementById('scClicksC').innerHTML=changeHTML(latest.clicks,prev?.clicks);
+  if(latest.impressions!==undefined){document.getElementById('scImpr').textContent=fmt(latest.impressions);document.getElementById('scImprC').innerHTML=changeHTML(latest.impressions,prev?.impressions);}
+  document.getElementById('scPos').textContent=latest.position?latest.position.toFixed(1):'-';
+  document.getElementById('scPosC').innerHTML=prev?.position?changeHTML(latest.position,prev.position,true):'';
+
+  const maxC=Math.max(...months.map(m=>m.clicks));
+  let html='';
+  months.forEach(m=>{
+    const pct=maxC>0?(m.clicks/maxC*100).toFixed(0):0;
+    html+=`<div class="chart-row"><span class="chart-label">${shortMonth(m.month)}</span><div class="chart-bar-bg"><div class="chart-bar bar-green" style="width:${pct}%">${fmt(m.clicks)}</div></div></div>`;
+  });
+  document.getElementById('scClicksChart').innerHTML=html;
+
+  let tbody='';
+  (sc.topQueries||[]).slice(0,10).forEach(q=>{
+    const pos=q.position||0;
+    const cls=pos<=5?'q-good':pos<=20?'q-mid':'q-low';
+    tbody+=`<tr><td>${esc(q.query)}</td><td>${fmt(q.clicks)}</td><td>${fmt(q.impressions)}</td><td class="${cls}">${pos.toFixed(1)}</td></tr>`;
+  });
+  document.getElementById('scQueryBody').innerHTML=tbody||'<tr><td colspan="4" style="color:var(--sub)">データなし</td></tr>';
+}
+
+// ========== TOURNAMENTS (MAIN SECTION) ==========
+async function loadTournaments() {
+  tAllData = [];
+  document.getElementById('tList').innerHTML='<div class="empty"><span class="spinner"></span> データ読み込み中...</div>';
+
+  // Load WP tournaments and Firebase queue in parallel
+  const [wpData, queueData] = await Promise.all([
+    loadWpTournaments(),
+    loadFirebaseQueue()
+  ]);
+
+  // Merge data
+  tAllData = [...wpData, ...queueData];
+
+  // Update stats
+  const pendingCount = queueData.length;
+  document.getElementById('tPending').textContent = fmt(pendingCount);
+  document.getElementById('tTotal').textContent = fmt(wpData.length);
+  const badge = document.getElementById('navQBadge');
+  if(pendingCount>0){badge.textContent=pendingCount;badge.style.display='inline';}else{badge.style.display='none';}
+
+  // Run validation
+  let warnCount = 0;
+  tAllData.forEach(t => {
+    t._warnings = validateTournament(t);
+    if(t._warnings.length) warnCount++;
+  });
+  document.getElementById('tWarnings').textContent = fmt(warnCount);
+
+  // Set tab counts
+  const now = new Date();
+  const weekAgo = new Date(now - 7*24*60*60*1000);
+  document.getElementById('tcAll').textContent = fmt(tAllData.length);
+  document.getElementById('tcPending').textContent = fmt(pendingCount);
+  document.getElementById('tcWarnings').textContent = fmt(warnCount);
+  document.getElementById('tcRecent').textContent = fmt(tAllData.filter(t=>t._type!=='queue'&&new Date(t.date)>=weekAgo).length);
+
+  // Populate month filter
+  const monthSet = new Set();
+  tAllData.forEach(t=>{if(t.event_date){const m=t.event_date.substring(0,7);if(m)monthSet.add(m);}});
+  const mf=document.getElementById('tMonthFilter');
+  const curMVal=mf.value;
+  mf.innerHTML='<option value="">全月</option>';
+  [...monthSet].sort().reverse().forEach(m=>{mf.innerHTML+=`<option value="${m}">${m}</option>`;});
+  mf.value=curMVal;
+
+  // Render monthly chart
+  renderTournamentStats(wpData);
+
+  tSwitchTab(tCurrentTab);
+}
+
+async function loadWpTournaments() {
+  const all = [];
+  let page = 1;
+  const perPage = 100;
+  try {
+    // First request to get total
+    const firstRes = await fetch(WP_API+'/tournament?per_page='+perPage+'&page=1&_fields=id,title,date,status,acf,link,tournament_area&orderby=date&order=desc');
+    if(!firstRes.ok) return all;
+    const total = parseInt(firstRes.headers.get('x-wp-total'))||0;
+    const totalPages = parseInt(firstRes.headers.get('x-wp-totalpages'))||1;
+    const firstData = await firstRes.json();
+    firstData.forEach(t => all.push(normalizeTournament(t)));
+
+    // Load remaining pages (up to 5 pages = 500 items for performance)
+    const maxPages = Math.min(totalPages, 5);
+    const promises = [];
+    for(let p=2; p<=maxPages; p++){
+      promises.push(fetch(WP_API+'/tournament?per_page='+perPage+'&page='+p+'&_fields=id,title,date,status,acf,link,tournament_area&orderby=date&order=desc').then(r=>r.json()));
+    }
+    const pages = await Promise.all(promises);
+    pages.forEach(pageData => pageData.forEach(t => all.push(normalizeTournament(t))));
+  } catch(e) { console.error('WP tournament load:',e); }
+  return all;
+}
+
+function normalizeTournament(t) {
+  const acf = t.acf || {};
+  const areaIds = t.tournament_area || [];
+  let areaName = '';
+  areaIds.forEach(aid => { if(AREA_BY_ID[aid]) areaName = AREA_BY_ID[aid]; });
+  return {
+    _type: 'wp',
+    id: t.id,
+    title: t.title?.rendered || '',
+    date: t.date,
+    status: t.status,
+    link: t.link,
+    event_date: acf.event_date || '',
+    area: areaName,
+    area_id: areaIds[0] || null,
+    organizer: acf.organizer || '',
+    scale: acf.scale || '',
+    beginner: acf.beginner_friendly || false,
+    official: acf.official || false,
+    sns_link: acf.sns_link || '',
+    detail_link: acf.detail_link || '',
+    source: acf.source || '',
+    source_text: acf.source_text || '',
+    source_images: acf.source_images || [],
+    source_url: acf.source_url || '',
+    _warnings: []
+  };
+}
+
+async function loadFirebaseQueue() {
+  const items = [];
+  try {
+    const snap = await db.ref('tournament-queue').orderByChild('status').equalTo('pending').once('value');
+    tQueueData = snap.val() || {};
+    Object.entries(tQueueData).forEach(([key, val]) => {
+      items.push({
+        _type: 'queue',
+        _fbKey: key,
+        id: null,
+        title: val.title || val.text?.substring(0,40) || 'Unknown',
+        date: val.created || val.timestamp || '',
+        status: 'pending',
+        link: '',
+        event_date: val.event_date || '',
+        area: val.area || '',
+        area_id: null,
+        organizer: val.organizer || '',
+        scale: val.scale || '',
+        beginner: val.beginner || false,
+        official: val.official || false,
+        sns_link: val.sns_link || val.url || '',
+        detail_link: val.detail_link || '',
+        source: val.source || 'unknown',
+        source_text: val.text || val.body || '',
+        source_images: val.images || [],
+        source_url: val.url || '',
+        _warnings: []
+      });
+    });
+  } catch(e) { console.error('Firebase queue load:',e); }
+  return items;
+}
+
+// ========== TOURNAMENT VALIDATION ==========
+function validateTournament(t) {
+  const warns = [];
+  // event_date check
+  if(!t.event_date) {
+    warns.push({level:'warn',msg:'開催日が未設定'});
+  } else {
+    const ed = new Date(t.event_date);
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear()-1);
+    if(ed < oneYearAgo) warns.push({level:'warn',msg:'開催日が1年以上前'});
+  }
+  // area check
+  if(!t.area && !t.area_id) warns.push({level:'warn',msg:'都道府県が未設定'});
+  // title check
+  if(t.title && !t.title.includes('モルック') && !t.title.toLowerCase().includes('molkky')) warns.push({level:'warn',msg:'タイトルに「モルック」が含まれない'});
+  // scale
+  if(!t.scale) warns.push({level:'info',msg:'規模が未設定'});
+  // duplicate detection (same date + area)
+  if(t.event_date && t.area) {
+    const dupes = tAllData.filter(o => o!==t && o.event_date===t.event_date && o.area===t.area);
+    if(dupes.length) warns.push({level:'warn',msg:'同日・同地域に別の大会あり (重複の可能性)'});
+  }
+  return warns;
+}
+
+// ========== TOURNAMENT TABS & FILTERING ==========
+function tSwitchTab(tab) {
+  tCurrentTab = tab;
+  document.querySelectorAll('#tTabs .tab').forEach(t=>t.classList.remove('active'));
+  document.querySelector('#tTabs .tab[data-tab="'+tab+'"]').classList.add('active');
+  tPage = 1;
+  tApplyFilter();
+}
+
+function tApplyFilter() {
+  let data = [...tAllData];
+  const search = document.getElementById('tSearch').value.trim().toLowerCase();
+  const area = document.getElementById('tAreaFilter').value;
+  const month = document.getElementById('tMonthFilter').value;
+  const status = document.getElementById('tStatusFilter').value;
+  const sort = document.getElementById('tSort').value;
+
+  // Tab filter
+  if(tCurrentTab==='pending') data = data.filter(t=>t._type==='queue');
+  else if(tCurrentTab==='warnings') data = data.filter(t=>t._warnings.length>0);
+  else if(tCurrentTab==='recent') {
+    const weekAgo = new Date(Date.now()-7*24*60*60*1000);
+    data = data.filter(t=>t._type!=='queue'&&new Date(t.date)>=weekAgo);
+  }
+
+  // Search
+  if(search) data = data.filter(t=>(t.title||'').toLowerCase().includes(search)||(t.organizer||'').toLowerCase().includes(search));
+  // Area
+  if(area) data = data.filter(t=>t.area===area);
+  // Month
+  if(month) data = data.filter(t=>t.event_date&&t.event_date.startsWith(month));
+  // Status
+  if(status) data = data.filter(t=>t.status===status);
+
+  // Sort
+  if(sort==='event_date') data.sort((a,b)=>(b.event_date||'').localeCompare(a.event_date||''));
+  else if(sort==='title') data.sort((a,b)=>(a.title||'').localeCompare(b.title||''));
+  else data.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+
+  tFiltered = data;
+  renderTournamentList();
+}
+
+function renderTournamentList() {
+  const el = document.getElementById('tList');
+  const total = tFiltered.length;
+  const totalPages = Math.ceil(total/T_PER_PAGE)||1;
+  if(tPage>totalPages) tPage=totalPages;
+  const start = (tPage-1)*T_PER_PAGE;
+  const page = tFiltered.slice(start, start+T_PER_PAGE);
+
+  if(!page.length) { el.innerHTML='<div class="empty">データがありません</div>'; document.getElementById('tPager').innerHTML=''; return; }
+
+  let html='';
+  page.forEach(t => {
+    const isQueue = t._type==='queue';
+    const warns = t._warnings||[];
+    const hasWarn = warns.some(w=>w.level==='warn');
+    const statusPill = isQueue ? '<span class="pill pill-orange">PENDING</span>' : (t.status==='publish'?'<span class="pill pill-green">公開</span>':'<span class="pill pill-dim">下書き</span>');
+    const warnPill = hasWarn ? ' <span class="pill pill-red">要確認</span>' : (warns.length ? ' <span class="pill pill-blue">info</span>' : '');
+    const srcClass = t.source==='ifttt'?'src-ifttt':t.source==='gas'?'src-gas':'src-manual';
+    const srcLabel = t.source==='ifttt'?'IFTTT':t.source==='gas'?'GAS':t.source||'-';
+    const dateStr = t.event_date || '-';
+    const areaStr = t.area || '-';
+    const key = isQueue ? 'q:'+t._fbKey : 'wp:'+t.id;
+
+    html+=`<div class="t-card" onclick="tShowDetail('${key}')">
+      <div class="t-card-top">${statusPill}${warnPill}<span class="t-card-title">${esc(t.title)}</span><span class="t-source ${srcClass}">${srcLabel}</span></div>
+      <div class="t-card-meta"><span>開催: ${esc(dateStr)}</span><span>地域: ${esc(areaStr)}</span>${isQueue?'':'<span>ID: '+t.id+'</span>'}</div>
+    </div>`;
+  });
+  el.innerHTML=html;
+  renderPager('tPager',tPage,totalPages,p=>{tPage=p;renderTournamentList();});
+}
+
+// ========== TOURNAMENT DETAIL ==========
+function tShowDetail(key) {
+  const [type, id] = key.split(':');
+  let t;
+  if(type==='q') t = tAllData.find(x=>x._type==='queue'&&x._fbKey===id);
+  else t = tAllData.find(x=>x._type==='wp'&&x.id===parseInt(id));
+  if(!t) return;
+
+  const el = document.getElementById('tDetail');
+  const warns = t._warnings||[];
+  const isQueue = t._type==='queue';
+
+  let warnHtml='';
+  if(warns.length){
+    warnHtml='<div class="warn-box">';
+    warns.forEach(w=>{
+      const icon = w.level==='warn'?'&#9888;':'&#8505;';
+      warnHtml+=`<div>${icon} ${esc(w.msg)}</div>`;
+    });
+    warnHtml+='</div>';
+  }
+
+  // Source section
+  let srcHtml='';
+  if(t.source_text||t.source_url||t.source_images?.length){
+    srcHtml=`<div class="detail-section"><div style="font-size:12px;font-weight:600;margin-bottom:6px">ソース情報</div><div class="source-box">`;
+    if(t.source) srcHtml+=`<div style="font-size:11px;color:var(--sub);margin-bottom:4px">収集元: <span class="t-source ${t.source==='ifttt'?'src-ifttt':t.source==='gas'?'src-gas':'src-manual'}">${esc(t.source==='ifttt'?'IFTTT (X キーワード検知)':t.source==='gas'?'GAS (RSS自動収集)':'手動')}</span></div>`;
+    if(t.source_text) srcHtml+=`<div style="font-size:11px;color:var(--sub)">元テキスト:</div><div class="source-text">${esc(t.source_text)}</div>`;
+    if(t.source_images&&t.source_images.length){
+      srcHtml+='<div class="source-images">';
+      t.source_images.forEach((img,i)=>{
+        srcHtml+=`<img class="source-img" src="${esc(img)}" alt="添付${i+1}" onclick="showImageModal('${esc(img)}')">`;
+      });
+      srcHtml+='</div>';
+    }
+    if(t.source_url) srcHtml+=`<div style="margin-top:6px;font-size:11px">元URL: <a href="${esc(t.source_url)}" target="_blank">${esc(t.source_url.length>60?t.source_url.substring(0,58)+'...':t.source_url)}</a></div>`;
+    srcHtml+=`</div></div>`;
+  }
+
+  // Editable fields
+  const areaOptions = Object.keys(AREAS).map(a=>`<option value="${a}"${a===t.area?' selected':''}>${a}</option>`).join('');
+
+  let editHtml=`<div class="detail-section">
+    <div style="font-size:12px;font-weight:600;margin-bottom:8px">大会情報フィールド</div>
+    <div class="field"><label>大会名</label><input type="text" id="tdTitle" value="${esc(t.title)}"></div>
+    <div class="field-row">
+      <div class="field"><label>開催日</label><input type="date" id="tdDate" value="${t.event_date||''}"></div>
+      <div class="field"><label>都道府県</label><select id="tdArea"><option value="">-- 選択 --</option>${areaOptions}</select></div>
+    </div>
+    <div class="field"><label>主催者</label><input type="text" id="tdOrganizer" value="${esc(t.organizer)}"></div>
+    <div class="field-row">
+      <div class="field"><label>SNSリンク</label><input type="url" id="tdSns" value="${esc(t.sns_link)}"></div>
+      <div class="field"><label>詳細リンク</label><input type="url" id="tdDetailLink" value="${esc(t.detail_link)}"></div>
+    </div>
+    <div class="field"><label>規模</label><input type="text" id="tdScale" value="${esc(t.scale)}" placeholder="例: 50チーム"></div>
+    <div style="display:flex;gap:16px;margin:8px 0">
+      <label style="display:flex;align-items:center;gap:5px;margin:0"><input type="checkbox" id="tdBeginner" style="width:auto" ${t.beginner?'checked':''}> 初心者歓迎</label>
+      <label style="display:flex;align-items:center;gap:5px;margin:0"><input type="checkbox" id="tdOfficial" style="width:auto" ${t.official?'checked':''}> 公式大会</label>
+    </div>
+  </div>`;
+
+  // Footer
+  let footerHtml=`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;color:var(--sub)">`;
+  if(!isQueue) footerHtml+=`<span>投稿日: ${new Date(t.date).toLocaleDateString('ja-JP')}</span><span>WP ID: ${t.id}</span><span>Status: ${t.status}</span>`;
+  else footerHtml+=`<span>キュー登録日: ${t.date?new Date(t.date).toLocaleDateString('ja-JP'):'-'}</span>`;
+  footerHtml+=`</div><div class="btn-row" style="margin-top:10px">`;
+  if(!isQueue && t.link) footerHtml+=`<a href="${WP}/wp-admin/post.php?post=${t.id}&action=edit" target="_blank" class="btn btn-sm btn-outline" style="text-decoration:none">WP管理画面で開く</a>`;
+  if(isQueue) {
+    footerHtml+=`<button class="btn btn-success" onclick="tProcessQueue('${t._fbKey}')">処理 (WP投稿)</button>`;
+    footerHtml+=`<button class="btn btn-outline" onclick="tSkipQueue('${t._fbKey}')">スキップ</button>`;
+  } else {
+    footerHtml+=`<button class="btn btn-primary" onclick="tSaveEdit(${t.id})">保存</button>`;
+  }
+  footerHtml+=`<button class="btn btn-outline" onclick="document.getElementById('tDetail').style.display='none'">閉じる</button></div>`;
+
+  el.innerHTML=`<div class="detail-panel"><div style="font-size:15px;font-weight:700;margin-bottom:12px">${esc(t.title)}</div>${warnHtml}${srcHtml}${editHtml}${footerHtml}</div>`;
+  el.style.display='block';
+  el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function showImageModal(src) {
+  const div=document.createElement('div');
+  div.className='img-modal';
+  div.onclick=()=>div.remove();
+  div.innerHTML=`<img src="${src}">`;
+  document.body.appendChild(div);
+}
+
+// ========== TOURNAMENT QUEUE PROCESSING ==========
+async function tProcessQueue(fbKey) {
+  const t = tAllData.find(x=>x._type==='queue'&&x._fbKey===fbKey);
+  if(!t){showToast('データが見つかりません',true);return;}
+
+  // Read form values
+  const title = document.getElementById('tdTitle').value.trim();
+  const eventDate = document.getElementById('tdDate').value;
+  const area = document.getElementById('tdArea').value;
+  const organizer = document.getElementById('tdOrganizer').value.trim();
+  const snsLink = document.getElementById('tdSns').value.trim();
+  const detailLink = document.getElementById('tdDetailLink').value.trim();
+  const scale = document.getElementById('tdScale').value.trim();
+  const beginner = document.getElementById('tdBeginner').checked;
+  const official = document.getElementById('tdOfficial').checked;
+
+  if(!title){showToast('大会名を入力してください',true);return;}
+  if(!wpAuth){showToast('WP認証が必要です',true);return;}
+
+  try {
+    // Build WP post body
+    const body = new FormData();
+    body.append('title', title);
+    body.append('status', 'publish');
+    if(area && AREAS[area]) body.append('tournament_area', AREAS[area].id);
+
+    // ACF fields via form
+    if(eventDate) body.append('acf[event_date]', eventDate);
+    if(organizer) body.append('acf[organizer]', organizer);
+    if(scale) body.append('acf[scale]', scale);
+    if(snsLink) body.append('acf[sns_link]', snsLink);
+    if(detailLink) body.append('acf[detail_link]', detailLink);
+    body.append('acf[beginner_friendly]', beginner?'1':'0');
+    body.append('acf[official]', official?'1':'0');
+    body.append('acf[source]', t.source||'manual');
+    if(t.source_text) body.append('acf[source_text]', t.source_text);
+    if(t.source_url) body.append('acf[source_url]', t.source_url);
+
+    const res = await fetch(WP_API+'/tournament', {
+      method:'POST',
+      headers:{'Authorization':'Basic '+wpAuth},
+      body
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+
+    // Mark queue item as processed
+    await db.ref('tournament-queue/'+fbKey).update({status:'processed',wp_id:data.id,processed_at:new Date().toISOString()});
+
+    showToast('WP投稿成功! ID: '+data.id);
+    document.getElementById('tDetail').style.display='none';
+    loadTournaments();
+  } catch(e) {
+    showToast('投稿失敗: '+e.message, true);
+  }
+}
+
+async function tSkipQueue(fbKey) {
+  const reason = prompt('スキップ理由:','関連なし');
+  if(reason===null) return;
+  try {
+    await db.ref('tournament-queue/'+fbKey).update({status:'skipped',skip_reason:reason,skipped_at:new Date().toISOString()});
+    showToast('スキップしました');
+    document.getElementById('tDetail').style.display='none';
+    loadTournaments();
+  } catch(e) {
+    showToast('スキップ失敗: '+e.message, true);
+  }
+}
+
+async function tSaveEdit(wpId) {
+  if(!wpAuth){showToast('WP認証が必要です',true);return;}
+  const title = document.getElementById('tdTitle').value.trim();
+  const eventDate = document.getElementById('tdDate').value;
+  const area = document.getElementById('tdArea').value;
+  const organizer = document.getElementById('tdOrganizer').value.trim();
+  const scale = document.getElementById('tdScale').value.trim();
+  const snsLink = document.getElementById('tdSns').value.trim();
+  const detailLink = document.getElementById('tdDetailLink').value.trim();
+  const beginner = document.getElementById('tdBeginner').checked;
+  const official = document.getElementById('tdOfficial').checked;
+
+  try {
+    // SiteGuard: POST only
+    const body = new FormData();
+    body.append('title', title);
+    if(area && AREAS[area]) body.append('tournament_area', AREAS[area].id);
+    if(eventDate) body.append('acf[event_date]', eventDate);
+    if(organizer) body.append('acf[organizer]', organizer);
+    if(scale) body.append('acf[scale]', scale);
+    if(snsLink) body.append('acf[sns_link]', snsLink);
+    if(detailLink) body.append('acf[detail_link]', detailLink);
+    body.append('acf[beginner_friendly]', beginner?'1':'0');
+    body.append('acf[official]', official?'1':'0');
+
+    const res = await fetch(WP_API+'/tournament/'+wpId, {
+      method:'POST',
+      headers:{'Authorization':'Basic '+wpAuth},
+      body
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    showToast('保存しました');
+    document.getElementById('tDetail').style.display='none';
+    // Refresh
+    SEC_LOADED['tournaments']=false;
+    loadTournaments();
+  } catch(e) {
+    showToast('保存失敗: '+e.message, true);
+  }
+}
+
+// ========== TOURNAMENT MANUAL ADD ==========
+function tManualAdd() {
+  document.getElementById('tAddCard').style.display='block';
+  document.getElementById('tAddCard').scrollIntoView({behavior:'smooth'});
+}
+function tResetForm() {
+  ['tfTitle','tfDate','tfOrganizer','tfSns','tfDetail','tfScale'].forEach(id=>{document.getElementById(id).value='';});
+  document.getElementById('tfArea').value='';
+  document.getElementById('tfBeginner').checked=false;
+  document.getElementById('tfOfficial').checked=false;
+  document.getElementById('tAddResult').innerHTML='';
+}
+
+async function tFetchUrl() {
+  const url=document.getElementById('tAddUrl').value.trim();
+  if(!url){showToast('URLを入力してください',true);return;}
+  document.getElementById('tAddResult').innerHTML='<span class="spinner"></span> 取得中...';
+
+  // Try tweet proxy for X URLs
+  let text='';
+  if(url.includes('x.com/')||url.includes('twitter.com/')) {
+    try {
+      const tweetId=url.match(/status\/(\d+)/)?.[1];
+      if(tweetId){
+        const res=await fetch(TWEET_PROXY+'?id='+tweetId);
+        const data=await res.json();
+        text=data.text||data.tweet?.text||'';
+      }
+    } catch(e){}
+  }
+
+  // Gemini extraction
+  try {
+    const prompt=`以下のURL/テキストからモルック大会の情報を抽出してJSON形式で返してください。
+キー: title(大会名), event_date(YYYY-MM-DD), area(都道府県名), organizer(主催者), scale(規模), beginner(初心者歓迎:boolean), official(公式大会:boolean)
+URL: ${url}
+${text?'テキスト: '+text:''}
+JSONのみ返してください。`;
+    const res=await fetch(GEMINI_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
+    const data=await res.json();
+    const raw=data.text||data.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    // Extract JSON
+    const jsonMatch=raw.match(/\{[\s\S]*\}/);
+    if(jsonMatch){
+      const info=JSON.parse(jsonMatch[0]);
+      if(info.title) document.getElementById('tfTitle').value=info.title;
+      if(info.event_date) document.getElementById('tfDate').value=info.event_date;
+      if(info.area) document.getElementById('tfArea').value=info.area;
+      if(info.organizer) document.getElementById('tfOrganizer').value=info.organizer;
+      if(info.scale) document.getElementById('tfScale').value=info.scale||'';
+      if(info.beginner) document.getElementById('tfBeginner').checked=true;
+      if(info.official) document.getElementById('tfOfficial').checked=true;
+      document.getElementById('tfSns').value=url.includes('x.com')?url:'';
+      document.getElementById('tAddResult').innerHTML='<span style="color:var(--success)">自動取得完了。内容を確認して投稿してください。</span>';
+    } else {
+      document.getElementById('tAddResult').innerHTML='<span style="color:var(--warning)">情報の抽出に失敗。手動で入力してください。</span>';
+    }
+  } catch(e) {
+    document.getElementById('tAddResult').innerHTML='<span style="color:var(--error)">取得失敗: '+esc(e.message)+'</span>';
+  }
+}
+
+async function tPostTournament() {
+  const title=document.getElementById('tfTitle').value.trim();
+  if(!title){showToast('大会名を入力してください',true);return;}
+  if(!wpAuth){showToast('WP認証が必要です',true);return;}
+
+  try{
+    const body=new FormData();
+    body.append('title',title);body.append('status','publish');
+    const area=document.getElementById('tfArea').value;
+    if(area&&AREAS[area])body.append('tournament_area',AREAS[area].id);
+    const ed=document.getElementById('tfDate').value;if(ed)body.append('acf[event_date]',ed);
+    const org=document.getElementById('tfOrganizer').value.trim();if(org)body.append('acf[organizer]',org);
+    const sc=document.getElementById('tfScale').value.trim();if(sc)body.append('acf[scale]',sc);
+    const sns=document.getElementById('tfSns').value.trim();if(sns)body.append('acf[sns_link]',sns);
+    const det=document.getElementById('tfDetail').value.trim();if(det)body.append('acf[detail_link]',det);
+    body.append('acf[beginner_friendly]',document.getElementById('tfBeginner').checked?'1':'0');
+    body.append('acf[official]',document.getElementById('tfOfficial').checked?'1':'0');
+    body.append('acf[source]','manual');
+
+    const res=await fetch(WP_API+'/tournament',{method:'POST',headers:{'Authorization':'Basic '+wpAuth},body});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    showToast('投稿成功! ID: '+data.id);
+    tResetForm();
+    document.getElementById('tAddCard').style.display='none';
+    SEC_LOADED['tournaments']=false;
+    loadTournaments();
+  }catch(e){
+    showToast('投稿失敗: '+e.message,true);
+  }
+}
+
+// ========== TOURNAMENT STATS ==========
+function renderTournamentStats(wpData) {
+  // Monthly chart
+  const monthCounts = {};
+  wpData.forEach(t => {
+    const m = t.date ? t.date.substring(0,7) : 'unknown';
+    monthCounts[m] = (monthCounts[m]||0) + 1;
+  });
+  const sortedMonths = Object.keys(monthCounts).sort().slice(-12);
+  if(sortedMonths.length) {
+    const max = Math.max(...sortedMonths.map(m=>monthCounts[m]));
+    let html='';
+    sortedMonths.forEach(m => {
+      const count = monthCounts[m];
+      const pct = max>0?(count/max*100).toFixed(0):0;
+      html+=`<div class="chart-row"><span class="chart-label">${m.split('-')[1]||'?'}月</span><div class="chart-bar-bg"><div class="chart-bar bar-orange" style="width:${pct}%">${count}</div></div></div>`;
+    });
+    document.getElementById('tMonthlyChart').innerHTML=html;
+  }
+
+  // Prefecture stats
+  const prefCounts = {};
+  wpData.forEach(t => {
+    const a = t.area || '未設定';
+    prefCounts[a] = (prefCounts[a]||0) + 1;
+  });
+  const sorted = Object.entries(prefCounts).sort((a,b)=>b[1]-a[1]);
+  if(sorted.length) {
+    let html='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px">';
+    sorted.slice(0,20).forEach(([pref, count]) => {
+      html+=`<div style="display:flex;justify-content:space-between;padding:4px 8px;background:var(--bg);border-radius:5px;border:1px solid var(--border)"><span>${esc(pref)}</span><span style="font-weight:700">${count}</span></div>`;
+    });
+    html+='</div>';
+    if(sorted.length>20) html+='<div style="margin-top:6px;color:var(--dim);font-size:10px">他 '+(sorted.length-20)+' 件</div>';
+    document.getElementById('tPrefStats').innerHTML=html;
+  }
+}
+
+// ========== PARTNERS ==========
+async function loadPartners() {
+  try {
+    const snap = await db.ref('partner/config/partners').once('value');
+    const partners = snap.val();
+    if(!partners) { document.getElementById('pList').innerHTML='<div class="empty">パートナーデータなし</div>'; return; }
+
+    const list = Object.entries(partners);
+    document.getElementById('pCount').textContent = fmt(list.length);
+    let stdCount=0, lightCount=0;
+    let html='';
+    list.forEach(([key, p]) => {
+      const plan = p.plan || 'standard';
+      if(plan==='standard') stdCount++;
+      else lightCount++;
+      const planPill = plan==='standard'?'<span class="partner-plan plan-std">スタンダード</span>':'<span class="partner-plan plan-light">ライト</span>';
+      const dotColor = plan==='standard'?'var(--accent)':'var(--success)';
+      html+=`<div class="partner-item"><span class="partner-dot" style="background:${dotColor}"></span><span class="partner-name">${esc(p.name||key)}</span>${planPill}</div>`;
+    });
+    document.getElementById('pList').innerHTML=html;
+    document.getElementById('pStd').textContent=fmt(stdCount);
+    document.getElementById('pLight').textContent=fmt(lightCount);
+  } catch(e) {
+    document.getElementById('pList').innerHTML='<div class="empty" style="color:var(--error)">取得失敗: '+esc(e.message)+'</div>';
+  }
+}
+
+// ========== AUTOMATION STATUS ==========
+async function loadAutoStatus() {
+  const el=document.getElementById('autoStatus');
+  el.innerHTML='<div class="empty"><span class="spinner"></span> 確認中...</div>';
+
+  let html='<div style="font-size:12px">';
+
+  // Tournament queue
+  try {
+    const snap = await db.ref('tournament-queue').orderByChild('status').equalTo('pending').once('value');
+    const pending = snap.val() ? Object.keys(snap.val()).length : 0;
+    const color = pending>0?'var(--warning)':'var(--success)';
+    html+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:${color};font-weight:700">${pending>0?'&#9888;':'&#9989;'}</span><span>大会キュー: ${pending}件 未処理</span></div>`;
+  } catch(e) {
+    html+=`<div style="padding:8px 0;border-bottom:1px solid var(--border);color:var(--error)">大会キュー: 取得失敗</div>`;
+  }
+
+  // Chapche queue
+  try {
+    const snap = await db.ref('chapche-queue').orderByChild('status').equalTo('pending').once('value');
+    const pending = snap.val() ? Object.keys(snap.val()).length : 0;
+    const color = pending>0?'var(--warning)':'var(--success)';
+    html+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:${color};font-weight:700">${pending>0?'&#9888;':'&#9989;'}</span><span>議事録キュー: ${pending}件 未処理</span></div>`;
+  } catch(e) {
+    html+=`<div style="padding:8px 0;border-bottom:1px solid var(--border);color:var(--error)">議事録キュー: 取得失敗</div>`;
+  }
+
+  // WP connection
+  try {
+    const res = await fetch(WP_API+'/posts?per_page=1&_fields=id');
+    const ok = res.ok;
+    html+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:${ok?'var(--success)':'var(--error)'};font-weight:700">${ok?'&#9989;':'&#10060;'}</span><span>WordPress API: ${ok?'接続OK':'接続失敗'}</span></div>`;
+  } catch(e) {
+    html+=`<div style="padding:8px 0;border-bottom:1px solid var(--border);color:var(--error)">WordPress API: 接続失敗</div>`;
+  }
+
+  // GAS
+  try {
+    const res = await fetch(gasEndpoint(),{method:'HEAD'});
+    html+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--success);font-weight:700">&#9989;</span><span>GAS Endpoint: 到達可能</span></div>`;
+  } catch(e) {
+    html+=`<div style="padding:8px 0;border-bottom:1px solid var(--border);color:var(--warning)">GAS Endpoint: 到達不可 (CORS制限の可能性)</div>`;
+  }
+
+  // Gemini
+  html+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 0"><span style="color:var(--success);font-weight:700">&#9989;</span><span>Gemini API: Vercel Proxy経由 (gemini-2.5-flash)</span></div>`;
+
+  html+='</div>';
+  el.innerHTML=html;
+}
+
+// ========== INIT AREA SELECT ==========
+function initAreaSelects() {
+  const selects = ['tAreaFilter','tfArea'];
+  selects.forEach(id => {
+    const sel = document.getElementById(id);
+    if(!sel) return;
+    // Keep existing first option
+    const firstOpt = sel.options[0];
+    sel.innerHTML='';
+    sel.appendChild(firstOpt);
+    Object.keys(AREAS).forEach(a => {
+      const opt = document.createElement('option');
+      opt.value = a; opt.textContent = a;
+      sel.appendChild(opt);
+    });
+  });
+}
+
+// ========== INIT ==========
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('dateDisp').textContent = new Date().toLocaleDateString('ja-JP');
+  initAreaSelects();
+  // Restore GAS endpoint
+  const ge = gasEndpoint();
+  if(ge !== GAS_DEFAULT) document.getElementById('setGas').value = ge;
+  // Restore auth
+  restoreAuth();
+  // Load dashboard
+  loadDashboard();
+});
+</script>
+</body>
+</html>
