@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MACHAP Portal</title>
+<style>
+:root {
+  --bg: #0F1F3D; --bg2: #0A1628; --card: #1E3A5F; --card2: #1A2D52;
+  --border: rgba(26,86,219,0.2); --border-active: rgba(6,182,212,0.4);
+  --text: #F0F4FF; --sub: #7FAACC; --dim: #3E5C7A;
+  --blue: #1A56DB; --cyan: #06B6D4; --purple: #A78BFA;
+  --orange: #F97316; --green: #10B981; --red: #EF4444;
+  --cyan-dim: rgba(6,182,212,0.12); --blue-dim: rgba(26,86,219,0.12);
+  --purple-dim: rgba(167,139,250,0.12); --orange-dim: rgba(249,115,22,0.12);
+  --green-dim: rgba(16,185,129,0.12); --red-dim: rgba(239,68,68,0.12);
+  --sidebar-w: 220px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow: hidden; }
+.app { display: flex; height: 100vh; }
+
+/* Sidebar */
+.sidebar {
+  width: var(--sidebar-w); background: var(--bg2); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto;
+}
+.sidebar-header {
+  padding: 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.sidebar-logo {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--blue), var(--cyan));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 15px; color: #fff;
+}
+.sidebar-title { font-size: 15px; font-weight: 700; }
+.sidebar-sub { font-size: 10px; color: var(--sub); letter-spacing: 0.05em; }
+
+.nav-section { padding: 8px 0; }
+.nav-label { font-size: 9px; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: 0.12em; padding: 6px 16px 4px; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px; padding: 9px 16px; font-size: 13px; color: var(--sub);
+  cursor: pointer; transition: all 0.15s; border-left: 3px solid transparent;
+}
+.nav-item:hover { background: var(--blue-dim); color: var(--text); }
+.nav-item.active { color: var(--cyan); border-left-color: var(--cyan); background: var(--cyan-dim); font-weight: 600; }
+.nav-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.nav-item .step-count { font-size: 10px; margin-left: auto; color: var(--dim); background: var(--card); padding: 1px 6px; border-radius: 8px; }
+
+.sidebar-footer { margin-top: auto; padding: 12px 16px; border-top: 1px solid var(--border); font-size: 11px; color: var(--dim); }
+.sidebar-footer a { color: var(--sub); text-decoration: none; }
+.sidebar-footer a:hover { color: var(--cyan); }
+
+/* Main */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.main-header {
+  padding: 12px 24px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+}
+.main-header h2 { font-size: 16px; font-weight: 700; flex: 1; }
+.hamburger { display: none; background: none; border: none; color: var(--text); font-size: 20px; cursor: pointer; }
+.header-badge { font-size: 10px; padding: 3px 10px; border-radius: 10px; background: var(--cyan-dim); color: var(--cyan); font-weight: 600; }
+
+.main-body { flex: 1; overflow-y: auto; padding: 20px 24px 40px; }
+
+.section { display: none; }
+.section.active { display: block; }
+
+/* Cards */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 16px; }
+.card h3 { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+.card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.card-header h3 { margin-bottom: 0; flex: 1; }
+
+/* Stat Grid */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; }
+.stat-value { font-size: 28px; font-weight: 800; }
+.stat-label { font-size: 11px; color: var(--sub); margin-top: 4px; }
+
+/* Pills & Badges */
+.pill { display: inline-block; padding: 3px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.step-pill { padding: 4px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; cursor: default; }
+.step-find { background: var(--blue-dim); color: #4a90e2; border: 1px solid rgba(26,86,219,0.3); }
+.step-make { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(124,58,237,0.3); }
+.step-offer { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(6,182,212,0.3); }
+.step-present { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(249,115,22,0.3); }
+.step-consult { background: var(--green-dim); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+.pill-blue { background: var(--blue-dim); color: #4a90e2; }
+.pill-cyan { background: var(--cyan-dim); color: var(--cyan); }
+.pill-green { background: var(--green-dim); color: var(--green); }
+.pill-orange { background: var(--orange-dim); color: var(--orange); }
+.pill-purple { background: var(--purple-dim); color: var(--purple); }
+.pill-red { background: var(--red-dim); color: var(--red); }
+.pill-dim { background: rgba(255,255,255,0.06); color: var(--sub); }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-primary:hover { background: #2563eb; }
+.btn-cyan { background: var(--cyan); color: #fff; }
+.btn-cyan:hover { opacity: 0.9; }
+.btn-outline { background: transparent; color: var(--sub); border: 1px solid var(--border); }
+.btn-outline:hover { border-color: var(--cyan); color: var(--cyan); }
+.btn-success { background: var(--green); color: #fff; }
+.btn-danger { background: var(--red); color: #fff; }
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Forms */
+input, select, textarea { width: 100%; padding: 8px 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; font-family: inherit; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--cyan); }
+textarea { resize: vertical; min-height: 60px; }
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 11px; font-weight: 600; color: var(--sub); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* 5STEP Cycle Visual */
+.cycle-ring { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.cycle-ring .arrow { color: var(--dim); font-size: 14px; }
+.cycle-step { padding: 8px 20px; border-radius: 10px; font-weight: 700; font-size: 13px; letter-spacing: 0.05em; cursor: pointer; transition: all 0.2s; opacity: 0.6; }
+.cycle-step.current { opacity: 1; transform: scale(1.08); box-shadow: 0 0 16px rgba(6,182,212,0.3); }
+
+/* Phase Progress */
+.phase-block { margin-bottom: 16px; }
+.phase-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.phase-bar { height: 6px; background: var(--bg2); border-radius: 3px; overflow: hidden; }
+.phase-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+.phase-tasks { margin-top: 8px; }
+.phase-tasks div { font-size: 12px; padding: 3px 0; color: var(--sub); display: flex; align-items: center; gap: 6px; }
+.phase-tasks input[type="checkbox"] { width: auto; }
+
+/* Team */
+.team-grid { display: flex; gap: 20px; flex-wrap: wrap; }
+.team-member { display: flex; align-items: center; gap: 10px; }
+.team-avatar { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; color: #fff; }
+.team-name { font-size: 13px; font-weight: 600; }
+.team-role { font-size: 11px; color: var(--sub); }
+
+/* Activity Timeline */
+.timeline { padding-left: 16px; border-left: 2px solid var(--border); }
+.tl-item { padding: 8px 0 8px 12px; position: relative; }
+.tl-item::before { content: ''; position: absolute; left: -21px; top: 13px; width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); border: 2px solid var(--bg); }
+.tl-date { font-size: 11px; color: var(--dim); }
+.tl-text { font-size: 13px; margin-top: 2px; }
+.tl-meta { font-size: 11px; color: var(--sub); margin-top: 2px; }
+
+/* Idea / Task Cards */
+.item-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 10px; transition: border-color 0.15s; }
+.item-card:hover { border-color: var(--border-active); }
+.item-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.item-meta { font-size: 11px; color: var(--sub); display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.item-actions { display: flex; gap: 6px; margin-top: 8px; }
+
+/* Status Badges */
+.status-badge { padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; }
+.st-discovered { background: var(--blue-dim); color: #4a90e2; }
+.st-reviewing { background: var(--purple-dim); color: var(--purple); }
+.st-adopted { background: var(--cyan-dim); color: var(--cyan); }
+.st-in-progress { background: var(--orange-dim); color: var(--orange); }
+.st-completed { background: var(--green-dim); color: var(--green); }
+.st-rejected { background: rgba(255,255,255,0.06); color: var(--dim); }
+
+/* Priority */
+.pri-high { color: var(--orange); }
+.pri-medium { color: var(--cyan); }
+.pri-low { color: var(--sub); }
+
+/* Vote */
+.vote-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 2px 8px; font-size: 11px; color: var(--sub); cursor: pointer; }
+.vote-btn.voted { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-dim); }
+
+/* Table */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th { text-align: left; padding: 8px; color: var(--sub); font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; }
+td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+
+/* Links Grid */
+.links-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.link-card { display: flex; align-items: center; gap: 10px; padding: 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; text-decoration: none; color: var(--text); transition: border-color 0.15s; }
+.link-card:hover { border-color: var(--cyan); }
+
+/* Toast */
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--card); border: 1px solid var(--cyan); color: var(--text); padding: 10px 24px; border-radius: 10px; font-size: 13px; font-weight: 600; transition: transform 0.3s; z-index: 999; pointer-events: none; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* Modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.modal-box { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 24px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
+.modal-box h3 { font-size: 16px; margin-bottom: 16px; }
+
+/* Empty state */
+.empty { text-align: center; padding: 30px; color: var(--dim); font-size: 13px; }
+.spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--dim); border-top-color: var(--cyan); border-radius: 50%; animation: spin 0.6s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Responsive */
+.sidebar-overlay { display: none; }
+@media (max-width: 768px) {
+  .sidebar { position: fixed; left: 0; top: 0; bottom: 0; z-index: 50; transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay { display: block; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 49; opacity: 0; pointer-events: none; }
+  .sidebar-overlay.show { opacity: 1; pointer-events: auto; }
+  .hamburger { display: block; }
+  .main-body { padding: 16px; }
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .field-row { grid-template-columns: 1fr; }
+  .team-grid { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">M</div>
+      <div>
+        <div class="sidebar-title">MACHAP</div>
+        <div class="sidebar-sub">Portal</div>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Overview</div>
+      <div class="nav-item active" data-section="dashboard" onclick="showSection('dashboard')">
+        <div class="nav-dot" style="background:var(--cyan)"></div> Dashboard
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">5 STEP Cycle</div>
+      <div class="nav-item" data-section="find" onclick="showSection('find')">
+        <div class="nav-dot" style="background:#1A56DB"></div> FIND
+        <span class="step-count" id="navFindCount">0</span>
+      </div>
+      <div class="nav-item" data-section="make" onclick="showSection('make')">
+        <div class="nav-dot" style="background:var(--purple)"></div> MAKE
+        <span class="step-count" id="navMakeCount">0</span>
+      </div>
+      <div class="nav-item" data-section="offer" onclick="showSection('offer')">
+        <div class="nav-dot" style="background:var(--cyan)"></div> OFFER
+        <span class="step-count" id="navOfferCount">0</span>
+      </div>
+      <div class="nav-item" data-section="present" onclick="showSection('present')">
+        <div class="nav-dot" style="background:var(--orange)"></div> PRESENT
+        <span class="step-count" id="navPresentCount">0</span>
+      </div>
+      <div class="nav-item" data-section="consult" onclick="showSection('consult')">
+        <div class="nav-dot" style="background:var(--green)"></div> CONSULT
+        <span class="step-count" id="navConsultCount">0</span>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Management</div>
+      <div class="nav-item" data-section="projects" onclick="showSection('projects')">
+        <div class="nav-dot" style="background:var(--orange)"></div> Projects
+      </div>
+      <div class="nav-item" data-section="docs" onclick="showSection('docs')">
+        <div class="nav-dot" style="background:var(--dim)"></div> Docs / Settings
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <a href="https://jonyjean21.github.io/sp-projects/apps/machap/" target="_blank">MACHAP LP</a>
+      &nbsp;|&nbsp;
+      <a href="https://jonyjean21.github.io/sp-projects/portal/" target="_blank">SP Portal</a>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="main-header">
+      <button class="hamburger" onclick="toggleSidebar()">&#9776;</button>
+      <h2 id="pageTitle">Dashboard</h2>
+      <span class="header-badge" id="phaseLabel">Phase 1</span>
+    </div>
+
+    <div class="main-body">
+
+      <!-- ===== DASHBOARD ===== -->
+      <div class="section active" id="sec-dashboard">
+        <!-- 5STEP Visual -->
+        <div class="card">
+          <h3>5STEP Cycle</h3>
+          <div class="cycle-ring">
+            <span class="cycle-step step-find current" onclick="showSection('find')">FIND</span>
+            <span class="arrow">&#10140;</span>
+            <span class="cycle-step step-make" onclick="showSection('make')">MAKE</span>
+            <span class="arrow">&#10140;</span>
+            <span class="cycle-step step-offer" onclick="showSection('offer')">OFFER</span>
+            <span class="arrow">&#10140;</span>
+            <span class="cycle-step step-present" onclick="showSection('present')">PRESENT</span>
+            <span class="arrow">&#10140;</span>
+            <span class="cycle-step step-consult" onclick="showSection('consult')">CONSULT</span>
+          </div>
+          <div style="font-size:12px;color:var(--sub)">課題発見 → プロダクト化 → 提供 → 発信 → 相談。このサイクルを高速で回す。</div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-value" style="color:var(--cyan)" id="dActiveProjects">0</div>
+            <div class="stat-label">Active Projects</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" style="color:#4a90e2" id="dIdeas">0</div>
+            <div class="stat-label">FIND Ideas</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" style="color:var(--purple)" id="dTasks">0</div>
+            <div class="stat-label">MAKE Tasks</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" style="color:var(--green)" id="dCompleted">0</div>
+            <div class="stat-label">Completed</div>
+          </div>
+        </div>
+
+        <!-- Phase Progress -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Phase Progress</h3>
+            <button class="btn btn-sm btn-outline" onclick="saveAllData()">Save</button>
+          </div>
+          <div class="phase-block">
+            <div class="phase-header">
+              <span class="pill pill-green" style="font-size:10px">Phase 1</span>
+              <span style="font-size:13px;font-weight:600;flex:1">箱を作る</span>
+              <span style="font-size:12px;color:var(--sub)" id="p1Pct">0%</span>
+            </div>
+            <div class="phase-bar"><div class="phase-fill" id="p1Bar" style="width:0%;background:var(--green)"></div></div>
+            <div class="phase-tasks">
+              <div><input type="checkbox" checked disabled> 事業計画書 v1 作成</div>
+              <div><input type="checkbox" checked disabled> スライドプレゼン作成</div>
+              <div><input type="checkbox" checked disabled> チーム体制確定</div>
+              <div><input type="checkbox" id="ph1t4" onchange="updatePhaseUI()"> FINDテンプレート構築</div>
+              <div><input type="checkbox" id="ph1t5" onchange="updatePhaseUI()"> 初回案件の実行</div>
+            </div>
+          </div>
+          <div class="phase-block">
+            <div class="phase-header">
+              <span class="pill pill-orange" style="font-size:10px">Phase 2</span>
+              <span style="font-size:13px;font-weight:600;flex:1">横展開</span>
+              <span style="font-size:12px;color:var(--sub)" id="p2Pct">0%</span>
+            </div>
+            <div class="phase-bar"><div class="phase-fill" id="p2Bar" style="width:0%;background:var(--orange)"></div></div>
+            <div class="phase-tasks">
+              <div><input type="checkbox" id="ph2t1" onchange="updatePhaseUI()"> 3案件の実績作成</div>
+              <div><input type="checkbox" id="ph2t2" onchange="updatePhaseUI()"> 事例記事の発信</div>
+              <div><input type="checkbox" id="ph2t3" onchange="updatePhaseUI()"> 価格モデル確定</div>
+            </div>
+          </div>
+          <div class="phase-block">
+            <div class="phase-header">
+              <span class="pill pill-purple" style="font-size:10px">Phase 3</span>
+              <span style="font-size:13px;font-weight:600;flex:1">仕組み化</span>
+              <span style="font-size:12px;color:var(--sub)" id="p3Pct">0%</span>
+            </div>
+            <div class="phase-bar"><div class="phase-fill" id="p3Bar" style="width:0%;background:var(--purple)"></div></div>
+            <div class="phase-tasks">
+              <div><input type="checkbox" id="ph3t1" onchange="updatePhaseUI()"> 定常業務フロー確立</div>
+              <div><input type="checkbox" id="ph3t2" onchange="updatePhaseUI()"> 法人化検討</div>
+              <div><input type="checkbox" id="ph3t3" onchange="updatePhaseUI()"> パートナー獲得</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Team -->
+        <div class="card">
+          <h3>Team</h3>
+          <div class="team-grid">
+            <div class="team-member">
+              <div class="team-avatar" style="background:var(--blue)">サ</div>
+              <div><div class="team-name">サノ</div><div class="team-role">全体管理 + コンセプト展開</div></div>
+            </div>
+            <div class="team-member">
+              <div class="team-avatar" style="background:var(--cyan)">中</div>
+              <div><div class="team-name">中</div><div class="team-role">プロダクト開発 + 各フェーズ主導</div></div>
+            </div>
+            <div class="team-member">
+              <div class="team-avatar" style="background:var(--orange)">師</div>
+              <div><div class="team-name">ししょー</div><div class="team-role">意見出し + 拡散</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card">
+          <h3>Recent Activity</h3>
+          <div id="dashActivity" class="timeline">
+            <div class="empty">アクティビティはまだありません</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== FIND ===== -->
+      <div class="section" id="sec-find">
+        <div class="card">
+          <div class="card-header">
+            <h3>アイデア・課題ボード</h3>
+            <button class="btn btn-sm btn-primary" onclick="showIdeaModal()">+ 新規アイデア</button>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+            <select id="findFilter" onchange="renderFindList()" style="width:auto;padding:4px 10px;font-size:12px">
+              <option value="all">すべて</option>
+              <option value="discovered">発見</option>
+              <option value="reviewing">検討中</option>
+              <option value="adopted">採用</option>
+              <option value="rejected">不採用</option>
+            </select>
+            <select id="findSort" onchange="renderFindList()" style="width:auto;padding:4px 10px;font-size:12px">
+              <option value="newest">新しい順</option>
+              <option value="votes">投票順</option>
+              <option value="priority">優先度順</option>
+            </select>
+          </div>
+          <div id="findList"></div>
+        </div>
+      </div>
+
+      <!-- ===== MAKE ===== -->
+      <div class="section" id="sec-make">
+        <div class="card">
+          <div class="card-header">
+            <h3>開発タスクトラッカー</h3>
+            <button class="btn btn-sm btn-primary" onclick="showTaskModal()">+ タスク追加</button>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+            <select id="makeFilter" onchange="renderMakeList()" style="width:auto;padding:4px 10px;font-size:12px">
+              <option value="active">進行中</option>
+              <option value="all">すべて</option>
+              <option value="completed">完了</option>
+            </select>
+            <select id="makeAssignee" onchange="renderMakeList()" style="width:auto;padding:4px 10px;font-size:12px">
+              <option value="all">全員</option>
+              <option value="サノ">サノ</option>
+              <option value="中">中</option>
+              <option value="ししょー">ししょー</option>
+            </select>
+          </div>
+          <div id="makeList"></div>
+        </div>
+
+        <div class="card">
+          <h3>Sprint Timeline</h3>
+          <div id="sprintTimeline" style="font-size:12px;color:var(--sub)">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+              <span id="sprintStart">-</span>
+              <span style="font-weight:600;color:var(--cyan)">1 Week Sprint</span>
+              <span id="sprintEnd">-</span>
+            </div>
+            <div class="phase-bar"><div class="phase-fill" id="sprintBar" style="width:0%;background:var(--cyan)"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== OFFER ===== -->
+      <div class="section" id="sec-offer">
+        <div class="card">
+          <div class="card-header">
+            <h3>提供先管理</h3>
+            <button class="btn btn-sm btn-primary" onclick="showOfferModal()">+ 提供先追加</button>
+          </div>
+          <div id="offerList"></div>
+        </div>
+      </div>
+
+      <!-- ===== PRESENT ===== -->
+      <div class="section" id="sec-present">
+        <div class="card">
+          <div class="card-header">
+            <h3>発信コンテンツ管理</h3>
+            <button class="btn btn-sm btn-primary" onclick="showPresentModal()">+ 発信追加</button>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+            <select id="presentChannel" onchange="renderPresentList()" style="width:auto;padding:4px 10px;font-size:12px">
+              <option value="all">全チャネル</option>
+              <option value="x">X (Twitter)</option>
+              <option value="instagram">Instagram</option>
+              <option value="event">イベント</option>
+              <option value="word">口コミ</option>
+              <option value="other">その他</option>
+            </select>
+          </div>
+          <div id="presentList"></div>
+        </div>
+
+        <div class="card">
+          <h3>リーチ統計</h3>
+          <div class="stat-grid" style="margin-bottom:0">
+            <div class="stat-card"><div class="stat-value" style="color:var(--cyan)" id="prTotalReach">0</div><div class="stat-label">Total Reach</div></div>
+            <div class="stat-card"><div class="stat-value" style="color:var(--orange)" id="prTotalPosts">0</div><div class="stat-label">Total Posts</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== CONSULT ===== -->
+      <div class="section" id="sec-consult">
+        <div class="card">
+          <div class="card-header">
+            <h3>相談案件管理</h3>
+            <button class="btn btn-sm btn-primary" onclick="showConsultModal()">+ 案件追加</button>
+          </div>
+          <div id="consultList"></div>
+        </div>
+
+        <div class="card">
+          <h3>収益サマリー</h3>
+          <div class="stat-grid" style="margin-bottom:0">
+            <div class="stat-card"><div class="stat-value" style="color:var(--green)" id="csRevenue">0</div><div class="stat-label">Total Revenue</div></div>
+            <div class="stat-card"><div class="stat-value" style="color:var(--cyan)" id="csCases">0</div><div class="stat-label">Total Cases</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PROJECTS ===== -->
+      <div class="section" id="sec-projects">
+        <div class="card">
+          <div class="card-header">
+            <h3>プロジェクト一覧</h3>
+            <button class="btn btn-sm btn-primary" onclick="showProjectModal()">+ 新規PJ</button>
+          </div>
+          <div id="projectList"></div>
+        </div>
+      </div>
+
+      <!-- ===== DOCS / SETTINGS ===== -->
+      <div class="section" id="sec-docs">
+        <div class="card">
+          <h3>ドキュメント</h3>
+          <div class="links-grid">
+            <a class="link-card" href="https://jonyjean21.github.io/sp-projects/apps/machap/plan.html" target="_blank">
+              <span style="font-size:20px">&#128196;</span>
+              <div><div style="font-weight:600">事業計画スライド</div><div style="font-size:11px;color:var(--sub)">13ページのプレゼン</div></div>
+            </a>
+            <a class="link-card" href="https://jonyjean21.github.io/sp-projects/apps/machap/" target="_blank">
+              <span style="font-size:20px">&#127968;</span>
+              <div><div style="font-weight:600">MACHAP LP</div><div style="font-size:11px;color:var(--sub)">ランディングページ</div></div>
+            </a>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>収益モデル</h3>
+          <div style="font-size:13px;color:var(--sub);line-height:1.8">
+            <div><span style="color:var(--cyan);font-weight:600">30%</span> チームメンバーへの還元</div>
+            <div><span style="color:var(--green);font-weight:600">30%</span> 各メンバー個人の取り分</div>
+            <div><span style="color:var(--orange);font-weight:600">40%</span> 外部還元・再投資</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>メモ</h3>
+          <textarea id="globalNotes" rows="8" placeholder="MACHAPに関するメモを自由に記録..."></textarea>
+          <div class="btn-row" style="margin-top:8px">
+            <button class="btn btn-sm btn-primary" onclick="saveNotes()">Save</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>データ管理</h3>
+          <div class="btn-row">
+            <button class="btn btn-sm btn-outline" onclick="exportData()">Export JSON</button>
+            <label class="btn btn-sm btn-outline" style="cursor:pointer">Import JSON<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>
+            <button class="btn btn-sm btn-danger" onclick="if(confirm('全データを削除しますか？'))resetData()">Reset</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /main-body -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<div class="toast" id="toast"></div>
+
+<!-- Idea Modal -->
+<div class="modal-overlay" id="ideaModal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box">
+    <h3 id="ideaModalTitle">新規アイデア</h3>
+    <input type="hidden" id="ideaEditId">
+    <div class="field"><label>タイトル</label><input type="text" id="ideaTitle" placeholder="アイデアのタイトル"></div>
+    <div class="field"><label>概要</label><textarea id="ideaSummary" rows="3" placeholder="どんな課題を解決するか"></textarea></div>
+    <div class="field"><label>ターゲット</label><input type="text" id="ideaTarget" placeholder="誰向けのプロダクト？"></div>
+    <div class="field-row">
+      <div class="field"><label>優先度</label>
+        <select id="ideaPriority"><option value="medium">Medium</option><option value="high">High</option><option value="low">Low</option></select>
+      </div>
+      <div class="field"><label>ステータス</label>
+        <select id="ideaStatus"><option value="discovered">発見</option><option value="reviewing">検討中</option><option value="adopted">採用</option><option value="rejected">不採用</option></select>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveIdea()">Save</button>
+      <button class="btn btn-outline" onclick="document.getElementById('ideaModal').style.display='none'">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Task Modal -->
+<div class="modal-overlay" id="taskModal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box">
+    <h3 id="taskModalTitle">タスク追加</h3>
+    <input type="hidden" id="taskEditId">
+    <div class="field"><label>タスク名</label><input type="text" id="taskName" placeholder="何をする？"></div>
+    <div class="field"><label>プロジェクト</label><select id="taskProject"><option value="">-- 選択 --</option></select></div>
+    <div class="field-row">
+      <div class="field"><label>担当者</label>
+        <select id="taskAssignee"><option value="サノ">サノ</option><option value="中">中</option><option value="ししょー">ししょー</option></select>
+      </div>
+      <div class="field"><label>ステータス</label>
+        <select id="taskStatus"><option value="todo">TODO</option><option value="in-progress">進行中</option><option value="completed">完了</option></select>
+      </div>
+    </div>
+    <div class="field"><label>成果物URL</label><input type="url" id="taskUrl" placeholder="https://..."></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveTask()">Save</button>
+      <button class="btn btn-outline" onclick="document.getElementById('taskModal').style.display='none'">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Offer Modal -->
+<div class="modal-overlay" id="offerModal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box">
+    <h3 id="offerModalTitle">提供先追加</h3>
+    <input type="hidden" id="offerEditId">
+    <div class="field"><label>提供先名</label><input type="text" id="offerName" placeholder="団体名 or 個人名"></div>
+    <div class="field"><label>プロダクト</label><select id="offerProduct"><option value="">-- 選択 --</option></select></div>
+    <div class="field-row">
+      <div class="field"><label>提供方法</label>
+        <select id="offerMethod"><option value="direct">直接提供</option><option value="web">Web公開</option><option value="referral">紹介</option></select>
+      </div>
+      <div class="field"><label>ステータス</label>
+        <select id="offerStatus"><option value="offered">提供済み</option><option value="negotiating">交渉中</option><option value="feedback">フィードバック中</option><option value="completed">完了</option></select>
+      </div>
+    </div>
+    <div class="field"><label>フィードバック</label><textarea id="offerFeedback" rows="3" placeholder="相手の反応・フィードバック"></textarea></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveOffer()">Save</button>
+      <button class="btn btn-outline" onclick="document.getElementById('offerModal').style.display='none'">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Present Modal -->
+<div class="modal-overlay" id="presentModal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box">
+    <h3 id="presentModalTitle">発信追加</h3>
+    <input type="hidden" id="presentEditId">
+    <div class="field"><label>タイトル / 内容</label><input type="text" id="presentTitle" placeholder="発信のタイトル"></div>
+    <div class="field-row">
+      <div class="field"><label>チャネル</label>
+        <select id="presentChannelInput"><option value="x">X (Twitter)</option><option value="instagram">Instagram</option><option value="event">イベント</option><option value="word">口コミ</option><option value="other">その他</option></select>
+      </div>
+      <div class="field"><label>リーチ数</label><input type="number" id="presentReach" placeholder="0" style="width:100%"></div>
+    </div>
+    <div class="field"><label>URL</label><input type="url" id="presentUrl" placeholder="https://..."></div>
+    <div class="field"><label>メモ</label><textarea id="presentMemo" rows="2" placeholder="反応など"></textarea></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="savePresent()">Save</button>
+      <button class="btn btn-outline" onclick="document.getElementById('presentModal').style.display='none'">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Consult Modal -->
+<div class="modal-overlay" id="consultModal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box">
+    <h3 id="consultModalTitle">相談案件追加</h3>
+    <input type="hidden" id="consultEditId">
+    <div class="field"><label>相談元</label><input type="text" id="consultFrom" placeholder="団体名 or 個人名"></div>
+    <div class="field"><label>相談内容</label><textarea id="consultContent" rows="3" placeholder="どんな相談？"></textarea></div>
+    <div class="field-row">
+      <div class="field"><label>ステータス</label>
+        <select id="consultStatus"><option value="received">受付</option><option value="in-progress">対応中</option><option value="completed">完了</option></select>
+      </div>
+      <div class="field"><label>収益 (円)</label><input type="number" id="consultRevenue" placeholder="0" style="width:100%"></div>
+    </div>
+    <div class="field"><label>メモ</label><textarea id="consultMemo" rows="2" placeholder="対応メモ"></textarea></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveConsult()">Save</button>
+      <button class="btn btn-outline" onclick="document.getElementById('consultModal').style.display='none'">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Project Modal -->
+<div class="modal-overlay" id="projectModal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box">
+    <h3 id="projectModalTitle">新規プロジェクト</h3>
+    <input type="hidden" id="projectEditId">
+    <div class="field"><label>プロジェクト名</label><input type="text" id="projectName" placeholder="PJ名"></div>
+    <div class="field"><label>概要</label><textarea id="projectDesc" rows="3" placeholder="プロジェクトの概要"></textarea></div>
+    <div class="field-row">
+      <div class="field"><label>ステータス</label>
+        <select id="projectStatus"><option value="active">Active</option><option value="planning">Planning</option><option value="completed">Completed</option><option value="paused">Paused</option></select>
+      </div>
+      <div class="field"><label>リードメンバー</label>
+        <select id="projectLead"><option value="サノ">サノ</option><option value="中">中</option><option value="ししょー">ししょー</option></select>
+      </div>
+    </div>
+    <div class="field"><label>成果物URL</label><input type="url" id="projectUrl" placeholder="https://..."></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveProject()">Save</button>
+      <button class="btn btn-outline" onclick="document.getElementById('projectModal').style.display='none'">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== Data Store (localStorage) =====
+const STORAGE_KEY = 'machap_portal_data';
+
+function getStore() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || defaultStore(); }
+  catch(e) { return defaultStore(); }
+}
+
+function defaultStore() {
+  return {
+    ideas: [],
+    tasks: [],
+    offers: [],
+    presents: [],
+    consults: [],
+    projects: [],
+    phases: {},
+    notes: '',
+    activity: [],
+    sprintStart: null
+  };
+}
+
+function setStore(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function genId() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 5); }
+
+// ===== Init =====
+document.addEventListener('DOMContentLoaded', () => {
+  // Migrate old machap_progress from SP Portal
+  const oldProgress = localStorage.getItem('machap_progress');
+  if (oldProgress && !localStorage.getItem(STORAGE_KEY)) {
+    try {
+      const old = JSON.parse(oldProgress);
+      const store = defaultStore();
+      store.phases = old.tasks || {};
+      const oldNotes = localStorage.getItem('machap_notes');
+      if (oldNotes) store.notes = oldNotes;
+      setStore(store);
+    } catch(e) {}
+  }
+
+  restorePhases();
+  restoreNotes();
+  renderAll();
+  updateDashboard();
+  updateNavCounts();
+});
+
+// ===== Navigation =====
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-' + id).classList.add('active');
+  const navItem = document.querySelector(`.nav-item[data-section="${id}"]`);
+  if (navItem) navItem.classList.add('active');
+
+  const titles = {
+    dashboard: 'Dashboard', find: 'FIND - 課題発見', make: 'MAKE - プロダクト化',
+    offer: 'OFFER - 提供', present: 'PRESENT - 発信', consult: 'CONSULT - 相談',
+    projects: 'Projects', docs: 'Docs / Settings'
+  };
+  document.getElementById('pageTitle').textContent = titles[id] || id;
+
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+
+// ===== Toast =====
+function showToast(msg) {
+  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+// ===== Phase Progress =====
+function restorePhases() {
+  const store = getStore();
+  const phaseIds = ['ph1t4','ph1t5','ph2t1','ph2t2','ph2t3','ph3t1','ph3t2','ph3t3'];
+  phaseIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && store.phases[id] !== undefined) el.checked = store.phases[id];
+  });
+  updatePhaseUI();
+}
+
+function updatePhaseUI() {
+  const p1Done = 3 + (document.getElementById('ph1t4')?.checked?1:0) + (document.getElementById('ph1t5')?.checked?1:0);
+  const p1Pct = Math.round(p1Done/5*100);
+  document.getElementById('p1Pct').textContent = p1Pct+'%';
+  document.getElementById('p1Bar').style.width = p1Pct+'%';
+
+  const p2ids = ['ph2t1','ph2t2','ph2t3'];
+  const p2Done = p2ids.filter(id => document.getElementById(id)?.checked).length;
+  const p2Pct = Math.round(p2Done/3*100);
+  document.getElementById('p2Pct').textContent = p2Pct+'%';
+  document.getElementById('p2Bar').style.width = p2Pct+'%';
+
+  const p3ids = ['ph3t1','ph3t2','ph3t3'];
+  const p3Done = p3ids.filter(id => document.getElementById(id)?.checked).length;
+  const p3Pct = Math.round(p3Done/3*100);
+  document.getElementById('p3Pct').textContent = p3Pct+'%';
+  document.getElementById('p3Bar').style.width = p3Pct+'%';
+
+  // Auto-determine current phase
+  let phase = 'Phase 1';
+  if (p1Pct === 100) phase = 'Phase 2';
+  if (p2Pct === 100) phase = 'Phase 3';
+  document.getElementById('phaseLabel').textContent = phase;
+
+  // Auto-save phases
+  const store = getStore();
+  const phaseIds = ['ph1t4','ph1t5','ph2t1','ph2t2','ph2t3','ph3t1','ph3t2','ph3t3'];
+  phaseIds.forEach(id => { const el = document.getElementById(id); if (el) store.phases[id] = el.checked; });
+  setStore(store);
+}
+
+// ===== Notes =====
+function restoreNotes() {
+  const store = getStore();
+  document.getElementById('globalNotes').value = store.notes || '';
+}
+function saveNotes() {
+  const store = getStore();
+  store.notes = document.getElementById('globalNotes').value;
+  setStore(store);
+  showToast('Saved');
+}
+
+// ===== FIND: Ideas =====
+function showIdeaModal(id) {
+  const modal = document.getElementById('ideaModal');
+  if (id) {
+    const store = getStore();
+    const idea = store.ideas.find(i => i.id === id);
+    if (!idea) return;
+    document.getElementById('ideaModalTitle').textContent = 'Edit Idea';
+    document.getElementById('ideaEditId').value = id;
+    document.getElementById('ideaTitle').value = idea.title;
+    document.getElementById('ideaSummary').value = idea.summary || '';
+    document.getElementById('ideaTarget').value = idea.target || '';
+    document.getElementById('ideaPriority').value = idea.priority || 'medium';
+    document.getElementById('ideaStatus').value = idea.status || 'discovered';
+  } else {
+    document.getElementById('ideaModalTitle').textContent = '新規アイデア';
+    document.getElementById('ideaEditId').value = '';
+    ['ideaTitle','ideaSummary','ideaTarget'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('ideaPriority').value = 'medium';
+    document.getElementById('ideaStatus').value = 'discovered';
+  }
+  modal.style.display = 'flex';
+}
+
+function saveIdea() {
+  const title = document.getElementById('ideaTitle').value.trim();
+  if (!title) { showToast('タイトルを入力してください'); return; }
+  const store = getStore();
+  const editId = document.getElementById('ideaEditId').value;
+  const idea = {
+    id: editId || genId(),
+    title,
+    summary: document.getElementById('ideaSummary').value.trim(),
+    target: document.getElementById('ideaTarget').value.trim(),
+    priority: document.getElementById('ideaPriority').value,
+    status: document.getElementById('ideaStatus').value,
+    votes: editId ? (store.ideas.find(i => i.id === editId)?.votes || {}) : {},
+    created: editId ? (store.ideas.find(i => i.id === editId)?.created || new Date().toISOString()) : new Date().toISOString(),
+    updated: new Date().toISOString()
+  };
+  if (editId) {
+    const idx = store.ideas.findIndex(i => i.id === editId);
+    if (idx >= 0) store.ideas[idx] = idea;
+  } else {
+    store.ideas.push(idea);
+    addActivity(store, `FIND: "${title}" を登録`);
+  }
+  setStore(store);
+  document.getElementById('ideaModal').style.display = 'none';
+  renderFindList();
+  updateNavCounts();
+  updateDashboard();
+  showToast('Saved');
+}
+
+function deleteIdea(id) {
+  if (!confirm('削除しますか？')) return;
+  const store = getStore();
+  store.ideas = store.ideas.filter(i => i.id !== id);
+  setStore(store);
+  renderFindList();
+  updateNavCounts();
+  updateDashboard();
+}
+
+function toggleVote(id, voter) {
+  const store = getStore();
+  const idea = store.ideas.find(i => i.id === id);
+  if (!idea) return;
+  if (!idea.votes) idea.votes = {};
+  idea.votes[voter] = !idea.votes[voter];
+  setStore(store);
+  renderFindList();
+}
+
+function renderFindList() {
+  const store = getStore();
+  let items = [...store.ideas];
+  const filter = document.getElementById('findFilter').value;
+  if (filter !== 'all') items = items.filter(i => i.status === filter);
+  const sort = document.getElementById('findSort').value;
+  if (sort === 'newest') items.sort((a,b) => (b.created||'').localeCompare(a.created||''));
+  else if (sort === 'votes') items.sort((a,b) => Object.values(b.votes||{}).filter(Boolean).length - Object.values(a.votes||{}).filter(Boolean).length);
+  else if (sort === 'priority') { const w = {high:3,medium:2,low:1}; items.sort((a,b) => (w[b.priority]||0) - (w[a.priority]||0)); }
+
+  const box = document.getElementById('findList');
+  if (items.length === 0) { box.innerHTML = '<div class="empty">アイデアはまだありません</div>'; return; }
+  box.innerHTML = items.map(i => {
+    const voteCount = Object.values(i.votes||{}).filter(Boolean).length;
+    const statusClass = 'st-' + (i.status||'discovered');
+    const priClass = 'pri-' + (i.priority||'medium');
+    return `<div class="item-card">
+      <div style="display:flex;align-items:start;gap:8px">
+        <div style="flex:1">
+          <div class="item-title">${escapeHtml(i.title)}</div>
+          ${i.summary ? `<div style="font-size:12px;color:var(--sub);margin:4px 0">${escapeHtml(i.summary)}</div>` : ''}
+          <div class="item-meta">
+            <span class="status-badge ${statusClass}">${i.status||'discovered'}</span>
+            <span class="${priClass}" style="font-size:11px">${i.priority||'medium'}</span>
+            ${i.target ? `<span style="font-size:11px">Target: ${escapeHtml(i.target)}</span>` : ''}
+          </div>
+        </div>
+        <div style="display:flex;gap:4px;align-items:center">
+          <button class="vote-btn ${i.votes?.['サノ']?'voted':''}" onclick="toggleVote('${i.id}','サノ')">サ</button>
+          <button class="vote-btn ${i.votes?.['中']?'voted':''}" onclick="toggleVote('${i.id}','中')">中</button>
+          <button class="vote-btn ${i.votes?.['ししょー']?'voted':''}" onclick="toggleVote('${i.id}','ししょー')">師</button>
+          <span style="font-size:11px;color:var(--cyan);min-width:16px;text-align:center">${voteCount}</span>
+        </div>
+      </div>
+      <div class="item-actions">
+        <button class="btn btn-sm btn-outline" onclick="showIdeaModal('${i.id}')">Edit</button>
+        <button class="btn btn-sm btn-outline" onclick="deleteIdea('${i.id}')" style="color:var(--red)">Del</button>
+        ${i.status === 'adopted' ? `<button class="btn btn-sm btn-cyan" onclick="ideaToProject('${i.id}')">Project化</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function ideaToProject(ideaId) {
+  const store = getStore();
+  const idea = store.ideas.find(i => i.id === ideaId);
+  if (!idea) return;
+  const project = {
+    id: genId(), name: idea.title, desc: idea.summary || '',
+    status: 'active', lead: 'サノ', url: '',
+    created: new Date().toISOString(), ideaId: idea.id
+  };
+  store.projects.push(project);
+  idea.status = 'in-progress';
+  addActivity(store, `PJ: "${idea.title}" をProject化`);
+  setStore(store);
+  renderFindList();
+  renderProjectList();
+  updateNavCounts();
+  updateDashboard();
+  showToast('Project created');
+}
+
+// ===== MAKE: Tasks =====
+function showTaskModal(id) {
+  populateProjectSelect('taskProject');
+  const modal = document.getElementById('taskModal');
+  if (id) {
+    const store = getStore();
+    const task = store.tasks.find(t => t.id === id);
+    if (!task) return;
+    document.getElementById('taskModalTitle').textContent = 'Edit Task';
+    document.getElementById('taskEditId').value = id;
+    document.getElementById('taskName').value = task.name;
+    document.getElementById('taskProject').value = task.projectId || '';
+    document.getElementById('taskAssignee').value = task.assignee || 'サノ';
+    document.getElementById('taskStatus').value = task.status || 'todo';
+    document.getElementById('taskUrl').value = task.url || '';
+  } else {
+    document.getElementById('taskModalTitle').textContent = 'タスク追加';
+    document.getElementById('taskEditId').value = '';
+    ['taskName','taskUrl'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('taskAssignee').value = 'サノ';
+    document.getElementById('taskStatus').value = 'todo';
+  }
+  modal.style.display = 'flex';
+}
+
+function saveTask() {
+  const name = document.getElementById('taskName').value.trim();
+  if (!name) { showToast('タスク名を入力してください'); return; }
+  const store = getStore();
+  const editId = document.getElementById('taskEditId').value;
+  const task = {
+    id: editId || genId(), name,
+    projectId: document.getElementById('taskProject').value,
+    assignee: document.getElementById('taskAssignee').value,
+    status: document.getElementById('taskStatus').value,
+    url: document.getElementById('taskUrl').value.trim(),
+    created: editId ? (store.tasks.find(t => t.id === editId)?.created || new Date().toISOString()) : new Date().toISOString(),
+    updated: new Date().toISOString()
+  };
+  if (editId) {
+    const idx = store.tasks.findIndex(t => t.id === editId);
+    if (idx >= 0) store.tasks[idx] = task;
+  } else {
+    store.tasks.push(task);
+    addActivity(store, `MAKE: "${name}" タスク追加 (${task.assignee})`);
+  }
+  setStore(store);
+  document.getElementById('taskModal').style.display = 'none';
+  renderMakeList();
+  updateNavCounts();
+  updateDashboard();
+  showToast('Saved');
+}
+
+function deleteTask(id) {
+  if (!confirm('削除しますか？')) return;
+  const store = getStore();
+  store.tasks = store.tasks.filter(t => t.id !== id);
+  setStore(store);
+  renderMakeList();
+  updateNavCounts();
+  updateDashboard();
+}
+
+function renderMakeList() {
+  const store = getStore();
+  let items = [...store.tasks];
+  const filter = document.getElementById('makeFilter').value;
+  if (filter === 'active') items = items.filter(t => t.status !== 'completed');
+  else if (filter === 'completed') items = items.filter(t => t.status === 'completed');
+  const assignee = document.getElementById('makeAssignee').value;
+  if (assignee !== 'all') items = items.filter(t => t.assignee === assignee);
+  items.sort((a,b) => (b.updated||b.created||'').localeCompare(a.updated||a.created||''));
+
+  const box = document.getElementById('makeList');
+  if (items.length === 0) { box.innerHTML = '<div class="empty">タスクはまだありません</div>'; return; }
+  box.innerHTML = items.map(t => {
+    const pj = store.projects.find(p => p.id === t.projectId);
+    const stClass = t.status === 'completed' ? 'st-completed' : t.status === 'in-progress' ? 'st-in-progress' : 'st-discovered';
+    const assigneeColors = {'サノ':'var(--blue)','中':'var(--cyan)','ししょー':'var(--orange)'};
+    return `<div class="item-card">
+      <div class="item-title">${escapeHtml(t.name)}</div>
+      <div class="item-meta">
+        <span class="status-badge ${stClass}">${t.status}</span>
+        <span style="color:${assigneeColors[t.assignee]||'var(--sub)'};font-size:11px;font-weight:600">${t.assignee}</span>
+        ${pj ? `<span style="font-size:11px">PJ: ${escapeHtml(pj.name)}</span>` : ''}
+        ${t.url ? `<a href="${escapeHtml(t.url)}" target="_blank" style="font-size:11px;color:var(--cyan)">Link</a>` : ''}
+      </div>
+      <div class="item-actions">
+        <button class="btn btn-sm btn-outline" onclick="showTaskModal('${t.id}')">Edit</button>
+        <button class="btn btn-sm btn-outline" onclick="deleteTask('${t.id}')" style="color:var(--red)">Del</button>
+        ${t.status !== 'completed' ? `<button class="btn btn-sm btn-success" onclick="completeTask('${t.id}')">Done</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Sprint bar
+  updateSprintBar();
+}
+
+function completeTask(id) {
+  const store = getStore();
+  const task = store.tasks.find(t => t.id === id);
+  if (task) {
+    task.status = 'completed';
+    task.updated = new Date().toISOString();
+    addActivity(store, `MAKE: "${task.name}" 完了`);
+    setStore(store);
+    renderMakeList();
+    updateNavCounts();
+    updateDashboard();
+    showToast('Task completed');
+  }
+}
+
+function updateSprintBar() {
+  const now = new Date();
+  const dow = now.getDay();
+  const monday = new Date(now); monday.setDate(now.getDate() - (dow === 0 ? 6 : dow - 1)); monday.setHours(0,0,0,0);
+  const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6); sunday.setHours(23,59,59,999);
+  const elapsed = now - monday;
+  const total = sunday - monday;
+  const pct = Math.min(100, Math.round(elapsed / total * 100));
+  document.getElementById('sprintStart').textContent = monday.toLocaleDateString('ja-JP', {month:'numeric',day:'numeric'});
+  document.getElementById('sprintEnd').textContent = sunday.toLocaleDateString('ja-JP', {month:'numeric',day:'numeric'});
+  document.getElementById('sprintBar').style.width = pct + '%';
+}
+
+// ===== OFFER =====
+function showOfferModal(id) {
+  populateProjectSelect('offerProduct');
+  const modal = document.getElementById('offerModal');
+  if (id) {
+    const store = getStore();
+    const offer = store.offers.find(o => o.id === id);
+    if (!offer) return;
+    document.getElementById('offerModalTitle').textContent = 'Edit';
+    document.getElementById('offerEditId').value = id;
+    document.getElementById('offerName').value = offer.name;
+    document.getElementById('offerProduct').value = offer.projectId || '';
+    document.getElementById('offerMethod').value = offer.method || 'direct';
+    document.getElementById('offerStatus').value = offer.status || 'offered';
+    document.getElementById('offerFeedback').value = offer.feedback || '';
+  } else {
+    document.getElementById('offerModalTitle').textContent = '提供先追加';
+    document.getElementById('offerEditId').value = '';
+    ['offerName','offerFeedback'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('offerMethod').value = 'direct';
+    document.getElementById('offerStatus').value = 'offered';
+  }
+  modal.style.display = 'flex';
+}
+
+function saveOffer() {
+  const name = document.getElementById('offerName').value.trim();
+  if (!name) { showToast('提供先名を入力してください'); return; }
+  const store = getStore();
+  const editId = document.getElementById('offerEditId').value;
+  const offer = {
+    id: editId || genId(), name,
+    projectId: document.getElementById('offerProduct').value,
+    method: document.getElementById('offerMethod').value,
+    status: document.getElementById('offerStatus').value,
+    feedback: document.getElementById('offerFeedback').value.trim(),
+    created: editId ? (store.offers.find(o => o.id === editId)?.created || new Date().toISOString()) : new Date().toISOString(),
+    updated: new Date().toISOString()
+  };
+  if (editId) { const idx = store.offers.findIndex(o => o.id === editId); if (idx >= 0) store.offers[idx] = offer; }
+  else { store.offers.push(offer); addActivity(store, `OFFER: "${name}" へ提供`); }
+  setStore(store);
+  document.getElementById('offerModal').style.display = 'none';
+  renderOfferList();
+  updateNavCounts();
+  showToast('Saved');
+}
+
+function deleteOffer(id) {
+  if (!confirm('削除しますか？')) return;
+  const store = getStore();
+  store.offers = store.offers.filter(o => o.id !== id);
+  setStore(store);
+  renderOfferList();
+  updateNavCounts();
+}
+
+function renderOfferList() {
+  const store = getStore();
+  const items = store.offers || [];
+  const box = document.getElementById('offerList');
+  if (items.length === 0) { box.innerHTML = '<div class="empty">提供先はまだありません</div>'; return; }
+  box.innerHTML = items.map(o => {
+    const pj = store.projects.find(p => p.id === o.projectId);
+    const methods = {direct:'直接提供',web:'Web公開',referral:'紹介'};
+    return `<div class="item-card">
+      <div class="item-title">${escapeHtml(o.name)}</div>
+      <div class="item-meta">
+        <span class="status-badge st-${o.status==='completed'?'completed':o.status==='feedback'?'reviewing':'in-progress'}">${o.status}</span>
+        <span style="font-size:11px">${methods[o.method]||o.method}</span>
+        ${pj ? `<span style="font-size:11px">PJ: ${escapeHtml(pj.name)}</span>` : ''}
+      </div>
+      ${o.feedback ? `<div style="font-size:12px;color:var(--sub);margin-top:6px;padding:8px;background:var(--bg);border-radius:6px">${escapeHtml(o.feedback)}</div>` : ''}
+      <div class="item-actions">
+        <button class="btn btn-sm btn-outline" onclick="showOfferModal('${o.id}')">Edit</button>
+        <button class="btn btn-sm btn-outline" onclick="deleteOffer('${o.id}')" style="color:var(--red)">Del</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ===== PRESENT =====
+function showPresentModal(id) {
+  const modal = document.getElementById('presentModal');
+  if (id) {
+    const store = getStore();
+    const item = store.presents.find(p => p.id === id);
+    if (!item) return;
+    document.getElementById('presentModalTitle').textContent = 'Edit';
+    document.getElementById('presentEditId').value = id;
+    document.getElementById('presentTitle').value = item.title;
+    document.getElementById('presentChannelInput').value = item.channel || 'x';
+    document.getElementById('presentReach').value = item.reach || 0;
+    document.getElementById('presentUrl').value = item.url || '';
+    document.getElementById('presentMemo').value = item.memo || '';
+  } else {
+    document.getElementById('presentModalTitle').textContent = '発信追加';
+    document.getElementById('presentEditId').value = '';
+    ['presentTitle','presentUrl','presentMemo'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('presentReach').value = '';
+    document.getElementById('presentChannelInput').value = 'x';
+  }
+  modal.style.display = 'flex';
+}
+
+function savePresent() {
+  const title = document.getElementById('presentTitle').value.trim();
+  if (!title) { showToast('タイトルを入力してください'); return; }
+  const store = getStore();
+  const editId = document.getElementById('presentEditId').value;
+  const item = {
+    id: editId || genId(), title,
+    channel: document.getElementById('presentChannelInput').value,
+    reach: parseInt(document.getElementById('presentReach').value) || 0,
+    url: document.getElementById('presentUrl').value.trim(),
+    memo: document.getElementById('presentMemo').value.trim(),
+    created: editId ? (store.presents.find(p => p.id === editId)?.created || new Date().toISOString()) : new Date().toISOString()
+  };
+  if (editId) { const idx = store.presents.findIndex(p => p.id === editId); if (idx >= 0) store.presents[idx] = item; }
+  else { store.presents.push(item); addActivity(store, `PRESENT: "${title}" を発信`); }
+  setStore(store);
+  document.getElementById('presentModal').style.display = 'none';
+  renderPresentList();
+  updateNavCounts();
+  showToast('Saved');
+}
+
+function deletePresent(id) {
+  if (!confirm('削除しますか？')) return;
+  const store = getStore();
+  store.presents = store.presents.filter(p => p.id !== id);
+  setStore(store);
+  renderPresentList();
+  updateNavCounts();
+}
+
+function renderPresentList() {
+  const store = getStore();
+  let items = [...(store.presents || [])];
+  const ch = document.getElementById('presentChannel').value;
+  if (ch !== 'all') items = items.filter(p => p.channel === ch);
+  items.sort((a,b) => (b.created||'').localeCompare(a.created||''));
+
+  const box = document.getElementById('presentList');
+  if (items.length === 0) { box.innerHTML = '<div class="empty">発信コンテンツはまだありません</div>'; return; }
+  const channelLabels = {x:'X',instagram:'IG',event:'Event',word:'口コミ',other:'Other'};
+  box.innerHTML = items.map(p => `<div class="item-card">
+    <div class="item-title">${escapeHtml(p.title)}</div>
+    <div class="item-meta">
+      <span class="pill pill-cyan" style="font-size:10px">${channelLabels[p.channel]||p.channel}</span>
+      <span style="font-size:11px">Reach: ${(p.reach||0).toLocaleString()}</span>
+      ${p.url ? `<a href="${escapeHtml(p.url)}" target="_blank" style="font-size:11px;color:var(--cyan)">Link</a>` : ''}
+    </div>
+    ${p.memo ? `<div style="font-size:12px;color:var(--sub);margin-top:4px">${escapeHtml(p.memo)}</div>` : ''}
+    <div class="item-actions">
+      <button class="btn btn-sm btn-outline" onclick="showPresentModal('${p.id}')">Edit</button>
+      <button class="btn btn-sm btn-outline" onclick="deletePresent('${p.id}')" style="color:var(--red)">Del</button>
+    </div>
+  </div>`).join('');
+
+  // Stats
+  const all = store.presents || [];
+  document.getElementById('prTotalReach').textContent = all.reduce((s,p) => s + (p.reach||0), 0).toLocaleString();
+  document.getElementById('prTotalPosts').textContent = all.length;
+}
+
+// ===== CONSULT =====
+function showConsultModal(id) {
+  const modal = document.getElementById('consultModal');
+  if (id) {
+    const store = getStore();
+    const item = store.consults.find(c => c.id === id);
+    if (!item) return;
+    document.getElementById('consultModalTitle').textContent = 'Edit';
+    document.getElementById('consultEditId').value = id;
+    document.getElementById('consultFrom').value = item.from;
+    document.getElementById('consultContent').value = item.content || '';
+    document.getElementById('consultStatus').value = item.status || 'received';
+    document.getElementById('consultRevenue').value = item.revenue || 0;
+    document.getElementById('consultMemo').value = item.memo || '';
+  } else {
+    document.getElementById('consultModalTitle').textContent = '相談案件追加';
+    document.getElementById('consultEditId').value = '';
+    ['consultFrom','consultContent','consultMemo'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('consultRevenue').value = '';
+    document.getElementById('consultStatus').value = 'received';
+  }
+  modal.style.display = 'flex';
+}
+
+function saveConsult() {
+  const from = document.getElementById('consultFrom').value.trim();
+  if (!from) { showToast('相談元を入力してください'); return; }
+  const store = getStore();
+  const editId = document.getElementById('consultEditId').value;
+  const item = {
+    id: editId || genId(), from,
+    content: document.getElementById('consultContent').value.trim(),
+    status: document.getElementById('consultStatus').value,
+    revenue: parseInt(document.getElementById('consultRevenue').value) || 0,
+    memo: document.getElementById('consultMemo').value.trim(),
+    created: editId ? (store.consults.find(c => c.id === editId)?.created || new Date().toISOString()) : new Date().toISOString()
+  };
+  if (editId) { const idx = store.consults.findIndex(c => c.id === editId); if (idx >= 0) store.consults[idx] = item; }
+  else { store.consults.push(item); addActivity(store, `CONSULT: "${from}" から相談`); }
+  setStore(store);
+  document.getElementById('consultModal').style.display = 'none';
+  renderConsultList();
+  updateNavCounts();
+  showToast('Saved');
+}
+
+function deleteConsult(id) {
+  if (!confirm('削除しますか？')) return;
+  const store = getStore();
+  store.consults = store.consults.filter(c => c.id !== id);
+  setStore(store);
+  renderConsultList();
+  updateNavCounts();
+}
+
+function renderConsultList() {
+  const store = getStore();
+  const items = store.consults || [];
+  const box = document.getElementById('consultList');
+  if (items.length === 0) { box.innerHTML = '<div class="empty">相談案件はまだありません</div>'; return; }
+  box.innerHTML = items.map(c => {
+    const stClass = c.status === 'completed' ? 'st-completed' : c.status === 'in-progress' ? 'st-in-progress' : 'st-discovered';
+    return `<div class="item-card">
+      <div class="item-title">${escapeHtml(c.from)}</div>
+      <div style="font-size:12px;color:var(--sub);margin:4px 0">${escapeHtml(c.content||'')}</div>
+      <div class="item-meta">
+        <span class="status-badge ${stClass}">${c.status}</span>
+        ${c.revenue ? `<span style="font-size:11px;color:var(--green);font-weight:600">${c.revenue.toLocaleString()}円</span>` : ''}
+      </div>
+      ${c.memo ? `<div style="font-size:12px;color:var(--sub);margin-top:4px">${escapeHtml(c.memo)}</div>` : ''}
+      <div class="item-actions">
+        <button class="btn btn-sm btn-outline" onclick="showConsultModal('${c.id}')">Edit</button>
+        <button class="btn btn-sm btn-outline" onclick="deleteConsult('${c.id}')" style="color:var(--red)">Del</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Stats
+  document.getElementById('csRevenue').textContent = items.reduce((s,c) => s + (c.revenue||0), 0).toLocaleString() + '円';
+  document.getElementById('csCases').textContent = items.length;
+}
+
+// ===== Projects =====
+function showProjectModal(id) {
+  const modal = document.getElementById('projectModal');
+  if (id) {
+    const store = getStore();
+    const pj = store.projects.find(p => p.id === id);
+    if (!pj) return;
+    document.getElementById('projectModalTitle').textContent = 'Edit Project';
+    document.getElementById('projectEditId').value = id;
+    document.getElementById('projectName').value = pj.name;
+    document.getElementById('projectDesc').value = pj.desc || '';
+    document.getElementById('projectStatus').value = pj.status || 'active';
+    document.getElementById('projectLead').value = pj.lead || 'サノ';
+    document.getElementById('projectUrl').value = pj.url || '';
+  } else {
+    document.getElementById('projectModalTitle').textContent = '新規プロジェクト';
+    document.getElementById('projectEditId').value = '';
+    ['projectName','projectDesc','projectUrl'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('projectStatus').value = 'active';
+    document.getElementById('projectLead').value = 'サノ';
+  }
+  modal.style.display = 'flex';
+}
+
+function saveProject() {
+  const name = document.getElementById('projectName').value.trim();
+  if (!name) { showToast('名前を入力してください'); return; }
+  const store = getStore();
+  const editId = document.getElementById('projectEditId').value;
+  const pj = {
+    id: editId || genId(), name,
+    desc: document.getElementById('projectDesc').value.trim(),
+    status: document.getElementById('projectStatus').value,
+    lead: document.getElementById('projectLead').value,
+    url: document.getElementById('projectUrl').value.trim(),
+    created: editId ? (store.projects.find(p => p.id === editId)?.created || new Date().toISOString()) : new Date().toISOString()
+  };
+  if (editId) { const idx = store.projects.findIndex(p => p.id === editId); if (idx >= 0) store.projects[idx] = pj; }
+  else { store.projects.push(pj); addActivity(store, `PJ: "${name}" を作成`); }
+  setStore(store);
+  document.getElementById('projectModal').style.display = 'none';
+  renderProjectList();
+  updateNavCounts();
+  updateDashboard();
+  showToast('Saved');
+}
+
+function deleteProject(id) {
+  if (!confirm('プロジェクトを削除しますか？')) return;
+  const store = getStore();
+  store.projects = store.projects.filter(p => p.id !== id);
+  setStore(store);
+  renderProjectList();
+  updateNavCounts();
+  updateDashboard();
+}
+
+function renderProjectList() {
+  const store = getStore();
+  const items = store.projects || [];
+  const box = document.getElementById('projectList');
+  if (items.length === 0) { box.innerHTML = '<div class="empty">プロジェクトはまだありません</div>'; return; }
+
+  box.innerHTML = items.map(pj => {
+    const tasks = store.tasks.filter(t => t.projectId === pj.id);
+    const doneTasks = tasks.filter(t => t.status === 'completed').length;
+    const offers = store.offers.filter(o => o.projectId === pj.id);
+    const stColors = {active:'var(--green)',planning:'var(--blue)',completed:'var(--dim)',paused:'var(--orange)'};
+    const leadColors = {'サノ':'var(--blue)','中':'var(--cyan)','ししょー':'var(--orange)'};
+    return `<div class="item-card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <div style="width:8px;height:8px;border-radius:50%;background:${stColors[pj.status]||'var(--dim)'}"></div>
+        <div class="item-title" style="margin:0">${escapeHtml(pj.name)}</div>
+        <span style="font-size:10px;color:${leadColors[pj.lead]||'var(--sub)'};font-weight:600;margin-left:auto">${pj.lead}</span>
+      </div>
+      ${pj.desc ? `<div style="font-size:12px;color:var(--sub);margin-bottom:6px">${escapeHtml(pj.desc)}</div>` : ''}
+      <div class="item-meta">
+        <span class="pill pill-dim" style="font-size:10px">${pj.status}</span>
+        <span style="font-size:11px">Tasks: ${doneTasks}/${tasks.length}</span>
+        <span style="font-size:11px">Offers: ${offers.length}</span>
+        ${pj.url ? `<a href="${escapeHtml(pj.url)}" target="_blank" style="font-size:11px;color:var(--cyan)">Link</a>` : ''}
+      </div>
+      <div class="item-actions">
+        <button class="btn btn-sm btn-outline" onclick="showProjectModal('${pj.id}')">Edit</button>
+        <button class="btn btn-sm btn-outline" onclick="deleteProject('${pj.id}')" style="color:var(--red)">Del</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ===== Helpers =====
+function populateProjectSelect(selectId) {
+  const store = getStore();
+  const sel = document.getElementById(selectId);
+  const val = sel.value;
+  sel.innerHTML = '<option value="">-- 選択 --</option>';
+  (store.projects || []).forEach(pj => {
+    sel.innerHTML += `<option value="${pj.id}">${escapeHtml(pj.name)}</option>`;
+  });
+  sel.value = val;
+}
+
+function addActivity(store, text) {
+  if (!store.activity) store.activity = [];
+  store.activity.unshift({ text, date: new Date().toISOString() });
+  if (store.activity.length > 50) store.activity = store.activity.slice(0, 50);
+}
+
+function updateNavCounts() {
+  const store = getStore();
+  document.getElementById('navFindCount').textContent = (store.ideas||[]).filter(i => i.status !== 'rejected').length;
+  document.getElementById('navMakeCount').textContent = (store.tasks||[]).filter(t => t.status !== 'completed').length;
+  document.getElementById('navOfferCount').textContent = (store.offers||[]).length;
+  document.getElementById('navPresentCount').textContent = (store.presents||[]).length;
+  document.getElementById('navConsultCount').textContent = (store.consults||[]).length;
+}
+
+function updateDashboard() {
+  const store = getStore();
+  document.getElementById('dActiveProjects').textContent = (store.projects||[]).filter(p => p.status === 'active').length;
+  document.getElementById('dIdeas').textContent = (store.ideas||[]).length;
+  document.getElementById('dTasks').textContent = (store.tasks||[]).filter(t => t.status !== 'completed').length;
+  document.getElementById('dCompleted').textContent = (store.tasks||[]).filter(t => t.status === 'completed').length;
+
+  // Activity timeline
+  const box = document.getElementById('dashActivity');
+  const acts = (store.activity || []).slice(0, 10);
+  if (acts.length === 0) { box.innerHTML = '<div class="empty">アクティビティはまだありません</div>'; return; }
+  box.innerHTML = acts.map(a => {
+    const d = new Date(a.date);
+    return `<div class="tl-item"><div class="tl-date">${d.toLocaleDateString('ja-JP')} ${d.toLocaleTimeString('ja-JP',{hour:'numeric',minute:'numeric'})}</div><div class="tl-text">${escapeHtml(a.text)}</div></div>`;
+  }).join('');
+}
+
+function renderAll() {
+  renderFindList();
+  renderMakeList();
+  renderOfferList();
+  renderPresentList();
+  renderConsultList();
+  renderProjectList();
+}
+
+function saveAllData() {
+  updatePhaseUI();
+  showToast('All data saved');
+}
+
+// ===== Data Management =====
+function exportData() {
+  const store = getStore();
+  const blob = new Blob([JSON.stringify(store, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'machap-portal-' + new Date().toISOString().slice(0,10) + '.json'; a.click();
+  showToast('Exported');
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      setStore(data);
+      restorePhases();
+      restoreNotes();
+      renderAll();
+      updateDashboard();
+      updateNavCounts();
+      showToast('Imported');
+    } catch(err) { showToast('Import failed: ' + err.message); }
+  };
+  reader.readAsText(file);
+}
+
+function resetData() {
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+}
+</script>
+</body>
+</html>

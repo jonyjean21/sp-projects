@@ -232,6 +232,9 @@ tr:hover { background: rgba(255,255,255,0.02); }
         <span class="nav-icon">&#9878;</span> 大会情報
         <span class="nav-badge" id="navQueueBadge" style="display:none">0</span>
       </div>
+      <div class="nav-item" data-section="tdata" onclick="showSection('tdata')">
+        <span class="nav-icon">&#128451;</span> 大会データ
+      </div>
       <div class="nav-item" data-section="xpost" onclick="showSection('xpost')">
         <span class="nav-icon">&#10070;</span> Xポスト生成
       </div>
@@ -242,9 +245,10 @@ tr:hover { background: rgba(255,255,255,0.02); }
 
     <div class="nav-group">
       <div class="nav-group-label">MACHAP</div>
-      <div class="nav-item" data-section="machap" onclick="showSection('machap')">
-        <span class="nav-icon">&#9733;</span> プロジェクト管理
-      </div>
+      <a class="nav-item" href="https://jonyjean21.github.io/sp-projects/machap-portal/" target="_blank" style="text-decoration:none">
+        <span class="nav-icon">&#9733;</span> Portal
+        <span style="font-size:10px;color:var(--dim);margin-left:auto">&#8599;</span>
+      </a>
     </div>
 
     <div class="nav-group">
@@ -339,6 +343,21 @@ tr:hover { background: rgba(255,255,255,0.02); }
           </div>
           <div id="dashActivity">
             <div class="empty"><span class="spinner"></span> 読み込み中...</div>
+          </div>
+        </div>
+
+        <!-- Build History -->
+        <div class="card">
+          <h3>ビルド履歴</h3>
+          <div style="font-size:12px;color:var(--sub)">
+            <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>MACHAP独立ポータル構築 + 大会データビューア + ポータル充実化</div><div class="activity-time">2026.03.05</div></div></div>
+            <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>SP Portal統合管理ポータル構築、大会キュー69件自動処理、モルハブTOP改修提案書</div><div class="activity-time">2026.03.04</div></div></div>
+            <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>シーズン大会 & 新人年間王ページ分割、appsカタログ棚卸し</div><div class="activity-time">2026.03.04</div></div></div>
+            <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>チームライド配車アプリ構築（RSVP・自動配車・QA 4ラウンド完了）</div><div class="activity-time">2026.03.03</div></div></div>
+            <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>日本選手権トラッカー構築、IFTTT動作確認、molkky-admin統合管理パネル</div><div class="activity-time">2026.03.02</div></div></div>
+            <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>セキュリティ修正（APIキー非公開化）、大会RSS自動収集GAS</div><div class="activity-time">2026.03.01</div></div></div>
+            <div class="activity-item"><div class="activity-dot" style="background:var(--blue)"></div><div style="flex:1"><div>パートナーLP、向上委員会ダッシュボード、ナイモル結果HTML生成ツール構築</div><div class="activity-time">2026.02.28</div></div></div>
+            <div class="activity-item"><div class="activity-dot" style="background:var(--blue)"></div><div style="flex:1"><div>レシピBOX URL取込機能、ダークテーマスライド、パートナー記事投稿</div><div class="activity-time">2026.02.27</div></div></div>
           </div>
         </div>
 
@@ -558,128 +577,81 @@ tr:hover { background: rgba(255,255,255,0.02); }
         </div>
       </div>
 
-      <!-- ===== MACHAP ===== -->
-      <div class="section" id="sec-machap">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-          <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#1A56DB,#06B6D4);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:#fff">M</div>
-          <div>
-            <div style="font-size:18px;font-weight:700">MACHAP — マチャップ</div>
-            <div style="font-size:12px;color:var(--sub)">アイデアを1週間でプロダクト化するチーム</div>
+      <!-- ===== TOURNAMENT DATA VIEWER ===== -->
+      <div class="section" id="sec-tdata">
+        <!-- Stats -->
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-value" style="color:var(--blue)" id="tdTotal">-</div>
+            <div class="stat-label">WP大会総数</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" style="color:var(--green)" id="tdPublish">-</div>
+            <div class="stat-label">公開中</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" style="color:var(--orange)" id="tdDraft">-</div>
+            <div class="stat-label">下書き</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" style="color:var(--red)" id="tdWarnings">-</div>
+            <div class="stat-label">要確認</div>
           </div>
         </div>
 
-        <!-- 5STEP Cycle -->
-        <div class="card">
-          <h3>5STEP サイクル</h3>
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
-            <span class="pill" style="background:rgba(26,86,219,0.15);color:#4a90e2;border:1px solid rgba(26,86,219,0.3);font-size:12px;padding:4px 12px">FIND</span>
-            <span style="color:var(--dim)">→</span>
-            <span class="pill" style="background:rgba(124,58,237,0.15);color:#a78bfa;border:1px solid rgba(124,58,237,0.3);font-size:12px;padding:4px 12px">MAKE</span>
-            <span style="color:var(--dim)">→</span>
-            <span class="pill" style="background:var(--cyan-dim);color:var(--cyan);border:1px solid rgba(6,182,212,0.3);font-size:12px;padding:4px 12px">OFFER</span>
-            <span style="color:var(--dim)">→</span>
-            <span class="pill" style="background:var(--orange-dim);color:var(--orange);border:1px solid rgba(245,158,11,0.3);font-size:12px;padding:4px 12px">PRESENT</span>
-            <span style="color:var(--dim)">→</span>
-            <span class="pill" style="background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,0.3);font-size:12px;padding:4px 12px">CONSULT</span>
-          </div>
-          <div style="font-size:13px;color:var(--sub);line-height:1.7">
-            FIND（課題発見）→ MAKE（プロダクト化）→ OFFER（提供）→ PRESENT（発信）→ CONSULT（相談）<br>
-            このサイクルを高速で回し、1週間でアイデアをプロダクトに変える。
-          </div>
-        </div>
-
-        <!-- Phase Progress -->
+        <!-- Filters -->
         <div class="card">
           <div class="card-header">
-            <h3>フェーズ進捗</h3>
-            <button class="btn btn-sm btn-outline" onclick="saveMachapProgress()">保存</button>
+            <h3>大会データ一覧</h3>
+            <button class="btn btn-sm btn-outline" onclick="loadTournamentData(1)">更新</button>
           </div>
-          <div id="machapPhases">
-            <div class="project-phase">
-              <div class="phase-header">
-                <span class="pill pill-green">Phase 1</span>
-                <span style="font-size:13px;font-weight:600;flex:1">箱を作る</span>
-                <span style="font-size:12px;color:var(--sub)" id="mp1Pct">70%</span>
-              </div>
-              <div class="phase-bar"><div class="phase-fill" id="mp1Bar" style="width:70%;background:var(--green)"></div></div>
-              <div class="phase-tasks">
-                <div><input type="checkbox" checked disabled style="width:auto"> 事業計画書 v1 作成</div>
-                <div><input type="checkbox" checked disabled style="width:auto"> スライドプレゼン作成</div>
-                <div><input type="checkbox" checked disabled style="width:auto"> チーム体制確定（サノ・中・ししょー）</div>
-                <div><input type="checkbox" id="mp1t4" style="width:auto" onchange="updateMachapProgress()"> FINDテンプレート構築</div>
-                <div><input type="checkbox" id="mp1t5" style="width:auto" onchange="updateMachapProgress()"> 初回案件の実行</div>
-              </div>
-            </div>
-            <div class="project-phase">
-              <div class="phase-header">
-                <span class="pill pill-orange">Phase 2</span>
-                <span style="font-size:13px;font-weight:600;flex:1">横展開</span>
-                <span style="font-size:12px;color:var(--sub)" id="mp2Pct">0%</span>
-              </div>
-              <div class="phase-bar"><div class="phase-fill" id="mp2Bar" style="width:0%;background:var(--orange)"></div></div>
-              <div class="phase-tasks">
-                <div><input type="checkbox" id="mp2t1" style="width:auto" onchange="updateMachapProgress()"> 3案件の実績作成</div>
-                <div><input type="checkbox" id="mp2t2" style="width:auto" onchange="updateMachapProgress()"> 事例記事の発信</div>
-                <div><input type="checkbox" id="mp2t3" style="width:auto" onchange="updateMachapProgress()"> 価格モデル確定</div>
-              </div>
-            </div>
-            <div class="project-phase">
-              <div class="phase-header">
-                <span class="pill pill-accent">Phase 3</span>
-                <span style="font-size:13px;font-weight:600;flex:1">仕組み化</span>
-                <span style="font-size:12px;color:var(--sub)" id="mp3Pct">0%</span>
-              </div>
-              <div class="phase-bar"><div class="phase-fill" id="mp3Bar" style="width:0%;background:var(--accent)"></div></div>
-              <div class="phase-tasks">
-                <div><input type="checkbox" id="mp3t1" style="width:auto" onchange="updateMachapProgress()"> 定常業務フロー確立</div>
-                <div><input type="checkbox" id="mp3t2" style="width:auto" onchange="updateMachapProgress()"> 法人化検討</div>
-                <div><input type="checkbox" id="mp3t3" style="width:auto" onchange="updateMachapProgress()"> パートナー獲得</div>
-              </div>
-            </div>
+          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+            <input type="text" id="tdSearch" placeholder="検索..." style="width:180px;padding:5px 10px;font-size:12px" onkeydown="if(event.key==='Enter')loadTournamentData(1)">
+            <select id="tdAreaFilter" style="width:auto;padding:5px 8px;font-size:12px" onchange="loadTournamentData(1)">
+              <option value="">全都道府県</option>
+            </select>
+            <select id="tdStatusFilter" style="width:auto;padding:5px 8px;font-size:12px" onchange="loadTournamentData(1)">
+              <option value="">全ステータス</option>
+              <option value="publish">公開</option>
+              <option value="draft">下書き</option>
+            </select>
+            <select id="tdCheckFilter" style="width:auto;padding:5px 8px;font-size:12px" onchange="applyTdFilters()">
+              <option value="">全件</option>
+              <option value="warnings">要確認のみ</option>
+            </select>
+            <select id="tdSort" style="width:auto;padding:5px 8px;font-size:12px" onchange="loadTournamentData(1)">
+              <option value="date">投稿日順</option>
+              <option value="event_date">開催日順</option>
+              <option value="title">名前順</option>
+            </select>
+          </div>
+          <div id="tdList">
+            <div class="empty">左上の更新ボタンまたはセクション表示で自動読み込み</div>
+          </div>
+          <div id="tdPagination" style="display:flex;gap:8px;justify-content:center;margin-top:12px"></div>
+        </div>
+
+        <!-- Detail / Edit Panel -->
+        <div class="card" id="tdDetailCard" style="display:none">
+          <div class="card-header">
+            <h3 id="tdDetailTitle">大会詳細</h3>
+            <button class="btn btn-sm btn-outline" onclick="document.getElementById('tdDetailCard').style.display='none'">閉じる</button>
+          </div>
+          <div id="tdDetailBody"></div>
+        </div>
+
+        <!-- Monthly Stats -->
+        <div class="card">
+          <h3>月別投稿数</h3>
+          <div id="tdMonthlyChart" style="display:flex;align-items:end;gap:4px;height:120px;padding-top:20px">
+            <div class="empty" style="width:100%">データ読み込み後に表示</div>
           </div>
         </div>
 
-        <!-- Team -->
+        <!-- Prefecture Stats -->
         <div class="card">
-          <h3>チーム</h3>
-          <div style="display:flex;gap:20px;flex-wrap:wrap">
-            <div style="display:flex;align-items:center;gap:10px">
-              <div style="width:40px;height:40px;border-radius:10px;background:#1A56DB;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff">サ</div>
-              <div><div style="font-size:13px;font-weight:600">サノ</div><div style="font-size:11px;color:var(--sub)">全体管理＋コンセプト展開</div></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px">
-              <div style="width:40px;height:40px;border-radius:10px;background:#06B6D4;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff">中</div>
-              <div><div style="font-size:13px;font-weight:600">中</div><div style="font-size:11px;color:var(--sub)">プロダクト開発＋各フェーズ主導</div></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px">
-              <div style="width:40px;height:40px;border-radius:10px;background:#F97316;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff">師</div>
-              <div><div style="font-size:13px;font-weight:600">ししょー</div><div style="font-size:11px;color:var(--sub)">意見出し＋拡散</div></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Documents -->
-        <div class="card">
-          <h3>ドキュメント</h3>
-          <div class="links-grid">
-            <a class="link-card" href="https://jonyjean21.github.io/sp-projects/apps/machap/plan.html" target="_blank">
-              <span class="link-icon">&#128196;</span>
-              <div><div>事業計画スライド</div><div style="font-size:11px;color:var(--sub)">13ページのプレゼン</div></div>
-            </a>
-            <a class="link-card" href="https://jonyjean21.github.io/sp-projects/apps/machap/" target="_blank">
-              <span class="link-icon">&#127968;</span>
-              <div><div>MACHAPランディングページ</div><div style="font-size:11px;color:var(--sub)">概要・チーム紹介</div></div>
-            </a>
-          </div>
-        </div>
-
-        <!-- Notes -->
-        <div class="card">
-          <h3>メモ・議事録</h3>
-          <textarea id="machapNotes" rows="6" placeholder="MACHAPに関するメモを自由に記録..." style="font-size:13px"></textarea>
-          <div class="btn-row" style="margin-top:8px">
-            <button class="btn btn-sm btn-primary" onclick="saveMachapNotes()">保存</button>
-          </div>
+          <h3>都道府県別</h3>
+          <div id="tdPrefStats" style="font-size:12px;color:var(--sub)">データ読み込み後に表示</div>
         </div>
       </div>
 
@@ -688,7 +660,7 @@ tr:hover { background: rgba(255,255,255,0.02); }
         <div class="card" style="border:none;background:none;padding:0">
           <div class="card-header" style="margin-bottom:16px">
             <h3 style="font-size:16px">プロダクト一覧</h3>
-            <span class="pill pill-green">18 公開中</span>
+            <span class="pill pill-green">19 公開中</span>
             <span class="pill pill-accent">4 自動化</span>
           </div>
         </div>
@@ -886,7 +858,7 @@ const PRODUCTS = {
   tools: [
     { name: 'レシピBOX', desc: '料理レシピ管理+カレンダー', url: PAGES_BASE+'/recipe/', tags: ['Pages','Live'], color: 'green' },
     { name: 'CC Monitor', desc: 'Claude Codeトークン使用量', url: '', tags: ['Python','CLI'], color: 'dim' },
-    { name: 'MACHAP', desc: 'マチャップ事業計画', url: PAGES_BASE+'/apps/machap/', tags: ['Pages'], color: 'blue' },
+    { name: 'MACHAP Portal', desc: 'マチャップ独立管理ポータル', url: PAGES_BASE+'/machap-portal/', tags: ['Pages','Live'], color: 'blue' },
   ],
   auto: [
     { name: 'GAS 大会収集', desc: 'RSS自動取得（JMA+こくちーず）', url: '', tags: ['GAS','毎日9時'], color: 'blue' },
@@ -904,10 +876,10 @@ let _tQueueTweets = {};
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('ja-JP');
   initAreaSelect('tfArea');
+  initAreaSelect('tdAreaFilter');
   restoreAuth();
   loadDashboard();
   renderProducts();
-  restoreMachap();
 });
 
 // ===== Navigation =====
@@ -918,11 +890,12 @@ function showSection(id) {
   const navItem = document.querySelector(`.nav-item[data-section="${id}"]`);
   if (navItem) navItem.classList.add('active');
 
-  const titles = { dashboard:'ダッシュボード', articles:'記事管理', tournaments:'大会情報', xpost:'Xポスト生成', analytics:'アナリティクス', machap:'MACHAP プロジェクト', products:'プロダクト一覧', automation:'自動化パイプライン', settings:'設定' };
+  const titles = { dashboard:'ダッシュボード', articles:'記事管理', tournaments:'大会情報', tdata:'大会データ', xpost:'Xポスト生成', analytics:'アナリティクス', products:'プロダクト一覧', automation:'自動化パイプライン', settings:'設定' };
   document.getElementById('pageTitle').textContent = titles[id] || id;
 
   // Lazy load data
   if (id === 'tournaments') loadTournamentQueue();
+  if (id === 'tdata') loadTournamentData(1);
   if (id === 'articles') loadArticles();
   if (id === 'analytics') loadAnalytics();
   if (id === 'automation') loadAutomationStatus();
@@ -1464,56 +1437,258 @@ function renderProducts() {
   }
 }
 
-// ===== MACHAP =====
-function restoreMachap() {
-  const saved = localStorage.getItem('machap_progress');
-  if (saved) {
-    try {
-      const data = JSON.parse(saved);
-      for (const [id, checked] of Object.entries(data.tasks || {})) {
-        const el = document.getElementById(id);
-        if (el) el.checked = checked;
-      }
-    } catch(e) {}
+// ===== Tournament Data Viewer =====
+let _tdCache = [];
+let _tdPage = 1;
+let _tdTotalPages = 1;
+
+async function loadTournamentData(page) {
+  if (!wpAuth) { showAuthModal(); return; }
+  _tdPage = page || 1;
+  const box = document.getElementById('tdList');
+  box.innerHTML = '<div class="empty"><span class="spinner"></span> 大会データ読み込み中...</div>';
+
+  try {
+    const search = document.getElementById('tdSearch').value.trim();
+    const area = document.getElementById('tdAreaFilter').value;
+    const status = document.getElementById('tdStatusFilter').value;
+    const sort = document.getElementById('tdSort').value;
+
+    let endpoint = `/wp-json/wp/v2/tournament?per_page=20&page=${_tdPage}&_fields=id,title,date,status,acf,area,link`;
+    if (status) endpoint += `&status=${status}`; else endpoint += '&status=publish,draft';
+    if (search) endpoint += `&search=${encodeURIComponent(search)}`;
+    if (area) { const areaId = AREAS[area]?.id; if (areaId) endpoint += `&area=${areaId}`; }
+    if (sort === 'title') endpoint += '&orderby=title&order=asc';
+    else endpoint += '&orderby=date&order=desc';
+
+    const res = await fetch(WP + endpoint, { headers: { 'Authorization': 'Basic ' + wpAuth } });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const total = res.headers.get('x-wp-total') || '0';
+    _tdTotalPages = parseInt(res.headers.get('x-wp-totalpages') || '1');
+    const data = await res.json();
+
+    _tdCache = data;
+
+    // Update stats
+    document.getElementById('tdTotal').textContent = total;
+    // Count publish/draft from full totals
+    loadTdStats();
+
+    // Check warnings
+    const warnings = data.filter(t => tdCheckWarnings(t).length > 0);
+    document.getElementById('tdWarnings').textContent = warnings.length;
+
+    applyTdFilters();
+    renderTdPagination();
+    renderTdMonthly(data);
+    renderTdPrefecture(data);
+  } catch(e) {
+    box.innerHTML = `<div class="empty" style="color:var(--red)">取得失敗: ${e.message}</div>`;
   }
-  const notes = localStorage.getItem('machap_notes');
-  if (notes) document.getElementById('machapNotes').value = notes;
-  updateMachapProgress();
 }
 
-function updateMachapProgress() {
-  // Phase 1: 3 fixed done + 2 variable
-  const p1Done = 3 + (document.getElementById('mp1t4')?.checked?1:0) + (document.getElementById('mp1t5')?.checked?1:0);
-  const p1Pct = Math.round(p1Done/5*100);
-  document.getElementById('mp1Pct').textContent = p1Pct+'%';
-  document.getElementById('mp1Bar').style.width = p1Pct+'%';
-
-  // Phase 2
-  const p2ids = ['mp2t1','mp2t2','mp2t3'];
-  const p2Done = p2ids.filter(id => document.getElementById(id)?.checked).length;
-  const p2Pct = Math.round(p2Done/3*100);
-  document.getElementById('mp2Pct').textContent = p2Pct+'%';
-  document.getElementById('mp2Bar').style.width = p2Pct+'%';
-
-  // Phase 3
-  const p3ids = ['mp3t1','mp3t2','mp3t3'];
-  const p3Done = p3ids.filter(id => document.getElementById(id)?.checked).length;
-  const p3Pct = Math.round(p3Done/3*100);
-  document.getElementById('mp3Pct').textContent = p3Pct+'%';
-  document.getElementById('mp3Bar').style.width = p3Pct+'%';
+async function loadTdStats() {
+  try {
+    const [pub, dra] = await Promise.all([
+      fetch(WP + '/wp-json/wp/v2/tournament?per_page=1&status=publish', { headers: { 'Authorization': 'Basic ' + wpAuth } }),
+      fetch(WP + '/wp-json/wp/v2/tournament?per_page=1&status=draft', { headers: { 'Authorization': 'Basic ' + wpAuth } })
+    ]);
+    document.getElementById('tdPublish').textContent = pub.headers.get('x-wp-total') || '0';
+    document.getElementById('tdDraft').textContent = dra.headers.get('x-wp-total') || '0';
+  } catch(e) {}
 }
 
-function saveMachapProgress() {
-  const taskIds = ['mp1t4','mp1t5','mp2t1','mp2t2','mp2t3','mp3t1','mp3t2','mp3t3'];
-  const tasks = {};
-  taskIds.forEach(id => { const el = document.getElementById(id); if (el) tasks[id] = el.checked; });
-  localStorage.setItem('machap_progress', JSON.stringify({ tasks, updated: new Date().toISOString() }));
-  showToast('MACHAP進捗を保存しました');
+function tdCheckWarnings(t) {
+  const warns = [];
+  const acf = t.acf || {};
+  if (!acf.event_date) warns.push('開催日なし');
+  else {
+    const ed = acf.event_date;
+    if (ed.length === 8) {
+      const d = new Date(ed.slice(0,4)+'-'+ed.slice(4,6)+'-'+ed.slice(6,8));
+      const oneYearAgo = new Date(); oneYearAgo.setFullYear(oneYearAgo.getFullYear()-1);
+      if (d < oneYearAgo) warns.push('1年以上前');
+    }
+  }
+  if (!t.area || t.area.length === 0) warns.push('都道府県なし');
+  const title = t.title?.rendered || '';
+  if (!title.includes('モルック') && !title.includes('Mölkky') && !title.includes('molkky')) warns.push('モルック不含');
+  // Duplicate check within current page
+  const sameDate = _tdCache.filter(o => o.id !== t.id && o.acf?.event_date === acf.event_date && acf.event_date);
+  if (sameDate.length > 0) {
+    const sameArea = sameDate.filter(o => {
+      const oArea = o.area || [];
+      const tArea = t.area || [];
+      return oArea.some(a => tArea.includes(a));
+    });
+    if (sameArea.length > 0) warns.push('重複疑い');
+  }
+  return warns;
 }
 
-function saveMachapNotes() {
-  localStorage.setItem('machap_notes', document.getElementById('machapNotes').value);
-  showToast('メモを保存しました');
+function applyTdFilters() {
+  const checkFilter = document.getElementById('tdCheckFilter').value;
+  let items = [..._tdCache];
+  if (checkFilter === 'warnings') items = items.filter(t => tdCheckWarnings(t).length > 0);
+
+  const sort = document.getElementById('tdSort').value;
+  if (sort === 'event_date') {
+    items.sort((a,b) => {
+      const ad = a.acf?.event_date || ''; const bd = b.acf?.event_date || '';
+      return bd.localeCompare(ad);
+    });
+  }
+
+  renderTdList(items);
+}
+
+function renderTdList(items) {
+  const box = document.getElementById('tdList');
+  if (items.length === 0) { box.innerHTML = '<div class="empty">該当する大会データはありません</div>'; return; }
+
+  const areaMap = {};
+  for (const [name, info] of Object.entries(AREAS)) areaMap[info.id] = name;
+
+  box.innerHTML = '<div class="table-wrap"><table><thead><tr><th>ID</th><th>大会名</th><th>開催日</th><th>地域</th><th>主催</th><th>状態</th><th>チェック</th></tr></thead><tbody>' +
+    items.map(t => {
+      const acf = t.acf || {};
+      const title = (t.title?.rendered || '').replace(/<[^>]*>/g, '');
+      const ed = acf.event_date || '';
+      const eventDate = ed.length === 8 ? `${ed.slice(0,4)}/${ed.slice(4,6)}/${ed.slice(6,8)}` : '-';
+      const areas = (t.area || []).map(id => areaMap[id] || '').filter(Boolean).join(', ') || acf.location || '-';
+      const warns = tdCheckWarnings(t);
+      const warnHtml = warns.length > 0 ? warns.map(w => `<span class="pill pill-red" style="font-size:9px">${w}</span>`).join(' ') : '<span class="pill pill-green" style="font-size:9px">OK</span>';
+      return `<tr style="cursor:pointer" onclick="showTdDetail(${t.id})"><td>${t.id}</td><td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(title)}</td><td style="white-space:nowrap">${eventDate}</td><td>${escapeHtml(areas)}</td><td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(acf.organizer||'-')}</td><td><span class="pill pill-${t.status==='publish'?'green':'orange'}">${t.status}</span></td><td>${warnHtml}</td></tr>`;
+    }).join('') + '</tbody></table></div>';
+}
+
+function renderTdPagination() {
+  const box = document.getElementById('tdPagination');
+  if (_tdTotalPages <= 1) { box.innerHTML = ''; return; }
+  let html = '';
+  if (_tdPage > 1) html += `<button class="btn btn-sm btn-outline" onclick="loadTournamentData(${_tdPage-1})">&#9664; Prev</button>`;
+  html += `<span style="font-size:12px;color:var(--sub);padding:4px 8px">${_tdPage} / ${_tdTotalPages}</span>`;
+  if (_tdPage < _tdTotalPages) html += `<button class="btn btn-sm btn-outline" onclick="loadTournamentData(${_tdPage+1})">Next &#9654;</button>`;
+  box.innerHTML = html;
+}
+
+function showTdDetail(id) {
+  const t = _tdCache.find(x => x.id === id);
+  if (!t) return;
+  const acf = t.acf || {};
+  const areaMap = {};
+  for (const [name, info] of Object.entries(AREAS)) areaMap[info.id] = name;
+  const areas = (t.area || []).map(a => areaMap[a] || '').filter(Boolean).join(', ');
+  const title = (t.title?.rendered || '').replace(/<[^>]*>/g, '');
+  const ed = acf.event_date || '';
+  const eventDateFmt = ed.length === 8 ? `${ed.slice(0,4)}-${ed.slice(4,6)}-${ed.slice(6,8)}` : '';
+
+  document.getElementById('tdDetailTitle').textContent = title;
+  document.getElementById('tdDetailCard').style.display = 'block';
+
+  const warns = tdCheckWarnings(t);
+  const warnHtml = warns.length > 0 ? `<div style="margin-bottom:12px;padding:8px;background:var(--red-dim);border:1px solid rgba(239,68,68,0.3);border-radius:8px;font-size:12px;color:var(--red)">${warns.join(' / ')}</div>` : '';
+
+  document.getElementById('tdDetailBody').innerHTML = `
+    ${warnHtml}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px">
+      <div class="field"><label>大会名</label><input type="text" id="tde_title" value="${escapeHtml(title)}"></div>
+      <div class="field"><label>開催日</label><input type="date" id="tde_date" value="${eventDateFmt}"></div>
+      <div class="field"><label>都道府県</label><select id="tde_area"><option value="">-- 選択 --</option>${Object.keys(AREAS).map(n=>`<option value="${n}" ${n===areas?'selected':''}>${n}</option>`).join('')}</select></div>
+      <div class="field"><label>主催者</label><input type="text" id="tde_organizer" value="${escapeHtml(acf.organizer||'')}"></div>
+      <div class="field"><label>SNSリンク</label><input type="url" id="tde_sns" value="${escapeHtml(acf.sns_link||'')}"></div>
+      <div class="field"><label>詳細リンク</label><input type="url" id="tde_detail" value="${escapeHtml(acf.detail_link||'')}"></div>
+      <div class="field"><label>規模</label><input type="text" id="tde_scale" value="${escapeHtml(acf.scale||'')}"></div>
+      <div class="field"><label>ステータス</label><select id="tde_status"><option value="publish" ${t.status==='publish'?'selected':''}>公開</option><option value="draft" ${t.status==='draft'?'selected':''}>下書き</option></select></div>
+    </div>
+    <div style="display:flex;gap:16px;margin:8px 0">
+      <label style="display:flex;align-items:center;gap:6px;margin:0"><input type="checkbox" id="tde_beginner" ${acf.beginner_friendly?'checked':''} style="width:auto"> 初心者歓迎</label>
+      <label style="display:flex;align-items:center;gap:6px;margin:0"><input type="checkbox" id="tde_official" ${acf.official?'checked':''} style="width:auto"> 公式大会</label>
+    </div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-primary" onclick="saveTdEdit(${t.id})">保存</button>
+      <a class="btn btn-outline" href="${WP}/wp-admin/post.php?post=${t.id}&action=edit" target="_blank" style="text-decoration:none">WP管理画面で編集</a>
+      <a class="btn btn-outline" href="${t.link||''}" target="_blank" style="text-decoration:none">公開ページ表示</a>
+    </div>
+    <div id="tde_result" style="margin-top:8px;font-size:12px"></div>
+  `;
+  document.getElementById('tdDetailCard').scrollIntoView({behavior:'smooth'});
+}
+
+async function saveTdEdit(id) {
+  if (!wpAuth) { showAuthModal(); return; }
+  const box = document.getElementById('tde_result');
+  box.innerHTML = '<span class="spinner"></span> 保存中...';
+
+  const title = document.getElementById('tde_title').value.trim();
+  const dateVal = document.getElementById('tde_date').value;
+  const area = document.getElementById('tde_area').value;
+  const eventDate = dateVal ? dateVal.replace(/-/g, '') : '';
+  const areaId = AREAS[area]?.id;
+
+  try {
+    const body = {
+      title,
+      status: document.getElementById('tde_status').value,
+      area: areaId ? [areaId] : [],
+      acf: {
+        event_date: eventDate,
+        location: area,
+        organizer: document.getElementById('tde_organizer').value.trim(),
+        sns_link: document.getElementById('tde_sns').value.trim(),
+        detail_link: document.getElementById('tde_detail').value.trim(),
+        scale: document.getElementById('tde_scale').value.trim(),
+        beginner_friendly: document.getElementById('tde_beginner').checked,
+        official: document.getElementById('tde_official').checked
+      }
+    };
+
+    const { data } = await wpFetch(`/wp-json/wp/v2/tournament/${id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    box.innerHTML = '<span style="color:var(--green)">保存完了!</span>';
+    showToast('大会情報を更新しました');
+    // Refresh data
+    setTimeout(() => loadTournamentData(_tdPage), 1000);
+  } catch(e) {
+    box.innerHTML = `<span style="color:var(--red)">保存失敗: ${e.message}</span>`;
+  }
+}
+
+function renderTdMonthly(items) {
+  const box = document.getElementById('tdMonthlyChart');
+  const months = {};
+  items.forEach(t => {
+    const d = new Date(t.date);
+    const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+    months[key] = (months[key] || 0) + 1;
+  });
+  const sorted = Object.entries(months).sort((a,b) => a[0].localeCompare(b[0]));
+  if (sorted.length === 0) { box.innerHTML = '<div class="empty" style="width:100%">データなし</div>'; return; }
+  const max = Math.max(...sorted.map(([,v]) => v));
+  box.innerHTML = sorted.map(([k,v]) => {
+    const pct = Math.max(8, v / max * 100);
+    const label = k.slice(5);
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div style="width:100%;height:${pct}%;background:var(--accent);border-radius:4px 4px 0 0;min-height:4px"></div><div style="font-size:10px;color:var(--sub)">${label}月</div><div style="font-size:10px;color:var(--text);font-weight:600">${v}</div></div>`;
+  }).join('');
+}
+
+function renderTdPrefecture(items) {
+  const box = document.getElementById('tdPrefStats');
+  const areaMap = {};
+  for (const [name, info] of Object.entries(AREAS)) areaMap[info.id] = name;
+  const counts = {};
+  items.forEach(t => {
+    (t.area || []).forEach(a => {
+      const name = areaMap[a];
+      if (name) counts[name] = (counts[name] || 0) + 1;
+    });
+  });
+  const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
+  if (sorted.length === 0) { box.innerHTML = 'データなし'; return; }
+  box.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:6px">' + sorted.map(([k,v]) => `<span class="pill pill-dim">${k} <strong>${v}</strong></span>`).join('') + '</div>';
 }
 
 function exportSettings() {
