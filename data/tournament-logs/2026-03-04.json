@@ -1,0 +1,572 @@
+{
+  "date": "2026-03-04",
+  "total_processed": 69,
+  "summary": {
+    "posted": 15,
+    "skipped": 41,
+    "duplicate_queue": 6,
+    "duplicate_wp": 8
+  },
+  "processed": [
+    {
+      "url": "https://twitter.com/kuwana_molkky/status/2028533753057034478",
+      "title": "桑名モルック体験会",
+      "action": "posted",
+      "post_id": 6461,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/dabi_suke_zoo/status/2028745529589702661",
+      "title": "第1回北の女王決定戦",
+      "action": "posted",
+      "post_id": 6462,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/trialpark_0702/status/2029048052800180280",
+      "title": "ゆるっとモルック大会 in トライアルパーク蒲原",
+      "action": "posted",
+      "post_id": 6463,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/molkkycalendar/status/2028989588686205363",
+      "title": "JMAビーチモルックJBGFおだいば大会2026",
+      "action": "posted",
+      "post_id": 6464,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/kofukeizai/status/2028630864977125763",
+      "title": "金手GOLDCUP モルック交流大会",
+      "action": "posted",
+      "post_id": 6465,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/mollabonoishida/status/2028806180873929105",
+      "title": "黄巾ノ乱2026(春)",
+      "action": "posted",
+      "post_id": 6466,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/jimohack_shonan/status/2028762305459032347",
+      "title": "OUTDOOR FESTA CHIGASAKI",
+      "action": "posted",
+      "post_id": 6467,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/luminus637/status/2028631716156555595",
+      "title": "防府モルック大会",
+      "action": "posted",
+      "post_id": 6468,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/oyanavi_oyama/status/2029015842676195451",
+      "title": "子育て世代の広域ごはん会〜芋煮×モルック〜",
+      "action": "posted",
+      "post_id": 6469,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/aioutaou/status/2028953724962611662",
+      "title": "根室モルック大会",
+      "action": "posted",
+      "post_id": 6470,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/molkkyYONAGO/status/2028801407420387613",
+      "title": "第3回モルックYONAGO CUP",
+      "action": "posted",
+      "post_id": 6471,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/kyoryokushibata/status/2028625705358217265",
+      "title": "新発田モルックサークル体験会",
+      "action": "posted",
+      "post_id": 6472,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/yatomi_city/status/2029029062845579539",
+      "title": "ENJOY SPORTS DAY 弥富",
+      "action": "posted",
+      "post_id": 6473,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/fukushimaMolkky/status/2029113840701722830",
+      "title": "だるまモルックリーグ 卯月の陣",
+      "action": "posted",
+      "post_id": 6474,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/fukushimaMolkky/status/2029113840701722830",
+      "title": "モルックしらかわんCUP",
+      "action": "posted",
+      "post_id": 6475,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/stu48_min/status/2028792607070212526",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "stu48_akb_fan_reaction",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/IslandBrain_/status/2028589233485857085",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "past_event_report",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/HKT_KSDD/status/2028667496107229331",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "stu48_akb_fan_reaction",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/mukogawa_molkky/status/2028697677278683544",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "past_event_results",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/IwasaAtsushi/status/2028802158888648744",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "personal_discussion",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/rakuoshi012/status/2028747106236674128",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "product_ad",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/sohrsohr/status/2028673413779488966",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "youtube_article_sharing",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/PiTiiY3_Forever/status/2028845212160925917",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "empty_tweet",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/r_e_h_d_14/status/2028733596740292960",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "personal_comment",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/wayffhle67/status/2028897385859170448",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "no_info_comment",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/TomattyM61533/status/2028852948282077561",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "past_event_report",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/nice_molkky_jp/status/2029096062871585013",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "personnel_announcement",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/k_cocoa1128/status/2028707099270901916",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "stu48_akb_fan_reaction",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/STU48_official_/status/2028666675038650386",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "stu48_akb_fan_reaction",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/KasamaMolkky/status/2028608676035232083",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "past_event_report",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/ptQSAn48vPv9/status/2028669257710760385",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "no_info_comment",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/dabi_suke_zoo/status/2028821532546564318",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "reply_discussion",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/mukogawa_molkky/status/2028628777920798905",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "world_cup_bidding_news",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/_irumacity/status/2028717256029413481",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "past_event_report",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/wataraseconsa/status/2028815344455016529",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "personal_comment",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/ku8_4m/status/2028668519437697517",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "no_info_comment",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/Atsu_mol2025/status/2029024813663326693",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "empty_tweet",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/kirinji07221/status/2028710115222909124",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "stu48_akb_fan_reaction",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/ved8x/status/2028799410805825617",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "stu48_akb_fan_reaction",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/shiroiMolkky/status/2028556416961888680",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "article_sharing",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/hide_tauq/status/2028668075500007857",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "no_info_comment",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/amamiasf2019/status/2028968667455627536",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "past_event_report",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/ike92700376/status/2028724814211666108",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "personal_comment",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/dabi_suke_zoo/status/2029011532710068601",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "competition_preparation_discussion",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/takazawa/status/2028670115844370919",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "stu48_akb_fan_reaction",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/PiTiiY3_Forever/status/2028843970575597826",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "empty_tweet",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/atsuosso65/status/2028726241420091723",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "stu48_akb_fan_reaction",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/MollkyUMI/status/2029006904383660178",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "reply_thanks",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/molkkycalendar/status/2028700131957334497",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "team_pr_article",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/kuwana_molkky/status/2028533846023798993",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "activity_report_no_event",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/ups_setagaya/status/2028727074798579877",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "facility_usage_notice",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/TakaSan48555/status/2028849222746042706",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "stu48_akb_fan_reaction",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/xp2GR3LAzIbPm63/status/2028808582763028824",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "product_ad",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/nice_molkky_jp/status/2029025880551637471",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "empty_tweet",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/kanmingoudou_T/status/2029005293338906625",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "past_event_report",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/dabi_suke_zoo/status/2028764856502124826",
+      "title": "",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "personal_comment_basketball",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/konoike_molkky/status/2029116406244246010",
+      "title": "鴻ノ池カップ",
+      "action": "duplicate",
+      "source": "ifttt-x-search",
+      "skip_reason": "duplicate_of_nara_molkky",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/kiyasume709/status/2028615413488312529",
+      "title": "OYUMUSUBI CUP",
+      "action": "duplicate",
+      "source": "ifttt-x-search",
+      "skip_reason": "duplicate_of_spasauna_joso",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/yatomi_kyouiku/status/2028682471123104014",
+      "title": "ENJOY SPORTS DAY",
+      "action": "duplicate",
+      "source": "ifttt-x-search",
+      "skip_reason": "duplicate_of_yatomi_city",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/kushiroshimbun/status/2028947400115798150",
+      "title": "根室モルック大会",
+      "action": "duplicate",
+      "source": "ifttt-x-search",
+      "skip_reason": "duplicate_of_aioutaou",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/Atsu_mol2025/status/2029157502726885490",
+      "title": "厚木カップ",
+      "action": "duplicate",
+      "source": "ifttt-x-search",
+      "skip_reason": "duplicate_second_tweet",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/nice_molkky_jp/status/2029027938302308406",
+      "title": "厚木カップ",
+      "action": "duplicate",
+      "source": "ifttt-x-search",
+      "skip_reason": "duplicate_of_atsu_mol2025",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/nara_molkky/status/2029116897376215516",
+      "title": "第12回モルック鴻ノ池カップ",
+      "action": "duplicate",
+      "source": "ifttt-x-search",
+      "skip_reason": "already_in_wp_id_4619",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/ymt_ban/status/2028981546640888085",
+      "title": "第2回下呂温泉モルックフェスティバル",
+      "action": "duplicate",
+      "source": "ifttt-x-search",
+      "skip_reason": "already_in_wp_id_6444",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/Atsu_mol2025/status/2029026387315835124",
+      "title": "モルック厚木カップ2026",
+      "action": "duplicate",
+      "source": "ifttt-x-search",
+      "skip_reason": "already_in_wp_id_6459",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/ishimol_KNZ_JO/status/2029131409194144173",
+      "title": "第2回モルック金沢城オープン",
+      "action": "duplicate",
+      "source": "ifttt-x-search",
+      "skip_reason": "already_in_wp_id_6460",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/okasposokuho/status/2028835493543333946",
+      "title": "モルック合戦岡山の陣 第壱章",
+      "action": "duplicate",
+      "source": "ifttt-x-search",
+      "skip_reason": "already_in_wp_id_5007",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/human_bridger/status/2029131121565548926",
+      "title": "全国小中学生モルック大会2nd",
+      "action": "duplicate",
+      "source": "ifttt-x-search",
+      "skip_reason": "already_in_wp_id_4484",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/spasauna_joso/status/2028714262408167637",
+      "title": "OYUMUSUBI CUP vol.6",
+      "action": "duplicate",
+      "source": "ifttt-x-search",
+      "skip_reason": "already_in_wp_id_6458",
+      "timestamp": "2026-03-04T15:01:50Z"
+    },
+    {
+      "url": "https://twitter.com/molkkyYONAGO/status/2029036476563112438",
+      "title": "山陰シングルス 卯月戦",
+      "action": "duplicate",
+      "source": "ifttt-x-search",
+      "skip_reason": "already_in_wp_id_4392",
+      "timestamp": "2026-03-04T15:01:50Z"
+    }
+  ]
+}
