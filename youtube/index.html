@@ -962,15 +962,11 @@ input {
 
     <div class="connect-form">
       <div class="form-group">
-        <label>YouTube API キー</label>
-        <input type="password" id="input-api-key" placeholder="AIza...">
-      </div>
-      <div class="form-group">
         <label>チャンネル ID または URL</label>
-        <input type="text" id="input-channel" placeholder="UCxxxxxx... または https://youtube.com/@...">
+        <input type="text" id="input-channel" placeholder="@username または https://youtube.com/@...">
       </div>
       <div class="connect-buttons">
-        <button class="btn-primary" onclick="handleConnect()">接続する</button>
+        <button class="btn-primary" onclick="handleConnect()">分析する</button>
         <button class="btn-secondary" onclick="startDemo()">デモで試す</button>
       </div>
       <div class="connect-error" id="connect-error"></div>
@@ -978,22 +974,8 @@ input {
 
     <div class="connect-info">
       <div class="info-icon">i</div>
-      <div>APIキーはブラウザのlocalStorageに保存されます。外部サーバーには一切送信しません。</div>
+      <div>チャンネルURL、@ハンドル、チャンネルIDのいずれかを入力してください。</div>
     </div>
-
-    <details class="connect-guide">
-      <summary>📖 APIキーの取得方法</summary>
-      <div class="guide-steps">
-        <ol>
-          <li><a href="https://console.cloud.google.com/" target="_blank" rel="noopener">Google Cloud Console</a> にアクセス</li>
-          <li>新しいプロジェクトを作成（または既存のものを選択）</li>
-          <li>「APIとサービス」→「ライブラリ」</li>
-          <li>「YouTube Data API v3」を検索して有効化</li>
-          <li>「認証情報」→「認証情報を作成」→「APIキー」</li>
-          <li>作成されたキーをコピーして上に貼り付け</li>
-        </ol>
-      </div>
-    </details>
   </div>
 </div>
 
@@ -1149,12 +1131,8 @@ input {
   <div class="modal">
     <h2>⚙ 設定</h2>
     <div class="form-group">
-      <label>YouTube API キー</label>
-      <input type="password" id="settings-api-key" placeholder="AIza...">
-    </div>
-    <div class="form-group">
-      <label>チャンネル ID</label>
-      <input type="text" id="settings-channel" placeholder="UCxxxxxx...">
+      <label>チャンネル ID または URL</label>
+      <input type="text" id="settings-channel" placeholder="@username または UCxxxxxx...">
     </div>
     <div class="modal-buttons">
       <button class="btn-secondary" onclick="closeSettings()">キャンセル</button>
@@ -1172,7 +1150,6 @@ input {
 // ====================================================================
 let state = {
   isDemo: false,
-  apiKey: '',
   channelId: '',
   channel: null,
   videos: [],
@@ -1296,7 +1273,7 @@ function generateDemoData() {
 // ====================================================================
 // YOUTUBE API
 // ====================================================================
-const YT_API = 'https://www.googleapis.com/youtube/v3';
+const YT_PROXY = 'https://vercel-api-orpin-one.vercel.app/api/youtube-proxy';
 
 function extractChannelId(input) {
   input = input.trim();
@@ -1316,8 +1293,9 @@ function extractChannelId(input) {
 }
 
 async function fetchAPI(endpoint, params) {
-  const url = new URL(YT_API + endpoint);
-  params.key = state.apiKey;
+  const ep = endpoint.replace(/^\//, '');
+  const url = new URL(YT_PROXY);
+  url.searchParams.set('endpoint', ep);
   Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
   const res = await fetch(url.toString());
   if (!res.ok) {
@@ -1404,18 +1382,15 @@ async function fetchAllVideos(channelId) {
 // CONNECTION FLOW
 // ====================================================================
 async function handleConnect() {
-  const apiKey = document.getElementById('input-api-key').value.trim();
   const channelInput = document.getElementById('input-channel').value.trim();
   const errorEl = document.getElementById('connect-error');
   errorEl.style.display = 'none';
 
-  if (!apiKey) { showConnectError('APIキーを入力してください'); return; }
   if (!channelInput) { showConnectError('チャンネルIDまたはURLを入力してください'); return; }
 
   const parsed = extractChannelId(channelInput);
   if (!parsed) { showConnectError('チャンネルIDまたはURLの形式が正しくありません'); return; }
 
-  state.apiKey = apiKey;
   showLoading(true);
 
   try {
@@ -1435,7 +1410,6 @@ async function handleConnect() {
     state.isDemo = false;
 
     // Save to localStorage
-    localStorage.setItem('yt_dash_api_key', apiKey);
     localStorage.setItem('yt_dash_channel_id', ch.id);
 
     // Cache in sessionStorage
@@ -1455,7 +1429,6 @@ function startDemo() {
   state.isDemo = true;
   state.channel = demo.channel;
   state.videos = demo.videos;
-  state.apiKey = '';
   state.channelId = '';
   enterDashboard();
 }
@@ -1483,14 +1456,12 @@ function enterDashboard() {
 }
 
 function disconnect() {
-  localStorage.removeItem('yt_dash_api_key');
   localStorage.removeItem('yt_dash_channel_id');
   sessionStorage.removeItem('yt_dash_cache');
-  state = { isDemo: false, apiKey: '', channelId: '', channel: null, videos: [], currentTab: 'overview', videosSort: 'date', videosPage: 1, videosPerPage: 20, charts: {} };
+  state = { isDemo: false, channelId: '', channel: null, videos: [], currentTab: 'overview', videosSort: 'date', videosPage: 1, videosPerPage: 20, charts: {} };
   document.getElementById('app-shell').style.display = 'none';
   document.getElementById('app-shell').classList.remove('active');
   document.getElementById('connect-screen').style.display = 'flex';
-  document.getElementById('input-api-key').value = '';
   document.getElementById('input-channel').value = '';
 }
 
@@ -1515,7 +1486,6 @@ function updateTimestamp() {
 // SETTINGS MODAL
 // ====================================================================
 function openSettings() {
-  document.getElementById('settings-api-key').value = state.apiKey;
   document.getElementById('settings-channel').value = state.channelId;
   document.getElementById('settings-modal').classList.add('active');
 }
@@ -1525,15 +1495,12 @@ function closeSettings() {
 }
 
 async function saveSettings() {
-  const apiKey = document.getElementById('settings-api-key').value.trim();
   const channelId = document.getElementById('settings-channel').value.trim();
   closeSettings();
 
-  if (!apiKey || !channelId) return;
+  if (!channelId) return;
 
-  state.apiKey = apiKey;
   state.channelId = channelId;
-  localStorage.setItem('yt_dash_api_key', apiKey);
   localStorage.setItem('yt_dash_channel_id', channelId);
 
   showLoading(true);
@@ -2376,7 +2343,6 @@ function escapeHtml(str) {
         state.channel = data.channel;
         state.videos = data.videos;
         state.isDemo = false;
-        state.apiKey = localStorage.getItem('yt_dash_api_key') || '';
         state.channelId = localStorage.getItem('yt_dash_channel_id') || '';
         enterDashboard();
         return;
@@ -2384,10 +2350,8 @@ function escapeHtml(str) {
     } catch(e) { /* ignore parse errors */ }
   }
 
-  // Pre-fill saved credentials
-  const savedKey = localStorage.getItem('yt_dash_api_key');
+  // Pre-fill saved channel
   const savedChannel = localStorage.getItem('yt_dash_channel_id');
-  if (savedKey) document.getElementById('input-api-key').value = savedKey;
   if (savedChannel) document.getElementById('input-channel').value = savedChannel;
 })();
 </script>
