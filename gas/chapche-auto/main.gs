@@ -61,9 +61,9 @@ function checkNewTranscripts() {
 }
 
 function processTranscript_(file, year, month, day, dateLabel) {
-  // テキスト抽出
-  const doc = DocumentApp.openById(file.getId());
-  const fullText = doc.getBody().getText();
+  // テキスト抽出（DriveApp経由 — DocumentAppより権限要件が緩い）
+  const blob = file.getAs('text/plain');
+  const fullText = blob.getDataAsString();
   const marker = fullText.indexOf('📖 文字起こし');
   const notes = marker > 0 ? fullText.substring(0, marker) : fullText.substring(0, 15000);
 
