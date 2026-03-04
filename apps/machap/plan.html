@@ -21,23 +21,14 @@ html, body {
 }
 
 /* Slide container */
-.deck { position: relative; width: 100%; height: 100%; overflow: hidden; }
+.deck { width: 100%; height: 100%; }
 .slide {
-  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  display: flex; flex-direction: column; justify-content: center; align-items: center;
-  padding: 60px 24px 80px; overflow-y: auto;
-  opacity: 0; transform: translateX(60px);
-  transition: opacity 0.35s ease, transform 0.35s ease;
-  pointer-events: none;
+  display: none; flex-direction: column; justify-content: center; align-items: center;
+  width: 100%; height: 100%;
+  padding: 48px 24px 80px; overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
-.slide.active {
-  opacity: 1; transform: translateX(0);
-  pointer-events: auto;
-}
-.slide.exit-left {
-  opacity: 0; transform: translateX(-60px);
-}
+.slide.active { display: flex; }
 .slide-inner {
   width: 100%; max-width: 520px;
 }
@@ -706,40 +697,12 @@ let animating = false;
 
 function go(dir) {
   const next = current + dir;
-  if (next < 0 || next >= total || animating) return;
-  animating = true;
-
-  const cur = slides[current];
-  const nxt = slides[next];
-  const t = 'opacity 0.35s ease, transform 0.35s ease';
-
-  // Position next slide off-screen (no animation)
-  nxt.style.transition = 'none';
-  nxt.style.opacity = '0';
-  nxt.style.transform = dir > 0 ? 'translateX(60px)' : 'translateX(-60px)';
-  nxt.style.pointerEvents = 'auto';
-  void nxt.offsetHeight;
-
-  // Animate both
-  nxt.style.transition = t;
-  cur.style.transition = t;
-  nxt.style.opacity = '1';
-  nxt.style.transform = 'translateX(0)';
-  cur.style.opacity = '0';
-  cur.style.transform = dir > 0 ? 'translateX(-60px)' : 'translateX(60px)';
-  cur.style.pointerEvents = 'none';
-  nxt.scrollTop = 0;
-
+  if (next < 0 || next >= total) return;
+  slides[current].classList.remove('active');
+  slides[next].classList.add('active');
+  slides[next].scrollTop = 0;
   current = next;
   updateNav();
-
-  setTimeout(() => {
-    cur.classList.remove('active');
-    cur.removeAttribute('style');
-    nxt.classList.add('active');
-    nxt.removeAttribute('style');
-    animating = false;
-  }, 380);
 }
 
 function updateNav() {
