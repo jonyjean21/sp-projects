@@ -26,6 +26,7 @@ function checkNewTranscripts() {
   const processedIds = getProcessedIds_();
   const files = folder.getFiles();
   let newCount = 0;
+  const processedDates = {}; // 同一dateLabel重複防止
 
   while (files.hasNext()) {
     const file = files.next();
@@ -41,6 +42,12 @@ function checkNewTranscripts() {
     const [_, year, month, day] = dateMatch;
     const dateLabel = `${year.slice(2)}${month}${day}`;
 
+    // 同一日付の重複防止（1回の実行内）
+    if (processedDates[dateLabel]) {
+      markAsProcessed_(id);
+      continue;
+    }
+
     if (isAlreadyProcessed_(dateLabel)) {
       markAsProcessed_(id);
       continue;
@@ -50,6 +57,7 @@ function checkNewTranscripts() {
       Logger.log(`処理開始: ${name}`);
       processTranscript_(file, year, month, day, dateLabel);
       markAsProcessed_(id);
+      processedDates[dateLabel] = true;
       newCount++;
       Logger.log(`完了: ${dateLabel}`);
     } catch (e) {
@@ -58,6 +66,41 @@ function checkNewTranscripts() {
     }
   }
   Logger.log(`処理完了: ${newCount}件`);
+}
+
+/**
+ * 指定日付のみ再処理（既存Notionページは手動削除前提）
+ * 使い方: processSpecificDates() を実行
+ */
+function processSpecificDates() {
+  const targetDates = ['260226', '260301', '260303'];
+  const folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+  const files = folder.getFiles();
+  const done = {};
+
+  while (files.hasNext()) {
+    const file = files.next();
+    const name = file.getName();
+    const dateMatch = name.match(/(\d{4})\/(\d{2})\/(\d{2})/);
+    if (!dateMatch) continue;
+    if (!name.includes('Gemini') || !name.includes('会議')) continue;
+
+    const [_, year, month, day] = dateMatch;
+    const dateLabel = `${year.slice(2)}${month}${day}`;
+
+    if (!targetDates.includes(dateLabel)) continue;
+    if (done[dateLabel]) continue;
+
+    try {
+      Logger.log(`再処理開始: ${name} → ${dateLabel}`);
+      processTranscript_(file, year, month, day, dateLabel);
+      done[dateLabel] = true;
+      Logger.log(`完了: ${dateLabel}`);
+    } catch (e) {
+      Logger.log(`エラー: ${dateLabel} - ${e.message}`);
+    }
+  }
+  Logger.log(`再処理完了: ${Object.keys(done).length}/${targetDates.length}件`);
 }
 
 function processTranscript_(file, year, month, day, dateLabel) {
@@ -75,7 +118,6 @@ function processTranscript_(file, year, month, day, dateLabel) {
   let fullText;
   const mime = targetFile.getMimeType();
   if (mime === 'application/vnd.google-apps.document') {
-    // Google Docs → Drive APIでテキストエクスポート
     const exported = UrlFetchApp.fetch(
       'https://www.googleapis.com/drive/v3/files/' + targetFile.getId() + '/export?mimeType=text/plain',
       { headers: { 'Authorization': 'Bearer ' + ScriptApp.getOAuthToken() } }
@@ -111,18 +153,23 @@ function callGemini_(notes, year, month, day) {
 - 人名: 「モルックドーム」「中博司」→「中」 / 「master morikawa」→「ししょー」 / 「SP」「サノ」→「サノ」
 - タイムスタンプ (00:xx:xx) は削除
 - 1項目1行、簡潔に
-- 担当者別・プロジェクト別にグルーピング
+- プロジェクト別にグルーピング（担当者名を括弧で付記）
 
 ## JSON形式で出力:
 {
   "time": "開始時刻（例: 21:54）",
   "participants": ["中", "ししょー", "サノ"],
-  "progress": [{"person":"中","projects":[{"name":"PJ名","items":["内容1"]}]}],
-  "discussions": [{"topic":"話題","items":["内容1"]}],
-  "decisions": ["決定事項1"],
+  "decisions": ["決定事項1", "決定事項2"],
   "actions": [{"who":"中","what":"やること"}],
+  "topics": [{"name":"PJ名やトピック（担当者）","items":["内容1","内容2"]}],
   "next_meeting": "未定"
 }
+
+## 出力のポイント
+- decisions（決定事項）は最重要。会議で決まったことを明確に
+- actions（アクションアイテム）は誰が何をするかを明確に
+- topics（議論・進捗メモ）はPJ別にまとめ、担当者名を括弧で付記
+- 不要な情報は省略。簡潔さ重視
 
 ## 入力:
 ${notes.substring(0, 12000)}`;
@@ -146,7 +193,6 @@ ${notes.substring(0, 12000)}`;
   const text = result.candidates[0].content.parts[0].text;
   const parsed = JSON.parse(text);
 
-  // 日付情報を付加
   parsed.date_display = `${year}年${month}月${day}日（${dow}）`;
   return parsed;
 }
@@ -157,49 +203,55 @@ function postToNotion_(dateLabel, m) {
   const config = getConfig_();
   const blocks = [];
 
-  // ヘッダー
-  blocks.push(h2_('チャプ会 議事録'));
+  // 基本情報
+  blocks.push(h2_('基本情報'));
   blocks.push(bullet_(`日時: ${m.date_display} ${m.time || ''}〜`));
   blocks.push(bullet_(`参加: ${(m.participants || ['中','ししょー','サノ']).join(' / ')}`));
-  blocks.push(bullet_('形式: Geminiメモ統合版（自動生成）'));
   blocks.push({ divider: {} });
 
-  // 進捗
-  blocks.push(h2_('プロジェクト進捗報告会'));
-  for (const p of (m.progress || [])) {
-    blocks.push(h3_(`${p.person}担当`));
-    for (const proj of (p.projects || [])) {
-      blocks.push(bold_(proj.name));
-      for (const item of (proj.items || [])) blocks.push(bullet_(item));
-    }
-  }
-  blocks.push({ divider: {} });
-
-  // 議論
-  if (m.discussions && m.discussions.length) {
-    blocks.push(h2_('議論トピック'));
-    for (const d of m.discussions) {
-      blocks.push(bold_(d.topic));
-      for (const item of (d.items || [])) blocks.push(bullet_(item));
-    }
-    blocks.push({ divider: {} });
-  }
-
-  // 決定事項
+  // 決定事項（最重要 → 上部に配置）
   if (m.decisions && m.decisions.length) {
     blocks.push(h2_('決定事項'));
     for (const d of m.decisions) blocks.push(num_(d));
     blocks.push({ divider: {} });
   }
 
-  // アクション
+  // アクションアイテム
   if (m.actions && m.actions.length) {
     blocks.push(h2_('アクションアイテム'));
     for (const a of m.actions) blocks.push(todo_(`${a.who}：${a.what}`));
     blocks.push({ divider: {} });
   }
 
-  // 次回
+  // 議論・進捗メモ（PJ別）
+  if (m.topics && m.topics.length) {
+    blocks.push(h2_('議論・進捗メモ'));
+    for (const t of m.topics) {
+      blocks.push(bold_(t.name));
+      for (const item of (t.items || [])) blocks.push(bullet_(item));
+    }
+    blocks.push({ divider: {} });
+  }
+
+  // 旧形式互換（progress + discussions がある場合）
+  if (!m.topics && m.progress && m.progress.length) {
+    blocks.push(h2_('議論・進捗メモ'));
+    for (const p of m.progress) {
+      for (const proj of (p.projects || [])) {
+        blocks.push(bold_(`${proj.name}（${p.person}）`));
+        for (const item of (proj.items || [])) blocks.push(bullet_(item));
+      }
+    }
+    if (m.discussions && m.discussions.length) {
+      for (const d of m.discussions) {
+        blocks.push(bold_(d.topic));
+        for (const item of (d.items || [])) blocks.push(bullet_(item));
+      }
+    }
+    blocks.push({ divider: {} });
+  }
+
+  // 次回予定
   blocks.push(h2_('次回予定'));
   blocks.push(para_(m.next_meeting || '未定'));
 
@@ -249,7 +301,8 @@ function logToFirebase_(dateLabel, status, detail) {
 function isAlreadyProcessed_(dateLabel) {
   const resp = UrlFetchApp.fetch(`${FIREBASE_URL}/chapche-queue/${dateLabel}.json`, { muteHttpExceptions: true });
   const data = JSON.parse(resp.getContentText());
-  return data !== null;
+  if (!data) return false;
+  return data.status !== 'error';
 }
 
 // ===== 処理済み管理 =====
@@ -270,23 +323,27 @@ function markAsProcessed_(id) {
 // ===== セットアップ =====
 
 function setup() {
-  // トリガー再作成
   ScriptApp.getProjectTriggers().forEach(t => {
     if (t.getHandlerFunction() === 'checkNewTranscripts') ScriptApp.deleteTrigger(t);
   });
   ScriptApp.newTrigger('checkNewTranscripts').timeBased().everyHours(1).create();
-
   Logger.log('トリガーセットアップ完了');
-  Logger.log('⚠️ Script Properties で GEMINI_API_KEY と NOTION_TOKEN を手動設定してください');
 }
 
-/**
- * Script Properties に NOTION_TOKEN を設定
- * setup() 実行後にこれを1回実行
- */
-function setNotionToken() {
-  PropertiesService.getScriptProperties().setProperty('NOTION_TOKEN', 'REPLACE_ME');
-  Logger.log('NOTION_TOKEN を設定しました（値を確認してください）');
+function setKeys() {
+  // GASエディタの「プロジェクトの設定」→「スクリプトプロパティ」で手動設定
+  // NOTION_TOKEN: Notion Integration Token
+  // GEMINI_API_KEY: Google AI Studio API Key
+  Logger.log('⚠️ スクリプトプロパティから NOTION_TOKEN と GEMINI_API_KEY を手動設定してください');
+  checkProperties();
+}
+
+function checkProperties() {
+  const p = PropertiesService.getScriptProperties();
+  const gemini = p.getProperty('GEMINI_API_KEY');
+  const notion = p.getProperty('NOTION_TOKEN');
+  Logger.log('GEMINI_API_KEY: ' + (gemini ? '設定済み (' + gemini.substring(0, 8) + '...)' : '未設定'));
+  Logger.log('NOTION_TOKEN: ' + (notion ? '設定済み (' + notion.substring(0, 8) + '...)' : '未設定'));
 }
 
 function testRun() { checkNewTranscripts(); }

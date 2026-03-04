@@ -197,6 +197,98 @@ td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
 .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--dim); border-top-color: var(--cyan); border-radius: 50%; animation: spin 0.6s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* Quick Post Bar */
+.quick-post { display: flex; gap: 8px; margin-bottom: 16px; }
+.quick-post input { flex: 1; padding: 10px 14px; font-size: 14px; }
+.quick-post .btn { flex-shrink: 0; }
+
+/* Auto-detect result */
+.auto-detect { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 8px 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 12px; font-size: 12px; animation: fadeIn 0.2s; }
+.auto-detect select { width: auto; padding: 3px 8px; font-size: 11px; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* View Toggle */
+.view-toggle { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.view-toggle button { background: none; border: none; color: var(--sub); padding: 5px 14px; font-size: 12px; cursor: pointer; font-weight: 600; transition: all 0.15s; }
+.view-toggle button.active { background: var(--cyan-dim); color: var(--cyan); }
+
+/* Category Columns */
+.category-view { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.category-col { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+.category-col-header { font-size: 13px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.category-col-count { font-size: 10px; color: var(--dim); background: var(--card); padding: 1px 6px; border-radius: 8px; }
+.category-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-bottom: 6px; cursor: pointer; transition: border-color 0.15s; }
+.category-card:hover { border-color: var(--border-active); }
+.category-card .item-title { font-size: 12px; margin-bottom: 4px; }
+
+/* Product List */
+.product-grid { display: grid; gap: 10px; }
+.product-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; transition: border-color 0.15s; }
+.product-card:hover { border-color: var(--border-active); }
+.product-status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.product-summary { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+.product-summary-item { background: var(--card); border-radius: 8px; padding: 8px 14px; text-align: center; }
+.product-summary-item .count { font-size: 20px; font-weight: 800; }
+.product-summary-item .label { font-size: 10px; color: var(--sub); }
+
+/* Publishing Plan */
+.pub-plan-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 10px; }
+.pub-channel-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 12px; }
+.pub-channel-row:last-child { border-bottom: none; }
+.pub-channel-icon { width: 28px; text-align: center; font-size: 16px; }
+.pub-channel-name { width: 80px; font-weight: 600; }
+.pub-channel-status { flex: 1; }
+.pub-channel-status select { width: auto; padding: 2px 8px; font-size: 11px; }
+.pub-rate-bar { height: 4px; background: var(--bg); border-radius: 2px; overflow: hidden; margin-top: 8px; }
+.pub-rate-fill { height: 100%; background: var(--cyan); border-radius: 2px; transition: width 0.3s; }
+
+/* Calendar */
+.pub-calendar { margin-top: 12px; }
+.cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+.cal-day-label { font-size: 10px; color: var(--dim); padding: 4px 0; font-weight: 600; }
+.cal-day { padding: 6px 2px; font-size: 11px; border-radius: 4px; min-height: 36px; position: relative; }
+.cal-day.today { background: var(--cyan-dim); color: var(--cyan); font-weight: 700; }
+.cal-day.other-month { color: var(--dim); opacity: 0.4; }
+.cal-icons { display: flex; gap: 1px; justify-content: center; flex-wrap: wrap; margin-top: 2px; }
+.cal-icon { font-size: 8px; }
+
+/* Channel Summary */
+.channel-summary { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.channel-stat { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
+.channel-stat .icon { font-size: 20px; margin-bottom: 4px; }
+.channel-stat .count { font-size: 22px; font-weight: 800; }
+.channel-stat .name { font-size: 10px; color: var(--sub); }
+
+/* Template Cards */
+.template-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: pointer; transition: border-color 0.15s; }
+.template-card:hover { border-color: var(--cyan); }
+.template-card .title { font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+.template-card .desc { font-size: 11px; color: var(--sub); }
+
+/* Draft area */
+.draft-area { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-top: 8px; }
+.draft-area textarea { min-height: 80px; }
+.copy-btn { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(6,182,212,0.3); }
+.copy-btn:hover { background: rgba(6,182,212,0.25); }
+
+/* OFFER pipeline */
+.offer-pipeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+.offer-pipeline-col { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; min-height: 100px; }
+.offer-pipeline-header { font-size: 12px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.offer-pipeline-count { font-size: 10px; color: var(--dim); background: var(--card); padding: 1px 6px; border-radius: 8px; }
+
+/* Sub-tab navigation */
+.sub-tabs { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
+.sub-tab { padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; background: var(--bg2); color: var(--sub); border: 1px solid var(--border); transition: all 0.15s; }
+.sub-tab.active { background: var(--cyan-dim); color: var(--cyan); border-color: rgba(6,182,212,0.3); }
+
+/* Category manage */
+.cat-manage { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.cat-tag { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; background: var(--card); border: 1px solid var(--border); }
+.cat-tag .del-cat { cursor: pointer; color: var(--dim); font-size: 14px; line-height: 1; }
+.cat-tag .del-cat:hover { color: var(--red); }
+
 /* Responsive */
 .sidebar-overlay { display: none; }
 @media (max-width: 768px) {
@@ -209,6 +301,9 @@ td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
   .stat-grid { grid-template-columns: repeat(2, 1fr); }
   .field-row { grid-template-columns: 1fr; }
   .team-grid { flex-direction: column; }
+  .category-view { grid-template-columns: 1fr; }
+  .offer-pipeline { grid-template-columns: 1fr; }
+  .channel-summary { grid-template-columns: repeat(2, 1fr); }
 }
 </style>
 </head>
@@ -401,12 +496,43 @@ td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
 
       <!-- ===== FIND ===== -->
       <div class="section" id="sec-find">
+        <!-- Quick Post -->
+        <div class="card">
+          <h3 style="margin-bottom:10px">クイック投稿</h3>
+          <div class="quick-post">
+            <input type="text" id="quickIdeaInput" placeholder="思いついたことを1行で..." onkeydown="if(event.key==='Enter')quickPostIdea()">
+            <button class="btn btn-primary" onclick="quickPostIdea()">投稿</button>
+          </div>
+          <div id="quickPostResult" style="display:none"></div>
+        </div>
+
+        <!-- Category Management -->
+        <div class="card">
+          <div class="card-header">
+            <h3>カテゴリ管理</h3>
+            <button class="btn btn-sm btn-outline" onclick="showAddCategoryUI()">+ カテゴリ追加</button>
+          </div>
+          <div id="addCategoryRow" style="display:none;margin-bottom:8px">
+            <div style="display:flex;gap:6px">
+              <input type="text" id="newCategoryName" placeholder="カテゴリ名" style="flex:1">
+              <button class="btn btn-sm btn-primary" onclick="addCategory()">追加</button>
+              <button class="btn btn-sm btn-outline" onclick="document.getElementById('addCategoryRow').style.display='none'">Cancel</button>
+            </div>
+          </div>
+          <div id="categoryTags" class="cat-manage"></div>
+        </div>
+
+        <!-- Idea Board -->
         <div class="card">
           <div class="card-header">
             <h3>アイデア・課題ボード</h3>
-            <button class="btn btn-sm btn-primary" onclick="showIdeaModal()">+ 新規アイデア</button>
+            <button class="btn btn-sm btn-primary" onclick="showIdeaModal()">+ 詳細入力</button>
           </div>
-          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+            <div class="view-toggle">
+              <button class="active" id="findViewStatus" onclick="setFindView('status')">ステータス別</button>
+              <button id="findViewCategory" onclick="setFindView('category')">カテゴリ別</button>
+            </div>
             <select id="findFilter" onchange="renderFindList()" style="width:auto;padding:4px 10px;font-size:12px">
               <option value="all">すべて</option>
               <option value="discovered">発見</option>
@@ -421,41 +547,75 @@ td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
             </select>
           </div>
           <div id="findList"></div>
+          <div id="findCategoryView" class="category-view" style="display:none"></div>
         </div>
       </div>
 
       <!-- ===== MAKE ===== -->
       <div class="section" id="sec-make">
-        <div class="card">
-          <div class="card-header">
-            <h3>開発タスクトラッカー</h3>
-            <button class="btn btn-sm btn-primary" onclick="showTaskModal()">+ タスク追加</button>
-          </div>
-          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-            <select id="makeFilter" onchange="renderMakeList()" style="width:auto;padding:4px 10px;font-size:12px">
-              <option value="active">進行中</option>
-              <option value="all">すべて</option>
-              <option value="completed">完了</option>
-            </select>
-            <select id="makeAssignee" onchange="renderMakeList()" style="width:auto;padding:4px 10px;font-size:12px">
-              <option value="all">全員</option>
-              <option value="サノ">サノ</option>
-              <option value="中">中</option>
-              <option value="ししょー">ししょー</option>
-            </select>
-          </div>
-          <div id="makeList"></div>
+        <div class="sub-tabs">
+          <div class="sub-tab active" onclick="setMakeTab('tasks')">タスク</div>
+          <div class="sub-tab" onclick="setMakeTab('products')">プロダクト一覧</div>
+          <div class="sub-tab" onclick="setMakeTab('sprint')">Sprint</div>
         </div>
 
-        <div class="card">
-          <h3>Sprint Timeline</h3>
-          <div id="sprintTimeline" style="font-size:12px;color:var(--sub)">
-            <div style="display:flex;justify-content:space-between;margin-bottom:8px">
-              <span id="sprintStart">-</span>
-              <span style="font-weight:600;color:var(--cyan)">1 Week Sprint</span>
-              <span id="sprintEnd">-</span>
+        <!-- Tasks sub-tab -->
+        <div id="makeTabTasks">
+          <div class="card">
+            <div class="card-header">
+              <h3>開発タスクトラッカー</h3>
+              <button class="btn btn-sm btn-primary" onclick="showTaskModal()">+ タスク追加</button>
             </div>
-            <div class="phase-bar"><div class="phase-fill" id="sprintBar" style="width:0%;background:var(--cyan)"></div></div>
+            <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+              <select id="makeFilter" onchange="renderMakeList()" style="width:auto;padding:4px 10px;font-size:12px">
+                <option value="active">進行中</option>
+                <option value="all">すべて</option>
+                <option value="completed">完了</option>
+              </select>
+              <select id="makeAssignee" onchange="renderMakeList()" style="width:auto;padding:4px 10px;font-size:12px">
+                <option value="all">全員</option>
+                <option value="サノ">サノ</option>
+                <option value="中">中</option>
+                <option value="ししょー">ししょー</option>
+              </select>
+            </div>
+            <div id="makeList"></div>
+          </div>
+        </div>
+
+        <!-- Products sub-tab -->
+        <div id="makeTabProducts" style="display:none">
+          <div class="card">
+            <div class="card-header">
+              <h3>プロダクト一覧 / 成果物管理</h3>
+              <button class="btn btn-sm btn-primary" onclick="showProductModal()">+ 登録</button>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+              <select id="productFilter" onchange="renderProductList()" style="width:auto;padding:4px 10px;font-size:12px">
+                <option value="all">すべて</option>
+                <option value="plan">Plan</option>
+                <option value="dev">Dev</option>
+                <option value="live">Live</option>
+                <option value="archive">Archive</option>
+              </select>
+            </div>
+            <div id="productSummary" class="product-summary"></div>
+            <div id="productGrid" class="product-grid"></div>
+          </div>
+        </div>
+
+        <!-- Sprint sub-tab -->
+        <div id="makeTabSprint" style="display:none">
+          <div class="card">
+            <h3>Sprint Timeline</h3>
+            <div id="sprintTimeline" style="font-size:12px;color:var(--sub)">
+              <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+                <span id="sprintStart">-</span>
+                <span style="font-weight:600;color:var(--cyan)">1 Week Sprint</span>
+                <span id="sprintEnd">-</span>
+              </div>
+              <div class="phase-bar"><div class="phase-fill" id="sprintBar" style="width:0%;background:var(--cyan)"></div></div>
+            </div>
           </div>
         </div>
       </div>
@@ -464,38 +624,114 @@ td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
       <div class="section" id="sec-offer">
         <div class="card">
           <div class="card-header">
-            <h3>提供先管理</h3>
-            <button class="btn btn-sm btn-primary" onclick="showOfferModal()">+ 提供先追加</button>
+            <h3>提供パイプライン</h3>
+            <button class="btn btn-sm btn-primary" onclick="showOfferModal()">+ 追加</button>
           </div>
+          <div id="offerPipeline" class="offer-pipeline"></div>
+        </div>
+
+        <div class="card">
+          <h3>提供一覧</h3>
           <div id="offerList"></div>
+        </div>
+
+        <div class="card">
+          <h3>提供実績サマリー</h3>
+          <div class="stat-grid" style="margin-bottom:0">
+            <div class="stat-card"><div class="stat-value" style="color:var(--cyan)" id="offerTotalPublished">0</div><div class="stat-label">公開済み</div></div>
+            <div class="stat-card"><div class="stat-value" style="color:var(--orange)" id="offerTotalFeedback">0</div><div class="stat-label">FB中</div></div>
+            <div class="stat-card"><div class="stat-value" style="color:var(--green)" id="offerTotalCompleted">0</div><div class="stat-label">完了</div></div>
+          </div>
         </div>
       </div>
 
       <!-- ===== PRESENT ===== -->
       <div class="section" id="sec-present">
-        <div class="card">
-          <div class="card-header">
-            <h3>発信コンテンツ管理</h3>
-            <button class="btn btn-sm btn-primary" onclick="showPresentModal()">+ 発信追加</button>
-          </div>
-          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-            <select id="presentChannel" onchange="renderPresentList()" style="width:auto;padding:4px 10px;font-size:12px">
-              <option value="all">全チャネル</option>
-              <option value="x">X (Twitter)</option>
-              <option value="instagram">Instagram</option>
-              <option value="event">イベント</option>
-              <option value="word">口コミ</option>
-              <option value="other">その他</option>
-            </select>
-          </div>
-          <div id="presentList"></div>
+        <div class="sub-tabs">
+          <div class="sub-tab active" onclick="setPresentTab('plans')">発信プラン</div>
+          <div class="sub-tab" onclick="setPresentTab('calendar')">カレンダー</div>
+          <div class="sub-tab" onclick="setPresentTab('templates')">テンプレート</div>
+          <div class="sub-tab" onclick="setPresentTab('log')">発信ログ</div>
         </div>
 
-        <div class="card">
-          <h3>リーチ統計</h3>
-          <div class="stat-grid" style="margin-bottom:0">
-            <div class="stat-card"><div class="stat-value" style="color:var(--cyan)" id="prTotalReach">0</div><div class="stat-label">Total Reach</div></div>
-            <div class="stat-card"><div class="stat-value" style="color:var(--orange)" id="prTotalPosts">0</div><div class="stat-label">Total Posts</div></div>
+        <!-- Publishing Plans -->
+        <div id="presentTabPlans">
+          <div class="card">
+            <div class="card-header">
+              <h3>発信プラン (プロダクト別)</h3>
+              <button class="btn btn-sm btn-primary" onclick="showPubPlanModal()">+ プラン追加</button>
+            </div>
+            <div id="pubPlanList"></div>
+          </div>
+
+          <!-- Channel Summary -->
+          <div class="card">
+            <h3>チャネル別 発信状況</h3>
+            <div id="channelSummary" class="channel-summary"></div>
+          </div>
+        </div>
+
+        <!-- Calendar -->
+        <div id="presentTabCalendar" style="display:none">
+          <div class="card">
+            <div class="cal-header">
+              <button class="btn btn-sm btn-outline" onclick="changeCalMonth(-1)">&lt;</button>
+              <h3 id="calMonthLabel"></h3>
+              <button class="btn btn-sm btn-outline" onclick="changeCalMonth(1)">&gt;</button>
+            </div>
+            <div id="pubCalendar" class="pub-calendar"></div>
+          </div>
+        </div>
+
+        <!-- Templates -->
+        <div id="presentTabTemplates" style="display:none">
+          <div class="card">
+            <div class="card-header">
+              <h3>発信テンプレート</h3>
+              <button class="btn btn-sm btn-primary" onclick="showTemplateModal()">+ テンプレ追加</button>
+            </div>
+            <div id="templateList"></div>
+          </div>
+          <div class="card">
+            <h3>下書き作成</h3>
+            <div class="field"><label>プロダクト選択</label><select id="draftProduct" onchange="updateDraftPreview()"><option value="">-- 選択 --</option></select></div>
+            <div class="field"><label>テンプレート選択</label><select id="draftTemplate" onchange="updateDraftPreview()"><option value="">-- 選択 --</option></select></div>
+            <div id="draftArea" class="draft-area" style="display:none">
+              <textarea id="draftText" rows="5"></textarea>
+              <div class="btn-row" style="margin-top:8px">
+                <button class="btn btn-sm copy-btn" onclick="copyDraft()">コピー</button>
+                <button class="btn btn-sm btn-primary" onclick="saveDraftAsLog()">発信ログに記録</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Log (legacy) -->
+        <div id="presentTabLog" style="display:none">
+          <div class="card">
+            <div class="card-header">
+              <h3>発信ログ</h3>
+              <button class="btn btn-sm btn-primary" onclick="showPresentModal()">+ 発信追加</button>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+              <select id="presentChannel" onchange="renderPresentList()" style="width:auto;padding:4px 10px;font-size:12px">
+                <option value="all">全チャネル</option>
+                <option value="x">X (Twitter)</option>
+                <option value="instagram">Instagram</option>
+                <option value="event">イベント</option>
+                <option value="word">口コミ</option>
+                <option value="blog">ブログ</option>
+                <option value="other">その他</option>
+              </select>
+            </div>
+            <div id="presentList"></div>
+          </div>
+          <div class="card">
+            <h3>リーチ統計</h3>
+            <div class="stat-grid" style="margin-bottom:0">
+              <div class="stat-card"><div class="stat-value" style="color:var(--cyan)" id="prTotalReach">0</div><div class="stat-label">Total Reach</div></div>
+              <div class="stat-card"><div class="stat-value" style="color:var(--orange)" id="prTotalPosts">0</div><div class="stat-label">Total Posts</div></div>
+            </div>
           </div>
         </div>
       </div>
@@ -588,6 +824,14 @@ td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
     <div class="field"><label>概要</label><textarea id="ideaSummary" rows="3" placeholder="どんな課題を解決するか"></textarea></div>
     <div class="field"><label>ターゲット</label><input type="text" id="ideaTarget" placeholder="誰向けのプロダクト？"></div>
     <div class="field-row">
+      <div class="field"><label>カテゴリ</label>
+        <select id="ideaCategory"></select>
+      </div>
+      <div class="field"><label>STEP</label>
+        <select id="ideaStep"><option value="find">FIND</option><option value="make">MAKE</option><option value="offer">OFFER</option><option value="present">PRESENT</option><option value="consult">CONSULT</option></select>
+      </div>
+    </div>
+    <div class="field-row">
       <div class="field"><label>優先度</label>
         <select id="ideaPriority"><option value="medium">Medium</option><option value="high">High</option><option value="low">Low</option></select>
       </div>
@@ -637,7 +881,7 @@ td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
         <select id="offerMethod"><option value="direct">直接提供</option><option value="web">Web公開</option><option value="referral">紹介</option></select>
       </div>
       <div class="field"><label>ステータス</label>
-        <select id="offerStatus"><option value="offered">提供済み</option><option value="negotiating">交渉中</option><option value="feedback">フィードバック中</option><option value="completed">完了</option></select>
+        <select id="offerStatus"><option value="published">公開済み</option><option value="feedback">FB中</option><option value="completed">完了</option></select>
       </div>
     </div>
     <div class="field"><label>フィードバック</label><textarea id="offerFeedback" rows="3" placeholder="相手の反応・フィードバック"></textarea></div>
@@ -656,7 +900,7 @@ td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
     <div class="field"><label>タイトル / 内容</label><input type="text" id="presentTitle" placeholder="発信のタイトル"></div>
     <div class="field-row">
       <div class="field"><label>チャネル</label>
-        <select id="presentChannelInput"><option value="x">X (Twitter)</option><option value="instagram">Instagram</option><option value="event">イベント</option><option value="word">口コミ</option><option value="other">その他</option></select>
+        <select id="presentChannelInput"><option value="x">X (Twitter)</option><option value="instagram">Instagram</option><option value="event">イベント</option><option value="word">口コミ</option><option value="blog">ブログ</option><option value="other">その他</option></select>
       </div>
       <div class="field"><label>リーチ数</label><input type="number" id="presentReach" placeholder="0" style="width:100%"></div>
     </div>
@@ -713,13 +957,76 @@ td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
   </div>
 </div>
 
+<!-- Product Modal -->
+<div class="modal-overlay" id="productModal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box">
+    <h3 id="productModalTitle">プロダクト登録</h3>
+    <input type="hidden" id="productEditId">
+    <div class="field"><label>プロダクト名</label><input type="text" id="productName" placeholder="プロダクト名"></div>
+    <div class="field-row">
+      <div class="field"><label>ステータス</label>
+        <select id="productStatus"><option value="plan">Plan</option><option value="dev">Dev</option><option value="live">Live</option><option value="archive">Archive</option></select>
+      </div>
+      <div class="field"><label>Lead</label>
+        <select id="productLead"><option value="サノ">サノ</option><option value="中">中</option><option value="ししょー">ししょー</option></select>
+      </div>
+    </div>
+    <div class="field"><label>URL</label><input type="url" id="productUrl" placeholder="https://..."></div>
+    <div class="field"><label>技術スタック</label><input type="text" id="productTech" placeholder="HTML/JS/Firebase"></div>
+    <div class="field-row">
+      <div class="field"><label>カテゴリ</label><select id="productCategory"></select></div>
+      <div class="field"><label>完成日</label><input type="date" id="productDate"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveProduct()">Save</button>
+      <button class="btn btn-outline" onclick="document.getElementById('productModal').style.display='none'">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- PubPlan Modal -->
+<div class="modal-overlay" id="pubPlanModal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box">
+    <h3 id="pubPlanModalTitle">発信プラン追加</h3>
+    <input type="hidden" id="pubPlanEditId">
+    <div class="field"><label>プロダクト</label><select id="pubPlanProduct"><option value="">-- 選択 --</option></select></div>
+    <div class="field"><label>メモ</label><textarea id="pubPlanMemo" rows="2" placeholder="発信の方針メモ"></textarea></div>
+    <div style="margin-bottom:12px">
+      <label style="display:block;font-size:11px;font-weight:600;color:var(--sub);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em">チャネル別ステータス</label>
+      <div id="pubPlanChannels"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="savePubPlan()">Save</button>
+      <button class="btn btn-outline" onclick="document.getElementById('pubPlanModal').style.display='none'">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Template Modal -->
+<div class="modal-overlay" id="templateModal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box">
+    <h3>テンプレート追加</h3>
+    <input type="hidden" id="templateEditId">
+    <div class="field"><label>テンプレート名</label><input type="text" id="templateName" placeholder="X用: 短文+URL"></div>
+    <div class="field"><label>チャネル</label>
+      <select id="templateChannel"><option value="x">X (Twitter)</option><option value="instagram">Instagram</option><option value="event">イベント</option><option value="blog">ブログ</option><option value="word">口コミ</option><option value="other">その他</option></select>
+    </div>
+    <div class="field"><label>テンプレート本文</label><textarea id="templateBody" rows="5" placeholder="{{product_name}} をリリースしました！&#10;&#10;{{product_url}}&#10;&#10;#MACHAP #モルック"></textarea></div>
+    <div style="font-size:11px;color:var(--sub);margin-bottom:12px">変数: {{product_name}}, {{product_url}}, {{product_desc}}</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveTemplate()">Save</button>
+      <button class="btn btn-outline" onclick="document.getElementById('templateModal').style.display='none'">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ===== Data Store (localStorage) =====
 const STORAGE_KEY = 'machap_portal_data';
 
 function getStore() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || defaultStore(); }
-  catch(e) { return defaultStore(); }
+  try { return migrateStore(JSON.parse(localStorage.getItem(STORAGE_KEY)) || defaultStore()); }
+  catch(e) { return migrateStore(defaultStore()); }
 }
 
 function defaultStore() {
@@ -730,11 +1037,35 @@ function defaultStore() {
     presents: [],
     consults: [],
     projects: [],
+    products: [],
+    pubPlans: [],
+    templates: [],
+    categories: ['モルック','コミュニティ','ビジネス','ツール','その他'],
     phases: {},
     notes: '',
     activity: [],
-    sprintStart: null
+    sprintStart: null,
+    calMonth: null,
+    calYear: null
   };
+}
+
+// Ensure store has new fields (migration)
+function migrateStore(store) {
+  if (!store.products) store.products = [];
+  if (!store.pubPlans) store.pubPlans = [];
+  if (!store.templates) store.templates = [];
+  if (!store.categories) store.categories = ['モルック','コミュニティ','ビジネス','ツール','その他'];
+  // Migrate offers from old statuses
+  (store.offers || []).forEach(o => {
+    if (o.status === 'offered' || o.status === 'negotiating') o.status = 'published';
+  });
+  // Ensure ideas have category/step fields
+  (store.ideas || []).forEach(i => {
+    if (!i.category) i.category = 'その他';
+    if (!i.step) i.step = 'find';
+  });
+  return store;
 }
 
 function setStore(data) {
@@ -763,6 +1094,14 @@ document.addEventListener('DOMContentLoaded', () => {
   renderAll();
   updateDashboard();
   updateNavCounts();
+  renderCategoryTags();
+  renderProductList();
+  renderPubPlans();
+  renderTemplateList();
+  renderPubCalendar();
+  renderChannelSummary();
+  renderOfferPipeline();
+  populateCategorySelects();
 });
 
 // ===== Navigation =====
@@ -774,8 +1113,8 @@ function showSection(id) {
   if (navItem) navItem.classList.add('active');
 
   const titles = {
-    dashboard: 'Dashboard', find: 'FIND - 課題発見', make: 'MAKE - プロダクト化',
-    offer: 'OFFER - 提供', present: 'PRESENT - 発信', consult: 'CONSULT - 相談',
+    dashboard: 'Dashboard', find: 'FIND - 課題・アイデア発見', make: 'MAKE - プロダクト化',
+    offer: 'OFFER - 公開・提供', present: 'PRESENT - 発信管理', consult: 'CONSULT - 相談',
     projects: 'Projects', docs: 'Docs / Settings'
   };
   document.getElementById('pageTitle').textContent = titles[id] || id;
@@ -852,6 +1191,7 @@ function saveNotes() {
 
 // ===== FIND: Ideas =====
 function showIdeaModal(id) {
+  populateCategorySelect('ideaCategory');
   const modal = document.getElementById('ideaModal');
   if (id) {
     const store = getStore();
@@ -862,12 +1202,16 @@ function showIdeaModal(id) {
     document.getElementById('ideaTitle').value = idea.title;
     document.getElementById('ideaSummary').value = idea.summary || '';
     document.getElementById('ideaTarget').value = idea.target || '';
+    document.getElementById('ideaCategory').value = idea.category || 'その他';
+    document.getElementById('ideaStep').value = idea.step || 'find';
     document.getElementById('ideaPriority').value = idea.priority || 'medium';
     document.getElementById('ideaStatus').value = idea.status || 'discovered';
   } else {
     document.getElementById('ideaModalTitle').textContent = '新規アイデア';
     document.getElementById('ideaEditId').value = '';
     ['ideaTitle','ideaSummary','ideaTarget'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('ideaCategory').value = 'その他';
+    document.getElementById('ideaStep').value = 'find';
     document.getElementById('ideaPriority').value = 'medium';
     document.getElementById('ideaStatus').value = 'discovered';
   }
@@ -884,6 +1228,8 @@ function saveIdea() {
     title,
     summary: document.getElementById('ideaSummary').value.trim(),
     target: document.getElementById('ideaTarget').value.trim(),
+    category: document.getElementById('ideaCategory').value || 'その他',
+    step: document.getElementById('ideaStep').value || 'find',
     priority: document.getElementById('ideaPriority').value,
     status: document.getElementById('ideaStatus').value,
     votes: editId ? (store.ideas.find(i => i.id === editId)?.votes || {}) : {},
@@ -937,10 +1283,12 @@ function renderFindList() {
 
   const box = document.getElementById('findList');
   if (items.length === 0) { box.innerHTML = '<div class="empty">アイデアはまだありません</div>'; return; }
+  const catColors = getCategoryColors();
   box.innerHTML = items.map(i => {
     const voteCount = Object.values(i.votes||{}).filter(Boolean).length;
     const statusClass = 'st-' + (i.status||'discovered');
     const priClass = 'pri-' + (i.priority||'medium');
+    const catColor = catColors[i.category] || 'var(--dim)';
     return `<div class="item-card">
       <div style="display:flex;align-items:start;gap:8px">
         <div style="flex:1">
@@ -948,6 +1296,7 @@ function renderFindList() {
           ${i.summary ? `<div style="font-size:12px;color:var(--sub);margin:4px 0">${escapeHtml(i.summary)}</div>` : ''}
           <div class="item-meta">
             <span class="status-badge ${statusClass}">${i.status||'discovered'}</span>
+            <span class="pill" style="font-size:10px;background:${catColor}22;color:${catColor};border:1px solid ${catColor}44">${i.category||'その他'}</span>
             <span class="${priClass}" style="font-size:11px">${i.priority||'medium'}</span>
             ${i.target ? `<span style="font-size:11px">Target: ${escapeHtml(i.target)}</span>` : ''}
           </div>
@@ -972,20 +1321,30 @@ function ideaToProject(ideaId) {
   const store = getStore();
   const idea = store.ideas.find(i => i.id === ideaId);
   if (!idea) return;
+  const projectId = genId();
   const project = {
-    id: genId(), name: idea.title, desc: idea.summary || '',
+    id: projectId, name: idea.title, desc: idea.summary || '',
     status: 'active', lead: 'サノ', url: '',
     created: new Date().toISOString(), ideaId: idea.id
   };
   store.projects.push(project);
+  // Also auto-register as product
+  const product = {
+    id: genId(), name: idea.title, status: 'plan', lead: 'サノ',
+    url: '', tech: '', category: idea.category || 'その他', date: '',
+    projectId: projectId, ideaId: idea.id,
+    created: new Date().toISOString()
+  };
+  store.products.push(product);
   idea.status = 'in-progress';
-  addActivity(store, `PJ: "${idea.title}" をProject化`);
+  addActivity(store, `PJ: "${idea.title}" をProject化 + プロダクト登録`);
   setStore(store);
   renderFindList();
   renderProjectList();
+  renderProductList();
   updateNavCounts();
   updateDashboard();
-  showToast('Project created');
+  showToast('Project + Product created');
 }
 
 // ===== MAKE: Tasks =====
@@ -1129,14 +1488,17 @@ function showOfferModal(id) {
     document.getElementById('offerName').value = offer.name;
     document.getElementById('offerProduct').value = offer.projectId || '';
     document.getElementById('offerMethod').value = offer.method || 'direct';
-    document.getElementById('offerStatus').value = offer.status || 'offered';
+    // Map old statuses to new ones
+    let st = offer.status || 'published';
+    if (st === 'offered' || st === 'negotiating') st = 'published';
+    document.getElementById('offerStatus').value = st;
     document.getElementById('offerFeedback').value = offer.feedback || '';
   } else {
-    document.getElementById('offerModalTitle').textContent = '提供先追加';
+    document.getElementById('offerModalTitle').textContent = '追加';
     document.getElementById('offerEditId').value = '';
     ['offerName','offerFeedback'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('offerMethod').value = 'direct';
-    document.getElementById('offerStatus').value = 'offered';
+    document.getElementById('offerStatus').value = 'published';
   }
   modal.style.display = 'flex';
 }
@@ -1178,13 +1540,15 @@ function renderOfferList() {
   const items = store.offers || [];
   const box = document.getElementById('offerList');
   if (items.length === 0) { box.innerHTML = '<div class="empty">提供先はまだありません</div>'; return; }
+  const statusLabels = {published:'公開済み',feedback:'FB中',completed:'完了'};
   box.innerHTML = items.map(o => {
     const pj = store.projects.find(p => p.id === o.projectId);
     const methods = {direct:'直接提供',web:'Web公開',referral:'紹介'};
+    const stClass = o.status==='completed'?'st-completed':o.status==='feedback'?'st-reviewing':'st-in-progress';
     return `<div class="item-card">
       <div class="item-title">${escapeHtml(o.name)}</div>
       <div class="item-meta">
-        <span class="status-badge st-${o.status==='completed'?'completed':o.status==='feedback'?'reviewing':'in-progress'}">${o.status}</span>
+        <span class="status-badge ${stClass}">${statusLabels[o.status]||o.status}</span>
         <span style="font-size:11px">${methods[o.method]||o.method}</span>
         ${pj ? `<span style="font-size:11px">PJ: ${escapeHtml(pj.name)}</span>` : ''}
       </div>
@@ -1195,6 +1559,16 @@ function renderOfferList() {
       </div>
     </div>`;
   }).join('');
+
+  // Update pipeline view
+  renderOfferPipeline();
+  // Update stats
+  const published = items.filter(o => o.status === 'published').length;
+  const feedback = items.filter(o => o.status === 'feedback').length;
+  const completed = items.filter(o => o.status === 'completed').length;
+  document.getElementById('offerTotalPublished').textContent = published;
+  document.getElementById('offerTotalFeedback').textContent = feedback;
+  document.getElementById('offerTotalCompleted').textContent = completed;
 }
 
 // ===== PRESENT =====
@@ -1261,7 +1635,7 @@ function renderPresentList() {
 
   const box = document.getElementById('presentList');
   if (items.length === 0) { box.innerHTML = '<div class="empty">発信コンテンツはまだありません</div>'; return; }
-  const channelLabels = {x:'X',instagram:'IG',event:'Event',word:'口コミ',other:'Other'};
+  const channelLabels = {x:'X',instagram:'IG',event:'Event',word:'口コミ',blog:'Blog',other:'Other'};
   box.innerHTML = items.map(p => `<div class="item-card">
     <div class="item-title">${escapeHtml(p.title)}</div>
     <div class="item-meta">
@@ -1498,6 +1872,775 @@ function updateDashboard() {
   }).join('');
 }
 
+// ===== Auto-categorization (keyword matching) =====
+const CATEGORY_KEYWORDS = {
+  'モルック': ['モルック','molkky','大会','チーム','練習','スコア','ルール','選手','試合','団体'],
+  'コミュニティ': ['コミュニティ','地域','仲間','交流','イベント','集まり','勉強会','コラボ','連携','SNS'],
+  'ビジネス': ['収益','売上','法人','費用','契約','営業','価格','見積','クライアント','案件','パートナー'],
+  'ツール': ['ツール','アプリ','システム','自動化','bot','API','管理','ダッシュボード','開発','コード'],
+};
+const STEP_KEYWORDS = {
+  'find': ['欲しい','あったらいい','課題','問題','不便','改善','アイデア','思いついた','発見'],
+  'make': ['作る','作った','開発','構築','実装','完成','リリース','デプロイ'],
+  'offer': ['提供','提案','使ってもらう','紹介','公開','オープン'],
+  'present': ['発信','投稿','ポスト','記事','ブログ','SNS','告知','PR','宣伝'],
+  'consult': ['相談','依頼','問い合わせ','案件','受注','対応'],
+};
+
+function autoDetectCategory(text) {
+  const lower = text.toLowerCase();
+  let best = 'その他', bestScore = 0;
+  for (const [cat, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
+    const score = keywords.filter(kw => lower.includes(kw.toLowerCase())).length;
+    if (score > bestScore) { bestScore = score; best = cat; }
+  }
+  return best;
+}
+
+function autoDetectStep(text) {
+  const lower = text.toLowerCase();
+  let best = 'find', bestScore = 0;
+  for (const [step, keywords] of Object.entries(STEP_KEYWORDS)) {
+    const score = keywords.filter(kw => lower.includes(kw.toLowerCase())).length;
+    if (score > bestScore) { bestScore = score; best = step; }
+  }
+  return best;
+}
+
+function getCategoryColors() {
+  const palette = ['#1A56DB','#06B6D4','#F97316','#A78BFA','#10B981','#EF4444','#EC4899','#8B5CF6','#14B8A6','#F59E0B'];
+  const store = getStore();
+  const colors = {};
+  (store.categories || []).forEach((cat, i) => { colors[cat] = palette[i % palette.length]; });
+  return colors;
+}
+
+// ===== Quick Post =====
+function quickPostIdea() {
+  const input = document.getElementById('quickIdeaInput');
+  const text = input.value.trim();
+  if (!text) { showToast('テキストを入力してください'); return; }
+
+  const category = autoDetectCategory(text);
+  const step = autoDetectStep(text);
+
+  const store = getStore();
+  const idea = {
+    id: genId(), title: text, summary: '', target: '',
+    category, step, priority: 'medium', status: 'discovered',
+    votes: {}, created: new Date().toISOString(), updated: new Date().toISOString()
+  };
+  store.ideas.push(idea);
+  addActivity(store, `FIND: "${text}" をクイック投稿`);
+  setStore(store);
+
+  input.value = '';
+
+  // Show auto-detect result
+  const result = document.getElementById('quickPostResult');
+  result.style.display = 'block';
+  result.innerHTML = `<div class="auto-detect">
+    <span style="font-size:13px;font-weight:600">${escapeHtml(text)}</span>
+    <span style="color:var(--dim)">|</span>
+    <span style="font-size:11px;color:var(--sub)">カテゴリ:</span>
+    <select onchange="updateQuickPostField('${idea.id}','category',this.value)" style="width:auto;padding:2px 6px;font-size:11px">
+      ${(store.categories||[]).map(c => `<option value="${c}" ${c===category?'selected':''}>${c}</option>`).join('')}
+    </select>
+    <span style="font-size:11px;color:var(--sub)">STEP:</span>
+    <select onchange="updateQuickPostField('${idea.id}','step',this.value)" style="width:auto;padding:2px 6px;font-size:11px">
+      <option value="find" ${step==='find'?'selected':''}>FIND</option>
+      <option value="make" ${step==='make'?'selected':''}>MAKE</option>
+      <option value="offer" ${step==='offer'?'selected':''}>OFFER</option>
+      <option value="present" ${step==='present'?'selected':''}>PRESENT</option>
+      <option value="consult" ${step==='consult'?'selected':''}>CONSULT</option>
+    </select>
+    <button class="btn btn-sm btn-outline" onclick="showIdeaModal('${idea.id}')" style="font-size:10px;padding:2px 8px">詳細編集</button>
+  </div>`;
+  setTimeout(() => { result.style.display = 'none'; }, 8000);
+
+  renderFindList();
+  updateNavCounts();
+  updateDashboard();
+  showToast('投稿しました');
+}
+
+function updateQuickPostField(ideaId, field, value) {
+  const store = getStore();
+  const idea = store.ideas.find(i => i.id === ideaId);
+  if (idea) { idea[field] = value; setStore(store); renderFindList(); }
+}
+
+// ===== FIND View Toggle =====
+let findViewMode = 'status';
+
+function setFindView(mode) {
+  findViewMode = mode;
+  document.getElementById('findViewStatus').classList.toggle('active', mode === 'status');
+  document.getElementById('findViewCategory').classList.toggle('active', mode === 'category');
+  if (mode === 'status') {
+    document.getElementById('findList').style.display = 'block';
+    document.getElementById('findCategoryView').style.display = 'none';
+    renderFindList();
+  } else {
+    document.getElementById('findList').style.display = 'none';
+    document.getElementById('findCategoryView').style.display = 'grid';
+    renderFindCategoryView();
+  }
+}
+
+function renderFindCategoryView() {
+  const store = getStore();
+  const items = store.ideas.filter(i => i.status !== 'rejected');
+  const categories = store.categories || ['その他'];
+  const catColors = getCategoryColors();
+  const grouped = {};
+  categories.forEach(c => { grouped[c] = []; });
+  items.forEach(i => {
+    const cat = i.category || 'その他';
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(i);
+  });
+
+  const box = document.getElementById('findCategoryView');
+  box.innerHTML = categories.map(cat => {
+    const catItems = grouped[cat] || [];
+    const color = catColors[cat] || 'var(--dim)';
+    return `<div class="category-col" style="border-top:3px solid ${color}">
+      <div class="category-col-header">
+        <span style="color:${color}">${cat}</span>
+        <span class="category-col-count">${catItems.length}</span>
+      </div>
+      ${catItems.length === 0 ? '<div class="empty" style="padding:10px;font-size:11px">なし</div>' :
+        catItems.map(i => {
+          const statusClass = 'st-' + (i.status||'discovered');
+          return `<div class="category-card" onclick="showIdeaModal('${i.id}')">
+            <div class="item-title">${escapeHtml(i.title)}</div>
+            <span class="status-badge ${statusClass}" style="font-size:9px">${i.status||'discovered'}</span>
+          </div>`;
+        }).join('')
+      }
+    </div>`;
+  }).join('');
+}
+
+// ===== Category Management =====
+function renderCategoryTags() {
+  const store = getStore();
+  const cats = store.categories || [];
+  const catColors = getCategoryColors();
+  const box = document.getElementById('categoryTags');
+  box.innerHTML = cats.map(c => {
+    const color = catColors[c] || 'var(--dim)';
+    const count = (store.ideas || []).filter(i => i.category === c).length;
+    return `<span class="cat-tag" style="border-color:${color}44;color:${color}">
+      ${c} <span style="font-size:9px;color:var(--dim)">(${count})</span>
+      ${['モルック','コミュニティ','ビジネス','ツール','その他'].includes(c) ? '' : `<span class="del-cat" onclick="deleteCategory('${c}')">&times;</span>`}
+    </span>`;
+  }).join('');
+}
+
+function showAddCategoryUI() {
+  document.getElementById('addCategoryRow').style.display = 'block';
+  document.getElementById('newCategoryName').focus();
+}
+
+function addCategory() {
+  const name = document.getElementById('newCategoryName').value.trim();
+  if (!name) return;
+  const store = getStore();
+  if (!store.categories.includes(name)) {
+    store.categories.push(name);
+    setStore(store);
+    renderCategoryTags();
+    populateCategorySelects();
+    showToast('カテゴリ追加: ' + name);
+  }
+  document.getElementById('newCategoryName').value = '';
+  document.getElementById('addCategoryRow').style.display = 'none';
+}
+
+function deleteCategory(name) {
+  if (!confirm(`カテゴリ "${name}" を削除しますか？`)) return;
+  const store = getStore();
+  store.categories = store.categories.filter(c => c !== name);
+  // Move items to 'その他'
+  (store.ideas || []).forEach(i => { if (i.category === name) i.category = 'その他'; });
+  (store.products || []).forEach(p => { if (p.category === name) p.category = 'その他'; });
+  setStore(store);
+  renderCategoryTags();
+  populateCategorySelects();
+  renderFindList();
+}
+
+function populateCategorySelect(selectId) {
+  const store = getStore();
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  const val = sel.value;
+  sel.innerHTML = (store.categories || []).map(c => `<option value="${c}">${c}</option>`).join('');
+  sel.value = val || 'その他';
+}
+
+function populateCategorySelects() {
+  populateCategorySelect('ideaCategory');
+  populateCategorySelect('productCategory');
+}
+
+// ===== MAKE Sub-tabs =====
+function setMakeTab(tab) {
+  const tabs = ['tasks','products','sprint'];
+  tabs.forEach(t => {
+    const el = document.getElementById('makeTab' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (el) el.style.display = (t === tab) ? 'block' : 'none';
+  });
+  document.querySelectorAll('#sec-make .sub-tab').forEach((el, i) => {
+    el.classList.toggle('active', tabs[i] === tab);
+  });
+  if (tab === 'products') renderProductList();
+  if (tab === 'sprint') updateSprintBar();
+}
+
+// ===== Products =====
+function showProductModal(id) {
+  populateCategorySelect('productCategory');
+  const modal = document.getElementById('productModal');
+  if (id) {
+    const store = getStore();
+    const p = store.products.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('productModalTitle').textContent = 'プロダクト編集';
+    document.getElementById('productEditId').value = id;
+    document.getElementById('productName').value = p.name;
+    document.getElementById('productStatus').value = p.status || 'plan';
+    document.getElementById('productLead').value = p.lead || 'サノ';
+    document.getElementById('productUrl').value = p.url || '';
+    document.getElementById('productTech').value = p.tech || '';
+    document.getElementById('productCategory').value = p.category || 'その他';
+    document.getElementById('productDate').value = p.date || '';
+  } else {
+    document.getElementById('productModalTitle').textContent = 'プロダクト登録';
+    document.getElementById('productEditId').value = '';
+    ['productName','productUrl','productTech'].forEach(fid => document.getElementById(fid).value = '');
+    document.getElementById('productDate').value = '';
+    document.getElementById('productStatus').value = 'plan';
+    document.getElementById('productLead').value = 'サノ';
+    document.getElementById('productCategory').value = 'その他';
+  }
+  modal.style.display = 'flex';
+}
+
+function saveProduct() {
+  const name = document.getElementById('productName').value.trim();
+  if (!name) { showToast('名前を入力してください'); return; }
+  const store = getStore();
+  const editId = document.getElementById('productEditId').value;
+  const product = {
+    id: editId || genId(), name,
+    status: document.getElementById('productStatus').value,
+    lead: document.getElementById('productLead').value,
+    url: document.getElementById('productUrl').value.trim(),
+    tech: document.getElementById('productTech').value.trim(),
+    category: document.getElementById('productCategory').value || 'その他',
+    date: document.getElementById('productDate').value,
+    created: editId ? (store.products.find(p => p.id === editId)?.created || new Date().toISOString()) : new Date().toISOString()
+  };
+  if (editId) {
+    const idx = store.products.findIndex(p => p.id === editId);
+    if (idx >= 0) store.products[idx] = product;
+  } else {
+    store.products.push(product);
+    addActivity(store, `MAKE: プロダクト "${name}" を登録`);
+  }
+  setStore(store);
+  document.getElementById('productModal').style.display = 'none';
+  renderProductList();
+  showToast('Saved');
+}
+
+function deleteProduct(id) {
+  if (!confirm('プロダクトを削除しますか？')) return;
+  const store = getStore();
+  store.products = store.products.filter(p => p.id !== id);
+  setStore(store);
+  renderProductList();
+}
+
+function renderProductList() {
+  const store = getStore();
+  let items = [...(store.products || [])];
+  const filter = document.getElementById('productFilter')?.value || 'all';
+  if (filter !== 'all') items = items.filter(p => p.status === filter);
+
+  // Summary
+  const all = store.products || [];
+  const summaryBox = document.getElementById('productSummary');
+  if (summaryBox) {
+    const statusColors = {plan:'#1A56DB',dev:'#F97316',live:'#10B981',archive:'var(--dim)'};
+    const counts = {plan:0,dev:0,live:0,archive:0};
+    all.forEach(p => { if (counts[p.status] !== undefined) counts[p.status]++; });
+    summaryBox.innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      ${Object.entries(counts).map(([st,ct]) => `<div class="product-summary-item">
+        <div class="count" style="color:${statusColors[st]||'var(--sub)'}">${ct}</div>
+        <div class="label">${st.toUpperCase()}</div>
+      </div>`).join('')}
+      <div class="product-summary-item">
+        <div class="count" style="color:var(--cyan)">${all.length}</div>
+        <div class="label">TOTAL</div>
+      </div>
+    </div>`;
+  }
+
+  const box = document.getElementById('productGrid');
+  if (!box) return;
+  if (items.length === 0) { box.innerHTML = '<div class="empty">プロダクトはまだありません</div>'; return; }
+
+  const statusColors = {plan:'#1A56DB',dev:'#F97316',live:'#10B981',archive:'var(--dim)'};
+  const statusLabels = {plan:'Plan',dev:'Dev',live:'Live',archive:'Archive'};
+  const leadColors = {'サノ':'var(--blue)','中':'var(--cyan)','ししょー':'var(--orange)'};
+
+  box.innerHTML = items.map(p => {
+    // Count OFFER/PRESENT links
+    const offers = (store.offers || []).filter(o => o.projectId === p.projectId).length;
+    const pubPlans = (store.pubPlans || []).filter(pp => pp.productId === p.id).length;
+    return `<div class="product-card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <div class="product-status-dot" style="background:${statusColors[p.status]||'var(--dim)'}"></div>
+        <span style="font-size:10px;font-weight:700;color:${statusColors[p.status]}">${statusLabels[p.status]||p.status}</span>
+        <span class="item-title" style="flex:1;margin:0">${escapeHtml(p.name)}</span>
+        <span style="font-size:10px;color:${leadColors[p.lead]||'var(--sub)'};font-weight:600">${p.lead||''}</span>
+      </div>
+      <div class="item-meta">
+        ${p.date ? `<span style="font-size:11px">完成: ${p.date}</span>` : ''}
+        ${p.tech ? `<span style="font-size:11px">技術: ${p.tech}</span>` : ''}
+        ${p.category ? `<span style="font-size:11px">${p.category}</span>` : ''}
+        ${p.url ? `<a href="${escapeHtml(p.url)}" target="_blank" style="font-size:11px;color:var(--cyan)">URL</a>` : ''}
+      </div>
+      <div style="display:flex;gap:12px;margin-top:6px;font-size:10px;color:var(--dim)">
+        <span>OFFER: ${offers}件</span>
+        <span>発信プラン: ${pubPlans}件</span>
+      </div>
+      <div class="item-actions">
+        <button class="btn btn-sm btn-outline" onclick="showProductModal('${p.id}')">Edit</button>
+        <button class="btn btn-sm btn-outline" onclick="deleteProduct('${p.id}')" style="color:var(--red)">Del</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ===== OFFER Pipeline =====
+function renderOfferPipeline() {
+  const store = getStore();
+  const items = store.offers || [];
+  const stages = [
+    { key: 'published', label: '公開済み', icon: '&#128228;', color: 'var(--cyan)' },
+    { key: 'feedback', label: 'FB中', icon: '&#128172;', color: 'var(--orange)' },
+    { key: 'completed', label: '完了', icon: '&#9989;', color: 'var(--green)' },
+  ];
+  const box = document.getElementById('offerPipeline');
+  if (!box) return;
+  box.innerHTML = stages.map(st => {
+    const stItems = items.filter(o => o.status === st.key);
+    return `<div class="offer-pipeline-col" style="border-top:3px solid ${st.color}">
+      <div class="offer-pipeline-header">
+        <span>${st.icon}</span> ${st.label}
+        <span class="offer-pipeline-count">${stItems.length}</span>
+      </div>
+      ${stItems.length === 0 ? '<div class="empty" style="padding:8px;font-size:11px">なし</div>' :
+        stItems.map(o => `<div class="category-card" onclick="showOfferModal('${o.id}')">
+          <div class="item-title">${escapeHtml(o.name)}</div>
+          <div style="font-size:10px;color:var(--sub)">${o.method === 'web' ? 'Web公開' : o.method === 'referral' ? '紹介' : '直接提供'}</div>
+        </div>`).join('')
+      }
+    </div>`;
+  }).join('');
+}
+
+// ===== PRESENT Sub-tabs =====
+function setPresentTab(tab) {
+  const tabs = ['plans','calendar','templates','log'];
+  tabs.forEach(t => {
+    const el = document.getElementById('presentTab' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (el) el.style.display = (t === tab) ? 'block' : 'none';
+  });
+  document.querySelectorAll('#sec-present .sub-tab').forEach((el, i) => {
+    el.classList.toggle('active', tabs[i] === tab);
+  });
+  if (tab === 'plans') { renderPubPlans(); renderChannelSummary(); }
+  if (tab === 'calendar') renderPubCalendar();
+  if (tab === 'templates') { renderTemplateList(); populateDraftSelects(); }
+  if (tab === 'log') renderPresentList();
+}
+
+// ===== Publishing Plans =====
+const PUB_CHANNELS = [
+  { key: 'x', icon: '&#120143;', name: 'X' },
+  { key: 'instagram', icon: '&#128248;', name: 'Instagram' },
+  { key: 'event', icon: '&#127908;', name: 'イベント' },
+  { key: 'word', icon: '&#128483;', name: '口コミ' },
+  { key: 'blog', icon: '&#128221;', name: 'ブログ' },
+  { key: 'other', icon: '&#128736;', name: 'その他' },
+];
+const PUB_STATUSES = ['未着手','下書き','投稿済み','完了'];
+
+function showPubPlanModal(id) {
+  populateProductSelect('pubPlanProduct');
+  const modal = document.getElementById('pubPlanModal');
+  const chBox = document.getElementById('pubPlanChannels');
+
+  let channelStates = {};
+  PUB_CHANNELS.forEach(ch => { channelStates[ch.key] = '未着手'; });
+
+  if (id) {
+    const store = getStore();
+    const plan = store.pubPlans.find(p => p.id === id);
+    if (!plan) return;
+    document.getElementById('pubPlanModalTitle').textContent = '発信プラン編集';
+    document.getElementById('pubPlanEditId').value = id;
+    document.getElementById('pubPlanProduct').value = plan.productId || '';
+    document.getElementById('pubPlanMemo').value = plan.memo || '';
+    channelStates = plan.channels || channelStates;
+  } else {
+    document.getElementById('pubPlanModalTitle').textContent = '発信プラン追加';
+    document.getElementById('pubPlanEditId').value = '';
+    document.getElementById('pubPlanProduct').value = '';
+    document.getElementById('pubPlanMemo').value = '';
+  }
+
+  chBox.innerHTML = PUB_CHANNELS.map(ch => {
+    const val = channelStates[ch.key] || '未着手';
+    return `<div class="pub-channel-row">
+      <span class="pub-channel-icon">${ch.icon}</span>
+      <span class="pub-channel-name">${ch.name}</span>
+      <select id="pubCh_${ch.key}" style="width:auto;padding:2px 8px;font-size:11px">
+        ${PUB_STATUSES.map(s => `<option value="${s}" ${s===val?'selected':''}>${s}</option>`).join('')}
+      </select>
+    </div>`;
+  }).join('');
+
+  modal.style.display = 'flex';
+}
+
+function savePubPlan() {
+  const productId = document.getElementById('pubPlanProduct').value;
+  if (!productId) { showToast('プロダクトを選択してください'); return; }
+  const store = getStore();
+  const editId = document.getElementById('pubPlanEditId').value;
+  const channels = {};
+  PUB_CHANNELS.forEach(ch => {
+    channels[ch.key] = document.getElementById('pubCh_' + ch.key)?.value || '未着手';
+  });
+  const plan = {
+    id: editId || genId(),
+    productId,
+    memo: document.getElementById('pubPlanMemo').value.trim(),
+    channels,
+    created: editId ? (store.pubPlans.find(p => p.id === editId)?.created || new Date().toISOString()) : new Date().toISOString(),
+    updated: new Date().toISOString()
+  };
+  if (editId) {
+    const idx = store.pubPlans.findIndex(p => p.id === editId);
+    if (idx >= 0) store.pubPlans[idx] = plan;
+  } else {
+    store.pubPlans.push(plan);
+    const prod = store.products.find(p => p.id === productId);
+    addActivity(store, `PRESENT: "${prod?.name||'?'}" の発信プラン作成`);
+  }
+  setStore(store);
+  document.getElementById('pubPlanModal').style.display = 'none';
+  renderPubPlans();
+  renderChannelSummary();
+  showToast('Saved');
+}
+
+function deletePubPlan(id) {
+  if (!confirm('削除しますか？')) return;
+  const store = getStore();
+  store.pubPlans = store.pubPlans.filter(p => p.id !== id);
+  setStore(store);
+  renderPubPlans();
+  renderChannelSummary();
+}
+
+function renderPubPlans() {
+  const store = getStore();
+  const plans = store.pubPlans || [];
+  const box = document.getElementById('pubPlanList');
+  if (!box) return;
+  if (plans.length === 0) { box.innerHTML = '<div class="empty">発信プランはまだありません</div>'; return; }
+
+  box.innerHTML = plans.map(plan => {
+    const prod = store.products.find(p => p.id === plan.productId);
+    const channels = plan.channels || {};
+    const total = PUB_CHANNELS.length;
+    const done = PUB_CHANNELS.filter(ch => channels[ch.key] === '完了' || channels[ch.key] === '投稿済み').length;
+    const pct = Math.round(done / total * 100);
+
+    return `<div class="pub-plan-card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:14px;font-weight:700;flex:1">${escapeHtml(prod?.name || '(不明)')}</span>
+        <span style="font-size:12px;color:var(--cyan);font-weight:600">${pct}%</span>
+      </div>
+      ${plan.memo ? `<div style="font-size:11px;color:var(--sub);margin-bottom:8px">${escapeHtml(plan.memo)}</div>` : ''}
+      ${PUB_CHANNELS.map(ch => {
+        const st = channels[ch.key] || '未着手';
+        const stColor = st === '完了' ? 'var(--green)' : st === '投稿済み' ? 'var(--cyan)' : st === '下書き' ? 'var(--orange)' : 'var(--dim)';
+        return `<div class="pub-channel-row">
+          <span class="pub-channel-icon">${ch.icon}</span>
+          <span class="pub-channel-name">${ch.name}</span>
+          <span class="status-badge" style="background:${stColor}22;color:${stColor}">${st}</span>
+        </div>`;
+      }).join('')}
+      <div class="pub-rate-bar"><div class="pub-rate-fill" style="width:${pct}%"></div></div>
+      <div class="item-actions" style="margin-top:8px">
+        <button class="btn btn-sm btn-outline" onclick="showPubPlanModal('${plan.id}')">Edit</button>
+        <button class="btn btn-sm btn-outline" onclick="deletePubPlan('${plan.id}')" style="color:var(--red)">Del</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function populateProductSelect(selectId) {
+  const store = getStore();
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  const val = sel.value;
+  sel.innerHTML = '<option value="">-- 選択 --</option>';
+  (store.products || []).forEach(p => {
+    sel.innerHTML += `<option value="${p.id}">${escapeHtml(p.name)}</option>`;
+  });
+  sel.value = val;
+}
+
+// ===== Channel Summary =====
+function renderChannelSummary() {
+  const store = getStore();
+  const plans = store.pubPlans || [];
+  const presents = store.presents || [];
+  const box = document.getElementById('channelSummary');
+  if (!box) return;
+
+  const counts = {};
+  PUB_CHANNELS.forEach(ch => { counts[ch.key] = 0; });
+
+  // Count from pubPlans (completed/posted)
+  plans.forEach(plan => {
+    const channels = plan.channels || {};
+    PUB_CHANNELS.forEach(ch => {
+      if (channels[ch.key] === '完了' || channels[ch.key] === '投稿済み') counts[ch.key]++;
+    });
+  });
+  // Count from present log
+  presents.forEach(p => { if (counts[p.channel] !== undefined) counts[p.channel]++; });
+
+  const maxCount = Math.max(...Object.values(counts), 1);
+  box.innerHTML = PUB_CHANNELS.map(ch => {
+    const c = counts[ch.key];
+    const isWeak = c < maxCount * 0.3;
+    return `<div class="channel-stat" ${isWeak ? 'style="border-color:var(--orange)"' : ''}>
+      <div class="icon">${ch.icon}</div>
+      <div class="count" style="color:${isWeak ? 'var(--orange)' : 'var(--cyan)'}">${c}</div>
+      <div class="name">${ch.name}</div>
+      ${isWeak && c < maxCount ? '<div style="font-size:9px;color:var(--orange);margin-top:2px">手薄</div>' : ''}
+    </div>`;
+  }).join('');
+}
+
+// ===== Publishing Calendar =====
+let calYear, calMonth;
+(function initCal() {
+  const now = new Date();
+  calYear = now.getFullYear();
+  calMonth = now.getMonth();
+})();
+
+function changeCalMonth(delta) {
+  calMonth += delta;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderPubCalendar();
+}
+
+function renderPubCalendar() {
+  const label = document.getElementById('calMonthLabel');
+  if (label) label.textContent = `${calYear}年 ${calMonth+1}月`;
+
+  const box = document.getElementById('pubCalendar');
+  if (!box) return;
+
+  const store = getStore();
+  const presents = store.presents || [];
+  const plans = store.pubPlans || [];
+
+  // Build map of date -> channel icons
+  const dateMap = {};
+  presents.forEach(p => {
+    const d = p.created ? p.created.slice(0,10) : '';
+    if (!d) return;
+    if (!dateMap[d]) dateMap[d] = [];
+    const ch = PUB_CHANNELS.find(c => c.key === p.channel);
+    if (ch) dateMap[d].push(ch.icon);
+  });
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0,10);
+
+  let html = '<div class="cal-grid">';
+  const dayLabels = ['日','月','火','水','木','金','土'];
+  dayLabels.forEach(d => { html += `<div class="cal-day-label">${d}</div>`; });
+
+  // Empty cells before first day
+  for (let i = 0; i < firstDay; i++) { html += '<div class="cal-day other-month"></div>'; }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = dateStr === todayStr;
+    const icons = dateMap[dateStr] || [];
+    html += `<div class="cal-day ${isToday?'today':''}">
+      ${d}
+      ${icons.length ? `<div class="cal-icons">${icons.slice(0,3).map(ic => `<span class="cal-icon">${ic}</span>`).join('')}</div>` : ''}
+    </div>`;
+  }
+  html += '</div>';
+  box.innerHTML = html;
+}
+
+// ===== Templates =====
+function showTemplateModal(id) {
+  const modal = document.getElementById('templateModal');
+  if (id) {
+    const store = getStore();
+    const tmpl = store.templates.find(t => t.id === id);
+    if (!tmpl) return;
+    document.getElementById('templateEditId').value = id;
+    document.getElementById('templateName').value = tmpl.name;
+    document.getElementById('templateChannel').value = tmpl.channel || 'x';
+    document.getElementById('templateBody').value = tmpl.body || '';
+  } else {
+    document.getElementById('templateEditId').value = '';
+    document.getElementById('templateName').value = '';
+    document.getElementById('templateChannel').value = 'x';
+    document.getElementById('templateBody').value = '';
+  }
+  modal.style.display = 'flex';
+}
+
+function saveTemplate() {
+  const name = document.getElementById('templateName').value.trim();
+  if (!name) { showToast('名前を入力してください'); return; }
+  const store = getStore();
+  const editId = document.getElementById('templateEditId').value;
+  const tmpl = {
+    id: editId || genId(),
+    name,
+    channel: document.getElementById('templateChannel').value,
+    body: document.getElementById('templateBody').value.trim(),
+    created: editId ? (store.templates.find(t => t.id === editId)?.created || new Date().toISOString()) : new Date().toISOString()
+  };
+  if (editId) {
+    const idx = store.templates.findIndex(t => t.id === editId);
+    if (idx >= 0) store.templates[idx] = tmpl;
+  } else {
+    store.templates.push(tmpl);
+  }
+  setStore(store);
+  document.getElementById('templateModal').style.display = 'none';
+  renderTemplateList();
+  populateDraftSelects();
+  showToast('Saved');
+}
+
+function deleteTemplate(id) {
+  if (!confirm('削除しますか？')) return;
+  const store = getStore();
+  store.templates = store.templates.filter(t => t.id !== id);
+  setStore(store);
+  renderTemplateList();
+  populateDraftSelects();
+}
+
+function renderTemplateList() {
+  const store = getStore();
+  const items = store.templates || [];
+  const box = document.getElementById('templateList');
+  if (!box) return;
+  if (items.length === 0) {
+    box.innerHTML = '<div class="empty">テンプレートはまだありません。<br>X用、Instagram用などチャネル別に作成しましょう。</div>';
+    return;
+  }
+  const chLabels = {x:'X',instagram:'IG',event:'Event',blog:'Blog',word:'口コミ',other:'Other'};
+  box.innerHTML = items.map(t => `<div class="template-card">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="pill pill-cyan" style="font-size:10px">${chLabels[t.channel]||t.channel}</span>
+      <span class="title" style="flex:1">${escapeHtml(t.name)}</span>
+      <button class="btn btn-sm btn-outline" onclick="showTemplateModal('${t.id}')" style="padding:2px 8px;font-size:10px">Edit</button>
+      <button class="btn btn-sm btn-outline" onclick="deleteTemplate('${t.id}')" style="padding:2px 8px;font-size:10px;color:var(--red)">Del</button>
+    </div>
+    <div class="desc" style="margin-top:4px;white-space:pre-wrap">${escapeHtml(t.body||'').slice(0,100)}${(t.body||'').length > 100 ? '...' : ''}</div>
+  </div>`).join('');
+}
+
+function populateDraftSelects() {
+  populateProductSelect('draftProduct');
+  const store = getStore();
+  const sel = document.getElementById('draftTemplate');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">-- 選択 --</option>';
+  (store.templates || []).forEach(t => {
+    const chLabels = {x:'X',instagram:'IG',event:'Event',blog:'Blog',word:'口コミ',other:'Other'};
+    sel.innerHTML += `<option value="${t.id}">[${chLabels[t.channel]||t.channel}] ${escapeHtml(t.name)}</option>`;
+  });
+}
+
+function updateDraftPreview() {
+  const store = getStore();
+  const productId = document.getElementById('draftProduct').value;
+  const templateId = document.getElementById('draftTemplate').value;
+  const area = document.getElementById('draftArea');
+  if (!productId || !templateId) { area.style.display = 'none'; return; }
+
+  const product = store.products.find(p => p.id === productId);
+  const tmpl = store.templates.find(t => t.id === templateId);
+  if (!product || !tmpl) { area.style.display = 'none'; return; }
+
+  let text = tmpl.body || '';
+  text = text.replace(/\{\{product_name\}\}/g, product.name || '');
+  text = text.replace(/\{\{product_url\}\}/g, product.url || '');
+  text = text.replace(/\{\{product_desc\}\}/g, product.tech || '');
+
+  document.getElementById('draftText').value = text;
+  area.style.display = 'block';
+}
+
+function copyDraft() {
+  const text = document.getElementById('draftText').value;
+  navigator.clipboard.writeText(text).then(() => showToast('コピーしました'));
+}
+
+function saveDraftAsLog() {
+  const text = document.getElementById('draftText').value.trim();
+  if (!text) return;
+  const store = getStore();
+  const templateId = document.getElementById('draftTemplate').value;
+  const tmpl = store.templates.find(t => t.id === templateId);
+  const item = {
+    id: genId(),
+    title: text.slice(0, 50) + (text.length > 50 ? '...' : ''),
+    channel: tmpl?.channel || 'other',
+    reach: 0, url: '', memo: 'テンプレートから生成',
+    created: new Date().toISOString()
+  };
+  store.presents.push(item);
+  addActivity(store, `PRESENT: テンプレートから発信ログ追加`);
+  setStore(store);
+  renderPresentList();
+  updateNavCounts();
+  renderPubCalendar();
+  renderChannelSummary();
+  showToast('発信ログに記録しました');
+}
+
 function renderAll() {
   renderFindList();
   renderMakeList();
@@ -1534,6 +2677,14 @@ function importData(event) {
       renderAll();
       updateDashboard();
       updateNavCounts();
+      renderCategoryTags();
+      renderProductList();
+      renderPubPlans();
+      renderTemplateList();
+      renderPubCalendar();
+      renderChannelSummary();
+      renderOfferPipeline();
+      populateCategorySelects();
       showToast('Imported');
     } catch(err) { showToast('Import failed: ' + err.message); }
   };
