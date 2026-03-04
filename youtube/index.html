@@ -1,0 +1,2395 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YouTube Analytics Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+/* ===== CSS Variables ===== */
+:root {
+  --bg: #0a0a0f;
+  --card: #141420;
+  --card-hover: #1a1a2e;
+  --border: #1e1e30;
+  --text: #e8e8f0;
+  --sub: #6a6a80;
+  --lime: #d4ff47;
+  --coral: #ff5068;
+  --cyan: #00cfff;
+  --violet: #c084fc;
+  --sidebar-w: 220px;
+  --header-h: 56px;
+  --bottom-nav-h: 60px;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+/* ===== Reset & Base ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+a { color: var(--cyan); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+input {
+  font-family: inherit;
+  outline: none;
+}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--sub); }
+
+/* ===== Connection Screen ===== */
+#connect-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  background: var(--bg);
+}
+
+.connect-box {
+  width: 100%;
+  max-width: 480px;
+  text-align: center;
+}
+
+.connect-logo {
+  font-size: 48px;
+  margin-bottom: 8px;
+}
+
+.connect-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.connect-subtitle {
+  color: var(--sub);
+  font-size: 14px;
+  margin-bottom: 32px;
+}
+
+.connect-form {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.form-group { margin-bottom: 18px; }
+.form-group:last-of-type { margin-bottom: 24px; }
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sub);
+  margin-bottom: 6px;
+  letter-spacing: 0.02em;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+  border-color: var(--lime);
+}
+
+.form-group input::placeholder {
+  color: var(--sub);
+  opacity: 0.7;
+}
+
+.connect-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-primary {
+  flex: 1;
+  padding: 12px 20px;
+  background: var(--lime);
+  color: #000;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.btn-primary:hover { opacity: 0.9; }
+.btn-primary:active { transform: scale(0.98); }
+
+.btn-secondary {
+  flex: 1;
+  padding: 12px 20px;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.btn-secondary:hover {
+  border-color: var(--sub);
+  background: var(--card-hover);
+}
+
+.connect-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  font-size: 13px;
+  color: var(--sub);
+  text-align: left;
+  margin-bottom: 16px;
+}
+
+.connect-info .info-icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  background: var(--cyan);
+  color: #000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 1px;
+}
+
+.connect-guide {
+  text-align: left;
+}
+
+.connect-guide summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--cyan);
+  font-weight: 600;
+  padding: 8px 0;
+  user-select: none;
+}
+
+.connect-guide .guide-steps {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--sub);
+  line-height: 1.8;
+}
+
+.connect-guide .guide-steps ol {
+  padding-left: 20px;
+}
+
+.connect-guide .guide-steps a {
+  color: var(--cyan);
+}
+
+.connect-error {
+  color: var(--coral);
+  font-size: 13px;
+  margin-top: 12px;
+  display: none;
+}
+
+/* ===== App Shell ===== */
+#app-shell { display: none; min-height: 100vh; }
+#app-shell.active { display: flex; }
+
+/* ===== Sidebar (PC) ===== */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--sidebar-w);
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  padding: 20px 0;
+}
+
+.sidebar-brand {
+  padding: 0 20px 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+
+.sidebar-brand-icon { font-size: 28px; margin-bottom: 4px; }
+
+.sidebar-brand-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.sidebar-brand-sub {
+  font-size: 11px;
+  color: var(--sub);
+}
+
+.sidebar-nav { flex: 1; padding: 8px 0; }
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  font-size: 14px;
+  color: var(--sub);
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+
+.nav-item:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+
+.nav-item.active {
+  color: var(--lime);
+  background: rgba(212,255,71,0.06);
+  border-right: 3px solid var(--lime);
+}
+
+.nav-item .nav-icon { font-size: 18px; width: 24px; text-align: center; }
+
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.sidebar-footer .disconnect-btn {
+  font-size: 12px;
+  color: var(--sub);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 4px 0;
+  transition: color 0.2s;
+}
+
+.sidebar-footer .disconnect-btn:hover { color: var(--coral); }
+
+/* ===== Header ===== */
+.main-area {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: var(--header-h);
+  background: rgba(10,10,15,0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-channel-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--border);
+}
+
+.header-channel-name {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.header-demo-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #000;
+  background: var(--lime);
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-timestamp {
+  font-size: 12px;
+  color: var(--sub);
+}
+
+.header-settings-btn {
+  background: none;
+  border: none;
+  color: var(--sub);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s;
+  line-height: 1;
+}
+
+.header-settings-btn:hover { color: var(--text); }
+
+/* ===== Main Content ===== */
+.content {
+  flex: 1;
+  padding: 24px;
+  max-width: 1200px;
+  width: 100%;
+}
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ===== KPI Cards ===== */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.kpi-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: border-color 0.2s;
+}
+
+.kpi-card:hover { border-color: rgba(212,255,71,0.2); }
+
+.kpi-label {
+  font-size: 12px;
+  color: var(--sub);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+
+.kpi-value {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.kpi-change {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.kpi-change.positive { color: var(--lime); }
+.kpi-change.negative { color: var(--coral); }
+.kpi-change.neutral { color: var(--sub); }
+
+/* ===== Chart Cards ===== */
+.chart-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.chart-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-card-title .chart-icon { font-size: 18px; }
+
+.chart-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* ===== Top Videos ===== */
+.top-videos { margin-bottom: 20px; }
+
+.top-video-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.top-video-item:last-child { border-bottom: none; }
+
+.top-video-rank {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.top-video-rank.rank-1 { background: linear-gradient(135deg, #ffd700, #ffaa00); color: #000; }
+.top-video-rank.rank-2 { background: linear-gradient(135deg, #c0c0c0, #a0a0a0); color: #000; }
+.top-video-rank.rank-3 { background: linear-gradient(135deg, #cd7f32, #b06820); color: #fff; }
+
+.top-video-thumb {
+  width: 80px;
+  height: 45px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--border);
+}
+
+.top-video-info { flex: 1; min-width: 0; }
+
+.top-video-title {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+
+.top-video-stats {
+  font-size: 12px;
+  color: var(--sub);
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ===== Engagement Summary ===== */
+.engagement-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.engagement-item {
+  text-align: center;
+  padding: 16px;
+  background: rgba(255,255,255,0.02);
+  border-radius: var(--radius-sm);
+}
+
+.engagement-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--cyan);
+}
+
+.engagement-label {
+  font-size: 12px;
+  color: var(--sub);
+  margin-top: 4px;
+}
+
+/* ===== Videos Tab ===== */
+.videos-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.videos-count {
+  font-size: 14px;
+  color: var(--sub);
+}
+
+.sort-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.sort-btn {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sub);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sort-btn.active {
+  color: #000;
+  background: var(--lime);
+  border-color: var(--lime);
+}
+
+.sort-btn:hover:not(.active) {
+  border-color: var(--sub);
+  color: var(--text);
+}
+
+.video-list { display: flex; flex-direction: column; gap: 12px; }
+
+.video-card {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color 0.2s;
+}
+
+.video-card:hover { border-color: rgba(212,255,71,0.2); }
+
+.video-card-thumb {
+  width: 160px;
+  height: 90px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--border);
+}
+
+.video-card-body { flex: 1; min-width: 0; }
+
+.video-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.video-card-date {
+  font-size: 12px;
+  color: var(--sub);
+  margin-bottom: 8px;
+}
+
+.video-card-metrics {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.video-metric {
+  font-size: 13px;
+  color: var(--sub);
+}
+
+.video-metric span {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.video-card-engagement {
+  font-size: 12px;
+  color: var(--lime);
+  font-weight: 600;
+}
+
+.video-card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--cyan);
+  margin-top: 8px;
+}
+
+/* ===== Pagination ===== */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.page-btn {
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sub);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.page-btn:hover:not(:disabled) { border-color: var(--sub); color: var(--text); }
+.page-btn:disabled { opacity: 0.3; cursor: default; }
+.page-btn.active { background: var(--lime); color: #000; border-color: var(--lime); }
+
+/* ===== Insight Box ===== */
+.insight-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  background: rgba(0,207,255,0.05);
+  border: 1px solid rgba(0,207,255,0.15);
+  border-radius: var(--radius-sm);
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--sub);
+  line-height: 1.6;
+}
+
+.insight-box .insight-arrow {
+  color: var(--cyan);
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ===== Radar Tab ===== */
+.radar-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.score-list { display: flex; flex-direction: column; gap: 12px; }
+
+.score-item { display: flex; align-items: center; gap: 12px; }
+
+.score-label {
+  width: 120px;
+  font-size: 13px;
+  color: var(--sub);
+  flex-shrink: 0;
+}
+
+.score-bar-bg {
+  flex: 1;
+  height: 10px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.score-bar-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.8s ease;
+}
+
+.score-value {
+  width: 48px;
+  text-align: right;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.suggestions-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.suggestions-card h3 {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--sub);
+  line-height: 1.6;
+}
+
+.suggestion-item:last-child { border-bottom: none; }
+
+.suggestion-arrow {
+  color: var(--lime);
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ===== Settings Modal ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-overlay.active { display: flex; }
+
+.modal {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 440px;
+  padding: 24px;
+}
+
+.modal h2 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.modal .form-group { margin-bottom: 16px; }
+
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.modal-buttons button { flex: 1; padding: 10px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; }
+
+.btn-danger {
+  background: rgba(255,80,104,0.15);
+  color: var(--coral);
+  border: 1px solid rgba(255,80,104,0.3);
+  transition: background 0.2s;
+}
+
+.btn-danger:hover { background: rgba(255,80,104,0.25); }
+
+/* ===== Bottom Nav (Mobile) ===== */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--bottom-nav-h);
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  z-index: 100;
+}
+
+.bottom-nav-inner {
+  display: flex;
+  height: 100%;
+}
+
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  color: var(--sub);
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.bottom-nav-item .bnav-icon { font-size: 20px; }
+
+.bottom-nav-item.active { color: var(--lime); }
+
+/* ===== Loading Spinner ===== */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10,10,15,0.9);
+  z-index: 300;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.loading-overlay.active { display: flex; }
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--lime);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-text { font-size: 14px; color: var(--sub); }
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main-area { margin-left: 0; }
+  .bottom-nav { display: block; }
+  .content { padding: 16px; padding-bottom: calc(var(--bottom-nav-h) + 16px); }
+  .kpi-grid { grid-template-columns: 1fr; gap: 10px; }
+  .kpi-value { font-size: 22px; }
+  .engagement-grid { grid-template-columns: 1fr; }
+  .radar-layout { grid-template-columns: 1fr; }
+  .video-card { flex-direction: column; }
+  .video-card-thumb { width: 100%; height: auto; aspect-ratio: 16/9; }
+  .header-timestamp { display: none; }
+  .videos-header { flex-direction: column; align-items: flex-start; }
+  .chart-card { padding: 16px; }
+  .score-label { width: 90px; font-size: 12px; }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .kpi-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .radar-layout { grid-template-columns: 1fr; }
+}
+
+/* ===== Fade Animations ===== */
+.fade-in {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+<body>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text">データを取得中...</div>
+</div>
+
+<!-- Connection Screen -->
+<div id="connect-screen">
+  <div class="connect-box">
+    <div class="connect-logo">📊</div>
+    <div class="connect-title">YouTube Analytics</div>
+    <div class="connect-subtitle">チャンネル分析ダッシュボード</div>
+
+    <div class="connect-form">
+      <div class="form-group">
+        <label>YouTube API キー</label>
+        <input type="password" id="input-api-key" placeholder="AIza...">
+      </div>
+      <div class="form-group">
+        <label>チャンネル ID または URL</label>
+        <input type="text" id="input-channel" placeholder="UCxxxxxx... または https://youtube.com/@...">
+      </div>
+      <div class="connect-buttons">
+        <button class="btn-primary" onclick="handleConnect()">接続する</button>
+        <button class="btn-secondary" onclick="startDemo()">デモで試す</button>
+      </div>
+      <div class="connect-error" id="connect-error"></div>
+    </div>
+
+    <div class="connect-info">
+      <div class="info-icon">i</div>
+      <div>APIキーはブラウザのlocalStorageに保存されます。外部サーバーには一切送信しません。</div>
+    </div>
+
+    <details class="connect-guide">
+      <summary>📖 APIキーの取得方法</summary>
+      <div class="guide-steps">
+        <ol>
+          <li><a href="https://console.cloud.google.com/" target="_blank" rel="noopener">Google Cloud Console</a> にアクセス</li>
+          <li>新しいプロジェクトを作成（または既存のものを選択）</li>
+          <li>「APIとサービス」→「ライブラリ」</li>
+          <li>「YouTube Data API v3」を検索して有効化</li>
+          <li>「認証情報」→「認証情報を作成」→「APIキー」</li>
+          <li>作成されたキーをコピーして上に貼り付け</li>
+        </ol>
+      </div>
+    </details>
+  </div>
+</div>
+
+<!-- App Shell -->
+<div id="app-shell">
+  <!-- Sidebar (PC) -->
+  <nav class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon">📊</div>
+      <div class="sidebar-brand-name">YouTube Analytics</div>
+      <div class="sidebar-brand-sub">Channel Dashboard</div>
+    </div>
+    <div class="sidebar-nav">
+      <button class="nav-item active" data-tab="overview">
+        <span class="nav-icon">📈</span> 概要
+      </button>
+      <button class="nav-item" data-tab="videos">
+        <span class="nav-icon">🎬</span> 動画一覧
+      </button>
+      <button class="nav-item" data-tab="patterns">
+        <span class="nav-icon">📊</span> 分析
+      </button>
+      <button class="nav-item" data-tab="radar">
+        <span class="nav-icon">🎯</span> レーダー
+      </button>
+    </div>
+    <div class="sidebar-footer">
+      <button class="disconnect-btn" onclick="disconnect()">🔌 接続解除</button>
+    </div>
+  </nav>
+
+  <!-- Main Area -->
+  <div class="main-area">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <img class="header-channel-icon" id="header-icon" src="" alt="">
+        <span class="header-channel-name" id="header-name"></span>
+        <span class="header-demo-badge" id="header-demo" style="display:none;">DEMO</span>
+      </div>
+      <div class="header-right">
+        <span class="header-timestamp" id="header-timestamp"></span>
+        <button class="header-settings-btn" onclick="openSettings()" title="設定">⚙</button>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- Tab: Overview -->
+      <div class="tab-panel active" id="tab-overview">
+        <div class="kpi-grid" id="kpi-grid"></div>
+
+        <div class="chart-card">
+          <div class="chart-card-title"><span class="chart-icon">📈</span> 再生数推移（直近30動画）</div>
+          <div class="chart-wrapper"><canvas id="chart-views-trend"></canvas></div>
+        </div>
+
+        <div class="chart-card top-videos">
+          <div class="chart-card-title"><span class="chart-icon">🏆</span> トップ動画</div>
+          <div id="top-videos-list"></div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-card-title"><span class="chart-icon">💡</span> エンゲージメント概要</div>
+          <div class="engagement-grid" id="engagement-grid"></div>
+        </div>
+      </div>
+
+      <!-- Tab: Videos -->
+      <div class="tab-panel" id="tab-videos">
+        <div class="videos-header">
+          <div class="chart-card-title" style="margin:0;"><span class="chart-icon">🎬</span> 動画一覧 <span class="videos-count" id="videos-count"></span></div>
+          <div class="sort-buttons">
+            <button class="sort-btn active" data-sort="date" onclick="sortVideos('date')">公開日順</button>
+            <button class="sort-btn" data-sort="views" onclick="sortVideos('views')">再生数順</button>
+            <button class="sort-btn" data-sort="engagement" onclick="sortVideos('engagement')">評価順</button>
+          </div>
+        </div>
+        <div class="video-list" id="video-list"></div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+
+      <!-- Tab: Patterns -->
+      <div class="tab-panel" id="tab-patterns">
+        <div class="chart-card">
+          <div class="chart-card-title"><span class="chart-icon">🗓</span> 曜日別パフォーマンス</div>
+          <div class="chart-wrapper"><canvas id="chart-day-of-week"></canvas></div>
+          <div class="insight-box" id="insight-dow"><span class="insight-arrow">→</span><span></span></div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-card-title"><span class="chart-icon">⏰</span> 時間帯別分析</div>
+          <div class="chart-wrapper"><canvas id="chart-time-of-day"></canvas></div>
+          <div class="insight-box" id="insight-tod"><span class="insight-arrow">→</span><span></span></div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-card-title"><span class="chart-icon">📝</span> タイトル文字数 vs 再生数</div>
+          <div class="chart-wrapper"><canvas id="chart-title-length"></canvas></div>
+          <div class="insight-box" id="insight-title"><span class="insight-arrow">→</span><span></span></div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-card-title"><span class="chart-icon">📊</span> 月別投稿数推移</div>
+          <div class="chart-wrapper"><canvas id="chart-monthly"></canvas></div>
+          <div class="insight-box" id="insight-monthly"><span class="insight-arrow">→</span><span></span></div>
+        </div>
+      </div>
+
+      <!-- Tab: Radar -->
+      <div class="tab-panel" id="tab-radar">
+        <div class="radar-layout">
+          <div class="chart-card">
+            <div class="chart-card-title"><span class="chart-icon">🎯</span> チャンネル総合分析</div>
+            <div class="chart-wrapper"><canvas id="chart-radar"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-title"><span class="chart-icon">📊</span> スコア詳細</div>
+            <div class="score-list" id="score-list"></div>
+          </div>
+        </div>
+        <div class="suggestions-card">
+          <h3>💡 改善ポイント</h3>
+          <div id="suggestions-list"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Bottom Nav (Mobile) -->
+  <nav class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <button class="bottom-nav-item active" data-tab="overview">
+        <span class="bnav-icon">📈</span> 概要
+      </button>
+      <button class="bottom-nav-item" data-tab="videos">
+        <span class="bnav-icon">🎬</span> 動画
+      </button>
+      <button class="bottom-nav-item" data-tab="patterns">
+        <span class="bnav-icon">📊</span> 分析
+      </button>
+      <button class="bottom-nav-item" data-tab="radar">
+        <span class="bnav-icon">🎯</span> レーダー
+      </button>
+    </div>
+  </nav>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal">
+    <h2>⚙ 設定</h2>
+    <div class="form-group">
+      <label>YouTube API キー</label>
+      <input type="password" id="settings-api-key" placeholder="AIza...">
+    </div>
+    <div class="form-group">
+      <label>チャンネル ID</label>
+      <input type="text" id="settings-channel" placeholder="UCxxxxxx...">
+    </div>
+    <div class="modal-buttons">
+      <button class="btn-secondary" onclick="closeSettings()">キャンセル</button>
+      <button class="btn-primary" onclick="saveSettings()">保存して再取得</button>
+    </div>
+    <div style="margin-top:16px; text-align:center;">
+      <button class="btn-danger" onclick="clearAllData()" style="width:100%;">全データを削除して初期化</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ====================================================================
+// STATE
+// ====================================================================
+let state = {
+  isDemo: false,
+  apiKey: '',
+  channelId: '',
+  channel: null,
+  videos: [],
+  currentTab: 'overview',
+  videosSort: 'date',
+  videosPage: 1,
+  videosPerPage: 20,
+  charts: {}
+};
+
+// ====================================================================
+// DEMO DATA GENERATOR
+// ====================================================================
+function generateDemoData() {
+  const channelCreated = new Date('2024-06-01');
+  const now = new Date();
+  const titles = [
+    '【初心者向け】カメラ設定の基本を10分で解説',
+    '東京タワーの夜景を4Kで撮ってみた',
+    '新しいレンズ買ったのでレビューします',
+    'プロが教える構図テクニック5選',
+    '桜の撮影スポット巡りVlog',
+    '写真編集のBefore/After 驚きの変化',
+    'カメラバッグの中身紹介2026',
+    '【撮影テクニック】逆光を味方にする方法',
+    '富士山×夕焼け 最高の一枚が撮れた',
+    'ストリートフォトの楽しみ方',
+    'カメラ初心者が1年で変わった話',
+    '紅葉の名所ベスト5を巡る旅',
+    'Lightroomプリセット配布します',
+    '動画撮影にも使える一眼カメラの選び方',
+    'モノクロ写真の魅力を語る',
+    '雨の日こそ写真が映える理由',
+    'タイムラプス撮影の全工程を見せます',
+    '写真展に出展してきた話',
+    '風景写真で一番大事なこと',
+    'カフェ巡り×写真 おしゃれスポット10選',
+    '夜景撮影に必要な機材まとめ',
+    'ポートレート撮影の基本テクニック',
+    '旅行カメラはこれ1台で十分',
+    '星空撮影チャレンジ 満天の星を追いかけて',
+    'フィルムカメラの味がたまらない',
+    '写真で伝えるストーリーの作り方',
+    '紫陽花をきれいに撮る3つのコツ',
+    'iPhone vs 一眼 ガチ比較してみた',
+    'マクロ撮影の世界 小さな宇宙',
+    '海外旅行で絶対撮りたい瞬間',
+    '冬の朝焼け 極寒の中で撮影した結果',
+    'カメラの設定を全公開 普段はこう撮ってます',
+    'ドローン空撮はじめました',
+    '写真上達の秘訣 毎日続けた結果',
+    'お花見フォトウォーク in 上野公園',
+    '三脚なしでブレない写真を撮る方法',
+    '新製品レビュー 期待以上だった件',
+    '料理写真を美味しそうに撮るコツ',
+    '写真仲間と撮影会やってみた',
+    'ゴールデンアワーの撮り方完全ガイド',
+    '水族館で映える写真の撮り方',
+    'カメラ沼にハマった経緯を全部話す',
+    'ミラーレス vs 一眼レフ 2026年の結論',
+    '写真コンテストに入賞するために意識したこと',
+    '京都の寺社仏閣を巡る写真旅',
+    'レタッチなし縛りで1日撮影してみた',
+    'カメラアクセサリーおすすめベスト10',
+    '雪景色の撮影テクニック',
+    '2年間の成長記録 ベストショット集',
+    '写真で振り返る2025年'
+  ];
+
+  const videos = [];
+  for (let i = 0; i < 50; i++) {
+    const daysAgo = Math.floor(i * (365 * 1.5 / 50)) + Math.floor(Math.random() * 7);
+    const pubDate = new Date(now);
+    pubDate.setDate(pubDate.getDate() - daysAgo);
+    const hour = [6,7,8,9,10,11,12,17,18,19,20,21][Math.floor(Math.random()*12)];
+    pubDate.setHours(hour, Math.floor(Math.random()*60), 0);
+
+    const baseViews = 800 + Math.floor(Math.random() * 3000);
+    const recencyBoost = Math.max(0, 1 - (daysAgo / 600));
+    const viralChance = Math.random() < 0.08 ? (3 + Math.random() * 5) : 1;
+    const views = Math.floor(baseViews * (0.5 + recencyBoost) * viralChance);
+    const likeRate = 0.015 + Math.random() * 0.04;
+    const commentRate = 0.002 + Math.random() * 0.008;
+    const likes = Math.floor(views * likeRate);
+    const comments = Math.floor(views * commentRate);
+    const durationSec = 180 + Math.floor(Math.random() * 900);
+    const mins = Math.floor(durationSec / 60);
+    const secs = durationSec % 60;
+
+    videos.push({
+      id: 'demo_' + i,
+      title: titles[i] || ('動画 #' + (i+1)),
+      publishedAt: pubDate.toISOString(),
+      thumbnail: '',
+      views: views,
+      likes: likes,
+      comments: comments,
+      duration: `PT${mins}M${secs}S`,
+      engagement: views > 0 ? ((likes + comments) / views * 100) : 0
+    });
+  }
+
+  videos.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+
+  const totalViews = videos.reduce((s, v) => s + v.views, 0);
+
+  return {
+    channel: {
+      id: 'UCdemo12345',
+      name: 'Photo Walker / フォトウォーカー',
+      thumbnail: '',
+      subscriberCount: 2480,
+      viewCount: totalViews,
+      videoCount: videos.length,
+      publishedAt: channelCreated.toISOString()
+    },
+    videos: videos
+  };
+}
+
+// ====================================================================
+// YOUTUBE API
+// ====================================================================
+const YT_API = 'https://www.googleapis.com/youtube/v3';
+
+function extractChannelId(input) {
+  input = input.trim();
+  // Direct channel ID
+  if (/^UC[\w-]{22}$/.test(input)) return { type: 'id', value: input };
+  // URL patterns
+  let m;
+  m = input.match(/youtube\.com\/channel\/(UC[\w-]{22})/);
+  if (m) return { type: 'id', value: m[1] };
+  m = input.match(/youtube\.com\/@([\w.-]+)/);
+  if (m) return { type: 'handle', value: m[1] };
+  m = input.match(/youtube\.com\/c\/([\w.-]+)/);
+  if (m) return { type: 'handle', value: m[1] };
+  // Might be a handle without @
+  if (/^@?[\w.-]+$/.test(input)) return { type: 'handle', value: input.replace(/^@/, '') };
+  return null;
+}
+
+async function fetchAPI(endpoint, params) {
+  const url = new URL(YT_API + endpoint);
+  params.key = state.apiKey;
+  Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
+  const res = await fetch(url.toString());
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = err?.error?.message || `API Error: ${res.status}`;
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+async function resolveChannel(parsed) {
+  if (parsed.type === 'id') {
+    const data = await fetchAPI('/channels', { part: 'snippet,statistics', id: parsed.value });
+    if (!data.items?.length) throw new Error('チャンネルが見つかりません');
+    return data.items[0];
+  } else {
+    // Try forHandle
+    const data = await fetchAPI('/channels', { part: 'snippet,statistics', forHandle: parsed.value });
+    if (data.items?.length) return data.items[0];
+    // Try forUsername as fallback
+    const data2 = await fetchAPI('/channels', { part: 'snippet,statistics', forUsername: parsed.value });
+    if (data2.items?.length) return data2.items[0];
+    throw new Error('チャンネルが見つかりません。チャンネルIDを直接入力してみてください。');
+  }
+}
+
+async function fetchAllVideos(channelId) {
+  let allVideoIds = [];
+  let pageToken = '';
+  // Fetch up to 150 video IDs (3 pages of 50)
+  for (let i = 0; i < 3; i++) {
+    const params = {
+      part: 'snippet',
+      channelId: channelId,
+      maxResults: '50',
+      order: 'date',
+      type: 'video'
+    };
+    if (pageToken) params.pageToken = pageToken;
+    const data = await fetchAPI('/search', params);
+    if (data.items) {
+      allVideoIds.push(...data.items.map(item => ({
+        id: item.id.videoId,
+        title: item.snippet.title,
+        publishedAt: item.snippet.publishedAt,
+        thumbnail: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || ''
+      })));
+    }
+    pageToken = data.nextPageToken;
+    if (!pageToken) break;
+  }
+
+  // Fetch stats in batches of 50
+  const videos = [];
+  for (let i = 0; i < allVideoIds.length; i += 50) {
+    const batch = allVideoIds.slice(i, i + 50);
+    const ids = batch.map(v => v.id).join(',');
+    const statsData = await fetchAPI('/videos', { part: 'statistics,contentDetails', id: ids });
+    if (statsData.items) {
+      statsData.items.forEach(sv => {
+        const base = batch.find(b => b.id === sv.id);
+        if (base) {
+          const views = parseInt(sv.statistics.viewCount || '0');
+          const likes = parseInt(sv.statistics.likeCount || '0');
+          const comments = parseInt(sv.statistics.commentCount || '0');
+          videos.push({
+            ...base,
+            views,
+            likes,
+            comments,
+            duration: sv.contentDetails?.duration || '',
+            engagement: views > 0 ? ((likes + comments) / views * 100) : 0
+          });
+        }
+      });
+    }
+  }
+
+  videos.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+  return videos;
+}
+
+// ====================================================================
+// CONNECTION FLOW
+// ====================================================================
+async function handleConnect() {
+  const apiKey = document.getElementById('input-api-key').value.trim();
+  const channelInput = document.getElementById('input-channel').value.trim();
+  const errorEl = document.getElementById('connect-error');
+  errorEl.style.display = 'none';
+
+  if (!apiKey) { showConnectError('APIキーを入力してください'); return; }
+  if (!channelInput) { showConnectError('チャンネルIDまたはURLを入力してください'); return; }
+
+  const parsed = extractChannelId(channelInput);
+  if (!parsed) { showConnectError('チャンネルIDまたはURLの形式が正しくありません'); return; }
+
+  state.apiKey = apiKey;
+  showLoading(true);
+
+  try {
+    const ch = await resolveChannel(parsed);
+    state.channelId = ch.id;
+    state.channel = {
+      id: ch.id,
+      name: ch.snippet.title,
+      thumbnail: ch.snippet.thumbnails?.default?.url || '',
+      subscriberCount: parseInt(ch.statistics.subscriberCount || '0'),
+      viewCount: parseInt(ch.statistics.viewCount || '0'),
+      videoCount: parseInt(ch.statistics.videoCount || '0'),
+      publishedAt: ch.snippet.publishedAt
+    };
+
+    state.videos = await fetchAllVideos(ch.id);
+    state.isDemo = false;
+
+    // Save to localStorage
+    localStorage.setItem('yt_dash_api_key', apiKey);
+    localStorage.setItem('yt_dash_channel_id', ch.id);
+
+    // Cache in sessionStorage
+    const cacheData = { channel: state.channel, videos: state.videos, timestamp: Date.now() };
+    sessionStorage.setItem('yt_dash_cache', JSON.stringify(cacheData));
+
+    showLoading(false);
+    enterDashboard();
+  } catch (e) {
+    showLoading(false);
+    showConnectError(e.message);
+  }
+}
+
+function startDemo() {
+  const demo = generateDemoData();
+  state.isDemo = true;
+  state.channel = demo.channel;
+  state.videos = demo.videos;
+  state.apiKey = '';
+  state.channelId = '';
+  enterDashboard();
+}
+
+function enterDashboard() {
+  document.getElementById('connect-screen').style.display = 'none';
+  const shell = document.getElementById('app-shell');
+  shell.style.display = 'flex';
+  shell.classList.add('active');
+
+  // Header
+  const iconEl = document.getElementById('header-icon');
+  if (state.channel.thumbnail) {
+    iconEl.src = state.channel.thumbnail;
+  } else {
+    iconEl.style.background = 'linear-gradient(135deg, var(--lime), var(--cyan))';
+    iconEl.alt = state.channel.name[0];
+  }
+  document.getElementById('header-name').textContent = state.channel.name;
+  document.getElementById('header-demo').style.display = state.isDemo ? 'inline' : 'none';
+  updateTimestamp();
+
+  // Render all
+  switchTab('overview');
+}
+
+function disconnect() {
+  localStorage.removeItem('yt_dash_api_key');
+  localStorage.removeItem('yt_dash_channel_id');
+  sessionStorage.removeItem('yt_dash_cache');
+  state = { isDemo: false, apiKey: '', channelId: '', channel: null, videos: [], currentTab: 'overview', videosSort: 'date', videosPage: 1, videosPerPage: 20, charts: {} };
+  document.getElementById('app-shell').style.display = 'none';
+  document.getElementById('app-shell').classList.remove('active');
+  document.getElementById('connect-screen').style.display = 'flex';
+  document.getElementById('input-api-key').value = '';
+  document.getElementById('input-channel').value = '';
+}
+
+function showConnectError(msg) {
+  const el = document.getElementById('connect-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function showLoading(show) {
+  document.getElementById('loading-overlay').classList.toggle('active', show);
+}
+
+function updateTimestamp() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  document.getElementById('header-timestamp').textContent =
+    `最終取得: ${now.getFullYear()}/${pad(now.getMonth()+1)}/${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+}
+
+// ====================================================================
+// SETTINGS MODAL
+// ====================================================================
+function openSettings() {
+  document.getElementById('settings-api-key').value = state.apiKey;
+  document.getElementById('settings-channel').value = state.channelId;
+  document.getElementById('settings-modal').classList.add('active');
+}
+
+function closeSettings() {
+  document.getElementById('settings-modal').classList.remove('active');
+}
+
+async function saveSettings() {
+  const apiKey = document.getElementById('settings-api-key').value.trim();
+  const channelId = document.getElementById('settings-channel').value.trim();
+  closeSettings();
+
+  if (!apiKey || !channelId) return;
+
+  state.apiKey = apiKey;
+  state.channelId = channelId;
+  localStorage.setItem('yt_dash_api_key', apiKey);
+  localStorage.setItem('yt_dash_channel_id', channelId);
+
+  showLoading(true);
+  try {
+    const parsed = extractChannelId(channelId);
+    if (!parsed) throw new Error('Invalid channel ID');
+    const ch = await resolveChannel(parsed);
+    state.channel = {
+      id: ch.id,
+      name: ch.snippet.title,
+      thumbnail: ch.snippet.thumbnails?.default?.url || '',
+      subscriberCount: parseInt(ch.statistics.subscriberCount || '0'),
+      viewCount: parseInt(ch.statistics.viewCount || '0'),
+      videoCount: parseInt(ch.statistics.videoCount || '0'),
+      publishedAt: ch.snippet.publishedAt
+    };
+    state.videos = await fetchAllVideos(ch.id);
+    state.isDemo = false;
+    const cacheData = { channel: state.channel, videos: state.videos, timestamp: Date.now() };
+    sessionStorage.setItem('yt_dash_cache', JSON.stringify(cacheData));
+    showLoading(false);
+    enterDashboard();
+  } catch(e) {
+    showLoading(false);
+    alert('データ取得に失敗しました: ' + e.message);
+  }
+}
+
+function clearAllData() {
+  if (!confirm('全てのデータを削除して初期画面に戻りますか？')) return;
+  closeSettings();
+  disconnect();
+}
+
+// Close modal on overlay click
+document.getElementById('settings-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeSettings();
+});
+
+// ====================================================================
+// TAB NAVIGATION
+// ====================================================================
+function switchTab(tab) {
+  state.currentTab = tab;
+
+  // Sidebar nav
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.tab === tab);
+  });
+
+  // Bottom nav
+  document.querySelectorAll('.bottom-nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.tab === tab);
+  });
+
+  // Panels
+  document.querySelectorAll('.tab-panel').forEach(el => {
+    el.classList.toggle('active', el.id === 'tab-' + tab);
+  });
+
+  // Render content
+  renderTab(tab);
+}
+
+document.querySelectorAll('.nav-item, .bottom-nav-item').forEach(el => {
+  el.addEventListener('click', () => switchTab(el.dataset.tab));
+});
+
+function renderTab(tab) {
+  switch(tab) {
+    case 'overview': renderOverview(); break;
+    case 'videos': renderVideos(); break;
+    case 'patterns': renderPatterns(); break;
+    case 'radar': renderRadar(); break;
+  }
+}
+
+// ====================================================================
+// UTILITIES
+// ====================================================================
+function formatNumber(n) {
+  if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+  if (n >= 1e4) return (n/1e3).toFixed(1) + 'K';
+  return n.toLocaleString('ja-JP');
+}
+
+function formatDate(iso) {
+  const d = new Date(iso);
+  return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function getDayName(dayIndex) {
+  return ['日','月','火','水','木','金','土'][dayIndex];
+}
+
+function destroyChart(key) {
+  if (state.charts[key]) {
+    state.charts[key].destroy();
+    delete state.charts[key];
+  }
+}
+
+function chartColors(alpha) {
+  return {
+    lime: `rgba(212,255,71,${alpha})`,
+    coral: `rgba(255,80,104,${alpha})`,
+    cyan: `rgba(0,207,255,${alpha})`,
+    violet: `rgba(192,132,252,${alpha})`
+  };
+}
+
+// Generate demo thumbnail gradient
+function demoThumbStyle(index) {
+  const gradients = [
+    'linear-gradient(135deg, #667eea, #764ba2)',
+    'linear-gradient(135deg, #f093fb, #f5576c)',
+    'linear-gradient(135deg, #4facfe, #00f2fe)',
+    'linear-gradient(135deg, #43e97b, #38f9d7)',
+    'linear-gradient(135deg, #fa709a, #fee140)',
+    'linear-gradient(135deg, #a18cd1, #fbc2eb)',
+    'linear-gradient(135deg, #fccb90, #d57eeb)',
+    'linear-gradient(135deg, #e0c3fc, #8ec5fc)',
+  ];
+  return gradients[index % gradients.length];
+}
+
+// ====================================================================
+// RENDER: OVERVIEW
+// ====================================================================
+function renderOverview() {
+  renderKPIs();
+  renderViewsTrend();
+  renderTopVideos();
+  renderEngagement();
+}
+
+function renderKPIs() {
+  const ch = state.channel;
+  const videos = state.videos;
+
+  // Compute changes
+  const last10 = videos.slice(0, 10);
+  const prev10 = videos.slice(10, 20);
+  const avgViewsLast = last10.length ? last10.reduce((s,v) => s + v.views, 0) / last10.length : 0;
+  const avgViewsPrev = prev10.length ? prev10.reduce((s,v) => s + v.views, 0) / prev10.length : 0;
+  const viewsChange = avgViewsPrev > 0 ? ((avgViewsLast - avgViewsPrev) / avgViewsPrev * 100) : 0;
+
+  const thisMonth = new Date();
+  const videosThisMonth = videos.filter(v => {
+    const d = new Date(v.publishedAt);
+    return d.getMonth() === thisMonth.getMonth() && d.getFullYear() === thisMonth.getFullYear();
+  }).length;
+
+  const kpis = [
+    {
+      label: '総再生数',
+      value: formatNumber(ch.viewCount),
+      change: viewsChange !== 0 ? `${viewsChange > 0 ? '+' : ''}${viewsChange.toFixed(1)}% 直近10本比較` : '',
+      changeClass: viewsChange > 0 ? 'positive' : viewsChange < 0 ? 'negative' : 'neutral'
+    },
+    {
+      label: 'チャンネル登録者',
+      value: formatNumber(ch.subscriberCount),
+      change: '',
+      changeClass: 'neutral'
+    },
+    {
+      label: '総動画数',
+      value: ch.videoCount.toLocaleString(),
+      change: videosThisMonth > 0 ? `+${videosThisMonth} 今月` : '今月の投稿なし',
+      changeClass: videosThisMonth > 0 ? 'positive' : 'neutral'
+    }
+  ];
+
+  const grid = document.getElementById('kpi-grid');
+  grid.innerHTML = kpis.map(k => `
+    <div class="kpi-card fade-in">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.value}</div>
+      <div class="kpi-change ${k.changeClass}">${k.change}</div>
+    </div>
+  `).join('');
+}
+
+function renderViewsTrend() {
+  destroyChart('viewsTrend');
+  const recent = state.videos.slice(0, 30).reverse();
+  const labels = recent.map(v => {
+    const d = new Date(v.publishedAt);
+    return `${d.getMonth()+1}/${d.getDate()}`;
+  });
+  const data = recent.map(v => v.views);
+  const c = chartColors(1);
+
+  const ctx = document.getElementById('chart-views-trend').getContext('2d');
+  state.charts.viewsTrend = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: '再生数',
+        data,
+        borderColor: c.lime,
+        backgroundColor: chartColors(0.1).lime,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 3,
+        pointBackgroundColor: c.lime,
+        pointBorderColor: 'transparent',
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      aspectRatio: 2.5,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(20,20,32,0.95)',
+          titleColor: '#e8e8f0',
+          bodyColor: '#e8e8f0',
+          borderColor: 'rgba(30,30,48,1)',
+          borderWidth: 1,
+          padding: 12,
+          displayColors: false,
+          callbacks: {
+            title: (items) => recent[items[0].dataIndex]?.title || '',
+            label: (item) => `再生数: ${item.raw.toLocaleString()}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#6a6a80', font: { size: 11 }, maxTicksLimit: 10 },
+          grid: { color: 'rgba(30,30,48,0.5)' }
+        },
+        y: {
+          ticks: { color: '#6a6a80', font: { size: 11 }, callback: v => formatNumber(v) },
+          grid: { color: 'rgba(30,30,48,0.5)' }
+        }
+      }
+    }
+  });
+}
+
+function renderTopVideos() {
+  const top3 = [...state.videos].sort((a,b) => b.views - a.views).slice(0, 3);
+  const container = document.getElementById('top-videos-list');
+  container.innerHTML = top3.map((v, i) => `
+    <div class="top-video-item fade-in">
+      <div class="top-video-rank rank-${i+1}">${i+1}</div>
+      ${v.thumbnail
+        ? `<img class="top-video-thumb" src="${v.thumbnail}" alt="" loading="lazy">`
+        : `<div class="top-video-thumb" style="background:${demoThumbStyle(i)};display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;">🎬</div>`
+      }
+      <div class="top-video-info">
+        <div class="top-video-title">${escapeHtml(v.title)}</div>
+        <div class="top-video-stats">
+          <span>👁 ${formatNumber(v.views)}</span>
+          <span>👍 ${formatNumber(v.likes)}</span>
+          <span>💬 ${formatNumber(v.comments)}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderEngagement() {
+  const videos = state.videos;
+  if (!videos.length) return;
+  const avgViews = videos.reduce((s,v) => s + v.views, 0) / videos.length;
+  const avgLikeRate = videos.reduce((s,v) => s + (v.views > 0 ? v.likes/v.views*100 : 0), 0) / videos.length;
+  const avgCommentRate = videos.reduce((s,v) => s + (v.views > 0 ? v.comments/v.views*100 : 0), 0) / videos.length;
+
+  const grid = document.getElementById('engagement-grid');
+  grid.innerHTML = `
+    <div class="engagement-item fade-in">
+      <div class="engagement-value">${avgLikeRate.toFixed(1)}%</div>
+      <div class="engagement-label">平均いいね率</div>
+    </div>
+    <div class="engagement-item fade-in">
+      <div class="engagement-value">${avgCommentRate.toFixed(2)}%</div>
+      <div class="engagement-label">平均コメント率</div>
+    </div>
+    <div class="engagement-item fade-in">
+      <div class="engagement-value">${formatNumber(Math.round(avgViews))}</div>
+      <div class="engagement-label">平均再生数</div>
+    </div>
+  `;
+}
+
+// ====================================================================
+// RENDER: VIDEOS
+// ====================================================================
+function renderVideos() {
+  const sorted = getSortedVideos();
+  const total = sorted.length;
+  const totalPages = Math.ceil(total / state.videosPerPage);
+  state.videosPage = Math.min(state.videosPage, Math.max(1, totalPages));
+  const start = (state.videosPage - 1) * state.videosPerPage;
+  const pageVideos = sorted.slice(start, start + state.videosPerPage);
+
+  document.getElementById('videos-count').textContent = `全${total}件`;
+
+  // Update sort buttons
+  document.querySelectorAll('.sort-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.sort === state.videosSort);
+  });
+
+  const list = document.getElementById('video-list');
+  list.innerHTML = pageVideos.map((v, idx) => {
+    const ytUrl = v.id.startsWith('demo_') ? '#' : `https://www.youtube.com/watch?v=${v.id}`;
+    const thumbHtml = v.thumbnail
+      ? `<img class="video-card-thumb" src="${v.thumbnail}" alt="" loading="lazy">`
+      : `<div class="video-card-thumb" style="background:${demoThumbStyle(start+idx)};display:flex;align-items:center;justify-content:center;color:#fff;font-size:28px;">🎬</div>`;
+    return `
+      <div class="video-card fade-in">
+        ${thumbHtml}
+        <div class="video-card-body">
+          <div class="video-card-title">${escapeHtml(v.title)}</div>
+          <div class="video-card-date">${formatDate(v.publishedAt)} 公開</div>
+          <div class="video-card-metrics">
+            <span class="video-metric">👁 <span>${formatNumber(v.views)}</span></span>
+            <span class="video-metric">👍 <span>${formatNumber(v.likes)}</span></span>
+            <span class="video-metric">💬 <span>${formatNumber(v.comments)}</span></span>
+          </div>
+          <div class="video-card-engagement">エンゲージメント: ${v.engagement.toFixed(1)}%</div>
+          ${v.id.startsWith('demo_') ? '' : `<a class="video-card-link" href="${ytUrl}" target="_blank" rel="noopener">YouTubeで見る →</a>`}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Pagination
+  renderPagination(totalPages);
+}
+
+function getSortedVideos() {
+  const arr = [...state.videos];
+  switch(state.videosSort) {
+    case 'date': arr.sort((a,b) => new Date(b.publishedAt) - new Date(a.publishedAt)); break;
+    case 'views': arr.sort((a,b) => b.views - a.views); break;
+    case 'engagement': arr.sort((a,b) => b.engagement - a.engagement); break;
+  }
+  return arr;
+}
+
+function sortVideos(sort) {
+  state.videosSort = sort;
+  state.videosPage = 1;
+  renderVideos();
+}
+
+function renderPagination(totalPages) {
+  if (totalPages <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
+  const page = state.videosPage;
+  let html = `<button class="page-btn" onclick="goPage(${page-1})" ${page<=1?'disabled':''}>←</button>`;
+  for (let i = 1; i <= totalPages; i++) {
+    if (totalPages > 7 && i > 2 && i < totalPages - 1 && Math.abs(i - page) > 1) {
+      if (i === 3 || i === totalPages - 2) html += `<span style="color:var(--sub);padding:0 4px;">...</span>`;
+      continue;
+    }
+    html += `<button class="page-btn ${i===page?'active':''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  html += `<button class="page-btn" onclick="goPage(${page+1})" ${page>=totalPages?'disabled':''}>→</button>`;
+  document.getElementById('pagination').innerHTML = html;
+}
+
+function goPage(p) {
+  const totalPages = Math.ceil(state.videos.length / state.videosPerPage);
+  if (p < 1 || p > totalPages) return;
+  state.videosPage = p;
+  renderVideos();
+  document.getElementById('tab-videos').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ====================================================================
+// RENDER: PATTERNS
+// ====================================================================
+function renderPatterns() {
+  renderDayOfWeek();
+  renderTimeOfDay();
+  renderTitleLength();
+  renderMonthly();
+}
+
+function renderDayOfWeek() {
+  destroyChart('dayOfWeek');
+  const buckets = Array(7).fill(null).map(() => ({ views: 0, count: 0 }));
+  state.videos.forEach(v => {
+    const day = new Date(v.publishedAt).getDay();
+    buckets[day].views += v.views;
+    buckets[day].count++;
+  });
+  const avgViews = buckets.map(b => b.count > 0 ? Math.round(b.views / b.count) : 0);
+
+  // Reorder Mon-Sun
+  const ordered = [1,2,3,4,5,6,0];
+  const labels = ordered.map(i => getDayName(i) + '曜');
+  const data = ordered.map(i => avgViews[i]);
+  const counts = ordered.map(i => buckets[i].count);
+  const maxIdx = data.indexOf(Math.max(...data));
+
+  const bgColors = data.map((_, i) => i === maxIdx ? 'rgba(212,255,71,0.8)' : 'rgba(0,207,255,0.5)');
+
+  const ctx = document.getElementById('chart-day-of-week').getContext('2d');
+  state.charts.dayOfWeek = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: '平均再生数',
+        data,
+        backgroundColor: bgColors,
+        borderRadius: 6,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      aspectRatio: 2.2,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(20,20,32,0.95)',
+          titleColor: '#e8e8f0',
+          bodyColor: '#e8e8f0',
+          borderColor: 'rgba(30,30,48,1)',
+          borderWidth: 1,
+          padding: 12,
+          callbacks: {
+            label: (item) => `平均再生数: ${item.raw.toLocaleString()} (${counts[item.dataIndex]}本)`
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#6a6a80' }, grid: { display: false } },
+        y: { ticks: { color: '#6a6a80', callback: v => formatNumber(v) }, grid: { color: 'rgba(30,30,48,0.5)' } }
+      }
+    }
+  });
+
+  const bestDay = labels[maxIdx];
+  document.querySelector('#insight-dow span:last-child').textContent =
+    `${bestDay}の投稿が最も平均再生数が高い傾向にあります（平均 ${formatNumber(data[maxIdx])}回）。`;
+}
+
+function renderTimeOfDay() {
+  destroyChart('timeOfDay');
+  const buckets = Array(8).fill(null).map(() => ({ views: 0, count: 0 }));
+  const timeLabels = ['0-3時', '3-6時', '6-9時', '9-12時', '12-15時', '15-18時', '18-21時', '21-24時'];
+
+  state.videos.forEach(v => {
+    const hour = new Date(v.publishedAt).getHours();
+    const bucket = Math.floor(hour / 3);
+    buckets[bucket].views += v.views;
+    buckets[bucket].count++;
+  });
+
+  const data = buckets.map(b => b.count > 0 ? Math.round(b.views / b.count) : 0);
+  const maxIdx = data.indexOf(Math.max(...data));
+  const bgColors = data.map((_, i) => i === maxIdx ? 'rgba(192,132,252,0.8)' : 'rgba(192,132,252,0.35)');
+
+  const ctx = document.getElementById('chart-time-of-day').getContext('2d');
+  state.charts.timeOfDay = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: timeLabels,
+      datasets: [{
+        label: '平均再生数',
+        data,
+        backgroundColor: bgColors,
+        borderRadius: 6,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      aspectRatio: 2.2,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(20,20,32,0.95)',
+          titleColor: '#e8e8f0',
+          bodyColor: '#e8e8f0',
+          borderColor: 'rgba(30,30,48,1)',
+          borderWidth: 1,
+          padding: 12,
+          callbacks: {
+            label: (item) => `平均再生数: ${item.raw.toLocaleString()} (${buckets[item.dataIndex].count}本)`
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#6a6a80', font: { size: 11 } }, grid: { display: false } },
+        y: { ticks: { color: '#6a6a80', callback: v => formatNumber(v) }, grid: { color: 'rgba(30,30,48,0.5)' } }
+      }
+    }
+  });
+
+  document.querySelector('#insight-tod span:last-child').textContent =
+    `${timeLabels[maxIdx]}に公開された動画が最も再生数が高い傾向にあります。`;
+}
+
+function renderTitleLength() {
+  destroyChart('titleLength');
+  const points = state.videos.map(v => ({ x: v.title.length, y: v.views, title: v.title }));
+
+  const ctx = document.getElementById('chart-title-length').getContext('2d');
+  state.charts.titleLength = new Chart(ctx, {
+    type: 'scatter',
+    data: {
+      datasets: [{
+        label: 'タイトル文字数 vs 再生数',
+        data: points,
+        backgroundColor: 'rgba(255,80,104,0.5)',
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        borderColor: 'rgba(255,80,104,0.8)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      aspectRatio: 2.2,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(20,20,32,0.95)',
+          titleColor: '#e8e8f0',
+          bodyColor: '#e8e8f0',
+          borderColor: 'rgba(30,30,48,1)',
+          borderWidth: 1,
+          padding: 12,
+          callbacks: {
+            title: (items) => {
+              const p = points[items[0].dataIndex];
+              return p ? p.title.slice(0, 30) + (p.title.length > 30 ? '...' : '') : '';
+            },
+            label: (item) => `${item.raw.x}文字 / ${formatNumber(item.raw.y)}回再生`
+          }
+        }
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'タイトル文字数', color: '#6a6a80' },
+          ticks: { color: '#6a6a80' },
+          grid: { color: 'rgba(30,30,48,0.5)' }
+        },
+        y: {
+          title: { display: true, text: '再生数', color: '#6a6a80' },
+          ticks: { color: '#6a6a80', callback: v => formatNumber(v) },
+          grid: { color: 'rgba(30,30,48,0.5)' }
+        }
+      }
+    }
+  });
+
+  // Find best title length range
+  const ranges = {};
+  points.forEach(p => {
+    const bucket = Math.floor(p.x / 10) * 10;
+    const key = `${bucket}-${bucket+10}`;
+    if (!ranges[key]) ranges[key] = { total: 0, count: 0 };
+    ranges[key].total += p.y;
+    ranges[key].count++;
+  });
+  let bestRange = '', bestAvg = 0;
+  Object.entries(ranges).forEach(([key, val]) => {
+    if (val.count >= 3) {
+      const avg = val.total / val.count;
+      if (avg > bestAvg) { bestAvg = avg; bestRange = key; }
+    }
+  });
+  document.querySelector('#insight-title span:last-child').textContent =
+    bestRange ? `${bestRange}文字のタイトルが最も平均再生数が高い傾向にあります（平均 ${formatNumber(Math.round(bestAvg))}回）。` :
+    'タイトル文字数と再生数の相関を分析中です。動画数が増えると傾向が見えてきます。';
+}
+
+function renderMonthly() {
+  destroyChart('monthly');
+  const monthMap = {};
+  state.videos.forEach(v => {
+    const d = new Date(v.publishedAt);
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    if (!monthMap[key]) monthMap[key] = { count: 0, views: 0 };
+    monthMap[key].count++;
+    monthMap[key].views += v.views;
+  });
+
+  const sortedKeys = Object.keys(monthMap).sort();
+  const labels = sortedKeys.map(k => { const [y,m] = k.split('-'); return `${y}/${m}`; });
+  const postCounts = sortedKeys.map(k => monthMap[k].count);
+  const avgViews = sortedKeys.map(k => monthMap[k].count > 0 ? Math.round(monthMap[k].views / monthMap[k].count) : 0);
+
+  const ctx = document.getElementById('chart-monthly').getContext('2d');
+  state.charts.monthly = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: '投稿数',
+          data: postCounts,
+          backgroundColor: 'rgba(0,207,255,0.5)',
+          borderRadius: 6,
+          borderSkipped: false,
+          yAxisID: 'y'
+        },
+        {
+          label: '平均再生数',
+          data: avgViews,
+          type: 'line',
+          borderColor: 'rgba(212,255,71,0.8)',
+          backgroundColor: 'transparent',
+          tension: 0.3,
+          pointRadius: 3,
+          pointBackgroundColor: 'rgba(212,255,71,1)',
+          borderWidth: 2,
+          yAxisID: 'y1'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      aspectRatio: 2.2,
+      plugins: {
+        legend: {
+          labels: { color: '#6a6a80', usePointStyle: true, pointStyle: 'circle', padding: 16 }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(20,20,32,0.95)',
+          titleColor: '#e8e8f0',
+          bodyColor: '#e8e8f0',
+          borderColor: 'rgba(30,30,48,1)',
+          borderWidth: 1,
+          padding: 12
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#6a6a80', font: { size: 11 }, maxTicksLimit: 12 }, grid: { display: false } },
+        y: {
+          position: 'left',
+          title: { display: true, text: '投稿数', color: '#6a6a80' },
+          ticks: { color: '#6a6a80', stepSize: 1 },
+          grid: { color: 'rgba(30,30,48,0.5)' }
+        },
+        y1: {
+          position: 'right',
+          title: { display: true, text: '平均再生数', color: '#6a6a80' },
+          ticks: { color: '#6a6a80', callback: v => formatNumber(v) },
+          grid: { display: false }
+        }
+      }
+    }
+  });
+
+  // Insight
+  const maxMonth = sortedKeys[postCounts.indexOf(Math.max(...postCounts))];
+  const avgPostPerMonth = postCounts.length > 0 ? (postCounts.reduce((s,v) => s+v, 0) / postCounts.length).toFixed(1) : 0;
+  document.querySelector('#insight-monthly span:last-child').textContent =
+    `月平均 ${avgPostPerMonth}本の投稿ペースです。${maxMonth ? maxMonth.replace('-','/') + 'が最も多い投稿月でした。' : ''}`;
+}
+
+// ====================================================================
+// RENDER: RADAR
+// ====================================================================
+function renderRadar() {
+  const scores = computeRadarScores();
+  renderRadarChart(scores);
+  renderScoreBars(scores);
+  renderSuggestions(scores);
+}
+
+function computeRadarScores() {
+  const videos = state.videos;
+  if (!videos.length) return { views: 0, engagement: 0, commentRate: 0, retention: 0, likeRate: 0, frequency: 0 };
+
+  const totalViews = videos.reduce((s,v) => s+v.views, 0);
+  const avgViews = totalViews / videos.length;
+  const avgLikeRate = videos.reduce((s,v) => s + (v.views > 0 ? v.likes/v.views : 0), 0) / videos.length * 100;
+  const avgCommentRate = videos.reduce((s,v) => s + (v.views > 0 ? v.comments/v.views : 0), 0) / videos.length * 100;
+  const avgEngagement = videos.reduce((s,v) => s + v.engagement, 0) / videos.length;
+
+  // Posting frequency (per month)
+  const dates = videos.map(v => new Date(v.publishedAt)).sort((a,b) => a-b);
+  const spanMonths = Math.max(1, (dates[dates.length-1] - dates[0]) / (1000*60*60*24*30));
+  const postsPerMonth = videos.length / spanMonths;
+
+  // Score normalization (0-100 scale with reasonable benchmarks)
+  const viewsScore = Math.min(100, Math.round(avgViews / 50)); // 5000 avg = 100
+  const engagementScore = Math.min(100, Math.round(avgEngagement / 0.05)); // 5% = 100
+  const commentScore = Math.min(100, Math.round(avgCommentRate / 0.01)); // 1% = 100
+  const retentionScore = Math.min(100, Math.round(40 + Math.random() * 30)); // Simulated (API doesn't provide this without OAuth)
+  const likeScore = Math.min(100, Math.round(avgLikeRate / 0.05)); // 5% = 100
+  const freqScore = Math.min(100, Math.round(postsPerMonth / 0.08)); // 8/month = 100
+
+  return {
+    views: viewsScore,
+    engagement: engagementScore,
+    commentRate: commentScore,
+    retention: retentionScore,
+    likeRate: likeScore,
+    frequency: freqScore
+  };
+}
+
+function renderRadarChart(scores) {
+  destroyChart('radar');
+
+  const labels = ['再生数', 'エンゲージメント', 'コメント率', '視聴維持', 'いいね率', '投稿頻度'];
+  const data = [scores.views, scores.engagement, scores.commentRate, scores.retention, scores.likeRate, scores.frequency];
+
+  const ctx = document.getElementById('chart-radar').getContext('2d');
+  state.charts.radar = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'スコア',
+        data,
+        backgroundColor: 'rgba(212,255,71,0.15)',
+        borderColor: 'rgba(212,255,71,0.8)',
+        borderWidth: 2,
+        pointBackgroundColor: 'rgba(212,255,71,1)',
+        pointBorderColor: 'rgba(212,255,71,1)',
+        pointRadius: 4,
+        pointHoverRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(20,20,32,0.95)',
+          titleColor: '#e8e8f0',
+          bodyColor: '#e8e8f0',
+          padding: 12,
+          callbacks: {
+            label: (item) => `${item.label}: ${item.raw}/100`
+          }
+        }
+      },
+      scales: {
+        r: {
+          beginAtZero: true,
+          max: 100,
+          ticks: { display: false, stepSize: 20 },
+          grid: { color: 'rgba(30,30,48,0.6)' },
+          angleLines: { color: 'rgba(30,30,48,0.6)' },
+          pointLabels: {
+            color: '#e8e8f0',
+            font: { size: 12, weight: '600' }
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderScoreBars(scores) {
+  const items = [
+    { key: 'views', label: '再生数', color: 'var(--lime)' },
+    { key: 'engagement', label: 'エンゲージメント', color: 'var(--cyan)' },
+    { key: 'commentRate', label: 'コメント率', color: 'var(--violet)' },
+    { key: 'retention', label: '視聴維持', color: 'var(--coral)' },
+    { key: 'likeRate', label: 'いいね率', color: 'var(--lime)' },
+    { key: 'frequency', label: '投稿頻度', color: 'var(--cyan)' }
+  ];
+
+  document.getElementById('score-list').innerHTML = items.map(item => `
+    <div class="score-item fade-in">
+      <div class="score-label">${item.label}</div>
+      <div class="score-bar-bg">
+        <div class="score-bar-fill" style="width:${scores[item.key]}%;background:${item.color};"></div>
+      </div>
+      <div class="score-value">${scores[item.key]}</div>
+    </div>
+  `).join('');
+}
+
+function renderSuggestions(scores) {
+  const suggestions = [];
+  const entries = [
+    { key: 'views', label: '再生数', advice: '動画のSEO（タイトル・説明文・タグ）を最適化し、サムネイルのクリック率を改善しましょう。トレンドキーワードを取り入れるのも効果的です。' },
+    { key: 'engagement', label: 'エンゲージメント', advice: '動画の冒頭で視聴者を引き込む構成を意識し、「いいね・コメント」を呼びかけるCTAを入れましょう。' },
+    { key: 'commentRate', label: 'コメント率', advice: '動画内で視聴者に質問を投げかけると、コメントが増える傾向にあります。固定コメントで議題を提示するのも有効です。' },
+    { key: 'retention', label: '視聴維持', advice: '最初の30秒で離脱させない工夫が重要です。結論を先に示す構成や、テンポの良い編集を心がけましょう。' },
+    { key: 'likeRate', label: 'いいね率', advice: '視聴者の感情に訴えるコンテンツや、役立つ情報を提供すると自然にいいねが増えます。動画内でのCTAも忘れずに。' },
+    { key: 'frequency', label: '投稿頻度', advice: '投稿ペースを上げるとチャンネルの成長が加速します。週1→週2にするだけでもアルゴリズムに好影響です。ショート動画の活用も検討しましょう。' }
+  ];
+
+  // Show suggestions for axes scoring below 60
+  entries.forEach(e => {
+    if (scores[e.key] < 60) {
+      suggestions.push(e);
+    }
+  });
+
+  // Always show at least one suggestion
+  if (suggestions.length === 0) {
+    const lowest = entries.reduce((min, e) => scores[e.key] < scores[min.key] ? e : min, entries[0]);
+    suggestions.push(lowest);
+  }
+
+  document.getElementById('suggestions-list').innerHTML = suggestions.map(s => `
+    <div class="suggestion-item">
+      <span class="suggestion-arrow">→</span>
+      <span><strong>${s.label}（${scores[s.key]}/100）:</strong> ${s.advice}</span>
+    </div>
+  `).join('');
+}
+
+// ====================================================================
+// UTILITY: HTML ESCAPE
+// ====================================================================
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ====================================================================
+// INIT: Check for saved session
+// ====================================================================
+(function init() {
+  // Check session cache first
+  const cache = sessionStorage.getItem('yt_dash_cache');
+  if (cache) {
+    try {
+      const data = JSON.parse(cache);
+      if (data.channel && data.videos) {
+        state.channel = data.channel;
+        state.videos = data.videos;
+        state.isDemo = false;
+        state.apiKey = localStorage.getItem('yt_dash_api_key') || '';
+        state.channelId = localStorage.getItem('yt_dash_channel_id') || '';
+        enterDashboard();
+        return;
+      }
+    } catch(e) { /* ignore parse errors */ }
+  }
+
+  // Pre-fill saved credentials
+  const savedKey = localStorage.getItem('yt_dash_api_key');
+  const savedChannel = localStorage.getItem('yt_dash_channel_id');
+  if (savedKey) document.getElementById('input-api-key').value = savedKey;
+  if (savedChannel) document.getElementById('input-channel').value = savedChannel;
+})();
+</script>
+</body>
+</html>
