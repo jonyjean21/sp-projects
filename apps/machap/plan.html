@@ -711,34 +711,33 @@ function go(dir) {
 
   const cur = slides[current];
   const nxt = slides[next];
+  const t = 'opacity 0.35s ease, transform 0.35s ease';
 
-  // Set initial position for incoming slide
+  // Position next slide off-screen (no animation)
   nxt.style.transition = 'none';
-  nxt.style.transform = dir > 0 ? 'translateX(60px)' : 'translateX(-60px)';
   nxt.style.opacity = '0';
-  nxt.offsetHeight; // force reflow
+  nxt.style.transform = dir > 0 ? 'translateX(60px)' : 'translateX(-60px)';
+  nxt.style.pointerEvents = 'auto';
+  void nxt.offsetHeight;
 
-  // Animate out current
-  cur.classList.remove('active');
-  cur.classList.add(dir > 0 ? 'exit-left' : '');
-  if (dir < 0) {
-    cur.style.transform = 'translateX(60px)';
-    cur.style.opacity = '0';
-  }
-
-  // Animate in next
-  nxt.style.transition = '';
-  nxt.classList.add('active');
-  nxt.classList.remove('exit-left');
+  // Animate both
+  nxt.style.transition = t;
+  cur.style.transition = t;
+  nxt.style.opacity = '1';
+  nxt.style.transform = 'translateX(0)';
+  cur.style.opacity = '0';
+  cur.style.transform = dir > 0 ? 'translateX(-60px)' : 'translateX(60px)';
+  cur.style.pointerEvents = 'none';
   nxt.scrollTop = 0;
 
   current = next;
   updateNav();
 
   setTimeout(() => {
-    cur.classList.remove('exit-left');
-    cur.style.transform = '';
-    cur.style.opacity = '';
+    cur.classList.remove('active');
+    cur.removeAttribute('style');
+    nxt.classList.add('active');
+    nxt.removeAttribute('style');
     animating = false;
   }, 380);
 }
