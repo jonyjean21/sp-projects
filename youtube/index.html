@@ -1593,7 +1593,7 @@ input {
         <div class="kpi-grid" id="kpi-grid"></div>
 
         <div class="chart-card">
-          <div class="chart-card-title"><span class="chart-icon">📈</span> 再生数推移（直近30動画）</div>
+          <div class="chart-card-title"><span class="chart-icon">📈</span> <span id="views-trend-title">再生数推移</span></div>
           <div class="chart-wrapper"><canvas id="chart-views-trend"></canvas></div>
         </div>
 
@@ -2378,7 +2378,7 @@ function switchOverviewPeriod(days) {
   document.querySelectorAll('.period-btn').forEach(btn => {
     btn.classList.toggle('active', parseInt(btn.dataset.period) === days);
   });
-  renderKPIs();
+  renderOverview();
 }
 
 function getVideosInPeriod(videos, days, offset) {
@@ -2563,7 +2563,14 @@ function tooltipMode() {
 
 function renderViewsTrend() {
   destroyChart('viewsTrend');
-  const recent = getTypeFilteredVideos().slice(0, 30).reverse();
+  const days = state.overviewPeriodDays;
+  const allVideos = getTypeFilteredVideos();
+  const recent = (days === 0
+    ? allVideos
+    : getVideosInPeriod(allVideos, days, 0)
+  ).slice().sort((a,b) => new Date(a.publishedAt) - new Date(b.publishedAt));
+  const periodLabel = days === 0 ? '全期間' : days === 365 ? '直近1年' : `直近${days}日`;
+  document.getElementById('views-trend-title').textContent = `再生数推移（${periodLabel} / ${recent.length}本）`;
   const labels = recent.map(v => {
     const d = new Date(v.publishedAt);
     return `${d.getMonth()+1}/${d.getDate()}`;
@@ -2632,7 +2639,10 @@ function renderViewsTrend() {
 }
 
 function renderTopVideos() {
-  const top3 = [...getTypeFilteredVideos()].sort((a,b) => b.views - a.views).slice(0, 3);
+  const days = state.overviewPeriodDays;
+  const allVideos = getTypeFilteredVideos();
+  const periodVideos = days === 0 ? allVideos : getVideosInPeriod(allVideos, days, 0);
+  const top3 = [...periodVideos].sort((a,b) => b.views - a.views).slice(0, 3);
   const container = document.getElementById('top-videos-list');
   container.innerHTML = top3.map((v, i) => `
     <div class="top-video-item fade-in">
@@ -2654,7 +2664,9 @@ function renderTopVideos() {
 }
 
 function renderEngagement() {
-  const videos = getTypeFilteredVideos();
+  const days = state.overviewPeriodDays;
+  const allVideos = getTypeFilteredVideos();
+  const videos = days === 0 ? allVideos : getVideosInPeriod(allVideos, days, 0);
   if (!videos.length) return;
   const avgViews = videos.reduce((s,v) => s + v.views, 0) / videos.length;
   const avgLikeRate = videos.reduce((s,v) => s + (v.views > 0 ? v.likes/v.views*100 : 0), 0) / videos.length;

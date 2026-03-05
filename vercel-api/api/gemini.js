@@ -1,4 +1,19 @@
+const ALLOWED_ORIGINS = [
+  'https://jonyjean21.github.io',
+  'https://yt-dash-two.vercel.app'
+];
+
+function setCors(req, res) {
+  const origin = req.headers.origin;
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+}
+
 export default async function handler(req, res) {
+  setCors(req, res);
   // CORS preflight
   if (req.method === 'OPTIONS') {
     res.status(200).end();
