@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#2e7d32">
+<link rel="manifest" href="manifest.json">
 <title>チームライド</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -273,9 +274,59 @@ textarea{resize:vertical;min-height:60px}
 /* Admin PIN modal */
 .pin-input{letter-spacing:12px;text-align:center;font-size:24px;font-weight:700;
   width:180px;margin:0 auto;display:block}
+
+/* Loading screen */
+.loading-screen{position:fixed;inset:0;background:var(--bg);z-index:300;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  transition:opacity .3s}
+.loading-screen.fade-out{opacity:0;pointer-events:none}
+.loading-spinner{width:40px;height:40px;border:3px solid var(--border);
+  border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:14px;color:var(--text-sub)}
+.loading-error{display:none;text-align:center;padding:0 24px}
+.loading-error.show{display:block}
+.loading-error-msg{font-size:14px;color:var(--danger);margin-bottom:12px}
+
+/* Stats cards */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.stat-card{background:var(--bg-card);border-radius:var(--radius);padding:12px;
+  text-align:center;box-shadow:var(--shadow)}
+.stat-value{font-size:22px;font-weight:700;color:var(--accent)}
+.stat-label{font-size:11px;color:var(--text-sub);margin-top:2px}
+.stats-row-2{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:0 0 16px}
+.stat-bar{background:var(--bg-card);border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow)}
+.stat-bar-label{font-size:12px;color:var(--text-sub);margin-bottom:4px}
+.stat-bar-track{height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.stat-bar-fill{height:100%;border-radius:4px;transition:width .5s}
+.stat-bar-value{font-size:13px;font-weight:600;margin-top:4px}
+
+/* Next event highlight */
+.next-event-hero{background:linear-gradient(135deg,var(--accent),#1b5e20);
+  border-radius:var(--radius);padding:20px;color:#fff;margin-bottom:12px;position:relative;overflow:hidden}
+.next-event-hero::after{content:'⚽';position:absolute;right:16px;bottom:8px;font-size:48px;opacity:.15}
+.next-event-badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;
+  border-radius:8px;background:rgba(255,255,255,.2);margin-bottom:8px}
+.next-event-title{font-size:18px;font-weight:700;margin-bottom:4px}
+.next-event-meta{font-size:13px;opacity:.85}
+.next-event-cta{margin-top:12px;background:#fff;color:var(--accent);border:none;
+  border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;
+  min-height:44px}
+.next-event-cta:active{opacity:.85;transform:scale(0.98)}
 </style>
 </head>
 <body>
+
+<!-- Loading Screen -->
+<div class="loading-screen" id="loadingScreen">
+  <div style="font-size:48px">⚽</div>
+  <div class="loading-spinner"></div>
+  <div class="loading-text">読み込み中...</div>
+  <div class="loading-error" id="loadingError">
+    <div class="loading-error-msg">接続できませんでした</div>
+    <button class="btn btn-primary btn-small" onclick="location.reload()">再読み込み</button>
+  </div>
+</div>
 
 <!-- Toast -->
 <div class="toast" id="toast" role="alert" aria-live="assertive"></div>
@@ -670,17 +721,36 @@ document.querySelectorAll('.modal-overlay').forEach(ov => {
   });
 });
 
+// ── Loading Screen ──
+let _loadingDismissed = false;
+let _loadTimeout = setTimeout(() => {
+  const ls = document.getElementById('loadingScreen');
+  if (ls && !_loadingDismissed) {
+    ls.querySelector('.loading-spinner').style.display = 'none';
+    ls.querySelector('.loading-text').style.display = 'none';
+    document.getElementById('loadingError').classList.add('show');
+  }
+}, 8000);
+
+function dismissLoading() {
+  if (_loadingDismissed) return;
+  _loadingDismissed = true;
+  clearTimeout(_loadTimeout);
+  const ls = document.getElementById('loadingScreen');
+  if (ls) { ls.classList.add('fade-out'); setTimeout(() => ls.remove(), 400); }
+}
+
 // ── Firebase Load ──
 function loadAll() {
   db.ref(ROOT + '/config').on('value', snap => {
     configData = snap.val() || {};
     document.getElementById('headerTeamName').textContent = configData.team_name || 'チームライド';
-    // If no PIN is set, everyone is admin. If PIN is set, check localStorage
     if (!configData.admin_pin) {
       isAdmin = true;
     } else {
       isAdmin = !!localStorage.getItem('teamride_admin');
     }
+    dismissLoading();
     if (!configData.team_name) showWizard();
     else afterConfigLoaded();
   });
@@ -1371,14 +1441,42 @@ function renderHome() {
     .sort((a, b) => (b[1].date || '').localeCompare(a[1].date || ''));
 
   let html = '';
+
+  // Stats dashboard
+  html += renderTeamStats(active, past);
+
+  // Next event hero card
+  if (active.length > 0) {
+    const [nextId, nextE] = active[0];
+    const myRsvp = selectedMemberId ? (nextE.rsvp || {})[selectedMemberId] : null;
+    const isMatch = nextE.type === 'match';
+    html += `<div class="next-event-hero" style="${isMatch ? 'background:linear-gradient(135deg,#e65100,#bf360c)' : ''}">
+      <div class="next-event-badge">${isMatch ? '🟠 試合' : '🟢 練習'}${nextE.status === 'assigned' ? ' · 配車確定' : ''}</div>
+      <div class="next-event-title">${escapeHtml(nextE.title) || 'イベント'}</div>
+      <div class="next-event-meta">📅 ${formatEventDate(nextE.date)} ${nextE.meet_time ? '🕗 '+nextE.meet_time : ''} ${nextE.location ? '📍 '+escapeHtml(nextE.location) : ''}</div>
+      ${!myRsvp && nextE.status === 'open' ? `<button class="next-event-cta" onclick="startRsvp('${nextId}')">出欠を回答する</button>` : ''}
+      ${myRsvp && myRsvp.attending ? `<div style="margin-top:8px;font-size:13px;opacity:.85">✅ 回答済み（${myRsvp.transport === 'drive' ? '車出し' : myRsvp.transport === 'ride' ? '乗せて' : '現地集合'}）</div>` : ''}
+      ${myRsvp && !myRsvp.attending ? `<div style="margin-top:8px;font-size:13px;opacity:.85">❌ 不参加</div>` : ''}
+      ${nextE.status === 'assigned' ? `<button class="next-event-cta" onclick="viewAssignment('${nextId}')" style="background:rgba(255,255,255,.9)">🚗 配車表を見る</button>` : ''}
+    </div>`;
+  }
+
   if (isAdmin) {
     html += '<div style="margin:12px 0"><button class="btn btn-primary btn-small" onclick="openEventModal()">+ イベント作成</button></div>';
   }
 
   if (active.length === 0) {
-    html += '<div class="empty"><div class="empty-icon">⚽</div><div class="empty-text">次のイベントはまだありません</div></div>';
+    html += '<div class="empty"><div class="empty-icon">⚽</div><div class="empty-text">次のイベントはまだありません<br>管理者がイベントを作成してください</div></div>';
   } else {
-    html += active.map(([id, e]) => renderEventCard(id, e)).join('');
+    // Skip first event in detailed cards since hero already shows it
+    const remaining = active.length > 1 ? active.slice(1) : [];
+    if (remaining.length > 0) {
+      html += `<div class="section-title">予定のイベント</div>`;
+      html += remaining.map(([id, e]) => renderEventCard(id, e)).join('');
+    }
+    // Still show the first event's full card for RSVP details
+    html += `<div class="section-title">イベント詳細</div>`;
+    html += renderEventCard(active[0][0], active[0][1]);
   }
 
   if (past.length > 0) {
@@ -1390,6 +1488,67 @@ function renderHome() {
     </div>`;
   }
   c.innerHTML = html;
+}
+
+function renderTeamStats(active, past) {
+  const activeMembers = Object.entries(membersData).filter(([,m]) => m.active !== false);
+  const totalMembers = activeMembers.length;
+  const totalEvents = active.length + past.length;
+  const drivers = activeMembers.filter(([,m]) => m.car_type && m.car_type !== 'other').length;
+
+  if (totalMembers === 0 && totalEvents === 0) return '';
+
+  // Participation rate from past events
+  let participationRate = 0;
+  if (past.length > 0) {
+    let totalParticipation = 0, totalPossible = 0;
+    past.forEach(([,e]) => {
+      const rsvp = e.rsvp || {};
+      const attending = Object.values(rsvp).filter(r => r.attending).length;
+      totalParticipation += attending;
+      totalPossible += totalMembers || 1;
+    });
+    participationRate = totalPossible > 0 ? Math.round(totalParticipation / totalPossible * 100) : 0;
+  }
+
+  // Driver contribution ranking
+  let driverStats = {};
+  past.forEach(([,e]) => {
+    const rsvp = e.rsvp || {};
+    Object.entries(rsvp).forEach(([mid, r]) => {
+      if (r.attending && r.transport === 'drive') {
+        driverStats[mid] = (driverStats[mid] || 0) + 1;
+      }
+    });
+  });
+
+  let html = `<div class="stats-row">
+    <div class="stat-card"><div class="stat-value">${totalMembers}</div><div class="stat-label">メンバー</div></div>
+    <div class="stat-card"><div class="stat-value">${drivers}</div><div class="stat-label">車持ち</div></div>
+    <div class="stat-card"><div class="stat-value">${totalEvents}</div><div class="stat-label">イベント</div></div>
+  </div>`;
+
+  if (past.length > 0) {
+    html += `<div class="stats-row-2">
+      <div class="stat-bar">
+        <div class="stat-bar-label">参加率</div>
+        <div class="stat-bar-track"><div class="stat-bar-fill" style="width:${participationRate}%;background:var(--accent)"></div></div>
+        <div class="stat-bar-value">${participationRate}%</div>
+      </div>
+      <div class="stat-bar">
+        <div class="stat-bar-label">車出し貢献TOP</div>
+        ${Object.entries(driverStats).length > 0 ?
+          Object.entries(driverStats)
+            .sort((a,b) => b[1] - a[1])
+            .slice(0, 2)
+            .map(([mid, cnt]) => `<div class="stat-bar-value" style="font-size:12px">${escapeHtml(membersData[mid]?.name || '?')} ${cnt}回</div>`)
+            .join('')
+          : '<div class="stat-bar-value" style="font-size:12px;color:var(--text-light)">データなし</div>'}
+      </div>
+    </div>`;
+  }
+
+  return html;
 }
 
 function togglePastEvents() {
@@ -2632,6 +2791,11 @@ function viewAssignment(eventId) {
 
 // ── Init ──
 loadAll();
+
+// ── Service Worker ──
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
 </script>
 </body>
 </html>
