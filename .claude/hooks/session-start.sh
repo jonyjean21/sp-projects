@@ -65,3 +65,20 @@ if data:
     echo ""
   fi
 fi
+
+# ===== 週間大会まとめ記事の水曜リマインド =====
+# 日本時間(JST = UTC+9)で水曜日かチェック
+JST_DOW=$(TZ=Asia/Tokyo date +%u)  # 1=Mon ... 7=Sun
+if [ "$JST_DOW" = "3" ]; then
+  echo ""
+  echo "===== AUTO-PROCESS: 週間大会まとめ ====="
+  echo "今日は水曜日です。今週末のモルック大会まとめ記事を作成・公開してください。"
+  echo ""
+  echo "処理内容: /weekly-roundup の手順に従って実行"
+  echo "  1. tournament CPTから今週末(土日)の大会を取得"
+  echo "  2. 記事生成 + アイキャッチ生成(tools/eyecatch-gen.py)"
+  echo "  3. 下書き作成 → SP確認 → 公開"
+  echo "  4. Xポスト案を生成"
+  echo "========================================="
+  echo ""
+fi
