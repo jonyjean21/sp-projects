@@ -2294,7 +2294,8 @@ function renderPagination(totalPages) {
 }
 
 function goPage(p) {
-  const totalPages = Math.ceil(state.videos.length / state.videosPerPage);
+  const filtered = getFilteredVideos();
+  const totalPages = Math.ceil(filtered.length / state.videosPerPage);
   if (p < 1 || p > totalPages) return;
   state.videosPage = p;
   renderVideos();
@@ -2598,61 +2599,118 @@ function renderMonthly() {
 }
 
 // ====================================================================
-// RENDER: HEALTH (combines health check + radar)
+// RENDER: HEALTH (formerly Radar)
 // ====================================================================
 function renderHealth() {
   renderHealthCheck();
-  renderRadar();
+  const scores = computeRadarScores();
+  renderRadarChart(scores);
+  renderScoreBars(scores);
+  renderSuggestions(scores);
+}
+
+function parseDurationSeconds(duration) {
+  if (!duration) return 0;
+  const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+  if (!match) return 0;
+  return (parseInt(match[1] || 0) * 3600) + (parseInt(match[2] || 0) * 60) + parseInt(match[3] || 0);
 }
 
 function renderHealthCheck() {
+  const videos = state.videos;
   const el = document.getElementById('health-check-list');
   if (!el) return;
-  const videos = state.videos;
-  if (!videos.length) { el.innerHTML = '<p style="color:var(--sub)">動画データなし</p>'; return; }
+  if (!videos.length) {
+    el.innerHTML = '<div style="color:var(--sub);font-size:14px;">動画データがありません。</div>';
+    return;
+  }
 
   const checks = [];
+
+  // 1. Engagement rate
+  const avgEngagement = videos.reduce((s,v) => s + v.engagement, 0) / videos.length;
+  if (avgEngagement >= 3) {
+    checks.push({ status: 'good', title: `エンゲージメント率: ${avgEngagement.toFixed(1)}%（良好）`, desc: '業界平均2-4%の範囲内です。視聴者との関係が良好です。' });
+  } else if (avgEngagement >= 1.5) {
+    checks.push({ status: 'warn', title: `エンゲージメント率: ${avgEngagement.toFixed(1)}%（改善推奨）`, desc: 'いいね・コメントを促すCTAを動画内に入れましょう。目標: 3%以上。' });
+  } else {
+    checks.push({ status: 'bad', title: `エンゲージメント率: ${avgEngagement.toFixed(1)}%（要改善）`, desc: '視聴者アクションが少ない状態です。動画内で質問を投げかけ、コメントを促しましょう。' });
+  }
+
+  // 2. Posting frequency
   const now = new Date();
-  const sorted = [...videos].sort((a,b) => new Date(b.publishedAt) - new Date(a.publishedAt));
-  const latest = new Date(sorted[0].publishedAt);
-  const daysSince = Math.floor((now - latest) / (1000*60*60*24));
+  const threeMonthsAgo = new Date(now);
+  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+  const recentVideos = videos.filter(v => new Date(v.publishedAt) >= threeMonthsAgo);
+  const postsPerMonth = recentVideos.length / 3;
+  if (postsPerMonth >= 4) {
+    checks.push({ status: 'good', title: `投稿頻度: 月${postsPerMonth.toFixed(1)}本（良好）`, desc: '週1本以上のペースを維持しています。アルゴリズムに好影響です。' });
+  } else if (postsPerMonth >= 2) {
+    checks.push({ status: 'warn', title: `投稿頻度: 月${postsPerMonth.toFixed(1)}本（改善推奨）`, desc: '週1本以上を目指しましょう。ショート動画で投稿数を増やすのも有効です。' });
+  } else {
+    checks.push({ status: 'bad', title: `投稿頻度: 月${postsPerMonth.toFixed(1)}本（要改善）`, desc: '投稿間隔が空くとアルゴリズムがチャンネルを忘れます。まずは週1本を目標に。' });
+  }
 
-  // 1. Posting frequency
-  if (daysSince <= 7) checks.push({ status: 'good', title: '投稿頻度', desc: `最終投稿: ${daysSince}日前 — 良好なペースです` });
-  else if (daysSince <= 30) checks.push({ status: 'warn', title: '投稿頻度', desc: `最終投稿: ${daysSince}日前 — 投稿が止まっています` });
-  else checks.push({ status: 'bad', title: '投稿頻度', desc: `最終投稿: ${daysSince}日前 — 長期間未投稿` });
+  // 3. Title optimization (20-40 chars, brackets, numbers)
+  let titleScore = 0;
+  videos.forEach(v => {
+    let pts = 0;
+    const len = v.title.length;
+    if (len >= 20 && len <= 40) pts += 1;
+    if (/[【】\[\]]/.test(v.title)) pts += 1;
+    if (/\d/.test(v.title)) pts += 1;
+    titleScore += pts;
+  });
+  const titleAvg = videos.length > 0 ? titleScore / (videos.length * 3) * 100 : 0;
+  if (titleAvg >= 60) {
+    checks.push({ status: 'good', title: `タイトル最適化: スコア ${Math.round(titleAvg)}/100（良好）`, desc: '適切な文字数、記号、数字の使用ができています。' });
+  } else if (titleAvg >= 30) {
+    checks.push({ status: 'warn', title: `タイトル最適化: スコア ${Math.round(titleAvg)}/100（改善推奨）`, desc: 'タイトルは20-40文字で、【】や数字を含めるとCTRが向上します。' });
+  } else {
+    checks.push({ status: 'bad', title: `タイトル最適化: スコア ${Math.round(titleAvg)}/100（要改善）`, desc: 'キーワード不足です。検索されやすいワードを含め、20-40文字で【】や数字を活用しましょう。' });
+  }
 
-  // 2. Engagement rate
-  const avgEng = videos.reduce((s,v) => s + v.engagement, 0) / videos.length;
-  if (avgEng >= 5) checks.push({ status: 'good', title: 'エンゲージメント率', desc: `平均${avgEng.toFixed(1)}% — 非常に高い` });
-  else if (avgEng >= 2) checks.push({ status: 'warn', title: 'エンゲージメント率', desc: `平均${avgEng.toFixed(1)}% — 改善余地あり` });
-  else checks.push({ status: 'bad', title: 'エンゲージメント率', desc: `平均${avgEng.toFixed(1)}% — 低水準` });
+  // 4. Shorts utilization (videos < 60s)
+  const shortsCount = videos.filter(v => {
+    const sec = parseDurationSeconds(v.duration);
+    return sec > 0 && sec < 60;
+  }).length;
+  if (shortsCount >= 5) {
+    checks.push({ status: 'good', title: `ショート動画活用: ${shortsCount}本（良好）`, desc: 'ショート動画で新規視聴者にリーチしています。継続しましょう。' });
+  } else if (shortsCount >= 1) {
+    checks.push({ status: 'warn', title: `ショート動画活用: ${shortsCount}本（もっと増やそう）`, desc: 'ショートは新規リーチの最速ルートです。週3-5本の投稿を推奨します。' });
+  } else {
+    checks.push({ status: 'bad', title: `ショート動画活用: 0本（未着手）`, desc: 'ショートは新規視聴者獲得の最速ルートです。15-35秒の縦動画から始めましょう。' });
+  }
 
-  // 3. Views consistency
-  const viewsArr = sorted.slice(0, 10).map(v => v.views);
-  const avgViews = viewsArr.reduce((s,v) => s+v, 0) / viewsArr.length;
-  const viewsStdDev = Math.sqrt(viewsArr.reduce((s,v) => s + Math.pow(v - avgViews, 2), 0) / viewsArr.length);
-  const cv = avgViews > 0 ? viewsStdDev / avgViews : 0;
-  if (cv < 0.5) checks.push({ status: 'good', title: '再生数の安定性', desc: `直近10本の変動係数 ${(cv*100).toFixed(0)}% — 安定` });
-  else if (cv < 1.0) checks.push({ status: 'warn', title: '再生数の安定性', desc: `直近10本の変動係数 ${(cv*100).toFixed(0)}% — ばらつきあり` });
-  else checks.push({ status: 'bad', title: '再生数の安定性', desc: `直近10本の変動係数 ${(cv*100).toFixed(0)}% — 大きくばらつき` });
+  // 5. Content consistency (tag concentration)
+  const tagCounts = {};
+  let totalTags = 0;
+  videos.forEach(v => {
+    (v.tags || []).forEach(t => {
+      const key = t.toLowerCase();
+      tagCounts[key] = (tagCounts[key] || 0) + 1;
+      totalTags++;
+    });
+  });
+  const sortedTags = Object.entries(tagCounts).sort((a,b) => b[1] - a[1]);
+  const top5TagCount = sortedTags.slice(0, 5).reduce((s, [,c]) => s + c, 0);
+  const tagConcentration = totalTags > 0 ? top5TagCount / totalTags : 0;
 
-  // 4. Comment activity
-  const avgComments = videos.reduce((s,v) => s + v.comments, 0) / videos.length;
-  if (avgComments >= 5) checks.push({ status: 'good', title: 'コメント活性度', desc: `平均${avgComments.toFixed(1)}件/動画` });
-  else if (avgComments >= 1) checks.push({ status: 'warn', title: 'コメント活性度', desc: `平均${avgComments.toFixed(1)}件/動画 — もう少し交流を` });
-  else checks.push({ status: 'bad', title: 'コメント活性度', desc: `平均${avgComments.toFixed(1)}件/動画 — CTAを入れましょう` });
+  if (totalTags === 0) {
+    checks.push({ status: 'warn', title: `コンテンツ一貫性: タグデータなし`, desc: '動画にタグを設定すると、アルゴリズムがチャンネルを分類しやすくなります。' });
+  } else if (tagConcentration >= 0.4) {
+    checks.push({ status: 'good', title: `コンテンツ一貫性: 高い（上位タグ集中度 ${(tagConcentration*100).toFixed(0)}%）`, desc: '特定ジャンルに特化しており、アルゴリズムがチャンネルを分類しやすい状態です。' });
+  } else if (tagConcentration >= 0.2) {
+    checks.push({ status: 'warn', title: `コンテンツ一貫性: 中程度（上位タグ集中度 ${(tagConcentration*100).toFixed(0)}%）`, desc: 'テーマが分散気味です。主要テーマに絞ると検索・推薦で有利になります。' });
+  } else {
+    checks.push({ status: 'bad', title: `コンテンツ一貫性: 低い（上位タグ集中度 ${(tagConcentration*100).toFixed(0)}%）`, desc: 'テーマが散らばっています。1つのテーマに集中することでアルゴリズムに認識されやすくなります。' });
+  }
 
-  // 5. Like ratio
-  const avgLikeRate = videos.reduce((s,v) => s + (v.views > 0 ? v.likes/v.views*100 : 0), 0) / videos.length;
-  if (avgLikeRate >= 4) checks.push({ status: 'good', title: 'いいね率', desc: `平均${avgLikeRate.toFixed(1)}% — 高評価` });
-  else if (avgLikeRate >= 2) checks.push({ status: 'warn', title: 'いいね率', desc: `平均${avgLikeRate.toFixed(1)}%` });
-  else checks.push({ status: 'bad', title: 'いいね率', desc: `平均${avgLikeRate.toFixed(1)}% — 改善が必要` });
-
-  const icons = { good: '✅', warn: '⚠️', bad: '❌' };
+  const statusIcons = { good: '✅', warn: '⚠️', bad: '❌' };
   el.innerHTML = checks.map(c => `
-    <div class="health-item">
-      <span class="health-status">${icons[c.status]}</span>
+    <div class="health-item fade-in">
+      <div class="health-status">${statusIcons[c.status]}</div>
       <div class="health-content">
         <div class="health-title">${c.title}</div>
         <div class="health-desc">${c.desc}</div>
@@ -2661,54 +2719,73 @@ function renderHealthCheck() {
   `).join('');
 }
 
-// ====================================================================
-// RENDER: RADAR
-// ====================================================================
-function renderRadar() {
-  const scores = computeRadarScores();
-  renderRadarChart(scores);
-  renderScoreBars(scores);
-  renderSuggestions(scores);
-}
-
 function computeRadarScores() {
   const videos = state.videos;
-  if (!videos.length) return { views: 0, engagement: 0, commentRate: 0, retention: 0, likeRate: 0, frequency: 0 };
+  if (!videos.length) return { content: 0, engagement: 0, consistency: 0, optimization: 0, growth: 0, activity: 0 };
 
   const totalViews = videos.reduce((s,v) => s+v.views, 0);
   const avgViews = totalViews / videos.length;
+
+  // 1. Content power: avg views benchmark (5000 = 100)
+  const contentScore = Math.min(100, Math.round(avgViews / 50));
+
+  // 2. Engagement: like rate + comment rate composite
   const avgLikeRate = videos.reduce((s,v) => s + (v.views > 0 ? v.likes/v.views : 0), 0) / videos.length * 100;
   const avgCommentRate = videos.reduce((s,v) => s + (v.views > 0 ? v.comments/v.views : 0), 0) / videos.length * 100;
-  const avgEngagement = videos.reduce((s,v) => s + v.engagement, 0) / videos.length;
+  const engagementScore = Math.min(100, Math.round((avgLikeRate / 0.05 * 0.6) + (avgCommentRate / 0.01 * 0.4)));
 
-  // Posting frequency (per month)
-  const dates = videos.map(v => new Date(v.publishedAt)).sort((a,b) => a-b);
-  const spanMonths = Math.max(1, (dates[dates.length-1] - dates[0]) / (1000*60*60*24*30));
+  // 3. Consistency: stability of posting intervals
+  const dates = videos.map(v => new Date(v.publishedAt).getTime()).sort((a,b) => a-b);
+  let consistencyScore = 50;
+  if (dates.length >= 3) {
+    const intervals = [];
+    for (let i = 1; i < dates.length; i++) intervals.push((dates[i] - dates[i-1]) / (1000*60*60*24));
+    const avgInterval = intervals.reduce((s,v) => s+v, 0) / intervals.length;
+    const stdDev = Math.sqrt(intervals.reduce((s,v) => s + (v-avgInterval)**2, 0) / intervals.length);
+    const cv = avgInterval > 0 ? stdDev / avgInterval : 1;
+    consistencyScore = Math.min(100, Math.round(Math.max(0, (1 - cv * 0.8)) * 100));
+  }
+
+  // 4. Optimization: title/tag quality
+  let optTotal = 0;
+  videos.forEach(v => {
+    let pts = 0;
+    const len = v.title.length;
+    if (len >= 20 && len <= 40) pts += 33;
+    if (/[【】\[\]]/.test(v.title) || /\d/.test(v.title)) pts += 33;
+    if ((v.tags || []).length >= 3) pts += 34;
+    optTotal += pts;
+  });
+  const optimizationScore = Math.min(100, Math.round(optTotal / videos.length));
+
+  // 5. Growth: last 10 vs prev 10 view growth
+  const last10 = videos.slice(0, 10);
+  const prev10 = videos.slice(10, 20);
+  const avgLast = last10.length ? last10.reduce((s,v) => s+v.views, 0) / last10.length : 0;
+  const avgPrev = prev10.length ? prev10.reduce((s,v) => s+v.views, 0) / prev10.length : 0;
+  const growthRate = avgPrev > 0 ? avgLast / avgPrev : 1;
+  const growthScore = Math.min(100, Math.round(Math.max(0, (growthRate - 0.5)) / 1.5 * 100));
+
+  // 6. Activity: posts per month benchmark (8/month = 100)
+  const spanMonths = dates.length >= 2 ? Math.max(1, (dates[dates.length-1] - dates[0]) / (1000*60*60*24*30)) : 1;
   const postsPerMonth = videos.length / spanMonths;
-
-  // Score normalization (0-100 scale with reasonable benchmarks)
-  const viewsScore = Math.min(100, Math.round(avgViews / 50)); // 5000 avg = 100
-  const engagementScore = Math.min(100, Math.round(avgEngagement / 0.05)); // 5% = 100
-  const commentScore = Math.min(100, Math.round(avgCommentRate / 0.01)); // 1% = 100
-  const retentionScore = Math.min(100, Math.round(40 + Math.random() * 30)); // Simulated (API doesn't provide this without OAuth)
-  const likeScore = Math.min(100, Math.round(avgLikeRate / 0.05)); // 5% = 100
-  const freqScore = Math.min(100, Math.round(postsPerMonth / 0.08)); // 8/month = 100
+  const activityScore = Math.min(100, Math.round(postsPerMonth / 0.08));
 
   return {
-    views: viewsScore,
+    content: contentScore,
     engagement: engagementScore,
-    commentRate: commentScore,
-    retention: retentionScore,
-    likeRate: likeScore,
-    frequency: freqScore
+    consistency: consistencyScore,
+    optimization: optimizationScore,
+    growth: growthScore,
+    activity: activityScore
   };
 }
 
 function renderRadarChart(scores) {
   destroyChart('radar');
 
-  const labels = ['再生数', 'エンゲージメント', 'コメント率', '視聴維持', 'いいね率', '投稿頻度'];
-  const data = [scores.views, scores.engagement, scores.commentRate, scores.retention, scores.likeRate, scores.frequency];
+  const labels = ['コンテンツ力', 'エンゲージメント', '一貫性', '最適化度', '成長性', '活動量'];
+  const data = [scores.content, scores.engagement, scores.consistency, scores.optimization, scores.growth, scores.activity];
 
   const ctx = document.getElementById('chart-radar').getContext('2d');
   state.charts.radar = new Chart(ctx, {
@@ -2723,13 +2800,14 @@ function renderRadarChart(scores) {
         borderWidth: 2,
         pointBackgroundColor: 'rgba(212,255,71,1)',
         pointBorderColor: 'rgba(212,255,71,1)',
-        pointRadius: 4,
+        pointRadius: isMobile() ? 5 : 4,
         pointHoverRadius: 6
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: true,
+      interaction: tooltipMode(),
       plugins: {
         legend: { display: false },
         tooltip: {
@@ -2751,7 +2829,7 @@ function renderRadarChart(scores) {
           angleLines: { color: 'rgba(30,30,48,0.6)' },
           pointLabels: {
             color: '#e8e8f0',
-            font: { size: 12, weight: '600' }
+            font: { size: isMobile() ? 10 : 12, weight: '600' }
           }
         }
       }
@@ -2761,12 +2839,12 @@ function renderRadarChart(scores) {
 
 function renderScoreBars(scores) {
   const items = [
-    { key: 'views', label: '再生数', color: 'var(--lime)' },
+    { key: 'content', label: 'コンテンツ力', color: 'var(--lime)' },
     { key: 'engagement', label: 'エンゲージメント', color: 'var(--cyan)' },
-    { key: 'commentRate', label: 'コメント率', color: 'var(--violet)' },
-    { key: 'retention', label: '視聴維持', color: 'var(--coral)' },
-    { key: 'likeRate', label: 'いいね率', color: 'var(--lime)' },
-    { key: 'frequency', label: '投稿頻度', color: 'var(--cyan)' }
+    { key: 'consistency', label: '一貫性', color: 'var(--violet)' },
+    { key: 'optimization', label: '最適化度', color: 'var(--coral)' },
+    { key: 'growth', label: '成長性', color: 'var(--lime)' },
+    { key: 'activity', label: '活動量', color: 'var(--cyan)' }
   ];
 
   document.getElementById('score-list').innerHTML = items.map(item => `
@@ -2783,12 +2861,12 @@ function renderScoreBars(scores) {
 function renderSuggestions(scores) {
   const suggestions = [];
   const entries = [
-    { key: 'views', label: '再生数', advice: '動画のSEO（タイトル・説明文・タグ）を最適化し、サムネイルのクリック率を改善しましょう。トレンドキーワードを取り入れるのも効果的です。' },
+    { key: 'content', label: 'コンテンツ力', advice: '動画のSEO（タイトル・説明文・タグ）を最適化し、サムネイルのクリック率を改善しましょう。トレンドキーワードを取り入れるのも効果的です。' },
     { key: 'engagement', label: 'エンゲージメント', advice: '動画の冒頭で視聴者を引き込む構成を意識し、「いいね・コメント」を呼びかけるCTAを入れましょう。' },
-    { key: 'commentRate', label: 'コメント率', advice: '動画内で視聴者に質問を投げかけると、コメントが増える傾向にあります。固定コメントで議題を提示するのも有効です。' },
-    { key: 'retention', label: '視聴維持', advice: '最初の30秒で離脱させない工夫が重要です。結論を先に示す構成や、テンポの良い編集を心がけましょう。' },
-    { key: 'likeRate', label: 'いいね率', advice: '視聴者の感情に訴えるコンテンツや、役立つ情報を提供すると自然にいいねが増えます。動画内でのCTAも忘れずに。' },
-    { key: 'frequency', label: '投稿頻度', advice: '投稿ペースを上げるとチャンネルの成長が加速します。週1→週2にするだけでもアルゴリズムに好影響です。ショート動画の活用も検討しましょう。' }
+    { key: 'consistency', label: '一貫性', advice: '投稿スケジュールを固定しましょう。毎週決まった曜日・時間に投稿すると、視聴者の習慣が生まれます。' },
+    { key: 'optimization', label: '最適化度', advice: 'タイトルは20-40文字で【】や数字を含め、タグを3つ以上設定しましょう。検索からの流入が増えます。' },
+    { key: 'growth', label: '成長性', advice: '直近の動画パフォーマンスが伸び悩んでいます。新しいコンテンツ形式やトレンドのキーワードを試してみましょう。' },
+    { key: 'activity', label: '活動量', advice: '投稿ペースを上げるとチャンネルの成長が加速します。週1→週2にするだけでもアルゴリズムに好影響です。ショート動画の活用も検討しましょう。' }
   ];
 
   // Show suggestions for axes scoring below 60
