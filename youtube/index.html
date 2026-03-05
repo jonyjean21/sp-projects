@@ -1122,6 +1122,212 @@ input {
   .radar-layout { grid-template-columns: 1fr; }
 }
 
+/* ===== Timing Heatmap ===== */
+.heatmap-section {
+  margin-bottom: 24px;
+}
+
+.heatmap-grid-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: 48px repeat(7, 1fr);
+  gap: 2px;
+  min-width: 400px;
+}
+
+.heatmap-header {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sub);
+  text-align: center;
+  padding: 6px 4px;
+}
+
+.heatmap-hour-label {
+  font-size: 11px;
+  color: var(--sub);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+  height: 24px;
+}
+
+.heatmap-cell {
+  height: 24px;
+  border-radius: 3px;
+  background: rgba(212, 255, 71, 0.04);
+  transition: transform 0.15s, box-shadow 0.15s;
+  cursor: default;
+  position: relative;
+}
+
+.heatmap-cell:hover {
+  transform: scale(1.3);
+  z-index: 2;
+  box-shadow: 0 0 8px rgba(212, 255, 71, 0.4);
+}
+
+.heatmap-cell[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20, 20, 32, 0.95);
+  color: var(--text);
+  font-size: 11px;
+  white-space: nowrap;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--sub);
+}
+
+.heatmap-legend-bar {
+  display: flex;
+  gap: 2px;
+}
+
+.heatmap-legend-cell {
+  width: 16px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.best-times-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.best-time-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+
+.best-time-card:hover {
+  border-color: rgba(212, 255, 71, 0.3);
+}
+
+.best-time-rank {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--lime);
+  margin-bottom: 4px;
+}
+
+.best-time-rank.rank-1 { color: #ffd700; }
+.best-time-rank.rank-2 { color: #c0c0c0; }
+.best-time-rank.rank-3 { color: #cd7f32; }
+
+.best-time-slot {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.best-time-day {
+  font-size: 13px;
+  color: var(--sub);
+  margin-bottom: 6px;
+}
+
+.best-time-views {
+  font-size: 12px;
+  color: var(--cyan);
+}
+
+.dow-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.dow-stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 8px;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+
+.dow-stat-card:hover {
+  border-color: rgba(0, 207, 255, 0.3);
+}
+
+.dow-stat-card.best {
+  border-color: rgba(212, 255, 71, 0.4);
+  background: rgba(212, 255, 71, 0.05);
+}
+
+.dow-stat-day {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.dow-stat-views {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--cyan);
+  margin-bottom: 2px;
+}
+
+.dow-stat-count {
+  font-size: 11px;
+  color: var(--sub);
+}
+
+.dow-stat-bar-wrap {
+  margin-top: 8px;
+  height: 4px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.dow-stat-bar {
+  height: 100%;
+  background: var(--cyan);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.dow-stat-card.best .dow-stat-bar {
+  background: var(--lime);
+}
+
+@media (max-width: 768px) {
+  .best-times-grid { grid-template-columns: 1fr; }
+  .dow-stats-grid { grid-template-columns: repeat(4, 1fr); }
+  .heatmap-grid { min-width: 360px; }
+  .heatmap-cell { height: 20px; }
+}
+
 /* ===== Fade Animations ===== */
 .fade-in {
   animation: fadeIn 0.3s ease;
@@ -1185,6 +1391,9 @@ input {
       </button>
       <button class="nav-item" data-tab="patterns">
         <span class="nav-icon">📊</span> 分析
+      </button>
+      <button class="nav-item" data-tab="timing">
+        <span class="nav-icon">🕐</span> タイミング
       </button>
       <button class="nav-item" data-tab="health">
         <span class="nav-icon">🏥</span> ヘルス
@@ -1296,6 +1505,31 @@ input {
         </div>
       </div>
 
+      <!-- Tab: Timing -->
+      <div class="tab-panel" id="tab-timing">
+        <div class="chart-card heatmap-section">
+          <div class="chart-card-title"><span class="chart-icon">🕐</span> おすすめ投稿タイミング TOP3</div>
+          <div class="best-times-grid" id="best-times-grid"></div>
+        </div>
+
+        <div class="chart-card heatmap-section">
+          <div class="chart-card-title"><span class="chart-icon">🔥</span> 曜日 × 時間帯ヒートマップ</div>
+          <div class="heatmap-grid-wrapper">
+            <div class="heatmap-grid" id="heatmap-grid"></div>
+          </div>
+          <div class="heatmap-legend">
+            <span>少ない</span>
+            <div class="heatmap-legend-bar" id="heatmap-legend-bar"></div>
+            <span>多い</span>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-card-title"><span class="chart-icon">📅</span> 曜日別パフォーマンス</div>
+          <div class="dow-stats-grid" id="dow-stats-grid"></div>
+        </div>
+      </div>
+
       <!-- Tab: Health -->
       <div class="tab-panel" id="tab-health">
         <!-- Algorithm Health Check -->
@@ -1334,6 +1568,9 @@ input {
       </button>
       <button class="bottom-nav-item" data-tab="patterns">
         <span class="bnav-icon">📊</span><span class="bnav-label"> 分析</span>
+      </button>
+      <button class="bottom-nav-item" data-tab="timing">
+        <span class="bnav-icon">🕐</span><span class="bnav-label"> 時間</span>
       </button>
       <button class="bottom-nav-item" data-tab="health">
         <span class="bnav-icon">🏥</span><span class="bnav-label"> ヘルス</span>
@@ -1821,6 +2058,7 @@ function renderTab(tab) {
     case 'overview': renderOverview(); break;
     case 'videos': renderVideos(); break;
     case 'patterns': renderPatterns(); break;
+    case 'timing': renderTiming(); break;
     case 'health': renderHealth(); break;
   }
 }
@@ -2596,6 +2834,179 @@ function renderMonthly() {
   const avgPostPerMonth = postCounts.length > 0 ? (postCounts.reduce((s,v) => s+v, 0) / postCounts.length).toFixed(1) : 0;
   document.querySelector('#insight-monthly span:last-child').textContent =
     `月平均 ${avgPostPerMonth}本の投稿ペースです。${maxMonth ? maxMonth.replace('-','/') + 'が最も多い投稿月でした。' : ''}`;
+}
+
+// ====================================================================
+// RENDER: TIMING (Heatmap Analysis)
+// ====================================================================
+function renderTiming() {
+  renderHeatmap();
+  renderBestTimes();
+  renderDowStats();
+}
+
+function buildTimingMatrix() {
+  // 7 days (0=Sun..6=Sat) x 24 hours
+  const matrix = Array(7).fill(null).map(() =>
+    Array(24).fill(null).map(() => ({ totalViews: 0, count: 0 }))
+  );
+
+  state.videos.forEach(v => {
+    const d = new Date(v.publishedAt);
+    const day = d.getDay();
+    const hour = d.getHours();
+    matrix[day][hour].totalViews += v.views;
+    matrix[day][hour].count++;
+  });
+
+  return matrix;
+}
+
+function renderHeatmap() {
+  const matrix = buildTimingMatrix();
+  const grid = document.getElementById('heatmap-grid');
+  grid.innerHTML = '';
+
+  // Mon-Sun order
+  const dayOrder = [1, 2, 3, 4, 5, 6, 0];
+  const dayLabels = ['月', '火', '水', '木', '金', '土', '日'];
+
+  // Find max average for color scaling
+  let maxAvg = 0;
+  dayOrder.forEach(day => {
+    for (let h = 0; h < 24; h++) {
+      const cell = matrix[day][h];
+      if (cell.count > 0) {
+        const avg = cell.totalViews / cell.count;
+        if (avg > maxAvg) maxAvg = avg;
+      }
+    }
+  });
+
+  // Header row: empty corner + 7 day labels
+  const corner = document.createElement('div');
+  corner.className = 'heatmap-header';
+  corner.textContent = '';
+  grid.appendChild(corner);
+
+  dayLabels.forEach(label => {
+    const hdr = document.createElement('div');
+    hdr.className = 'heatmap-header';
+    hdr.textContent = label;
+    grid.appendChild(hdr);
+  });
+
+  // 24 rows (hours)
+  for (let h = 0; h < 24; h++) {
+    // Hour label
+    const hourLabel = document.createElement('div');
+    hourLabel.className = 'heatmap-hour-label';
+    hourLabel.textContent = `${h}:00`;
+    grid.appendChild(hourLabel);
+
+    // 7 day cells
+    dayOrder.forEach((day, di) => {
+      const cell = document.createElement('div');
+      cell.className = 'heatmap-cell';
+      const data = matrix[day][h];
+
+      if (data.count > 0 && maxAvg > 0) {
+        const avg = data.totalViews / data.count;
+        const intensity = avg / maxAvg;
+        // Use lime color with varying opacity (0.08 to 0.9)
+        const opacity = 0.08 + intensity * 0.82;
+        cell.style.background = `rgba(212, 255, 71, ${opacity.toFixed(2)})`;
+      }
+
+      const avgText = data.count > 0 ? formatNumber(Math.round(data.totalViews / data.count)) : '0';
+      cell.setAttribute('data-tooltip', `${dayLabels[di]}曜 ${h}:00 | 平均${avgText}回 (${data.count}本)`);
+      grid.appendChild(cell);
+    });
+  }
+
+  // Legend bar
+  const legendBar = document.getElementById('heatmap-legend-bar');
+  legendBar.innerHTML = '';
+  const steps = [0.08, 0.2, 0.35, 0.5, 0.65, 0.8, 0.9];
+  steps.forEach(op => {
+    const el = document.createElement('div');
+    el.className = 'heatmap-legend-cell';
+    el.style.background = `rgba(212, 255, 71, ${op})`;
+    legendBar.appendChild(el);
+  });
+}
+
+function renderBestTimes() {
+  const matrix = buildTimingMatrix();
+  const dayOrder = [1, 2, 3, 4, 5, 6, 0];
+  const dayNames = { 0: '日曜', 1: '月曜', 2: '火曜', 3: '水曜', 4: '木曜', 5: '金曜', 6: '土曜' };
+
+  // Collect all day/hour combos with data
+  const slots = [];
+  for (let day = 0; day < 7; day++) {
+    for (let h = 0; h < 24; h++) {
+      const cell = matrix[day][h];
+      if (cell.count > 0) {
+        slots.push({
+          day,
+          hour: h,
+          avg: Math.round(cell.totalViews / cell.count),
+          count: cell.count
+        });
+      }
+    }
+  }
+
+  // Sort by average views descending
+  slots.sort((a, b) => b.avg - a.avg);
+  const top3 = slots.slice(0, 3);
+
+  const container = document.getElementById('best-times-grid');
+  if (top3.length === 0) {
+    container.innerHTML = '<div style="color:var(--sub);font-size:13px;grid-column:1/-1;text-align:center;padding:20px;">データが不足しています</div>';
+    return;
+  }
+
+  container.innerHTML = top3.map((slot, i) => `
+    <div class="best-time-card">
+      <div class="best-time-rank rank-${i + 1}">${i === 0 ? '🥇 1st' : i === 1 ? '🥈 2nd' : '🥉 3rd'}</div>
+      <div class="best-time-slot">${slot.hour}:00</div>
+      <div class="best-time-day">${dayNames[slot.day]}</div>
+      <div class="best-time-views">平均 ${formatNumber(slot.avg)}回 (${slot.count}本)</div>
+    </div>
+  `).join('');
+}
+
+function renderDowStats() {
+  const buckets = Array(7).fill(null).map(() => ({ views: 0, count: 0 }));
+  state.videos.forEach(v => {
+    const day = new Date(v.publishedAt).getDay();
+    buckets[day].views += v.views;
+    buckets[day].count++;
+  });
+
+  const dayOrder = [1, 2, 3, 4, 5, 6, 0];
+  const dayLabels = ['月', '火', '水', '木', '金', '土', '日'];
+  const avgs = dayOrder.map(d => buckets[d].count > 0 ? Math.round(buckets[d].views / buckets[d].count) : 0);
+  const maxAvg = Math.max(...avgs);
+
+  const container = document.getElementById('dow-stats-grid');
+  container.innerHTML = dayOrder.map((d, i) => {
+    const avg = avgs[i];
+    const count = buckets[d].count;
+    const pct = maxAvg > 0 ? Math.round((avg / maxAvg) * 100) : 0;
+    const isBest = avg === maxAvg && maxAvg > 0;
+    return `
+      <div class="dow-stat-card${isBest ? ' best' : ''}">
+        <div class="dow-stat-day">${dayLabels[i]}</div>
+        <div class="dow-stat-views">${formatNumber(avg)}</div>
+        <div class="dow-stat-count">${count}本</div>
+        <div class="dow-stat-bar-wrap">
+          <div class="dow-stat-bar" style="width:${pct}%"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 // ====================================================================
