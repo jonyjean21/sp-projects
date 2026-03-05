@@ -1395,7 +1395,7 @@ async function loadFirebaseQueue() {
 // ========== TOURNAMENT VALIDATION ==========
 function validateTournament(t) {
   const warns = [];
-  // event_date check
+  // 要確認 = 開催日 / 都道府県 / 主催者 が未設定（本質的に必要な情報のみ）
   if(!t.event_date) {
     warns.push({level:'warn',msg:'開催日が未設定'});
   } else {
@@ -1404,18 +1404,128 @@ function validateTournament(t) {
     oneYearAgo.setFullYear(oneYearAgo.getFullYear()-1);
     if(ed < oneYearAgo) warns.push({level:'warn',msg:'開催日が1年以上前'});
   }
-  // area check
   if(!t.area && !t.area_id) warns.push({level:'warn',msg:'都道府県が未設定'});
-  // title check
-  if(t.title && !t.title.includes('モルック') && !t.title.toLowerCase().includes('molkky')) warns.push({level:'warn',msg:'タイトルに「モルック」が含まれない'});
-  // scale
-  if(!t.scale) warns.push({level:'info',msg:'規模が未設定'});
-  // duplicate detection (same date + area)
+  if(!t.organizer) warns.push({level:'warn',msg:'主催者が未設定'});
+  // duplicate detection
   if(t.event_date && t.area) {
     const dupes = tAllData.filter(o => o!==t && o.event_date===t.event_date && o.area===t.area);
     if(dupes.length) warns.push({level:'warn',msg:'同日・同地域に別の大会あり (重複の可能性)'});
   }
   return warns;
+}
+
+// ========== AUTO-EXTRACT FROM SOURCE ==========
+// Extract tweet ID from X/Twitter URL
+function extractTweetId(url) {
+  if(!url) return null;
+  const m = url.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);
+  return m ? m[1] : null;
+}
+
+// Fetch tweet data via FxTwitter API
+async function fetchTweetData(tweetId) {
+  const resp = await fetch(`https://api.fxtwitter.com/status/${tweetId}`, { signal: AbortSignal.timeout(8000) });
+  if(!resp.ok) throw new Error('FxTwitter API error');
+  const data = await resp.json();
+  return data.tweet || null;
+}
+
+// Extract tournament info from text using Gemini API
+async function extractInfoFromText(text, existingData) {
+  const prompt = `以下のテキストからモルックの大会情報を抽出してJSON形式で返してください。
+抽出項目:
+- event_date: 開催日（YYYY-MM-DD形式、推定も可。今年は2026年）
+- area: 都道府県名（例: 東京都、大阪府、北海道）
+- organizer: 主催者名
+
+既に判明している情報: ${JSON.stringify(existingData)}
+不明な場合はnullを入れてください。JSONのみを返し、他の文字は不要です。
+
+テキスト:
+${text.substring(0, 1000)}`;
+
+  const resp = await fetch('https://vercel-api-orpin-one.vercel.app/api/gemini', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ prompt })
+  });
+  if(!resp.ok) throw new Error('Gemini API error');
+  const result = await resp.json();
+  const raw = (result.text || result.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
+  // Extract JSON from response
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if(!jsonMatch) return null;
+  return JSON.parse(jsonMatch[0]);
+}
+
+// Main auto-extract function — called from detail modal
+async function tAutoExtract() {
+  const key = _currentDetailKey;
+  if(!key) return;
+  const [type, id] = key.split(':');
+  let t;
+  if(type==='q') t = tAllData.find(x=>x._type==='queue'&&x._fbKey===id);
+  else t = tAllData.find(x=>x._type==='wp'&&x.id===parseInt(id));
+  if(!t) return;
+
+  const btn = document.getElementById('btnAutoExtract');
+  if(btn) { btn.disabled=true; btn.textContent='取得中...'; }
+
+  try {
+    let extracted = {};
+    const snsUrl = t.sns_link || t.source_url || '';
+    const tweetId = extractTweetId(snsUrl);
+
+    // 1. Try FxTwitter API if X/Twitter URL available
+    if(tweetId) {
+      try {
+        const tweet = await fetchTweetData(tweetId);
+        if(tweet) {
+          const tweetText = tweet.text || '';
+          // Get images
+          if(tweet.media?.photos?.length) {
+            t.source_images = tweet.media.photos.map(p => p.url);
+          }
+          // Store tweet text as source
+          if(!t.source_text && tweetText) t.source_text = tweetText;
+          // Use Gemini to extract structured data from tweet text
+          const existing = { event_date: t.event_date, area: t.area, organizer: t.organizer };
+          extracted = await extractInfoFromText(tweetText, existing) || {};
+        }
+      } catch(e) { console.warn('FxTwitter fetch failed:', e); }
+    }
+
+    // 2. Fallback: use source_text if available
+    if(!extracted.event_date && !extracted.area && !extracted.organizer && t.source_text) {
+      const existing = { event_date: t.event_date, area: t.area, organizer: t.organizer };
+      extracted = await extractInfoFromText(t.source_text, existing) || {};
+    }
+
+    // 3. Apply extracted data to form fields (only fill empty fields)
+    let filled = 0;
+    if(extracted.event_date && !document.getElementById('tdDate').value) {
+      document.getElementById('tdDate').value = extracted.event_date;
+      filled++;
+    }
+    if(extracted.area) {
+      const areaName = locationToArea(extracted.area);
+      if(areaName && !document.getElementById('tdArea').value) {
+        document.getElementById('tdArea').value = areaName;
+        filled++;
+      }
+    }
+    if(extracted.organizer && !document.getElementById('tdOrganizer').value) {
+      document.getElementById('tdOrganizer').value = extracted.organizer;
+      filled++;
+    }
+
+    showToast(filled > 0 ? `${filled}件の情報を自動取得しました` : '新たに取得できる情報がありませんでした', filled > 0 ? 'success' : 'info');
+  } catch(e) {
+    console.error('Auto-extract error:', e);
+    showToast('情報取得に失敗しました: ' + e.message, 'error');
+  } finally {
+    if(btn) { btn.disabled=false; btn.textContent='自動情報取得'; }
+  }
 }
 
 // ========== TOURNAMENT TABS & FILTERING ==========
@@ -1537,8 +1647,15 @@ function tShowDetail(key) {
   // Editable fields
   const areaOptions = Object.keys(AREAS).map(a=>`<option value="${a}"${a===t.area?' selected':''}>${a}</option>`).join('');
 
+  // Auto-extract button: show when missing fields AND source info exists
+  const hasMissing = !t.event_date || !t.area || !t.organizer;
+  const hasSource = t.sns_link || t.source_url || t.source_text;
+  const autoExtractBtn = hasMissing && hasSource
+    ? `<button id="btnAutoExtract" class="btn btn-sm" style="background:var(--accent);color:#fff;margin-bottom:8px" onclick="tAutoExtract()">自動情報取得（ソースから補完）</button>`
+    : '';
+
   let editHtml=`<div class="detail-section">
-    <div style="font-size:12px;font-weight:600;margin-bottom:8px">大会情報フィールド</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:12px;font-weight:600">大会情報フィールド</span>${autoExtractBtn}</div>
     <div class="field"><label>大会名</label><input type="text" id="tdTitle" value="${esc(t.title)}"></div>
     <div class="field-row">
       <div class="field"><label>開催日</label><input type="date" id="tdDate" value="${dateToInput(t.event_date)}"></div>
