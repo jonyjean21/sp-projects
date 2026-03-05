@@ -260,6 +260,19 @@ textarea{resize:vertical;min-height:60px}
 
 /* Hidden */
 .hidden{display:none!important}
+
+/* My car highlight */
+.assign-card.my-car{border:2px solid var(--accent);border-left:4px solid var(--accent);background:#e8f5e9}
+.my-car-badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;
+  background:var(--accent);color:#fff;margin-left:6px}
+
+/* LINE share button */
+.btn-line{background:#06C755;color:#fff}
+.btn-line:active{background:#05a648}
+
+/* Admin PIN modal */
+.pin-input{letter-spacing:12px;text-align:center;font-size:24px;font-weight:700;
+  width:180px;margin:0 auto;display:block}
 </style>
 </head>
 <body>
@@ -326,6 +339,15 @@ textarea{resize:vertical;min-height:60px}
         <label class="form-label">チーム名</label>
         <input type="text" id="settingsTeamName" onchange="saveTeamName()">
       </div>
+    </div>
+
+    <div class="section-title">管理者</div>
+    <div class="card" onclick="openAdminPinSetting()">
+      <div style="font-size:15px;font-weight:600">管理者PINの変更</div>
+      <div style="font-size:13px;color:var(--text-sub);margin-top:4px" id="settingsAdminPinStatus">未設定</div>
+    </div>
+    <div class="card" id="settingsAdminLogout" style="display:none" onclick="adminLogout()">
+      <div style="font-size:15px;font-weight:600;color:var(--danger)">管理者ログアウト</div>
     </div>
   </div>
 </div>
@@ -552,7 +574,17 @@ textarea{resize:vertical;min-height:60px}
     <div class="modal-title">📋 LINE用テキスト</div>
     <div class="line-preview" id="lineTextPreview"></div>
     <button class="btn btn-primary" onclick="copyLineText()" style="margin-top:12px">📋 コピー</button>
+    <button class="btn btn-line" onclick="shareLineApp()" style="margin-top:8px">💬 LINEで共有</button>
     <button class="btn btn-outline" onclick="closeModal('lineTextModal')" style="margin-top:8px">閉じる</button>
+  </div>
+</div>
+
+<!-- Modal: Admin PIN -->
+<div class="modal-overlay" id="adminPinModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="adminPinModalTitle">管理者PIN</div>
+    <div id="adminPinContent"></div>
   </div>
 </div>
 
@@ -573,8 +605,17 @@ let membersData = {};
 let equipmentTypesData = {};
 let locationsData = {};
 let eventsData = {};
-const isAdmin = true; // v2: 管理者モード廃止、全機能開放
+let isAdmin = !!localStorage.getItem('teamride_admin');
 let selectedMemberId = localStorage.getItem('teamride_member') || null;
+
+// ── SHA-256 Hash ──
+async function sha256(text) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(text);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
 const ZONE_COLORS = ['#4CAF50','#2196F3','#FF9800','#E91E63','#9C27B0','#00BCD4','#795548','#607D8B'];
 
@@ -634,6 +675,12 @@ function loadAll() {
   db.ref(ROOT + '/config').on('value', snap => {
     configData = snap.val() || {};
     document.getElementById('headerTeamName').textContent = configData.team_name || 'チームライド';
+    // If no PIN is set, everyone is admin. If PIN is set, check localStorage
+    if (!configData.admin_pin) {
+      isAdmin = true;
+    } else {
+      isAdmin = !!localStorage.getItem('teamride_admin');
+    }
     if (!configData.team_name) showWizard();
     else afterConfigLoaded();
   });
@@ -664,6 +711,7 @@ function loadAll() {
 }
 
 function afterConfigLoaded() {
+  updateAdminUI();
   if (!selectedMemberId && Object.keys(membersData).length > 0) {
     showMemberSelect();
   } else {
@@ -684,6 +732,8 @@ function showMainApp() {
   document.getElementById('mainApp').style.display = '';
   document.getElementById('bottomNav').style.display = '';
   updateHeaderMember();
+  updateHeaderRight();
+  updateAdminUI();
   renderHome();
 }
 
@@ -704,7 +754,7 @@ function updateHeaderMember() {
 
 // ── Wizard ──
 let wizardStep = 0;
-let wizardData = { team_name: '', zones: [] };
+let wizardData = { team_name: '', zones: [], admin_pin: '' };
 
 function showWizard() {
   document.getElementById('mainApp').style.display = 'none';
@@ -719,13 +769,24 @@ function renderWizardStep() {
   const c = document.getElementById('wizardContent');
   if (wizardStep === 0) {
     c.innerHTML = `
-      <div class="wizard-step">Step 1 / 2</div>
+      <div class="wizard-step">Step 1 / 3</div>
       <div class="wizard-title">⚽ チーム名を入力</div>
       <div class="wizard-input">
-        <input type="text" id="wizTeamName" placeholder="例: FC○○ 1年生" value="${wizardData.team_name}">
+        <input type="text" id="wizTeamName" placeholder="例: FC○○ 1年生" value="${escapeHtml(wizardData.team_name)}">
       </div>
       <button class="btn btn-primary" onclick="wizardNext()">次へ</button>`;
   } else if (wizardStep === 1) {
+    c.innerHTML = `
+      <div class="wizard-step">Step 2 / 3</div>
+      <div class="wizard-title">🔑 管理者PINを設定</div>
+      <p style="font-size:14px;color:var(--text-sub);margin-bottom:16px">メンバー追加やイベント作成は管理者のみ行えます。4〜6桁の数字を設定してください。</p>
+      <div class="wizard-input">
+        <input type="tel" id="wizAdminPin" class="pin-input" maxlength="6" placeholder="4〜6桁" inputmode="numeric" autocomplete="off" value="${escapeHtml(wizardData.admin_pin)}">
+      </div>
+      <button class="btn btn-primary" onclick="wizardNext()">次へ</button>
+      <button class="btn btn-outline" onclick="wizardBack()" style="margin-top:8px">戻る</button>
+      <button class="btn btn-outline" onclick="wizardSkipPin()" style="margin-top:4px;font-size:13px;color:var(--text-sub)">スキップ（あとで設定）</button>`;
+  } else if (wizardStep === 2) {
     let zonesHtml = wizardData.zones.map((z, i) => `
       <div class="list-item" style="cursor:default">
         <span class="zone-dot" style="background:${z.color}"></span>
@@ -733,7 +794,7 @@ function renderWizardStep() {
         <button class="btn-icon btn-outline" onclick="removeWizZone(${i})" style="font-size:14px">✕</button>
       </div>`).join('');
     c.innerHTML = `
-      <div class="wizard-step">Step 2 / 2</div>
+      <div class="wizard-step">Step 3 / 3</div>
       <div class="wizard-title">📍 エリアを追加</div>
       <p style="font-size:14px;color:var(--text-sub);margin-bottom:16px">近所のメンバー同士で乗り合わせるためのエリア分けです</p>
       ${zonesHtml}
@@ -749,6 +810,12 @@ function renderWizardStep() {
         ${wizardData.zones.length === 0 ? 'disabled' : ''}>セットアップ完了</button>
       <button class="btn btn-outline" onclick="wizardBack()" style="margin-top:8px">戻る</button>`;
   }
+}
+
+function wizardSkipPin() {
+  wizardData.admin_pin = '';
+  wizardStep = 2;
+  renderWizardStep();
 }
 
 let wizSelectedColor = ZONE_COLORS[0];
@@ -776,6 +843,11 @@ function wizardNext() {
     const v = document.getElementById('wizTeamName').value.trim();
     if (!v) return showToast('チーム名を入力してください', 'error');
     wizardData.team_name = v;
+  } else if (wizardStep === 1) {
+    const pin = document.getElementById('wizAdminPin').value.trim();
+    if (!pin || pin.length < 4) return showToast('4桁以上で入力してください', 'error');
+    if (!/^\d+$/.test(pin)) return showToast('数字のみ入力してください', 'error');
+    wizardData.admin_pin = pin;
   }
   wizardStep++;
   renderWizardStep();
@@ -789,9 +861,14 @@ function wizardBack() {
 async function wizardFinish() {
   if (wizardData.zones.length === 0) return;
   try {
-    await db.ref(ROOT + '/config').set({
-      team_name: wizardData.team_name
-    });
+    const configObj = { team_name: wizardData.team_name };
+    if (wizardData.admin_pin) {
+      configObj.admin_pin = await sha256(wizardData.admin_pin);
+    }
+    await db.ref(ROOT + '/config').set(configObj);
+    // The person who set up is always admin
+    isAdmin = true;
+    localStorage.setItem('teamride_admin', '1');
     for (let i = 0; i < wizardData.zones.length; i++) {
       await db.ref(ROOT + '/zones').push({
         name: wizardData.zones[i].name,
@@ -1143,6 +1220,143 @@ async function deleteEquipment(id) {
 function renderSettings() {
   updateHeaderMember();
   document.getElementById('settingsTeamName').value = configData.team_name || '';
+  const pinStatus = document.getElementById('settingsAdminPinStatus');
+  if (pinStatus) {
+    pinStatus.textContent = configData.admin_pin ? (isAdmin ? '設定済み（ログイン中）' : '設定済み') : '未設定';
+  }
+  const logoutBtn = document.getElementById('settingsAdminLogout');
+  if (logoutBtn) {
+    logoutBtn.style.display = (isAdmin && configData.admin_pin) ? '' : 'none';
+  }
+}
+
+// ── Admin PIN ──
+function updateAdminUI() {
+  // Show/hide admin-only controls based on isAdmin state
+  const adminControls = document.getElementById('membersAdminControls');
+  if (adminControls) adminControls.style.display = isAdmin ? '' : 'none';
+}
+
+function updateHeaderRight() {
+  const el = document.getElementById('headerRight');
+  if (!el) return;
+  if (!configData.admin_pin) {
+    // No PIN set — everyone is admin, no indicator needed
+    el.innerHTML = '';
+  } else if (!isAdmin) {
+    el.innerHTML = `<button class="btn btn-outline btn-small" onclick="showAdminLogin()" style="font-size:12px;padding:6px 12px">🔑 管理者</button>`;
+  } else {
+    el.innerHTML = `<span style="font-size:11px;color:var(--accent);font-weight:600">管理者</span>`;
+  }
+}
+
+function showAdminLogin() {
+  document.getElementById('adminPinModalTitle').textContent = '管理者ログイン';
+  document.getElementById('adminPinContent').innerHTML = `
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:14px;color:var(--text-sub)">管理者PINを入力してください</div>
+    </div>
+    <div class="form-group" style="display:flex;justify-content:center">
+      <input type="tel" id="adminPinInput" class="pin-input" maxlength="6" placeholder="----" inputmode="numeric" autocomplete="off">
+    </div>
+    <button class="btn btn-primary" onclick="verifyAdminPin()">ログイン</button>
+    <button class="btn btn-outline" onclick="closeModal('adminPinModal')" style="margin-top:8px">キャンセル</button>`;
+  openModal('adminPinModal');
+  setTimeout(() => document.getElementById('adminPinInput')?.focus(), 300);
+}
+
+async function verifyAdminPin() {
+  const input = document.getElementById('adminPinInput').value.trim();
+  if (!input) return showToast('PINを入力してください', 'error');
+  const hashed = await sha256(input);
+  if (hashed === configData.admin_pin) {
+    isAdmin = true;
+    localStorage.setItem('teamride_admin', '1');
+    closeModal('adminPinModal');
+    updateAdminUI();
+    updateHeaderRight();
+    renderHome();
+    renderSettings();
+    showToast('管理者としてログインしました');
+  } else {
+    showToast('PINが違います', 'error');
+  }
+}
+
+function openAdminPinSetting() {
+  if (!isAdmin && configData.admin_pin) {
+    showToast('管理者ログインが必要です', 'error');
+    showAdminLogin();
+    return;
+  }
+  document.getElementById('adminPinModalTitle').textContent = configData.admin_pin ? 'PIN変更' : 'PIN設定';
+  let html = `<div style="text-align:center;margin-bottom:16px">
+    <div style="font-size:14px;color:var(--text-sub)">${configData.admin_pin ? '新しいPINを入力' : '4〜6桁の数字を設定してください'}</div>
+  </div>`;
+  if (configData.admin_pin) {
+    html += `<div class="form-group" style="display:flex;justify-content:center">
+      <input type="tel" id="adminPinOld" class="pin-input" maxlength="6" placeholder="現在のPIN" inputmode="numeric" autocomplete="off">
+    </div>`;
+  }
+  html += `<div class="form-group" style="display:flex;justify-content:center">
+    <input type="tel" id="adminPinNew" class="pin-input" maxlength="6" placeholder="新PIN" inputmode="numeric" autocomplete="off">
+  </div>
+  <div class="form-group" style="display:flex;justify-content:center">
+    <input type="tel" id="adminPinConfirm" class="pin-input" maxlength="6" placeholder="確認" inputmode="numeric" autocomplete="off">
+  </div>
+  <button class="btn btn-primary" onclick="saveAdminPin()">保存</button>`;
+  if (configData.admin_pin) {
+    html += `<button class="btn btn-outline" style="margin-top:8px;color:var(--danger)" onclick="removeAdminPin()">PINを削除（管理者制限なし）</button>`;
+  }
+  html += `<button class="btn btn-outline" onclick="closeModal('adminPinModal')" style="margin-top:8px">キャンセル</button>`;
+  document.getElementById('adminPinContent').innerHTML = html;
+  openModal('adminPinModal');
+}
+
+async function saveAdminPin() {
+  if (configData.admin_pin) {
+    const old = document.getElementById('adminPinOld').value.trim();
+    if (!old) return showToast('現在のPINを入力してください', 'error');
+    const oldHash = await sha256(old);
+    if (oldHash !== configData.admin_pin) return showToast('現在のPINが違います', 'error');
+  }
+  const newPin = document.getElementById('adminPinNew').value.trim();
+  const confirmPin = document.getElementById('adminPinConfirm').value.trim();
+  if (!newPin || newPin.length < 4) return showToast('4桁以上で入力してください', 'error');
+  if (newPin !== confirmPin) return showToast('確認PINが一致しません', 'error');
+  if (!/^\d+$/.test(newPin)) return showToast('数字のみ入力してください', 'error');
+
+  const hashed = await sha256(newPin);
+  await db.ref(ROOT + '/config/admin_pin').set(hashed);
+  isAdmin = true;
+  localStorage.setItem('teamride_admin', '1');
+  closeModal('adminPinModal');
+  updateAdminUI();
+  updateHeaderRight();
+  renderSettings();
+  showToast('管理者PINを設定しました');
+}
+
+async function removeAdminPin() {
+  if (!window.confirm('管理者PINを削除しますか？全員が管理者機能を使えるようになります。')) return;
+  await db.ref(ROOT + '/config/admin_pin').remove();
+  isAdmin = true;
+  localStorage.setItem('teamride_admin', '1');
+  closeModal('adminPinModal');
+  updateAdminUI();
+  updateHeaderRight();
+  renderSettings();
+  showToast('PINを削除しました');
+}
+
+function adminLogout() {
+  isAdmin = false;
+  localStorage.removeItem('teamride_admin');
+  updateAdminUI();
+  updateHeaderRight();
+  renderHome();
+  renderSettings();
+  showToast('管理者からログアウトしました');
 }
 
 // ── Home ──
@@ -1279,7 +1493,9 @@ function renderEventCard(id, e, isPast) {
       html += `<div class="btn-row" style="margin-top:10px">
         <button class="btn btn-secondary btn-small" onclick="viewAssignment('${id}')">🚗 配車表</button>
         <button class="btn btn-outline btn-small" onclick="showLineText('${id}')">📋 LINE共有</button>
-      </div>`;
+      </div>
+      <button class="btn btn-line btn-small" onclick="shareLineDirect('${id}')" style="margin-top:8px">💬 LINEで共有</button>`;
+
       html += `<button class="btn btn-outline btn-small" onclick="startRsvp('${id}')" style="margin-top:8px">回答を変更 ⚠</button>`;
     }
 
@@ -2096,8 +2312,13 @@ function showAssignmentResult() {
     const zoneLabel = zone ? `(${escapeHtml(zone.name)})` : '';
     const usedSeats = d.original_seats - d.available_seats;
 
-    html += `<div class="assign-card">
-      <div class="assign-driver">${zoneDot}🚗 ${escapeHtml(d.name)}家 ${zoneLabel}
+    // Check if the current user is in this car (as driver or passenger)
+    const isMyCar = selectedMemberId && (d.id === selectedMemberId || d.passengers.some(p => p.id === selectedMemberId));
+    const myCarClass = isMyCar ? ' my-car' : '';
+    const myCarBadge = isMyCar ? '<span class="my-car-badge">あなたの車</span>' : '';
+
+    html += `<div class="assign-card${myCarClass}">
+      <div class="assign-driver">${zoneDot}🚗 ${escapeHtml(d.name)}家 ${zoneLabel}${myCarBadge}
         <span style="font-size:12px;font-weight:400;color:var(--text-sub)">${usedSeats}/${d.original_seats}席</span>
       </div>`;
 
@@ -2345,6 +2566,25 @@ async function copyLineText() {
     document.body.removeChild(ta);
     showToast('コピーしました！');
   }
+}
+
+function shareLineApp() {
+  const text = document.getElementById('lineTextPreview').textContent;
+  const encoded = encodeURIComponent(text);
+  window.location.href = 'line://msg/text/' + encoded;
+}
+
+function shareLineDirect(eventId) {
+  const e = eventsData[eventId];
+  let text = '';
+  if (e?.assignments?.line_text) {
+    text = e.assignments.line_text;
+  } else if (currentAssignment && currentAssignEventId === eventId) {
+    text = generateLineText(eventId);
+  }
+  if (!text) { showToast('共有テキストがありません', 'error'); return; }
+  const encoded = encodeURIComponent(text);
+  window.location.href = 'line://msg/text/' + encoded;
 }
 
 // ── View confirmed assignment from Home ──
