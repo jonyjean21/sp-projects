@@ -1102,6 +1102,38 @@ input {
 .health-trend.trend-down { color: var(--coral); }
 .health-trend.trend-flat { color: var(--sub); }
 
+/* ===== Video Type Filter ===== */
+.type-filter {
+  display: flex;
+  gap: 2px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2px;
+  margin-left: 12px;
+}
+
+.type-btn {
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sub);
+  background: transparent;
+  border-radius: 16px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.type-btn.active {
+  background: var(--lime);
+  color: #000;
+}
+
+.type-btn:hover:not(.active) {
+  color: var(--text);
+  background: rgba(255,255,255,0.05);
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
   .sidebar { display: none; }
@@ -1128,6 +1160,8 @@ input {
   .video-card-engagement { font-size: 11px; }
 
   .header-timestamp { display: none; }
+  .type-filter { margin-left: 0; margin-top: 0; }
+  .type-btn { padding: 4px 10px; font-size: 11px; min-height: 32px; }
   .videos-header { flex-direction: column; align-items: flex-start; }
   .chart-card { padding: 16px; }
   .score-label { width: 90px; font-size: 12px; }
@@ -1532,6 +1566,12 @@ input {
         <img class="header-channel-icon" id="header-icon" src="" alt="">
         <span class="header-channel-name" id="header-name"></span>
         <span class="header-demo-badge" id="header-demo" style="display:none;">DEMO</span>
+        <div class="type-filter" id="type-filter">
+          <button class="type-btn active" data-type="all" onclick="switchVideoType('all')">全て</button>
+          <button class="type-btn" data-type="shorts" onclick="switchVideoType('shorts')">Shorts</button>
+          <button class="type-btn" data-type="regular" onclick="switchVideoType('regular')">通常</button>
+        </div>
+        <span class="type-filter-count" id="type-filter-count" style="font-size:11px;color:var(--sub);margin-left:4px;"></span>
       </div>
       <div class="header-right">
         <span class="header-timestamp" id="header-timestamp"></span>
@@ -1767,8 +1807,18 @@ let state = {
   filterViews: 'all',
   filterKeyword: '',
   overviewPeriodDays: 30,
+  videoTypeFilter: 'all',
   charts: {}
 };
+
+function getTypeFilteredVideos() {
+  if (state.videoTypeFilter === 'all') return state.videos;
+  return state.videos.filter(v => {
+    const sec = parseDurationSeconds(v.duration);
+    if (sec <= 0) return state.videoTypeFilter === 'regular'; // unknown duration → treat as regular
+    return state.videoTypeFilter === 'shorts' ? sec < 60 : sec >= 60;
+  });
+}
 
 // ====================================================================
 // DEMO DATA GENERATOR
@@ -2107,7 +2157,7 @@ function disconnect() {
   localStorage.removeItem('yt_dash_channel_input');
   localStorage.removeItem('yt_dash_remember');
   sessionStorage.removeItem('yt_dash_cache');
-  state = { isDemo: false, channelId: '', channel: null, videos: [], currentTab: 'overview', videosSort: 'date', videosPage: 1, videosPerPage: 20, filterPeriod: 'all', filterViews: 'all', filterKeyword: '', overviewPeriodDays: 30, charts: {} };
+  state = { isDemo: false, channelId: '', channel: null, videos: [], currentTab: 'overview', videosSort: 'date', videosPage: 1, videosPerPage: 20, filterPeriod: 'all', filterViews: 'all', filterKeyword: '', overviewPeriodDays: 30, videoTypeFilter: 'all', charts: {} };
   document.getElementById('app-shell').style.display = 'none';
   document.getElementById('app-shell').classList.remove('active');
   document.getElementById('connect-screen').style.display = 'flex';
@@ -2249,6 +2299,21 @@ function renderTab(tab) {
   }
 }
 
+function switchVideoType(type) {
+  state.videoTypeFilter = type;
+  document.querySelectorAll('.type-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.type === type);
+  });
+  // Update count indicator
+  const filtered = getTypeFilteredVideos();
+  const indicator = document.getElementById('type-filter-count');
+  if (indicator) {
+    indicator.textContent = type === 'all' ? '' : `(${filtered.length}本)`;
+  }
+  // Re-render current tab
+  renderTab(state.currentTab);
+}
+
 // ====================================================================
 // UTILITIES
 // ====================================================================
@@ -2345,7 +2410,7 @@ function formatChange(current, previous) {
 
 function renderKPIs() {
   const ch = state.channel;
-  const videos = state.videos;
+  const videos = getTypeFilteredVideos();
   const days = state.overviewPeriodDays;
 
   const currentVideos = getVideosInPeriod(videos, days, 0);
@@ -2498,7 +2563,7 @@ function tooltipMode() {
 
 function renderViewsTrend() {
   destroyChart('viewsTrend');
-  const recent = state.videos.slice(0, 30).reverse();
+  const recent = getTypeFilteredVideos().slice(0, 30).reverse();
   const labels = recent.map(v => {
     const d = new Date(v.publishedAt);
     return `${d.getMonth()+1}/${d.getDate()}`;
@@ -2567,7 +2632,7 @@ function renderViewsTrend() {
 }
 
 function renderTopVideos() {
-  const top3 = [...state.videos].sort((a,b) => b.views - a.views).slice(0, 3);
+  const top3 = [...getTypeFilteredVideos()].sort((a,b) => b.views - a.views).slice(0, 3);
   const container = document.getElementById('top-videos-list');
   container.innerHTML = top3.map((v, i) => `
     <div class="top-video-item fade-in">
@@ -2589,7 +2654,7 @@ function renderTopVideos() {
 }
 
 function renderEngagement() {
-  const videos = state.videos;
+  const videos = getTypeFilteredVideos();
   if (!videos.length) return;
   const avgViews = videos.reduce((s,v) => s + v.views, 0) / videos.length;
   const avgLikeRate = videos.reduce((s,v) => s + (v.views > 0 ? v.likes/v.views*100 : 0), 0) / videos.length;
@@ -2625,7 +2690,8 @@ function renderVideos() {
   const pageVideos = sorted.slice(start, start + state.videosPerPage);
 
   // Compute channel average views for performance comparison
-  const allAvgViews = state.videos.length > 0 ? state.videos.reduce((s,v) => s + v.views, 0) / state.videos.length : 1;
+  const typeFiltered = getTypeFilteredVideos();
+  const allAvgViews = typeFiltered.length > 0 ? typeFiltered.reduce((s,v) => s + v.views, 0) / typeFiltered.length : 1;
 
   document.getElementById('videos-count').textContent = `全${total}件`;
 
@@ -2692,7 +2758,7 @@ function renderVideos() {
 }
 
 function getFilteredVideos() {
-  let arr = [...state.videos];
+  let arr = [...getTypeFilteredVideos()];
 
   // Period filter
   const period = state.filterPeriod;
@@ -2734,7 +2800,7 @@ function sortVideoArray(arr) {
 }
 
 function getSortedVideos() {
-  return sortVideoArray([...state.videos]);
+  return sortVideoArray([...getTypeFilteredVideos()]);
 }
 
 function sortVideos(sort) {
@@ -2791,7 +2857,7 @@ function renderPatterns() {
 function renderDayOfWeek() {
   destroyChart('dayOfWeek');
   const buckets = Array(7).fill(null).map(() => ({ views: 0, count: 0 }));
-  state.videos.forEach(v => {
+  getTypeFilteredVideos().forEach(v => {
     const day = new Date(v.publishedAt).getDay();
     buckets[day].views += v.views;
     buckets[day].count++;
@@ -2856,7 +2922,7 @@ function renderTimeOfDay() {
   const buckets = Array(8).fill(null).map(() => ({ views: 0, count: 0 }));
   const timeLabels = ['0-3時', '3-6時', '6-9時', '9-12時', '12-15時', '15-18時', '18-21時', '21-24時'];
 
-  state.videos.forEach(v => {
+  getTypeFilteredVideos().forEach(v => {
     const hour = new Date(v.publishedAt).getHours();
     const bucket = Math.floor(hour / 3);
     buckets[bucket].views += v.views;
@@ -2912,7 +2978,7 @@ function renderTimeOfDay() {
 
 function renderTitleLength() {
   destroyChart('titleLength');
-  const points = state.videos.map(v => ({ x: v.title.length, y: v.views, title: v.title }));
+  const points = getTypeFilteredVideos().map(v => ({ x: v.title.length, y: v.views, title: v.title }));
 
   const ctx = document.getElementById('chart-title-length').getContext('2d');
   state.charts.titleLength = new Chart(ctx, {
@@ -2990,7 +3056,7 @@ function renderTitleLength() {
 function renderMonthly() {
   destroyChart('monthly');
   const monthMap = {};
-  state.videos.forEach(v => {
+  getTypeFilteredVideos().forEach(v => {
     const d = new Date(v.publishedAt);
     const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
     if (!monthMap[key]) monthMap[key] = { count: 0, views: 0 };
@@ -3079,7 +3145,7 @@ function renderMonthly() {
 // ====================================================================
 function renderPostingInterval() {
   destroyChart('interval');
-  const videos = [...state.videos].sort((a,b) => new Date(a.publishedAt) - new Date(b.publishedAt));
+  const videos = [...getTypeFilteredVideos()].sort((a,b) => new Date(a.publishedAt) - new Date(b.publishedAt));
   const points = [];
   for (let i = 1; i < videos.length; i++) {
     const daysDiff = (new Date(videos[i].publishedAt) - new Date(videos[i-1].publishedAt)) / (1000*60*60*24);
@@ -3190,7 +3256,7 @@ function renderDurationPerformance() {
   destroyChart('duration');
   const shortsData = [];
   const regularData = [];
-  state.videos.forEach(v => {
+  getTypeFilteredVideos().forEach(v => {
     const sec = parseDurationSeconds(v.duration);
     if (sec <= 0) return;
     const mins = sec / 60;
@@ -3300,7 +3366,7 @@ function renderDurationPerformance() {
 function renderTitleAnalysis() {
   const container = document.getElementById('title-analysis-content');
   if (!container) return;
-  const videos = state.videos;
+  const videos = getTypeFilteredVideos();
   if (!videos.length) {
     container.innerHTML = '<div style="color:var(--sub);font-size:14px;">動画データがありません。</div>';
     return;
@@ -3391,7 +3457,7 @@ function buildTimingMatrix() {
     Array(24).fill(null).map(() => ({ totalViews: 0, count: 0 }))
   );
 
-  state.videos.forEach(v => {
+  getTypeFilteredVideos().forEach(v => {
     const d = new Date(v.publishedAt);
     const day = d.getDay();
     const hour = d.getHours();
@@ -3519,7 +3585,7 @@ function renderBestTimes() {
 
 function renderDowStats() {
   const buckets = Array(7).fill(null).map(() => ({ views: 0, count: 0 }));
-  state.videos.forEach(v => {
+  getTypeFilteredVideos().forEach(v => {
     const day = new Date(v.publishedAt).getDay();
     buckets[day].views += v.views;
     buckets[day].count++;
@@ -3568,7 +3634,7 @@ function parseDurationSeconds(duration) {
 }
 
 function renderHealthCheck() {
-  const videos = state.videos;
+  const videos = getTypeFilteredVideos();
   const el = document.getElementById('health-check-list');
   if (!el) return;
   if (!videos.length) {
@@ -3715,7 +3781,7 @@ function getHealthTrend(key, currentScores, prevScores) {
 }
 
 function computeRadarScores() {
-  const videos = state.videos;
+  const videos = getTypeFilteredVideos();
   if (!videos.length) return { content: 0, engagement: 0, consistency: 0, optimization: 0, growth: 0, activity: 0 };
 
   const totalViews = videos.reduce((s,v) => s+v.views, 0);
