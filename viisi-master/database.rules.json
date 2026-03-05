@@ -41,6 +41,14 @@
       ".read": true,
       ".write": true,
       ".indexOn": ["classification", "status", "created"]
+    },
+    "teamride": {
+      ".read": true,
+      ".write": true
+    },
+    "championship-2026": {
+      ".read": true,
+      ".write": true
     }
   }
 }
