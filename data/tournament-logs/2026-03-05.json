@@ -80,6 +80,26 @@
       "reason": "大会情報なし（ラーメン店の日常ツイート、モルック世界大会への言及のみ）",
       "firebase_key": "-OmwMeSQT1Bo767yJJjg",
       "timestamp": "2026-03-05T14:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/sdsdzzz2/status/2029425168158998878",
+      "title": "山形モルック競技大会ニュース（スパム/botツイート）",
+      "action": "skipped",
+      "post_id": null,
+      "source": "ifttt-x-search",
+      "reason": "スパム/botアカウント。リンク先はモルックと無関係の投資記事（bgxo.nayoto.xyz→zubmn21.xyz）",
+      "firebase_key": "-OmwRFBrlA_yH3g1qAjB",
+      "timestamp": "2026-03-05T14:30:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/m_syakyo/status/2029428342680895845",
+      "title": "松本市ボランティア交流集会2026春（モルックは体験コーナーの一つ）",
+      "action": "skipped",
+      "post_id": null,
+      "source": "ifttt-x-search",
+      "reason": "モルック大会ではない。松本市社協のボランティア交流イベント（2026/3/20）でモルックは複数の体験活動の一つ",
+      "firebase_key": "-OmwTX5S1AgtxfBqcYzR",
+      "timestamp": "2026-03-05T14:30:00+09:00"
     }
   ]
 }
