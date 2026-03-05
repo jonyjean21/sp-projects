@@ -19,12 +19,12 @@
   --sidebar-w: 230px; --header-h: 48px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Kaku Gothic ProN',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow:hidden;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Kaku Gothic ProN',sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;overflow:hidden;}
 a{color:var(--accent);text-decoration:none;}
 a:hover{text-decoration:underline;}
 
 /* Layout */
-.app{display:flex;height:100vh;}
+.app{display:flex;height:100dvh;}
 .sidebar{width:var(--sidebar-w);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;transition:transform .25s;}
 .sidebar::-webkit-scrollbar{width:4px;} .sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 .sidebar-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
@@ -195,6 +195,11 @@ tr:hover{background:rgba(255,255,255,.02);}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:flex;align-items:center;justify-content:center;}
 .modal-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;width:90vw;max-width:360px;}
 .modal-box h3{font-size:14px;margin-bottom:14px;}
+
+/* Tournament detail modal */
+.t-detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:20px 10px;}
+.t-detail-overlay.show{display:flex;}
+.t-detail-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;width:90vw;max-width:580px;margin:auto;}
 
 /* Responsive */
 @media(max-width:768px){
@@ -410,7 +415,7 @@ tr:hover{background:rgba(255,255,255,.02);}
   <div class="pager" id="tPager"></div>
 
   <!-- Detail panel (hidden) -->
-  <div id="tDetail" style="display:none"></div>
+  <div class="t-detail-overlay" id="tDetailOverlay" onclick="if(event.target===this)closeTDetail()"><div class="t-detail-box" id="tDetail"></div></div>
 
   <!-- Manual add form (hidden) -->
   <div class="card" id="tAddCard" style="display:none">
@@ -576,14 +581,14 @@ const CATEGORY_MAP = {
 };
 
 const AREAS = {
-  '北海道':{id:43},'青森県':{id:44},'岩手県':{id:45},'宮城県':{id:46},'秋田県':{id:47},'山形県':{id:48},
-  '福島県':{id:49},'茨城県':{id:50},'栃木県':{id:51},'群馬県':{id:52},'埼玉県':{id:53},'千葉県':{id:54},
-  '東京都':{id:55},'神奈川県':{id:56},'新潟県':{id:57},'富山県':{id:58},'石川県':{id:59},'福井県':{id:60},
-  '山梨県':{id:61},'長野県':{id:62},'岐阜県':{id:63},'静岡県':{id:64},'愛知県':{id:65},'三重県':{id:66},
-  '滋賀県':{id:67},'京都府':{id:68},'大阪府':{id:69},'兵庫県':{id:70},'奈良県':{id:71},'和歌山県':{id:72},
-  '鳥取県':{id:73},'島根県':{id:74},'岡山県':{id:75},'広島県':{id:76},'山口県':{id:77},'徳島県':{id:78},
-  '香川県':{id:79},'愛媛県':{id:80},'高知県':{id:81},'福岡県':{id:82},'佐賀県':{id:83},'長崎県':{id:84},
-  '熊本県':{id:85},'大分県':{id:86},'宮崎県':{id:87},'鹿児島県':{id:88},'沖縄県':{id:89}
+  '北海道':{id:58},'青森県':{id:69},'岩手県':{id:70},'宮城県':{id:71},'秋田県':{id:72},'山形県':{id:73},
+  '福島県':{id:74},'茨城県':{id:75},'栃木県':{id:76},'群馬県':{id:77},'埼玉県':{id:78},'千葉県':{id:79},
+  '東京都':{id:80},'神奈川県':{id:81},'新潟県':{id:83},'富山県':{id:85},'石川県':{id:86},'福井県':{id:87},
+  '山梨県':{id:82},'長野県':{id:84},'岐阜県':{id:88},'静岡県':{id:89},'愛知県':{id:90},'三重県':{id:91},
+  '滋賀県':{id:92},'京都府':{id:93},'大阪府':{id:94},'兵庫県':{id:95},'奈良県':{id:96},'和歌山県':{id:97},
+  '鳥取県':{id:98},'島根県':{id:99},'岡山県':{id:100},'広島県':{id:101},'山口県':{id:102},'徳島県':{id:103},
+  '香川県':{id:104},'愛媛県':{id:105},'高知県':{id:106},'福岡県':{id:107},'佐賀県':{id:108},'長崎県':{id:109},
+  '熊本県':{id:110},'大分県':{id:111},'宮崎県':{id:112},'鹿児島県':{id:113},'沖縄県':{id:114}
 };
 
 // Reverse lookup: area id -> name
@@ -687,6 +692,7 @@ function restoreAuth() {
     const s=localStorage.getItem(k);
     if(s){try{
       const{user,pass}=JSON.parse(s);
+      if(!user||!pass) continue;
       wpAuth=btoa(user+':'+pass);
       document.getElementById('setUser').value=user;
       document.getElementById('setPass').value=pass;
@@ -716,6 +722,8 @@ async function verifyWp(){
     document.getElementById('connStatus').innerHTML='<span style="color:var(--success)">WP接続OK</span>';
   }catch(e){
     document.getElementById('connStatus').innerHTML='<span style="color:var(--error)">接続失敗</span>';
+    wpAuth='';
+    showAuthModal();
   }
 }
 async function saveWpAuth(){
@@ -752,34 +760,46 @@ function exportSettings(){
 
 // ========== DASHBOARD ==========
 async function loadDashboard() {
-  // WP counts
-  try {
-    const [postsRes, tourRes] = await Promise.all([
-      fetch(WP_API+'/posts?per_page=1&_fields=id'),
-      fetch(WP_API+'/tournament?per_page=1&_fields=id')
-    ]);
-    const artCount = parseInt(postsRes.headers.get('x-wp-total'))||0;
-    const tourCount = parseInt(tourRes.headers.get('x-wp-total'))||0;
-    document.getElementById('dArticles').textContent = fmt(artCount);
-    document.getElementById('dTournaments').textContent = fmt(tourCount);
-  } catch(e) { console.error('WP count fail:',e); }
+  // 全データソースを並列で取得
+  const wpPromise = Promise.all([
+    fetch(WP_API+'/posts?per_page=1&_fields=id'),
+    fetch(WP_API+'/tournament?per_page=1&_fields=id')
+  ]).catch(e=>{ console.error('WP count fail:',e); return null; });
 
-  // Firebase queue + partners
-  try {
-    const snap = await db.ref('tournament-queue').orderByChild('status').equalTo('pending').once('value');
-    const pending = snap.val() ? Object.keys(snap.val()).length : 0;
+  const queuePromise = db.ref('tournament-queue').orderByChild('status').equalTo('pending').once('value').catch(()=>null);
+  const partnerPromise = db.ref('partner/config/partners').once('value').catch(()=>null);
+  const analyticsPromise = loadAnalyticsData();
+
+  // SNS/Goals はlocalStorageなので即時描画
+  renderSNS();
+  renderGoals();
+
+  // 全並列完了を待つ
+  const [wpResult, queueSnap, partnerSnap] = await Promise.all([wpPromise, queuePromise, partnerPromise, analyticsPromise]);
+
+  // WP結果反映
+  if(wpResult) {
+    try {
+      const artCount = parseInt(wpResult[0].headers.get('x-wp-total'))||0;
+      const tourCount = parseInt(wpResult[1].headers.get('x-wp-total'))||0;
+      document.getElementById('dArticles').textContent = fmt(artCount);
+      document.getElementById('dTournaments').textContent = fmt(tourCount);
+    } catch(e){}
+  }
+
+  // Firebase結果反映
+  if(queueSnap) {
+    const pending = queueSnap.val() ? Object.keys(queueSnap.val()).length : 0;
     const badge = document.getElementById('navQBadge');
     if(pending>0){badge.textContent=pending;badge.style.display='inline';}
-  } catch(e){}
-  try {
-    const snap = await db.ref('partner/config/partners').once('value');
-    const partners = snap.val();
+  }
+  if(partnerSnap) {
+    const partners = partnerSnap.val();
     const count = partners ? Object.keys(partners).length : 0;
     document.getElementById('dPartners').textContent = fmt(count);
-  } catch(e){}
+  }
 
-  // Analytics (sessions/PV)
-  await loadAnalyticsData();
+  // Analytics結果反映
   if(analyticsData && analyticsData.traffic && analyticsData.traffic.months) {
     const months = analyticsData.traffic.months;
     const latest = months[months.length-1];
@@ -788,20 +808,26 @@ async function loadDashboard() {
     renderDashTraffic(months);
     document.getElementById('dTrafficSrc').textContent = 'GA4 API';
   }
-
-  // SNS
-  renderSNS();
-
-  // Goals
-  renderGoals();
 }
 
 async function loadAnalyticsData() {
   if(analyticsData) return;
+  // sessionStorageキャッシュ（30分有効）
+  const cached = sessionStorage.getItem('hub_analytics');
+  if(cached) {
+    try {
+      const {data, ts} = JSON.parse(cached);
+      if(Date.now() - ts < 30*60*1000) { analyticsData = data; return; }
+    } catch(e){}
+  }
   const ep = gasEndpoint();
   try {
     const res = await fetch(ep);
-    if(res.ok) { analyticsData = await res.json(); if(analyticsData.error) analyticsData=null; }
+    if(res.ok) {
+      analyticsData = await res.json();
+      if(analyticsData.error) analyticsData=null;
+      else sessionStorage.setItem('hub_analytics', JSON.stringify({data:analyticsData,ts:Date.now()}));
+    }
   } catch(e) { console.error('GAS fail:',e); }
 }
 
@@ -1390,7 +1416,7 @@ function tShowDetail(key) {
     if(t.source_images&&t.source_images.length){
       srcHtml+='<div class="source-images">';
       t.source_images.forEach((img,i)=>{
-        srcHtml+=`<img class="source-img" src="${esc(img)}" alt="添付${i+1}" onclick="showImageModal('${esc(img)}')">`;
+        srcHtml+=`<img class="source-img" src="${esc(img)}" alt="添付${i+1}" onclick="showImageModal('${esc(img)}')" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<a href=&quot;${esc(img)}&quot; target=&quot;_blank&quot; style=&quot;font-size:11px;color:var(--accent)&quot;>画像${i+1}を開く</a>')">`;
       });
       srcHtml+='</div>';
     }
@@ -1432,12 +1458,12 @@ function tShowDetail(key) {
   } else {
     footerHtml+=`<button class="btn btn-primary" onclick="tSaveEdit(${t.id})">保存</button>`;
   }
-  footerHtml+=`<button class="btn btn-outline" onclick="document.getElementById('tDetail').style.display='none'">閉じる</button></div>`;
+  footerHtml+=`<button class="btn btn-outline" onclick="closeTDetail()">閉じる</button></div>`;
 
-  el.innerHTML=`<div class="detail-panel"><div style="font-size:15px;font-weight:700;margin-bottom:12px">${esc(t.title)}</div>${warnHtml}${srcHtml}${editHtml}${footerHtml}</div>`;
-  el.style.display='block';
-  el.scrollIntoView({behavior:'smooth',block:'start'});
+  el.innerHTML=`<div style="font-size:15px;font-weight:700;margin-bottom:12px">${esc(t.title)}</div>${warnHtml}${srcHtml}${editHtml}${footerHtml}`;
+  document.getElementById('tDetailOverlay').classList.add('show');
 }
+function closeTDetail(){document.getElementById('tDetailOverlay').classList.remove('show');}
 
 function showImageModal(src) {
   const div=document.createElement('div');
@@ -1497,7 +1523,7 @@ async function tProcessQueue(fbKey) {
     await db.ref('tournament-queue/'+fbKey).update({status:'processed',wp_id:data.id,processed_at:new Date().toISOString()});
 
     showToast('WP投稿成功! ID: '+data.id);
-    document.getElementById('tDetail').style.display='none';
+    closeTDetail();
     loadTournaments();
   } catch(e) {
     showToast('投稿失敗: '+e.message, true);
@@ -1510,7 +1536,7 @@ async function tSkipQueue(fbKey) {
   try {
     await db.ref('tournament-queue/'+fbKey).update({status:'skipped',skip_reason:reason,skipped_at:new Date().toISOString()});
     showToast('スキップしました');
-    document.getElementById('tDetail').style.display='none';
+    closeTDetail();
     loadTournaments();
   } catch(e) {
     showToast('スキップ失敗: '+e.message, true);
@@ -1549,7 +1575,7 @@ async function tSaveEdit(wpId) {
     });
     if(!res.ok) throw new Error('HTTP '+res.status);
     showToast('保存しました');
-    document.getElementById('tDetail').style.display='none';
+    closeTDetail();
     // Refresh
     SEC_LOADED['tournaments']=false;
     loadTournaments();
