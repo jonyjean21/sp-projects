@@ -121,6 +121,10 @@ tr:hover{background:rgba(255,255,255,.02);}
 .src-ifttt{background:rgba(74,158,255,.12);color:var(--blue);}
 .src-gas{background:rgba(34,197,94,.12);color:var(--success);}
 .src-manual{background:rgba(167,139,250,.12);color:var(--purple);}
+.pill-noise{background:rgba(255,255,255,.06);color:var(--dim);font-style:italic;}
+.btn-oneclick{padding:8px 20px;font-size:13px;font-weight:700;background:var(--success);color:#fff;border:none;border-radius:8px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;font-family:inherit;}
+.btn-oneclick:hover{background:#16a34a;}
+.auto-extract-indicator{font-size:11px;color:var(--accent);display:inline-flex;align-items:center;gap:5px;margin-bottom:8px;}
 
 /* Detail panel */
 .detail-panel{background:var(--card);border:1px solid var(--accent);border-radius:10px;padding:18px;margin-bottom:14px;}
@@ -390,13 +394,20 @@ tr:hover{background:rgba(255,255,255,.02);}
     <div class="stat-card"><div class="sv" style="color:var(--error)" id="tWarnings">-</div><div class="sl">要確認</div></div>
     <div class="stat-card"><div class="sv" style="color:var(--blue)" id="tSources">3</div><div class="sl">収集ソース</div></div>
   </div>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+    <span id="iftttStatus" style="font-size:11px;padding:4px 10px;border-radius:8px;border:1px solid var(--border);display:inline-flex;align-items:center;gap:5px"></span>
+    <button class="btn btn-sm btn-outline" onclick="tBatchAutoFill()" style="margin-left:auto">一括補完</button>
+  </div>
 
   <!-- Tabs -->
-  <div class="tabs" id="tTabs">
-    <button class="tab active" data-tab="all" onclick="tSwitchTab('all')">全件 <span class="tab-count" id="tcAll">-</span></button>
-    <button class="tab" data-tab="pending" onclick="tSwitchTab('pending')">未処理 <span class="tab-count" id="tcPending">-</span></button>
-    <button class="tab" data-tab="warnings" onclick="tSwitchTab('warnings')">要確認 <span class="tab-count" id="tcWarnings">-</span></button>
-    <button class="tab" data-tab="recent" onclick="tSwitchTab('recent')">最近の投稿 <span class="tab-count" id="tcRecent">-</span></button>
+  <div style="display:flex;align-items:center;gap:0;flex-wrap:wrap">
+    <div class="tabs" id="tTabs" style="flex:1">
+      <button class="tab active" data-tab="all" onclick="tSwitchTab('all')">全件 <span class="tab-count" id="tcAll">-</span></button>
+      <button class="tab" data-tab="pending" onclick="tSwitchTab('pending')">未処理 <span class="tab-count" id="tcPending">-</span></button>
+      <button class="tab" data-tab="warnings" onclick="tSwitchTab('warnings')">要確認 <span class="tab-count" id="tcWarnings">-</span></button>
+      <button class="tab" data-tab="recent" onclick="tSwitchTab('recent')">最近の投稿 <span class="tab-count" id="tcRecent">-</span></button>
+    </div>
+    <button id="btnSkipNoise" class="btn btn-sm btn-outline" style="display:none;margin-left:8px;margin-bottom:14px" onclick="tSkipAllNoise()">ノイズ自動スキップ <span id="noiseCount"></span></button>
   </div>
 
   <!-- Filters -->
@@ -653,6 +664,7 @@ let tQueueData = {};   // Firebase queue raw
 let artPage = 1;
 const ART_PER_PAGE = 20;
 let artTotal = 0;
+let _lastIftttDetection = null; // timestamp of most recent IFTTT queue item
 
 // ========== FIREBASE ==========
 firebase.initializeApp({
@@ -1270,13 +1282,31 @@ async function loadTournaments() {
   const badge = document.getElementById('navQBadge');
   if(pendingCount>0){badge.textContent=pendingCount;badge.style.display='inline';}else{badge.style.display='none';}
 
-  // Run validation
+  // Run validation and noise classification
   let warnCount = 0;
   tAllData.forEach(t => {
     t._warnings = validateTournament(t);
     if(t._warnings.length) warnCount++;
+    t._noiseClass = classifyNoise(t);
   });
   document.getElementById('tWarnings').textContent = fmt(warnCount);
+
+  // IFTTT monitoring: find most recent IFTTT queue item
+  _lastIftttDetection = null;
+  try {
+    const allQueueSnap = await db.ref('tournament-queue').orderByChild('source').equalTo('ifttt').limitToLast(1).once('value');
+    const iftttItems = allQueueSnap.val();
+    if(iftttItems) {
+      Object.values(iftttItems).forEach(item => {
+        const ts = item.created || item.timestamp;
+        if(ts) {
+          const d = new Date(ts);
+          if(!_lastIftttDetection || d > _lastIftttDetection) _lastIftttDetection = d;
+        }
+      });
+    }
+  } catch(e) { console.warn('IFTTT monitoring check failed:', e); }
+  renderIftttStatus();
 
   // Set tab counts
   const now = new Date();
@@ -1285,6 +1315,16 @@ async function loadTournaments() {
   document.getElementById('tcPending').textContent = fmt(pendingCount);
   document.getElementById('tcWarnings').textContent = fmt(warnCount);
   document.getElementById('tcRecent').textContent = fmt(tAllData.filter(t=>t._type!=='queue'&&new Date(t.date)>=weekAgo).length);
+
+  // Show/hide noise skip button
+  const noiseItemCount = tAllData.filter(t => t._type === 'queue' && t._noiseClass).length;
+  const btnSkipNoise = document.getElementById('btnSkipNoise');
+  if(noiseItemCount > 0) {
+    btnSkipNoise.style.display = 'inline-flex';
+    document.getElementById('noiseCount').textContent = '(' + noiseItemCount + ')';
+  } else {
+    btnSkipNoise.style.display = 'none';
+  }
 
   // Populate month filter (event_date is YYYYMMDD or YYYY-MM-DD)
   const monthSet = new Set();
@@ -1409,6 +1449,45 @@ function validateTournament(t) {
   return warns;
 }
 
+// ========== NOISE CLASSIFICATION ==========
+function classifyNoise(t) {
+  if(t._type !== 'queue' || !t.source_text) return null;
+  const text = t.source_text;
+  // Check for past-tense/result words (reports, not announcements)
+  const reportWords = ['結果', '優勝', '振り返り', '感想', 'ありがとう'];
+  const futureWords = ['大会', '開催', 'エントリー', '参加', '募集', '申込', '申し込み', '月', '日', '会場'];
+  const hasReportWord = reportWords.some(w => text.includes(w));
+  const hasFutureWord = futureWords.some(w => text.includes(w));
+  // If it has report words but no future-looking words, it's a report
+  if(hasReportWord && !hasFutureWord) return 'report'; // 報告
+  // If no tournament-related keywords at all, it's noise
+  if(!hasFutureWord) return 'noise'; // ノイズ疑い
+  return null;
+}
+
+function classifyNoiseLabel(classification) {
+  if(classification === 'noise') return 'ノイズ疑い';
+  if(classification === 'report') return '報告';
+  return '';
+}
+
+// Batch skip all noise-classified items
+async function tSkipAllNoise() {
+  const noiseItems = tAllData.filter(t => t._type === 'queue' && t._noiseClass);
+  if(!noiseItems.length) { showToast('ノイズ判定された項目はありません'); return; }
+  if(!confirm(noiseItems.length + '件のノイズ/報告をまとめてスキップしますか?')) return;
+  let skipped = 0;
+  for(const t of noiseItems) {
+    try {
+      const reason = t._noiseClass === 'report' ? '報告（大会告知ではない）' : 'ノイズ自動スキップ';
+      await db.ref('tournament-queue/' + t._fbKey).update({ status: 'skipped', skip_reason: reason, skipped_at: new Date().toISOString() });
+      skipped++;
+    } catch(e) { console.error('Skip noise fail:', e); }
+  }
+  showToast(skipped + '件をスキップしました');
+  loadTournaments();
+}
+
 // ========== AUTO-EXTRACT FROM SOURCE ==========
 // Extract tweet ID from X/Twitter URL
 function extractTweetId(url) {
@@ -1520,6 +1599,8 @@ async function tAutoExtract() {
     showToast('情報取得に失敗しました: ' + e.message, 'error');
   } finally {
     if(btn) { btn.disabled=false; btn.textContent='自動情報取得'; }
+    const indicator = document.getElementById('autoExtractIndicator');
+    if(indicator) indicator.innerHTML = '';
   }
 }
 
@@ -1583,6 +1664,7 @@ function renderTournamentList() {
     const hasWarn = warns.some(w=>w.level==='warn');
     const statusPill = isQueue ? '<span class="pill pill-orange">PENDING</span>' : (t.status==='publish'?'<span class="pill pill-green">公開</span>':'<span class="pill pill-dim">下書き</span>');
     const warnPill = hasWarn ? ' <span class="pill pill-red">要確認</span>' : (warns.length ? ' <span class="pill pill-blue">info</span>' : '');
+    const noisePill = t._noiseClass ? ' <span class="pill pill-noise">' + classifyNoiseLabel(t._noiseClass) + '</span>' : '';
     const srcClass = t.source==='ifttt'?'src-ifttt':t.source==='gas'?'src-gas':'src-manual';
     const srcLabel = t.source==='ifttt'?'IFTTT':t.source==='gas'?'GAS':t.source||'-';
     const rawDate = t.event_date || '';
@@ -1591,7 +1673,7 @@ function renderTournamentList() {
     const key = isQueue ? 'q:'+t._fbKey : 'wp:'+t.id;
 
     html+=`<div class="t-card" onclick="tShowDetail('${key}')">
-      <div class="t-card-top">${statusPill}${warnPill}<span class="t-card-title">${esc(t.title)}</span><span class="t-source ${srcClass}">${srcLabel}</span></div>
+      <div class="t-card-top">${statusPill}${warnPill}${noisePill}<span class="t-card-title">${esc(t.title)}</span><span class="t-source ${srcClass}">${srcLabel}</span></div>
       <div class="t-card-meta"><span>開催: ${esc(dateStr)}</span><span>地域: ${esc(areaStr)}</span>${isQueue?'':'<span>ID: '+t.id+'</span>'}</div>
     </div>`;
   });
@@ -1681,7 +1763,12 @@ function tShowDetail(key) {
   footerHtml+=`${warnNav}</div><div class="btn-row" style="margin-top:10px">`;
   if(!isQueue && t.link) footerHtml+=`<a href="${WP}/wp-admin/post.php?post=${t.id}&action=edit" target="_blank" class="btn btn-sm btn-outline" style="text-decoration:none">WP管理画面で開く</a>`;
   if(isQueue) {
-    footerHtml+=`<button class="btn btn-success" onclick="tProcessQueue('${t._fbKey}')">処理 (WP投稿)</button>`;
+    const allFieldsFilled = t.event_date && t.area && t.organizer;
+    if(allFieldsFilled) {
+      footerHtml+=`<button class="btn-oneclick" onclick="tProcessQueue('${t._fbKey}')">&#9989; ワンクリック投稿</button>`;
+    } else {
+      footerHtml+=`<button class="btn btn-success" onclick="tProcessQueue('${t._fbKey}')">処理 (WP投稿)</button>`;
+    }
     footerHtml+=`<button class="btn btn-outline" onclick="tSkipQueue('${t._fbKey}')">スキップ</button>`;
   } else {
     footerHtml+=`<button class="btn btn-primary" onclick="tSaveEdit(${t.id})">保存</button>`;
@@ -1690,8 +1777,29 @@ function tShowDetail(key) {
   if(warningItems.length > 1 && warns.length) footerHtml+=`<button class="btn btn-sm btn-outline" onclick="tNextWarning()">次の要確認</button>`;
   footerHtml+=`<button class="btn btn-outline" onclick="closeTDetail()">閉じる</button></div>`;
 
-  el.innerHTML=`<div style="font-size:15px;font-weight:700;margin-bottom:12px">${esc(t.title)}</div>${warnHtml}${srcHtml}${editHtml}${footerHtml}`;
+  // Top one-click button for queue items with all fields filled
+  let topActionHtml = '';
+  if(isQueue) {
+    // We need to check from current data (form not rendered yet, check data obj)
+    const allFieldsFilled = t.event_date && t.area && t.organizer;
+    if(allFieldsFilled) {
+      topActionHtml = `<div style="margin-bottom:12px"><button class="btn-oneclick" onclick="tProcessQueue('${t._fbKey}')">&#9989; ワンクリック投稿</button></div>`;
+    }
+  }
+
+  el.innerHTML=`<div style="font-size:15px;font-weight:700;margin-bottom:12px">${esc(t.title)}</div>${topActionHtml}${warnHtml}${srcHtml}<div id="autoExtractIndicator"></div>${editHtml}${footerHtml}`;
   document.getElementById('tDetailOverlay').classList.add('show');
+
+  // Auto-extract on detail open for queue items with missing fields and source data
+  if(isQueue) {
+    const hasMissingFields = !t.event_date || !t.area || !t.organizer;
+    const hasSourceData = t.sns_link || t.source_url || t.source_text;
+    if(hasMissingFields && hasSourceData) {
+      const indicator = document.getElementById('autoExtractIndicator');
+      if(indicator) indicator.innerHTML = '<div class="auto-extract-indicator"><span class="spinner"></span> 自動取得中...</div>';
+      setTimeout(() => tAutoExtract(), 500);
+    }
+  }
 }
 let _currentDetailKey = '';
 function closeTDetail(){document.getElementById('tDetailOverlay').classList.remove('show');}
@@ -1773,6 +1881,12 @@ async function tProcessQueue(fbKey) {
 
   if(!title){showToast('大会名を入力してください',true);return;}
   if(!wpAuth){showToast('WP認証が必要です',true);return;}
+
+  // Duplicate check
+  const dup = checkDuplicateBeforePost(title, eventDate);
+  if(dup) {
+    if(!confirm('類似する大会が既にWPに存在します: ' + dup.title + ' (ID: ' + dup.id + '). 投稿しますか?')) return;
+  }
 
   try {
     // Build WP post body
@@ -1866,6 +1980,121 @@ async function tSaveEdit(wpId) {
   } catch(e) {
     showToast('保存失敗: '+e.message, true);
   }
+}
+
+// ========== IFTTT MONITORING ==========
+function renderIftttStatus() {
+  const el = document.getElementById('iftttStatus');
+  if(!el) return;
+  if(!_lastIftttDetection) {
+    el.innerHTML = '<span style="color:var(--error)">&#9679;</span> IFTTT: 要確認 (検知データなし)';
+    el.style.borderColor = 'var(--error)';
+    el.style.background = 'var(--error-dim)';
+    return;
+  }
+  const hoursAgo = Math.floor((Date.now() - _lastIftttDetection.getTime()) / (1000*60*60));
+  if(hoursAgo < 24) {
+    el.innerHTML = '<span style="color:var(--success)">&#9679;</span> IFTTT: 正常 (' + hoursAgo + 'h前に最終検知)';
+    el.style.borderColor = 'var(--success)';
+    el.style.background = 'var(--success-dim)';
+  } else if(hoursAgo < 48) {
+    el.innerHTML = '<span style="color:var(--warning)">&#9679;</span> IFTTT: 注意 (' + hoursAgo + 'h前)';
+    el.style.borderColor = 'var(--warning)';
+    el.style.background = 'var(--warning-dim)';
+  } else {
+    el.innerHTML = '<span style="color:var(--error)">&#9679;</span> IFTTT: 要確認 (' + hoursAgo + 'h以上検知なし)';
+    el.style.borderColor = 'var(--error)';
+    el.style.background = 'var(--error-dim)';
+  }
+}
+
+// ========== BATCH AUTO-FILL ==========
+async function tBatchAutoFill() {
+  if(!wpAuth) { showToast('WP認証が必要です', true); return; }
+  // Find WP items with missing data but have source_text
+  const targets = tAllData.filter(t =>
+    t._type === 'wp' &&
+    (!t.area || !t.organizer || !t.event_date) &&
+    t.source_text
+  );
+  if(!targets.length) { showToast('補完対象の大会情報がありません'); return; }
+  if(!confirm(targets.length + '件の大会情報をGeminiで自動補完します。続行しますか?')) return;
+
+  const progressToast = document.createElement('div');
+  progressToast.style.cssText = 'position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--accent);color:var(--text);padding:12px 24px;border-radius:10px;font-size:12px;z-index:999;';
+  document.body.appendChild(progressToast);
+
+  let completed = 0, updated = 0;
+  const batchSize = 5;
+
+  for(let i = 0; i < targets.length; i += batchSize) {
+    const batch = targets.slice(i, i + batchSize);
+    const promises = batch.map(async (t) => {
+      try {
+        const existing = { event_date: t.event_date, area: t.area, organizer: t.organizer };
+        const extracted = await extractInfoFromText(t.source_text, existing);
+        if(!extracted) return;
+
+        let hasUpdate = false;
+        const body = new FormData();
+        body.append('title', t.title);
+
+        if(extracted.event_date && !t.event_date) {
+          body.append('acf[event_date]', dateToAcf(extracted.event_date));
+          hasUpdate = true;
+        }
+        if(extracted.area && !t.area) {
+          const areaName = locationToArea(extracted.area);
+          if(areaName) {
+            body.append('acf[location]', areaToLocation(areaName));
+            if(AREAS[areaName]) body.append('area', AREAS[areaName].id);
+            hasUpdate = true;
+          }
+        }
+        if(extracted.organizer && !t.organizer) {
+          body.append('acf[organizer]', extracted.organizer);
+          hasUpdate = true;
+        }
+
+        if(hasUpdate) {
+          const res = await fetch(WP_API + '/tournament/' + t.id, {
+            method: 'POST',
+            headers: { 'Authorization': 'Basic ' + wpAuth },
+            body
+          });
+          if(res.ok) updated++;
+        }
+      } catch(e) { console.error('Batch fill error for ID ' + t.id + ':', e); }
+      completed++;
+      progressToast.textContent = '処理中... ' + completed + '/' + targets.length + '件完了';
+    });
+    await Promise.all(promises);
+    // Small delay between batches to avoid rate limits
+    if(i + batchSize < targets.length) await new Promise(r => setTimeout(r, 1000));
+  }
+
+  progressToast.remove();
+  showToast(updated + '/' + targets.length + '件の大会情報を補完しました');
+  // Reload
+  SEC_LOADED['tournaments'] = false;
+  loadTournaments();
+}
+
+// ========== DUPLICATE CHECK ==========
+function checkDuplicateBeforePost(title, eventDate) {
+  if(!title || !eventDate) return null;
+  const acfDate = dateToAcf(eventDate);
+  for(const t of tAllData) {
+    if(t._type !== 'wp') continue;
+    const tDate = (t.event_date || '').replace(/-/g, '');
+    if(tDate !== acfDate) continue;
+    const existTitle = (t.title || '').toLowerCase();
+    const newTitle = title.toLowerCase();
+    if(existTitle.includes(newTitle) || newTitle.includes(existTitle)) {
+      return t;
+    }
+  }
+  return null;
 }
 
 // ========== TOURNAMENT MANUAL ADD ==========
