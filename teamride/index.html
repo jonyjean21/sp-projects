@@ -1932,6 +1932,7 @@ function runAutoAssign(eventId) {
         available_seats: r.extra_seats || 0,
         original_seats: r.extra_seats || 0,
         equipment: r.bring_equipment || {},
+        assigned_equipment: [],
         passengers: []
       });
     } else if (r.transport === 'ride') {
@@ -1951,32 +1952,34 @@ function runAutoAssign(eventId) {
     return;
   }
 
-  // Step 1: Equipment allocation
+  // ── Step 1: Equipment allocation (highest priority) ──
   const eqNeeded = e.equipment_needed ? { ...e.equipment_needed } : {};
   Object.entries(eqNeeded).forEach(([eid, qty]) => {
     let remaining = qty;
     const eqType = equipmentTypesData[eid];
     if (!eqType) return;
-    drivers.forEach(d => {
+    const seatsUsed = eqType.seats_used || 0;
+
+    // Sort: prefer drivers who own this equipment AND have most seats to absorb it
+    const candidates = drivers.filter(d => d.equipment[eid]).sort((a, b) => b.available_seats - a.available_seats);
+    candidates.forEach(d => {
       if (remaining <= 0) return;
-      if (d.equipment[eid]) {
-        d.assigned_equipment = d.assigned_equipment || [];
-        d.assigned_equipment.push(eid);
-        remaining--;
-      }
+      d.assigned_equipment.push(eid);
+      d.available_seats = Math.max(0, d.available_seats - seatsUsed);
+      remaining--;
     });
     if (remaining > 0) {
       warnings.push(`⚠ ${eqType.name}${qty}つ必要ですが${qty - remaining}つしか確保できません`);
     }
   });
 
-  // Step 1.5: Car limit — keep top max_cars drivers, rest become riders
+  // ── Step 2: Car limit — keep top max_cars drivers, demote the rest ──
   const maxCars = e.max_cars || 0;
   if (maxCars > 0 && drivers.length > maxCars) {
-    // Sort: equipment carriers first, then by available_seats desc
+    // Equipment carriers first, then by available_seats desc
     drivers.sort((a, b) => {
-      const aEq = (a.assigned_equipment && a.assigned_equipment.length) ? 1 : 0;
-      const bEq = (b.assigned_equipment && b.assigned_equipment.length) ? 1 : 0;
+      const aEq = a.assigned_equipment.length ? 1 : 0;
+      const bEq = b.assigned_equipment.length ? 1 : 0;
       if (bEq !== aEq) return bEq - aEq;
       return b.available_seats - a.available_seats;
     });
@@ -1993,52 +1996,73 @@ function runAutoAssign(eventId) {
     warnings.push(`⚠ 台数制限${maxCars}台: ${demotedNames.join('・')}を乗せてに変更`);
   }
 
-  // Step 2: Same-zone matching
+  // ── Step 3: 3-axis score matrix assignment ──
   const unassigned = [...riders];
-  // Sort drivers by available_seats descending
-  drivers.sort((a, b) => b.available_seats - a.available_seats);
-  // Sort riders by seats_needed descending
-  unassigned.sort((a, b) => b.seats_needed - a.seats_needed);
 
-  // Get unique zone IDs
-  const zoneIds = [...new Set([...drivers.map(d => d.zone_id), ...unassigned.map(r => r.zone_id)])];
+  // Scoring function: driver × rider pair
+  function calcScore(driver, rider) {
+    if (driver.available_seats < rider.seats_needed) return -Infinity;
+    let score = 0;
 
-  zoneIds.forEach(zid => {
-    if (!zid) return;
-    const zoneDrivers = drivers.filter(d => d.zone_id === zid);
-    const zoneRiders = unassigned.filter(r => r.zone_id === zid);
+    // Axis 1: Equipment score — prefer putting riders with equipment carriers (reduce unnecessary cars)
+    if (driver.assigned_equipment.length > 0) score += 15;
 
-    zoneRiders.forEach(rider => {
-      if (!unassigned.includes(rider)) return;
-      // Find driver in same zone with enough seats
-      const driver = zoneDrivers.find(d => d.available_seats >= rider.seats_needed);
-      if (driver) {
-        driver.passengers.push(rider);
-        driver.available_seats -= rider.seats_needed;
-        const idx = unassigned.indexOf(rider);
-        if (idx !== -1) unassigned.splice(idx, 1);
-      }
-    });
-  });
+    // Axis 2: Capacity score — efficient seat usage
+    // Prefer large cars for multi-seat riders (families)
+    if (rider.seats_needed >= 2 && driver.available_seats >= 4) score += 15;
+    // Prefer small residual after assignment (pack cars efficiently)
+    const residual = driver.available_seats - rider.seats_needed;
+    score += 20 - Math.min(20, residual * 4); // fewer leftover seats = higher score
 
-  // Step 3: Cross-zone matching (re-sort after same-zone phase)
-  drivers.sort((a, b) => b.available_seats - a.available_seats);
-  const remaining = [...unassigned];
-  remaining.forEach(rider => {
-    if (!unassigned.includes(rider)) return;
-    const driver = drivers.find(d => d.available_seats >= rider.seats_needed);
-    if (driver) {
-      driver.passengers.push(rider);
-      driver.available_seats -= rider.seats_needed;
-      const idx = unassigned.indexOf(rider);
-      if (idx !== -1) unassigned.splice(idx, 1);
+    // Axis 3: Zone proximity score
+    if (driver.zone_id && rider.zone_id && driver.zone_id === rider.zone_id) {
+      score += 30; // same zone
+    } else if (driver.zone_id && rider.zone_id) {
+      score += 5; // cross-zone (better than nothing)
     }
-  });
 
-  // Step 4: Warnings
+    return score;
+  }
+
+  // Greedy assignment: repeatedly pick the best (driver, rider) pair
+  while (unassigned.length > 0) {
+    let bestScore = -Infinity;
+    let bestDriver = null;
+    let bestRiderIdx = -1;
+
+    for (let ri = 0; ri < unassigned.length; ri++) {
+      const rider = unassigned[ri];
+      for (const driver of drivers) {
+        const s = calcScore(driver, rider);
+        if (s > bestScore) {
+          bestScore = s;
+          bestDriver = driver;
+          bestRiderIdx = ri;
+        }
+      }
+    }
+
+    if (bestScore === -Infinity || !bestDriver) break; // No valid assignment possible
+
+    const rider = unassigned[bestRiderIdx];
+    bestDriver.passengers.push(rider);
+    bestDriver.available_seats -= rider.seats_needed;
+    unassigned.splice(bestRiderIdx, 1);
+  }
+
+  // ── Step 4: Warnings ──
   if (unassigned.length > 0) {
     warnings.push(`⚠ 席が足りません: ${unassigned.length}人が未割り当て`);
   }
+
+  // Check zone coverage
+  const riderZones = new Set(riders.map(r => r.zone_id).filter(Boolean));
+  const driverZones = new Set(drivers.map(d => d.zone_id).filter(Boolean));
+  riderZones.forEach(zid => {
+    if (!driverZones.has(zid) && zonesData[zid]) {
+      warnings.push(`⚠ ${zonesData[zid].name}エリアにドライバーがいません`);
+    }
+  });
 
   currentAssignment = { drivers, directs, unassigned, warnings };
   currentAssignEventId = eventId;
