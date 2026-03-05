@@ -1,0 +1,85 @@
+{
+  "date": "2026-03-05",
+  "processed": [
+    {
+      "url": "https://twitter.com/nan_yaku_CH/status/2029352505352831013",
+      "title": "モルック学生交流会part2（当日実況）",
+      "action": "skipped",
+      "post_id": null,
+      "source": "ifttt-x-search",
+      "reason": "当日の大会実況・レポート（参加者募集ではない）",
+      "firebase_key": "-OmvOrMzFkb1xiajpTyK",
+      "timestamp": "2026-03-05T14:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/1aiqNiCob346663/status/2029379369291137294",
+      "title": "GACKTへのリプライ（モルック世界大会への言及）",
+      "action": "skipped",
+      "post_id": null,
+      "source": "ifttt-x-search",
+      "reason": "大会情報なし（GACKTへのリプライ、モルック世界大会への言及のみ）",
+      "firebase_key": "-Omvlt_DFfTaH5ncmwpw",
+      "timestamp": "2026-03-05T14:00:00+09:00"
+    },
+    {
+      "url": "https://molkky.jp/tournament/32044/",
+      "title": "第3回モルックしらかわんCUP 芝の王決定戦",
+      "action": "updated",
+      "post_id": 6475,
+      "source": "rss-auto-JMA公式",
+      "reason": "既存WP投稿（ID:6475）を日付・詳細リンク・規模で更新",
+      "firebase_key": "-OmvTrrvk1o9RbzzeQdp",
+      "timestamp": "2026-03-05T14:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/hyougonotsu_ms/status/2029384116022722672",
+      "title": "モルック体験会 in 兵庫津ミュージアム",
+      "action": "posted",
+      "post_id": 6476,
+      "source": "ifttt-x-search",
+      "reason": null,
+      "firebase_key": "-OmvqSw8j6PwoWKC_w9t",
+      "timestamp": "2026-03-05T14:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/DenkiShimbun/status/2029309659706753394",
+      "title": "モルック大会、福島・浜通りで熱戦／相双機構が共催（電気新聞記事）",
+      "action": "skipped",
+      "post_id": null,
+      "source": "ifttt-x-search",
+      "reason": "過去の大会レポート記事（福島・浜通りモルック大会の報道）",
+      "firebase_key": "-Omulk9M_5is22DYOMYO",
+      "timestamp": "2026-03-05T14:00:00+09:00"
+    },
+    {
+      "url": "https://molkky.jp/tournament/32036/",
+      "title": "だるまモルックリーグ 弥生の陣",
+      "action": "posted",
+      "post_id": 6477,
+      "source": "rss-auto-JMA公式",
+      "reason": null,
+      "firebase_key": "-OmvTruHP49KUdsUdZ_E",
+      "timestamp": "2026-03-05T14:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/kazetotsuchi/status/2029351525823463780",
+      "title": "子育て世代の広域ごはん会〜芋煮×モルック〜",
+      "action": "duplicate",
+      "post_id": 6469,
+      "source": "ifttt-x-search",
+      "reason": "WP重複（ID:6469に既存）",
+      "firebase_key": "-OmvOrIKde4di77skXeT",
+      "timestamp": "2026-03-05T14:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/DatePanda/status/2029421424138699023",
+      "title": "ラーメン店の日常ツイート（モルック世界大会への言及のみ）",
+      "action": "skipped",
+      "post_id": null,
+      "source": "ifttt-x-search",
+      "reason": "大会情報なし（ラーメン店の日常ツイート、モルック世界大会への言及のみ）",
+      "firebase_key": "-OmwMeSQT1Bo767yJJjg",
+      "timestamp": "2026-03-05T14:00:00+09:00"
+    }
+  ]
+}
