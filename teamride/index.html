@@ -453,11 +453,11 @@ textarea{resize:vertical;min-height:60px}
   <button class="nav-btn active" data-page="Home" onclick="showPage('Home')">
     <span class="nav-icon">🏠</span>ホーム
   </button>
-  <button class="nav-btn" data-page="Tournaments" onclick="showPage('Tournaments')">
-    <span class="nav-icon">🏆</span>大会
-  </button>
   <button class="nav-btn" data-page="Members" onclick="showPage('Members')">
     <span class="nav-icon">👥</span>メンバー
+  </button>
+  <button class="nav-btn" data-page="Tournaments" onclick="showPage('Tournaments')">
+    <span class="nav-icon">🏆</span>大会
   </button>
   <button class="nav-btn" data-page="Settings" onclick="showPage('Settings')">
     <span class="nav-icon">⚙️</span>設定
@@ -1420,10 +1420,11 @@ function renderSettings() {
 
 // ── Admin PIN ──
 function updateAdminUI() {
+  // Members & Tournaments controls are always visible (any parent can add)
   const adminControls = document.getElementById('membersAdminControls');
-  if (adminControls) adminControls.style.display = isAdmin ? '' : 'none';
+  if (adminControls) adminControls.style.display = '';
   const tControls = document.getElementById('tournamentsAdminControls');
-  if (tControls) tControls.style.display = isAdmin ? '' : 'none';
+  if (tControls) tControls.style.display = '';
 }
 
 function updateHeaderRight() {
@@ -1580,9 +1581,7 @@ function renderHome() {
     </div>`;
   }
 
-  if (isAdmin) {
-    html += '<div style="margin:12px 0"><button class="btn btn-primary btn-small" onclick="openEventModal()">+ イベント作成</button></div>';
-  }
+  html += '<div style="margin:12px 0"><button class="btn btn-primary btn-small" onclick="openEventModal()">+ イベント作成</button></div>';
 
   if (active.length === 0) {
     html += '<div class="empty"><div class="empty-icon">⚽</div><div class="empty-text">次のイベントはまだありません<br>管理者がイベントを作成してください</div></div>';
@@ -1643,7 +1642,7 @@ function renderTeamStats(active, past) {
 
   let html = `<div class="stats-row">
     <div class="stat-card"><div class="stat-value">${totalMembers}</div><div class="stat-label">メンバー</div></div>
-    <div class="stat-card"><div class="stat-value">${drivers}</div><div class="stat-label">車持ち</div></div>
+    <div class="stat-card"><div class="stat-value">${drivers}</div><div class="stat-label">車出し可</div></div>
     <div class="stat-card"><div class="stat-value">${totalEvents}</div><div class="stat-label">イベント</div></div>
   </div>`;
 
@@ -1709,7 +1708,7 @@ function renderEventCard(id, e, isPast) {
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
       <span class="badge ${typeClass}">${typeLabel}</span>
       <span style="font-size:16px;font-weight:700;flex:1">${escapeHtml(e.title) || 'イベント'}</span>
-      ${isAdmin && !isPast ? `<button class="btn-icon btn-outline" onclick="openEventModal('${id}')" style="font-size:14px;width:44px;height:44px">✏️</button>` : ''}
+      ${!isPast ? `<button class="btn-icon btn-outline" onclick="openEventModal('${id}')" style="font-size:14px;width:44px;height:44px">✏️</button>` : ''}
     </div>
     <div style="font-size:14px;color:var(--text-sub);margin-bottom:8px">
       📅 ${dateStr} ${e.meet_time ? '🕗 '+escapeHtml(e.meet_time) : ''} ${e.location ? '📍 '+escapeHtml(e.location) : ''}
@@ -1729,8 +1728,8 @@ function renderEventCard(id, e, isPast) {
     html += `<div style="font-size:13px;color:var(--text-sub)">回答: ${answeredCount}/${totalMembers}</div>
       <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>`;
 
-    // Admin dashboard
-    if (isAdmin) {
+    // Seat dashboard (visible to all)
+    {
       const maxCars = e.max_cars || 0;
       const overCars = maxCars > 0 && drivers > maxCars;
       const seatBalance = driverSeats - riderSeats;
@@ -1777,8 +1776,8 @@ function renderEventCard(id, e, isPast) {
       html += `<button class="btn btn-outline btn-small" onclick="startRsvp('${id}')" style="margin-top:8px">回答を変更 ⚠</button>`;
     }
 
-    // Admin: auto-assign button
-    if (isAdmin && e.status === 'open' && drivers > 0) {
+    // Auto-assign button (visible to all)
+    if (e.status === 'open' && drivers > 0) {
       html += `<button class="btn btn-secondary" onclick="runAutoAssign('${id}')" style="margin-top:12px">🚗 自動配車を実行</button>`;
     }
   }
@@ -2627,7 +2626,7 @@ function showAssignmentResult() {
         if (p.family_count > 1) detail.push(`${p.family_count}人`);
         html += `<div class="assign-passenger">
           <span>${escapeHtml(p.name)}${detail.length ? ' ('+detail.join('・')+')' : ''}</span>
-          ${isAdmin ? `<span class="passenger-move-btn" onclick="openMoveRider('${currentAssignEventId}',${di},${pi})" style="min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center">移動</span>` : ''}
+          <span class="passenger-move-btn" onclick="openMoveRider('${currentAssignEventId}',${di},${pi})" style="min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center">移動</span>
         </div>`;
       });
     }
@@ -2651,22 +2650,18 @@ function showAssignmentResult() {
 
   // Actions
   let actions = '';
-  if (isAdmin) {
-    const status = e?.assignments?.status;
-    if (status === 'confirmed') {
-      actions = `<button class="btn btn-secondary" onclick="showLineText('${currentAssignEventId}')">📋 LINE用テキストをコピー</button>
-        <button class="btn btn-outline" onclick="resetAssignment('${currentAssignEventId}')" style="margin-top:8px">🔄 やり直す</button>
-        <button class="btn btn-outline" onclick="closeModal('assignModal')" style="margin-top:8px">閉じる</button>`;
-    } else {
-      const hasUnassigned = a.unassigned && a.unassigned.length > 0;
-      actions = hasUnassigned
-        ? `<div style="background:#fce4ec;border:1px solid var(--danger);border-radius:var(--radius);padding:10px 14px;margin-bottom:10px;font-size:14px;color:var(--danger)">⚠ ${a.unassigned.length}人が未割り当てのため確定できません。車を増やすか回答を変更してください。</div>`
-        : `<button class="btn btn-primary" onclick="confirmAssignment('${currentAssignEventId}')">✅ 配車を確定</button>`;
-      actions += `<button class="btn btn-secondary" onclick="showLineText('${currentAssignEventId}')" style="margin-top:8px">📋 LINE用テキスト</button>
-        <button class="btn btn-outline" onclick="closeModal('assignModal')" style="margin-top:8px">キャンセル</button>`;
-    }
+  const status = e?.assignments?.status;
+  if (status === 'confirmed') {
+    actions = `<button class="btn btn-secondary" onclick="showLineText('${currentAssignEventId}')">📋 LINE用テキストをコピー</button>
+      <button class="btn btn-outline" onclick="resetAssignment('${currentAssignEventId}')" style="margin-top:8px">🔄 やり直す</button>
+      <button class="btn btn-outline" onclick="closeModal('assignModal')" style="margin-top:8px">閉じる</button>`;
   } else {
-    actions = `<button class="btn btn-outline" onclick="closeModal('assignModal')">閉じる</button>`;
+    const hasUnassigned = a.unassigned && a.unassigned.length > 0;
+    actions = hasUnassigned
+      ? `<div style="background:#fce4ec;border:1px solid var(--danger);border-radius:var(--radius);padding:10px 14px;margin-bottom:10px;font-size:14px;color:var(--danger)">⚠ ${a.unassigned.length}人が未割り当てのため確定できません。車を増やすか回答を変更してください。</div>`
+      : `<button class="btn btn-primary" onclick="confirmAssignment('${currentAssignEventId}')">✅ 配車を確定</button>`;
+    actions += `<button class="btn btn-secondary" onclick="showLineText('${currentAssignEventId}')" style="margin-top:8px">📋 LINE用テキスト</button>
+      <button class="btn btn-outline" onclick="closeModal('assignModal')" style="margin-top:8px">キャンセル</button>`;
   }
   document.getElementById('assignActions').innerHTML = actions;
   openModal('assignModal');
@@ -2979,7 +2974,7 @@ function renderTournamentCard(id, t) {
   const losses = scores.filter(s => s.result === 'lose').length;
   const draws = scores.filter(s => s.result === 'draw').length;
 
-  return `<div class="tournament-card" onclick="${isAdmin ? `editTournament('${id}')` : `showResultCard('${id}')`}">
+  return `<div class="tournament-card" onclick="editTournament('${id}')">
     <div style="display:flex;align-items:flex-start;gap:12px">
       <div style="text-align:center;min-width:50px">
         ${t.team_rank ? `<div class="tournament-rank">${t.team_rank}<span class="tournament-rank-sub">位</span></div>
@@ -3004,7 +2999,7 @@ function renderTournamentCard(id, t) {
           <span style="font-size:11px;color:var(--text-sub)">${wins}勝${losses}敗${draws > 0 ? draws+'分' : ''}</span>
         </div>` : ''}
       </div>
-      ${isAdmin ? '<div style="color:var(--text-light);font-size:14px">✏️</div>' : '<div style="color:var(--text-light);font-size:14px">📷</div>'}
+      <div style="color:var(--text-light);font-size:14px">✏️</div>
     </div>
   </div>`;
 }
