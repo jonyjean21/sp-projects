@@ -313,6 +313,41 @@ textarea{resize:vertical;min-height:60px}
   border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;
   min-height:44px}
 .next-event-cta:active{opacity:.85;transform:scale(0.98)}
+
+/* Tournament cards */
+.tournament-card{background:var(--bg-card);border-radius:var(--radius);padding:16px;
+  box-shadow:var(--shadow);margin-bottom:10px;border-left:4px solid #1976d2;cursor:pointer}
+.tournament-card:active{transform:scale(0.99)}
+.tournament-rank{font-size:28px;font-weight:800;color:#1976d2;line-height:1}
+.tournament-rank-sub{font-size:12px;color:var(--text-sub);font-weight:400}
+.tournament-matches{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.match-result{font-size:11px;font-weight:600;padding:3px 8px;border-radius:8px}
+.match-win{background:#e8f5e9;color:var(--success)}
+.match-lose{background:#fce4ec;color:var(--danger)}
+.match-draw{background:#f5f5f5;color:var(--text-sub)}
+.tournament-season{margin-bottom:20px}
+.tournament-season-title{font-size:14px;font-weight:700;color:var(--text-sub);padding:8px 0;
+  border-bottom:1px solid var(--border);margin-bottom:10px}
+
+/* Result card for export */
+.result-card-render{width:360px;padding:24px;border-radius:16px;
+  background:linear-gradient(135deg,#1976d2,#0d47a1);color:#fff;font-family:sans-serif}
+.result-card-render .team-name{font-size:14px;opacity:.8;margin-bottom:4px}
+.result-card-render .tournament-name{font-size:20px;font-weight:800;margin-bottom:12px}
+.result-card-render .rank-display{font-size:48px;font-weight:900;text-align:center;margin:16px 0}
+.result-card-render .rank-label{font-size:14px;text-align:center;opacity:.7;margin-bottom:16px}
+.result-card-render .matches-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:16px}
+.result-card-render .match-pill{font-size:12px;padding:4px 10px;border-radius:8px;font-weight:700}
+.result-card-render .match-pill.w{background:rgba(255,255,255,.3)}
+.result-card-render .match-pill.l{background:rgba(0,0,0,.2)}
+.result-card-render .match-pill.d{background:rgba(255,255,255,.15)}
+.result-card-render .mvp-line{font-size:14px;text-align:center;opacity:.85}
+.result-card-render .footer-line{font-size:11px;text-align:center;opacity:.5;margin-top:16px}
+
+/* Match input rows */
+.match-input-row{display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
+.match-input-row input{flex:1;min-width:0}
+.match-input-row select{width:70px;padding:8px 4px}
 </style>
 </head>
 <body>
@@ -376,6 +411,16 @@ textarea{resize:vertical;min-height:60px}
     <div id="membersList"></div>
   </div>
 
+  <!-- Tab: Tournaments -->
+  <div class="page" id="pageTournaments">
+    <div id="tournamentsAdminControls" style="margin:12px 0;display:none">
+      <button class="btn btn-primary btn-small" onclick="openTournamentModal()">+ 大会を記録</button>
+    </div>
+    <div id="tournamentsContent">
+      <div class="empty"><div class="empty-icon">🏆</div><div class="empty-text">大会記録はまだありません</div></div>
+    </div>
+  </div>
+
   <!-- Tab: Settings -->
   <div class="page" id="pageSettings">
     <div class="section-title">アカウント</div>
@@ -407,6 +452,9 @@ textarea{resize:vertical;min-height:60px}
 <div class="bottom-nav" id="bottomNav" style="display:none">
   <button class="nav-btn active" data-page="Home" onclick="showPage('Home')">
     <span class="nav-icon">🏠</span>ホーム
+  </button>
+  <button class="nav-btn" data-page="Tournaments" onclick="showPage('Tournaments')">
+    <span class="nav-icon">🏆</span>大会
   </button>
   <button class="nav-btn" data-page="Members" onclick="showPage('Members')">
     <span class="nav-icon">👥</span>メンバー
@@ -449,18 +497,16 @@ textarea{resize:vertical;min-height:60px}
     </div>
 
     <div class="form-group">
-      <label class="form-label">父親</label>
+      <label class="form-label">保護者名</label>
       <div style="display:flex;gap:8px">
-        <input type="text" id="memberFatherName" placeholder="名前" style="flex:1">
-        <input type="tel" id="memberFatherTel" placeholder="090-xxxx-xxxx" style="flex:1">
+        <input type="text" id="memberFatherName" placeholder="父親の名前" style="flex:1">
+        <input type="text" id="memberMotherName" placeholder="母親の名前" style="flex:1">
       </div>
     </div>
     <div class="form-group">
-      <label class="form-label">母親</label>
-      <div style="display:flex;gap:8px">
-        <input type="text" id="memberMotherName" placeholder="名前" style="flex:1">
-        <input type="tel" id="memberMotherTel" placeholder="080-xxxx-xxxx" style="flex:1">
-      </div>
+      <label class="form-label">住所（町名まで）</label>
+      <input type="text" id="memberAddress" placeholder="例: 川西市萩原台">
+      <div style="font-size:11px;color:var(--text-light);margin-top:4px">配車の近さ計算に使います。番地は不要です</div>
     </div>
 
     <div class="form-group">
@@ -640,6 +686,74 @@ textarea{resize:vertical;min-height:60px}
 </div>
 
 
+<!-- Modal: Tournament -->
+<div class="modal-overlay" id="tournamentModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="tournamentModalTitle">大会記録</div>
+    <input type="hidden" id="tournamentEditId">
+    <div class="form-group">
+      <label class="form-label">大会名</label>
+      <input type="text" id="tournamentName" placeholder="例: 春季カップ">
+    </div>
+    <div class="form-group">
+      <label class="form-label">開催日</label>
+      <input type="date" id="tournamentDate">
+    </div>
+    <div class="form-group">
+      <label class="form-label">会場</label>
+      <input type="text" id="tournamentLocation" placeholder="例: ○○運動公園">
+    </div>
+    <div class="form-group">
+      <label class="form-label">種別</label>
+      <select id="tournamentType">
+        <option value="official">公式大会</option>
+        <option value="friendly">練習試合</option>
+        <option value="practice">紅白戦</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">チーム順位</label>
+      <div style="display:flex;gap:8px">
+        <input type="number" id="tournamentRank" min="1" placeholder="順位" inputmode="numeric" style="flex:1">
+        <div style="display:flex;align-items:center;font-size:14px;color:var(--text-sub)">/ </div>
+        <input type="number" id="tournamentTotalTeams" min="1" placeholder="参加チーム数" inputmode="numeric" style="flex:1">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">試合結果</label>
+      <div id="tournamentMatchesContainer"></div>
+      <button class="btn btn-outline btn-small" onclick="addTournamentMatch()" style="margin-top:8px">+ 試合追加</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">MVP</label>
+      <select id="tournamentMvp"><option value="">なし</option></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">振り返りメモ</label>
+      <textarea id="tournamentMemo" placeholder="チームとしての課題・良かった点など"></textarea>
+    </div>
+    <button class="btn btn-primary" onclick="saveTournament()">保存</button>
+    <button class="btn btn-outline" onclick="closeModal('tournamentModal')" style="margin-top:8px">キャンセル</button>
+    <div id="tournamentDeleteBtn" class="hidden" style="margin-top:16px;text-align:center">
+      <button class="btn btn-small" style="color:var(--danger);background:none" onclick="deleteTournament()">この記録を削除</button>
+    </div>
+  </div>
+</div>
+
+<!-- Result Card Export (html2canvas) -->
+<div class="modal-overlay" id="resultCardModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">結果カード</div>
+    <div id="resultCardPreview" style="margin-bottom:12px"></div>
+    <canvas id="resultCardCanvas" style="display:none"></canvas>
+    <button class="btn btn-primary" onclick="downloadResultCard()">画像を保存</button>
+    <button class="btn btn-outline" onclick="shareResultCard()" style="margin-top:8px">共有</button>
+    <button class="btn btn-outline" onclick="closeModal('resultCardModal')" style="margin-top:8px">閉じる</button>
+  </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script>
@@ -656,6 +770,7 @@ let membersData = {};
 let equipmentTypesData = {};
 let locationsData = {};
 let eventsData = {};
+let tournamentsData = {};
 let isAdmin = !!localStorage.getItem('teamride_admin');
 let selectedMemberId = localStorage.getItem('teamride_member') || null;
 
@@ -707,6 +822,7 @@ function showPage(page) {
     b.classList.toggle('active', b.dataset.page === page);
   });
   if (page === 'Members') renderMembers();
+  if (page === 'Tournaments') renderTournaments();
   if (page === 'Settings') renderSettings();
 }
 
@@ -777,6 +893,10 @@ function loadAll() {
   db.ref(ROOT + '/events').on('value', snap => {
     eventsData = snap.val() || {};
     renderHome();
+  });
+  db.ref(ROOT + '/tournaments').on('value', snap => {
+    tournamentsData = snap.val() || {};
+    renderTournaments();
   });
 }
 
@@ -1022,11 +1142,12 @@ function renderMembers() {
     const icons = [];
     if (car) icons.push('🚗');
     if (eqList.length) icons.push('📦');
+    if (m.address) icons.push('📍');
     return `<div class="list-item" onclick="editMember('${id}')">
       ${z ? '<span class="zone-dot" style="background:'+escapeHtml(z.color)+'"></span>' : '<span style="width:10px"></span>'}
       <div class="list-item-info">
         <div class="list-item-name">${escapeHtml(m.name)}</div>
-        <div class="list-item-sub">${escapeHtml(m.school)} · ${gradeLabel(m.grade)}${car ? ' · '+car : ''}</div>
+        <div class="list-item-sub">${escapeHtml(m.school)} · ${gradeLabel(m.grade)}${car ? ' · '+car : ''}${m.address ? ' · '+escapeHtml(m.address) : ''}</div>
       </div>
       <div class="list-item-icons">${icons.join(' ')}</div>
     </div>`;
@@ -1064,9 +1185,8 @@ function openMemberModal(id) {
     document.getElementById('memberGrade').value = m.grade != null ? m.grade : '1';
     document.getElementById('memberZone').value = m.zone_id || '';
     document.getElementById('memberFatherName').value = m.father_name || '';
-    document.getElementById('memberFatherTel').value = m.father_tel || '';
     document.getElementById('memberMotherName').value = m.mother_name || '';
-    document.getElementById('memberMotherTel').value = m.mother_tel || '';
+    document.getElementById('memberAddress').value = m.address || '';
     document.getElementById('memberCarType').value = m.car_type || '';
     document.getElementById('memberCarMax').value = m.car_max_passengers || 0;
 
@@ -1092,9 +1212,8 @@ function openMemberModal(id) {
     document.getElementById('memberGrade').value = '1';
     document.getElementById('memberZone').value = '';
     document.getElementById('memberFatherName').value = '';
-    document.getElementById('memberFatherTel').value = '';
     document.getElementById('memberMotherName').value = '';
-    document.getElementById('memberMotherTel').value = '';
+    document.getElementById('memberAddress').value = '';
     document.getElementById('memberCarType').value = '';
     document.getElementById('memberCarMax').value = '0';
     document.getElementById('siblingsContainer').innerHTML = '';
@@ -1158,9 +1277,8 @@ async function saveMember() {
     grade: parseInt(document.getElementById('memberGrade').value) || 0,
     zone_id: document.getElementById('memberZone').value || '',
     father_name: document.getElementById('memberFatherName').value.trim(),
-    father_tel: document.getElementById('memberFatherTel').value.trim(),
     mother_name: document.getElementById('memberMotherName').value.trim(),
-    mother_tel: document.getElementById('memberMotherTel').value.trim(),
+    address: document.getElementById('memberAddress').value.trim(),
     siblings,
     equipment,
     car_type: carType,
@@ -1302,9 +1420,10 @@ function renderSettings() {
 
 // ── Admin PIN ──
 function updateAdminUI() {
-  // Show/hide admin-only controls based on isAdmin state
   const adminControls = document.getElementById('membersAdminControls');
   if (adminControls) adminControls.style.display = isAdmin ? '' : 'none';
+  const tControls = document.getElementById('tournamentsAdminControls');
+  if (tControls) tControls.style.display = isAdmin ? '' : 'none';
 }
 
 function updateHeaderRight() {
@@ -2304,6 +2423,7 @@ function runAutoAssign(eventId) {
     if (r.transport === 'drive') {
       drivers.push({
         id: mid, name: mem.name, zone_id: mem.zone_id || '',
+        address: mem.address || '',
         available_seats: r.extra_seats || 0,
         original_seats: r.extra_seats || 0,
         equipment: r.bring_equipment || {},
@@ -2313,6 +2433,7 @@ function runAutoAssign(eventId) {
     } else if (r.transport === 'ride') {
       riders.push({
         id: mid, name: mem.name, zone_id: mem.zone_id || '',
+        address: mem.address || '',
         seats_needed: calcSeatsNeeded(mid, r),
         with_parent: r.parent_coming || false,
         family_count: r.family_count || (r.parent_coming ? 2 : 1)
@@ -2389,11 +2510,27 @@ function runAutoAssign(eventId) {
     const residual = driver.available_seats - rider.seats_needed;
     score += 20 - Math.min(20, residual * 4); // fewer leftover seats = higher score
 
-    // Axis 3: Zone proximity score
+    // Axis 3: Zone + Address proximity score
     if (driver.zone_id && rider.zone_id && driver.zone_id === rider.zone_id) {
-      score += 30; // same zone
+      score += 20; // same zone
     } else if (driver.zone_id && rider.zone_id) {
-      score += 5; // cross-zone (better than nothing)
+      score += 3; // cross-zone
+    }
+
+    // Axis 4: Address similarity (町名マッチ)
+    if (driver.address && rider.address) {
+      const da = driver.address.replace(/\s/g,'');
+      const ra = rider.address.replace(/\s/g,'');
+      if (da === ra) {
+        score += 25; // exact match
+      } else {
+        // count common prefix characters (e.g. "川西市萩原台" vs "川西市清和台" → 3 chars match)
+        let common = 0;
+        for (let i = 0; i < Math.min(da.length, ra.length); i++) {
+          if (da[i] === ra[i]) common++; else break;
+        }
+        score += Math.min(20, common * 5); // up to 20 points for partial match
+      }
     }
 
     return score;
@@ -2787,6 +2924,314 @@ function viewAssignment(eventId) {
   currentAssignment = { drivers, directs, unassigned, warnings: a.warnings || [] };
   currentAssignEventId = eventId;
   showAssignmentResult();
+}
+
+// ── Tournaments ──
+function renderTournaments() {
+  const c = document.getElementById('tournamentsContent');
+  if (!c) return;
+  const entries = Object.entries(tournamentsData).sort((a,b) => (b[1].date || '').localeCompare(a[1].date || ''));
+
+  if (entries.length === 0) {
+    c.innerHTML = '<div class="empty"><div class="empty-icon">🏆</div><div class="empty-text">大会記録はまだありません</div></div>';
+    return;
+  }
+
+  // Group by year
+  const byYear = {};
+  entries.forEach(([id, t]) => {
+    const year = (t.date || '').slice(0, 4) || '不明';
+    if (!byYear[year]) byYear[year] = [];
+    byYear[year].push([id, t]);
+  });
+
+  // Season stats
+  const wins = entries.filter(([,t]) => t.scores && t.scores.some(s => s.result === 'win')).length;
+  const total = entries.length;
+  let html = `<div class="stats-row" style="margin-bottom:16px">
+    <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">大会数</div></div>
+    <div class="stat-card"><div class="stat-value">${wins}</div><div class="stat-label">勝利あり</div></div>
+    <div class="stat-card"><div class="stat-value">${calcAvgRank(entries)}</div><div class="stat-label">平均順位</div></div>
+  </div>`;
+
+  Object.entries(byYear).sort((a,b) => b[0].localeCompare(a[0])).forEach(([year, items]) => {
+    html += `<div class="tournament-season">
+      <div class="tournament-season-title">${year}年シーズン（${items.length}大会）</div>
+      ${items.map(([id, t]) => renderTournamentCard(id, t)).join('')}
+    </div>`;
+  });
+
+  c.innerHTML = html;
+}
+
+function calcAvgRank(entries) {
+  const ranked = entries.filter(([,t]) => t.team_rank && t.total_teams);
+  if (ranked.length === 0) return '-';
+  const avg = ranked.reduce((s, [,t]) => s + t.team_rank, 0) / ranked.length;
+  return avg.toFixed(1);
+}
+
+function renderTournamentCard(id, t) {
+  const typeLabels = { official: '公式', friendly: '練習試合', practice: '紅白戦' };
+  const dateStr = formatEventDate(t.date);
+  const scores = t.scores || [];
+  const wins = scores.filter(s => s.result === 'win').length;
+  const losses = scores.filter(s => s.result === 'lose').length;
+  const draws = scores.filter(s => s.result === 'draw').length;
+
+  return `<div class="tournament-card" onclick="${isAdmin ? `editTournament('${id}')` : `showResultCard('${id}')`}">
+    <div style="display:flex;align-items:flex-start;gap:12px">
+      <div style="text-align:center;min-width:50px">
+        ${t.team_rank ? `<div class="tournament-rank">${t.team_rank}<span class="tournament-rank-sub">位</span></div>
+        <div style="font-size:11px;color:var(--text-sub)">${t.total_teams || '?'}チーム中</div>` :
+        `<div class="tournament-rank" style="font-size:18px;color:var(--text-light)">-</div>`}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:15px;font-weight:700">${escapeHtml(t.name || '大会')}</div>
+        <div style="font-size:12px;color:var(--text-sub);margin-top:2px">
+          📅 ${dateStr} ${t.location ? '📍 '+escapeHtml(t.location) : ''}
+        </div>
+        <div style="font-size:12px;color:var(--text-sub)">
+          <span class="badge" style="background:#e3f2fd;color:#1976d2">${typeLabels[t.type] || '大会'}</span>
+          ${t.mvp ? ' MVP: '+escapeHtml(t.mvp) : ''}
+        </div>
+        ${scores.length > 0 ? `<div class="tournament-matches">
+          ${scores.map(s => {
+            const cls = s.result === 'win' ? 'match-win' : s.result === 'lose' ? 'match-lose' : 'match-draw';
+            const mark = s.result === 'win' ? '○' : s.result === 'lose' ? '●' : '△';
+            return `<span class="match-result ${cls}">${mark} ${s.score || ''} ${escapeHtml(s.opponent || '')}</span>`;
+          }).join('')}
+          <span style="font-size:11px;color:var(--text-sub)">${wins}勝${losses}敗${draws > 0 ? draws+'分' : ''}</span>
+        </div>` : ''}
+      </div>
+      ${isAdmin ? '<div style="color:var(--text-light);font-size:14px">✏️</div>' : '<div style="color:var(--text-light);font-size:14px">📷</div>'}
+    </div>
+  </div>`;
+}
+
+function openTournamentModal(id) {
+  document.getElementById('tournamentEditId').value = id || '';
+  document.getElementById('tournamentModalTitle').textContent = id ? '大会記録を編集' : '大会を記録';
+  document.getElementById('tournamentDeleteBtn').classList.toggle('hidden', !id);
+
+  // MVP select
+  const mvpSel = document.getElementById('tournamentMvp');
+  mvpSel.innerHTML = '<option value="">なし</option>' +
+    Object.entries(membersData).filter(([,m]) => m.active !== false)
+      .map(([, m]) => `<option value="${escapeHtml(m.name)}">${escapeHtml(m.name)}</option>`).join('');
+
+  if (id && tournamentsData[id]) {
+    const t = tournamentsData[id];
+    document.getElementById('tournamentName').value = t.name || '';
+    document.getElementById('tournamentDate').value = t.date || '';
+    document.getElementById('tournamentLocation').value = t.location || '';
+    document.getElementById('tournamentType').value = t.type || 'official';
+    document.getElementById('tournamentRank').value = t.team_rank || '';
+    document.getElementById('tournamentTotalTeams').value = t.total_teams || '';
+    document.getElementById('tournamentMvp').value = t.mvp || '';
+    document.getElementById('tournamentMemo').value = t.memo || '';
+    // Matches
+    const mc = document.getElementById('tournamentMatchesContainer');
+    mc.innerHTML = '';
+    if (t.scores && t.scores.length) {
+      t.scores.forEach(s => addTournamentMatch(s.score, s.opponent, s.result));
+    }
+  } else {
+    document.getElementById('tournamentName').value = '';
+    document.getElementById('tournamentDate').value = '';
+    document.getElementById('tournamentLocation').value = '';
+    document.getElementById('tournamentType').value = 'official';
+    document.getElementById('tournamentRank').value = '';
+    document.getElementById('tournamentTotalTeams').value = '';
+    document.getElementById('tournamentMvp').value = '';
+    document.getElementById('tournamentMemo').value = '';
+    document.getElementById('tournamentMatchesContainer').innerHTML = '';
+  }
+  openModal('tournamentModal');
+}
+
+function editTournament(id) { openTournamentModal(id); }
+
+function addTournamentMatch(score, opponent, result) {
+  const c = document.getElementById('tournamentMatchesContainer');
+  const row = document.createElement('div');
+  row.className = 'match-input-row';
+  row.innerHTML = `
+    <select class="match-result-sel" style="width:60px;padding:8px 4px">
+      <option value="win" ${result==='win'?'selected':''}>○勝</option>
+      <option value="lose" ${result==='lose'?'selected':''}>●負</option>
+      <option value="draw" ${result==='draw'?'selected':''}>△分</option>
+    </select>
+    <input type="text" class="match-score" placeholder="スコア" value="${escapeHtml(score || '')}" style="width:70px">
+    <input type="text" class="match-opponent" placeholder="対戦相手" value="${escapeHtml(opponent || '')}">
+    <button class="btn-icon btn-outline" onclick="this.parentElement.remove()" style="font-size:14px;width:36px;height:36px;flex-shrink:0">✕</button>`;
+  c.appendChild(row);
+}
+
+async function saveTournament() {
+  const name = document.getElementById('tournamentName').value.trim();
+  if (!name) return showToast('大会名を入力してください', 'error');
+
+  const scores = [];
+  document.querySelectorAll('#tournamentMatchesContainer .match-input-row').forEach(row => {
+    const result = row.querySelector('.match-result-sel').value;
+    const score = row.querySelector('.match-score').value.trim();
+    const opponent = row.querySelector('.match-opponent').value.trim();
+    if (opponent || score) scores.push({ result, score, opponent });
+  });
+
+  const data = {
+    name,
+    date: document.getElementById('tournamentDate').value,
+    location: document.getElementById('tournamentLocation').value.trim(),
+    type: document.getElementById('tournamentType').value,
+    team_rank: parseInt(document.getElementById('tournamentRank').value) || null,
+    total_teams: parseInt(document.getElementById('tournamentTotalTeams').value) || null,
+    mvp: document.getElementById('tournamentMvp').value,
+    memo: document.getElementById('tournamentMemo').value.trim(),
+    scores
+  };
+
+  const editId = document.getElementById('tournamentEditId').value;
+  try {
+    if (editId) {
+      await db.ref(ROOT + '/tournaments/' + editId).update(data);
+      showToast('更新しました');
+    } else {
+      data.created_at = new Date().toISOString();
+      await db.ref(ROOT + '/tournaments').push(data);
+      showToast('大会を記録しました');
+    }
+    closeModal('tournamentModal');
+  } catch (e) {
+    showToast('エラー: ' + e.message, 'error');
+  }
+}
+
+async function deleteTournament() {
+  const id = document.getElementById('tournamentEditId').value;
+  if (!id) return;
+  if (!confirm('この大会記録を削除しますか？')) return;
+  await db.ref(ROOT + '/tournaments/' + id).remove();
+  closeModal('tournamentModal');
+  showToast('削除しました');
+}
+
+// ── Result Card (Image Export) ──
+function showResultCard(id) {
+  const t = tournamentsData[id];
+  if (!t) return;
+  const typeLabels = { official: '公式大会', friendly: '練習試合', practice: '紅白戦' };
+  const dateStr = formatEventDate(t.date);
+  const scores = t.scores || [];
+  const wins = scores.filter(s => s.result === 'win').length;
+  const losses = scores.filter(s => s.result === 'lose').length;
+  const draws = scores.filter(s => s.result === 'draw').length;
+
+  const cardHtml = `<div class="result-card-render" id="resultCardEl">
+    <div class="team-name">${escapeHtml(configData.team_name || 'チームライド')}</div>
+    <div class="tournament-name">${escapeHtml(t.name)}</div>
+    <div style="font-size:13px;opacity:.7">📅 ${dateStr} ${t.location ? '📍 '+escapeHtml(t.location) : ''}</div>
+    ${t.team_rank ? `<div class="rank-display">${t.team_rank}<span style="font-size:20px">位</span></div>
+      <div class="rank-label">${t.total_teams || '?'}チーム中 · ${typeLabels[t.type] || ''}</div>` :
+      `<div class="rank-display" style="font-size:24px">${typeLabels[t.type] || '大会'}</div>`}
+    ${scores.length > 0 ? `<div class="matches-row">
+      ${scores.map(s => {
+        const cls = s.result === 'win' ? 'w' : s.result === 'lose' ? 'l' : 'd';
+        const mark = s.result === 'win' ? '○' : s.result === 'lose' ? '●' : '△';
+        return `<span class="match-pill ${cls}">${mark} ${escapeHtml(s.score || '')} ${escapeHtml(s.opponent || '')}</span>`;
+      }).join('')}
+    </div>
+    <div style="font-size:13px;text-align:center;opacity:.8">${wins}勝${losses}敗${draws > 0 ? draws+'分' : ''}</div>` : ''}
+    ${t.mvp ? `<div class="mvp-line" style="margin-top:12px">🏅 MVP: ${escapeHtml(t.mvp)}</div>` : ''}
+    <div class="footer-line">${escapeHtml(configData.team_name || '')} · チームライド</div>
+  </div>`;
+
+  document.getElementById('resultCardPreview').innerHTML = cardHtml;
+  document.getElementById('resultCardModal').dataset.tid = id;
+  openModal('resultCardModal');
+}
+
+function downloadResultCard() {
+  const el = document.getElementById('resultCardEl');
+  if (!el) return;
+  // Use canvas API to render
+  const canvas = document.createElement('canvas');
+  const scale = 2;
+  canvas.width = 360 * scale;
+  canvas.height = el.offsetHeight * scale;
+  const ctx = canvas.getContext('2d');
+
+  // Draw gradient background
+  const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  grad.addColorStop(0, '#1976d2');
+  grad.addColorStop(1, '#0d47a1');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Render text from the element
+  ctx.scale(scale, scale);
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillText(configData.team_name || 'チームライド', 24, 40);
+
+  const tid = document.getElementById('resultCardModal').dataset.tid;
+  const t = tournamentsData[tid];
+  if (t) {
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillText(t.name || '', 24, 70);
+    ctx.font = '13px sans-serif';
+    ctx.globalAlpha = 0.7;
+    ctx.fillText(formatEventDate(t.date) + (t.location ? '  ' + t.location : ''), 24, 92);
+    ctx.globalAlpha = 1;
+    if (t.team_rank) {
+      ctx.font = 'bold 48px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(t.team_rank + '位', 180, 160);
+      ctx.font = '14px sans-serif';
+      ctx.globalAlpha = 0.7;
+      ctx.fillText((t.total_teams || '?') + 'チーム中', 180, 185);
+      ctx.globalAlpha = 1;
+      ctx.textAlign = 'left';
+    }
+    if (t.mvp) {
+      ctx.font = '14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('MVP: ' + t.mvp, 180, el.offsetHeight - 40);
+      ctx.textAlign = 'left';
+    }
+  }
+
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = (t?.name || 'result') + '.png';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('画像を保存しました');
+  });
+}
+
+function shareResultCard() {
+  const el = document.getElementById('resultCardEl');
+  if (!el || !navigator.share) {
+    showToast('この端末では共有できません', 'error');
+    return;
+  }
+  const canvas = document.createElement('canvas');
+  canvas.width = 720; canvas.height = el.offsetHeight * 2;
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 720, canvas.height);
+  grad.addColorStop(0, '#1976d2'); grad.addColorStop(1, '#0d47a1');
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, 720, canvas.height);
+
+  canvas.toBlob(async blob => {
+    const file = new File([blob], 'result.png', { type: 'image/png' });
+    try {
+      await navigator.share({ files: [file], title: '大会結果' });
+    } catch { /* user cancelled */ }
+  });
 }
 
 // ── Init ──
