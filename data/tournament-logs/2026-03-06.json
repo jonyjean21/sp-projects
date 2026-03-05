@@ -1,0 +1,10 @@
+{
+  "date": "2026-03-06",
+  "processed": [
+    {"url": "https://twitter.com/molkky46/status/2029565925855543474", "title": "molkky46 追悼ポスト", "action": "skipped", "source": "ifttt-x-search", "reason": "大会情報ではない（追悼ポスト）", "timestamp": "2026-03-06T00:00:00+09:00"},
+    {"url": "https://twitter.com/mukoshibamoldog/status/2029554671795446184", "title": "mukoshibamoldog 追悼ポスト", "action": "skipped", "source": "ifttt-x-search", "reason": "大会情報ではない（追悼ポスト）", "timestamp": "2026-03-06T00:00:00+09:00"},
+    {"url": "https://twitter.com/zugakousakuka/status/2029565747241058607", "title": "zugakousakuka S-möl祭り予告", "action": "skipped", "source": "ifttt-x-search", "reason": "詳細未定（春のS-möl祭り、招待制の可能性）", "timestamp": "2026-03-06T00:00:00+09:00"},
+    {"url": "https://twitter.com/47q6V2684nAE1zB/status/2029563533646782803", "title": "印西 福祉施設イベント", "action": "skipped", "source": "ifttt-x-search", "reason": "福祉施設の複合イベント（モルック大会ではない）", "timestamp": "2026-03-06T00:00:00+09:00"},
+    {"url": "https://twitter.com/blacksato_hot/status/2029568445600415809", "title": "blacksato_hot 追悼ポスト", "action": "skipped", "source": "ifttt-x-search", "reason": "大会情報ではない（追悼ポスト）", "timestamp": "2026-03-06T00:00:00+09:00"}
+  ]
+}
