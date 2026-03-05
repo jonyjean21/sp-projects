@@ -1406,11 +1406,6 @@ function validateTournament(t) {
   }
   if(!t.area && !t.area_id) warns.push({level:'warn',msg:'都道府県が未設定'});
   if(!t.organizer) warns.push({level:'warn',msg:'主催者が未設定'});
-  // duplicate detection
-  if(t.event_date && t.area) {
-    const dupes = tAllData.filter(o => o!==t && o.event_date===t.event_date && o.area===t.area);
-    if(dupes.length) warns.push({level:'warn',msg:'同日・同地域に別の大会あり (重複の可能性)'});
-  }
   return warns;
 }
 
