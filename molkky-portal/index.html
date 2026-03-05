@@ -595,6 +595,21 @@ const AREAS = {
 const AREA_BY_ID = {};
 Object.entries(AREAS).forEach(([name, v]) => { AREA_BY_ID[v.id] = name; });
 
+// Map acf.location text (no suffix: "青森") to AREAS key (with suffix: "青森県")
+function locationToArea(loc) {
+  if(!loc) return '';
+  // Direct match (e.g. 北海道)
+  if(AREAS[loc]) return loc;
+  // Try adding suffixes
+  for(const suf of ['県','都','府']) { if(AREAS[loc+suf]) return loc+suf; }
+  return '';
+}
+// Reverse: AREAS key → acf.location text (strip suffix)
+function areaToLocation(areaName) {
+  if(!areaName) return '';
+  return areaName.replace(/[都府県]$/, '');
+}
+
 // ========== STATE ==========
 let wpAuth = '';
 let analyticsData = null;
@@ -629,6 +644,9 @@ function changeHTML(cur, prev, invert) {
   return '<span class="sc '+cls+'">'+arrow+' '+Math.abs(pct)+'%</span>';
 }
 function gasEndpoint() { return localStorage.getItem('hub_gas_endpoint') || GAS_DEFAULT; }
+// Date format helpers: WP ACF stores YYYYMMDD, HTML date input uses YYYY-MM-DD
+function dateToInput(d) { if(!d) return ''; d=d.replace(/-/g,''); return d.length>=8 ? d.slice(0,4)+'-'+d.slice(4,6)+'-'+d.slice(6,8) : d; }
+function dateToAcf(d) { return d ? d.replace(/-/g,'') : ''; }
 
 function showToast(msg, err) {
   const t=document.getElementById('toast');t.textContent=msg;t.className='toast'+(err?' toast-err':'')+' show';
@@ -1181,13 +1199,13 @@ async function loadTournaments() {
   document.getElementById('tcWarnings').textContent = fmt(warnCount);
   document.getElementById('tcRecent').textContent = fmt(tAllData.filter(t=>t._type!=='queue'&&new Date(t.date)>=weekAgo).length);
 
-  // Populate month filter
+  // Populate month filter (event_date is YYYYMMDD or YYYY-MM-DD)
   const monthSet = new Set();
-  tAllData.forEach(t=>{if(t.event_date){const m=t.event_date.substring(0,7);if(m)monthSet.add(m);}});
+  tAllData.forEach(t=>{if(t.event_date){const d=t.event_date.replace(/-/g,'');const m=d.substring(0,6);if(m.length===6)monthSet.add(m);}});
   const mf=document.getElementById('tMonthFilter');
   const curMVal=mf.value;
   mf.innerHTML='<option value="">全月</option>';
-  [...monthSet].sort().reverse().forEach(m=>{mf.innerHTML+=`<option value="${m}">${m}</option>`;});
+  [...monthSet].sort().reverse().forEach(m=>{mf.innerHTML+=`<option value="${m}">${m.slice(0,4)}/${m.slice(4,6)}</option>`;});
   mf.value=curMVal;
 
   // Render monthly chart
@@ -1202,7 +1220,7 @@ async function loadWpTournaments() {
   const perPage = 100;
   try {
     // First request to get total
-    const firstRes = await fetch(WP_API+'/tournament?per_page='+perPage+'&page=1&_fields=id,title,date,status,acf,link,tournament_area&orderby=date&order=desc');
+    const firstRes = await fetch(WP_API+'/tournament?per_page='+perPage+'&page=1&_fields=id,title,date,status,acf,link,area&orderby=date&order=desc');
     if(!firstRes.ok) return all;
     const total = parseInt(firstRes.headers.get('x-wp-total'))||0;
     const totalPages = parseInt(firstRes.headers.get('x-wp-totalpages'))||1;
@@ -1213,7 +1231,7 @@ async function loadWpTournaments() {
     const maxPages = Math.min(totalPages, 5);
     const promises = [];
     for(let p=2; p<=maxPages; p++){
-      promises.push(fetch(WP_API+'/tournament?per_page='+perPage+'&page='+p+'&_fields=id,title,date,status,acf,link,tournament_area&orderby=date&order=desc').then(r=>r.json()));
+      promises.push(fetch(WP_API+'/tournament?per_page='+perPage+'&page='+p+'&_fields=id,title,date,status,acf,link,area&orderby=date&order=desc').then(r=>r.json()));
     }
     const pages = await Promise.all(promises);
     pages.forEach(pageData => pageData.forEach(t => all.push(normalizeTournament(t))));
@@ -1223,9 +1241,12 @@ async function loadWpTournaments() {
 
 function normalizeTournament(t) {
   const acf = t.acf || {};
-  const areaIds = t.tournament_area || [];
+  const areaIds = t.area || [];  // WP REST API field is 'area', not 'tournament_area'
   let areaName = '';
+  // 1st: taxonomy ID lookup
   areaIds.forEach(aid => { if(AREA_BY_ID[aid]) areaName = AREA_BY_ID[aid]; });
+  // 2nd: fallback to acf.location text (e.g. "福島" → "福島県")
+  if(!areaName && acf.location) areaName = locationToArea(acf.location);
   return {
     _type: 'wp',
     id: t.id,
@@ -1339,8 +1360,8 @@ function tApplyFilter() {
   if(search) data = data.filter(t=>(t.title||'').toLowerCase().includes(search)||(t.organizer||'').toLowerCase().includes(search));
   // Area
   if(area) data = data.filter(t=>t.area===area);
-  // Month
-  if(month) data = data.filter(t=>t.event_date&&t.event_date.startsWith(month));
+  // Month (compare YYYYMM against YYYYMMDD)
+  if(month) data = data.filter(t=>t.event_date&&t.event_date.replace(/-/g,'').startsWith(month));
   // Status
   if(status) data = data.filter(t=>t.status===status);
 
@@ -1372,7 +1393,8 @@ function renderTournamentList() {
     const warnPill = hasWarn ? ' <span class="pill pill-red">要確認</span>' : (warns.length ? ' <span class="pill pill-blue">info</span>' : '');
     const srcClass = t.source==='ifttt'?'src-ifttt':t.source==='gas'?'src-gas':'src-manual';
     const srcLabel = t.source==='ifttt'?'IFTTT':t.source==='gas'?'GAS':t.source||'-';
-    const dateStr = t.event_date || '-';
+    const rawDate = t.event_date || '';
+    const dateStr = rawDate.length===8 ? rawDate.slice(0,4)+'/'+rawDate.slice(4,6)+'/'+rawDate.slice(6,8) : rawDate || '-';
     const areaStr = t.area || '-';
     const key = isQueue ? 'q:'+t._fbKey : 'wp:'+t.id;
 
@@ -1387,6 +1409,7 @@ function renderTournamentList() {
 
 // ========== TOURNAMENT DETAIL ==========
 function tShowDetail(key) {
+  _currentDetailKey = key;
   const [type, id] = key.split(':');
   let t;
   if(type==='q') t = tAllData.find(x=>x._type==='queue'&&x._fbKey===id);
@@ -1431,7 +1454,7 @@ function tShowDetail(key) {
     <div style="font-size:12px;font-weight:600;margin-bottom:8px">大会情報フィールド</div>
     <div class="field"><label>大会名</label><input type="text" id="tdTitle" value="${esc(t.title)}"></div>
     <div class="field-row">
-      <div class="field"><label>開催日</label><input type="date" id="tdDate" value="${t.event_date||''}"></div>
+      <div class="field"><label>開催日</label><input type="date" id="tdDate" value="${dateToInput(t.event_date)}"></div>
       <div class="field"><label>都道府県</label><select id="tdArea"><option value="">-- 選択 --</option>${areaOptions}</select></div>
     </div>
     <div class="field"><label>主催者</label><input type="text" id="tdOrganizer" value="${esc(t.organizer)}"></div>
@@ -1446,24 +1469,84 @@ function tShowDetail(key) {
     </div>
   </div>`;
 
+  // Warning navigation info
+  const warningItems = tAllData.filter(x => x._warnings && x._warnings.length > 0);
+  const curWarnIdx = warningItems.indexOf(t);
+  const warnNav = warns.length && warningItems.length > 1
+    ? `<span style="font-size:10px;color:var(--dim)">要確認 ${curWarnIdx+1}/${warningItems.length}</span>` : '';
+
   // Footer
   let footerHtml=`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;color:var(--sub)">`;
   if(!isQueue) footerHtml+=`<span>投稿日: ${new Date(t.date).toLocaleDateString('ja-JP')}</span><span>WP ID: ${t.id}</span><span>Status: ${t.status}</span>`;
   else footerHtml+=`<span>キュー登録日: ${t.date?new Date(t.date).toLocaleDateString('ja-JP'):'-'}</span>`;
-  footerHtml+=`</div><div class="btn-row" style="margin-top:10px">`;
+  footerHtml+=`${warnNav}</div><div class="btn-row" style="margin-top:10px">`;
   if(!isQueue && t.link) footerHtml+=`<a href="${WP}/wp-admin/post.php?post=${t.id}&action=edit" target="_blank" class="btn btn-sm btn-outline" style="text-decoration:none">WP管理画面で開く</a>`;
   if(isQueue) {
     footerHtml+=`<button class="btn btn-success" onclick="tProcessQueue('${t._fbKey}')">処理 (WP投稿)</button>`;
     footerHtml+=`<button class="btn btn-outline" onclick="tSkipQueue('${t._fbKey}')">スキップ</button>`;
   } else {
     footerHtml+=`<button class="btn btn-primary" onclick="tSaveEdit(${t.id})">保存</button>`;
+    if(warns.length && warningItems.length > 1) footerHtml+=`<button class="btn btn-sm btn-success" onclick="tSaveAndNext(${t.id})">保存→次へ</button>`;
   }
+  if(warningItems.length > 1 && warns.length) footerHtml+=`<button class="btn btn-sm btn-outline" onclick="tNextWarning()">次の要確認</button>`;
   footerHtml+=`<button class="btn btn-outline" onclick="closeTDetail()">閉じる</button></div>`;
 
   el.innerHTML=`<div style="font-size:15px;font-weight:700;margin-bottom:12px">${esc(t.title)}</div>${warnHtml}${srcHtml}${editHtml}${footerHtml}`;
   document.getElementById('tDetailOverlay').classList.add('show');
 }
+let _currentDetailKey = '';
 function closeTDetail(){document.getElementById('tDetailOverlay').classList.remove('show');}
+
+// Navigate to next warning item
+function tNextWarning() {
+  const warningItems = tAllData.filter(x => x._warnings && x._warnings.length > 0);
+  if(!warningItems.length) { closeTDetail(); return; }
+  const curKey = _currentDetailKey;
+  const [type, id] = curKey.split(':');
+  let curIdx = -1;
+  warningItems.forEach((w,i) => {
+    const k = w._type==='queue' ? 'q:'+w._fbKey : 'wp:'+w.id;
+    if(k === curKey) curIdx = i;
+  });
+  const nextIdx = (curIdx + 1) % warningItems.length;
+  const next = warningItems[nextIdx];
+  const nextKey = next._type==='queue' ? 'q:'+next._fbKey : 'wp:'+next.id;
+  tShowDetail(nextKey);
+}
+
+// Save then jump to next warning
+async function tSaveAndNext(wpId) {
+  if(!wpAuth){showToast('WP認証が必要です',true);return;}
+  const title = document.getElementById('tdTitle').value.trim();
+  const eventDate = document.getElementById('tdDate').value;
+  const area = document.getElementById('tdArea').value;
+  const organizer = document.getElementById('tdOrganizer').value.trim();
+  const scale = document.getElementById('tdScale').value.trim();
+  const snsLink = document.getElementById('tdSns').value.trim();
+  const detailLink = document.getElementById('tdDetailLink').value.trim();
+  const beginner = document.getElementById('tdBeginner').checked;
+  const official = document.getElementById('tdOfficial').checked;
+  try {
+    const body = new FormData();
+    body.append('title', title);
+    if(area && AREAS[area]) body.append('area', AREAS[area].id);
+    if(eventDate) body.append('acf[event_date]', dateToAcf(eventDate));
+    if(area) body.append('acf[location]', areaToLocation(area));
+    if(organizer) body.append('acf[organizer]', organizer);
+    if(scale) body.append('acf[scale]', scale);
+    if(snsLink) body.append('acf[sns_link]', snsLink);
+    if(detailLink) body.append('acf[detail_link]', detailLink);
+    body.append('acf[beginner_friendly]', beginner?'1':'0');
+    body.append('acf[official]', official?'1':'0');
+    const res = await fetch(WP_API+'/tournament/'+wpId, {method:'POST',headers:{'Authorization':'Basic '+wpAuth},body});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    // Update local data to reflect the save
+    const t = tAllData.find(x=>x._type==='wp'&&x.id===wpId);
+    if(t) { t.area = area; t.event_date = eventDate; t.organizer = organizer; t.scale = scale; t._warnings = validateTournament(t); }
+    showToast('保存→次へ');
+    tNextWarning();
+  } catch(e) { showToast('保存失敗: '+e.message, true); }
+}
 
 function showImageModal(src) {
   const div=document.createElement('div');
@@ -1497,10 +1580,11 @@ async function tProcessQueue(fbKey) {
     const body = new FormData();
     body.append('title', title);
     body.append('status', 'publish');
-    if(area && AREAS[area]) body.append('tournament_area', AREAS[area].id);
+    if(area && AREAS[area]) body.append('area', AREAS[area].id);
 
     // ACF fields via form
-    if(eventDate) body.append('acf[event_date]', eventDate);
+    if(eventDate) body.append('acf[event_date]', dateToAcf(eventDate));
+    if(area) body.append('acf[location]', areaToLocation(area));
     if(organizer) body.append('acf[organizer]', organizer);
     if(scale) body.append('acf[scale]', scale);
     if(snsLink) body.append('acf[sns_link]', snsLink);
@@ -1559,8 +1643,9 @@ async function tSaveEdit(wpId) {
     // SiteGuard: POST only
     const body = new FormData();
     body.append('title', title);
-    if(area && AREAS[area]) body.append('tournament_area', AREAS[area].id);
-    if(eventDate) body.append('acf[event_date]', eventDate);
+    if(area && AREAS[area]) body.append('area', AREAS[area].id);
+    if(eventDate) body.append('acf[event_date]', dateToAcf(eventDate));
+    if(area) body.append('acf[location]', areaToLocation(area));
     if(organizer) body.append('acf[organizer]', organizer);
     if(scale) body.append('acf[scale]', scale);
     if(snsLink) body.append('acf[sns_link]', snsLink);
@@ -1655,8 +1740,9 @@ async function tPostTournament() {
     const body=new FormData();
     body.append('title',title);body.append('status','publish');
     const area=document.getElementById('tfArea').value;
-    if(area&&AREAS[area])body.append('tournament_area',AREAS[area].id);
+    if(area&&AREAS[area])body.append('area',AREAS[area].id);
     const ed=document.getElementById('tfDate').value;if(ed)body.append('acf[event_date]',ed);
+    if(area) body.append('acf[location]',areaToLocation(area));
     const org=document.getElementById('tfOrganizer').value.trim();if(org)body.append('acf[organizer]',org);
     const sc=document.getElementById('tfScale').value.trim();if(sc)body.append('acf[scale]',sc);
     const sns=document.getElementById('tfSns').value.trim();if(sns)body.append('acf[sns_link]',sns);
@@ -1823,6 +1909,13 @@ document.addEventListener('DOMContentLoaded', () => {
   restoreAuth();
   // Load dashboard
   loadDashboard();
+
+  // Keyboard shortcuts for detail modal
+  document.addEventListener('keydown', e => {
+    const overlay = document.getElementById('tDetailOverlay');
+    if(!overlay || !overlay.classList.contains('show')) return;
+    if(e.key === 'Escape') { closeTDetail(); e.preventDefault(); }
+  });
 });
 </script>
 </body>
