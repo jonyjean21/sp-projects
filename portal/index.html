@@ -186,6 +186,68 @@ tr:hover { background: rgba(255,255,255,0.02); }
 .modal-box h3 { font-size: 15px; margin-bottom: 16px; }
 
 /* Responsive */
+/* ===== INBOX Triage ===== */
+.inbox-filter-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.inbox-tab {
+  padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;
+  background: var(--bg); border: 1px solid var(--border); color: var(--sub); transition: all 0.15s;
+  min-height: 34px; display: inline-flex; align-items: center; gap: 4px;
+}
+.inbox-tab:hover { border-color: var(--sub); color: var(--text); }
+.inbox-tab.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+.inbox-tab .tab-count { font-size: 10px; background: rgba(255,255,255,0.08); border-radius: 6px; padding: 1px 5px; }
+.inbox-tab.active .tab-count { background: var(--accent); color: #fff; }
+
+.inbox-batch-bar {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;
+}
+
+.inbox-card-wrap {
+  position: relative; overflow: hidden; border-radius: 10px; margin-bottom: 8px;
+  touch-action: pan-y;
+}
+.inbox-card-reveal {
+  position: absolute; inset: 0; display: flex; align-items: center; font-size: 13px; font-weight: 700; padding: 0 20px;
+}
+.inbox-card-reveal.reveal-route { background: var(--green); color: #fff; justify-content: flex-start; }
+.inbox-card-reveal.reveal-dismiss { background: var(--red); color: #fff; justify-content: flex-end; }
+.inbox-card {
+  position: relative; background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px; transition: transform 0.15s ease; z-index: 1;
+}
+.inbox-card .inbox-text { font-size: 13px; line-height: 1.6; margin-bottom: 8px; word-break: break-word; }
+.inbox-card .inbox-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 11px; color: var(--sub); margin-bottom: 8px; }
+.inbox-card .inbox-conf { font-size: 10px; font-weight: 600; }
+.inbox-card .inbox-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.inbox-card .inbox-actions .btn { min-height: 34px; min-width: 44px; justify-content: center; }
+
+.reclass-row { display: none; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.reclass-row.open { display: flex; }
+.reclass-pill {
+  padding: 5px 12px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer;
+  border: 1px solid var(--border); background: var(--bg); color: var(--sub); transition: all 0.15s;
+  min-height: 30px; display: inline-flex; align-items: center;
+}
+.reclass-pill:hover { border-color: var(--accent); color: var(--text); }
+.reclass-pill.current { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+
+.inbox-processed-toggle {
+  display: flex; align-items: center; gap: 8px; padding: 10px 0; font-size: 13px; color: var(--sub);
+  cursor: pointer; border: none; background: none; width: 100%; text-align: left; font-family: inherit;
+}
+.inbox-processed-toggle:hover { color: var(--text); }
+.inbox-processed-list { display: none; }
+.inbox-processed-list.open { display: block; }
+.inbox-processed-item {
+  display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border);
+  font-size: 12px; color: var(--sub);
+}
+.inbox-processed-item .proc-text { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.inbox-status-icon { font-size: 10px; }
+
+.inbox-input-row { display: flex; gap: 8px; margin-bottom: 14px; }
+.inbox-input-row input { flex: 1; }
+
 @media (max-width: 768px) {
   .sidebar { position: fixed; left: 0; top: 0; bottom: 0; z-index: 50; transform: translateX(-100%); }
   .sidebar.open { transform: translateX(0); }
@@ -220,6 +282,14 @@ tr:hover { background: rgba(255,255,255,0.02); }
       <div class="nav-group-label">Overview</div>
       <div class="nav-item active" data-section="dashboard" onclick="showSection('dashboard')">
         <span class="nav-icon">&#9632;</span> ダッシュボード
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-label">Triage</div>
+      <div class="nav-item" data-section="inbox" onclick="showSection('inbox')">
+        <span class="nav-icon">&#128229;</span> INBOX
+        <span class="nav-badge" id="inboxBadge" style="display:none">0</span>
       </div>
     </div>
 
@@ -270,6 +340,10 @@ tr:hover { background: rgba(255,255,255,0.02); }
       <!-- ===== DASHBOARD ===== -->
       <div class="section active" id="sec-dashboard">
         <div class="stat-grid" id="dashStats">
+          <div class="stat-card" style="cursor:pointer" onclick="showSection('inbox')">
+            <div class="stat-value" style="color:var(--orange)" id="dInbox">-</div>
+            <div class="stat-label">INBOX Pending</div>
+          </div>
           <div class="stat-card">
             <div class="stat-value" style="color:var(--purple)" id="dProducts">19</div>
             <div class="stat-label">プロダクト数</div>
@@ -355,6 +429,33 @@ tr:hover { background: rgba(255,255,255,0.02); }
         </div>
       </div>
 
+
+      <!-- ===== INBOX ===== -->
+      <div class="section" id="sec-inbox">
+        <!-- Quick input -->
+        <div class="inbox-input-row">
+          <input type="text" id="inboxQuickInput" placeholder="クイック入力（Enter で追加）..." onkeydown="if(event.key==='Enter')addInboxItem()">
+          <button class="btn btn-primary" onclick="addInboxItem()">追加</button>
+        </div>
+
+        <!-- Filter tabs -->
+        <div class="inbox-filter-bar" id="inboxFilterBar"></div>
+
+        <!-- Batch bar (shown when category filter active) -->
+        <div class="inbox-batch-bar" id="inboxBatchBar" style="display:none">
+          <button class="btn btn-sm btn-success" id="batchRouteBtn" onclick="batchRoute()">Route All</button>
+          <button class="btn btn-sm btn-outline" onclick="loadInboxItems()">&#8635; Refresh</button>
+        </div>
+
+        <!-- Card list -->
+        <div id="inboxList"><div class="empty"><span class="spinner"></span> 読み込み中...</div></div>
+
+        <!-- Processed (collapsed) -->
+        <button class="inbox-processed-toggle" onclick="toggleProcessed()">
+          <span id="procArrow">&#9654;</span> <span>処理済み (<span id="procCount">0</span>件)</span>
+        </button>
+        <div class="inbox-processed-list" id="inboxProcessed"></div>
+      </div>
 
       <!-- ===== PRODUCTS ===== -->
       <div class="section" id="sec-products">
@@ -512,6 +613,7 @@ const PRODUCTS = {
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('ja-JP');
   renderProducts();
+  loadInboxCount();
 });
 
 // ===== Navigation =====
@@ -523,11 +625,12 @@ function showSection(id) {
   const navItem = document.querySelector(`.nav-item[data-section="${id}"]`);
   if (navItem) navItem.classList.add('active');
 
-  const titles = { dashboard:'ダッシュボード', products:'プロダクト一覧', automation:'自動化パイプライン', settings:'設定' };
+  const titles = { dashboard:'ダッシュボード', inbox:'INBOX', products:'プロダクト一覧', automation:'自動化パイプライン', settings:'設定' };
   document.getElementById('pageTitle').textContent = titles[id] || id;
 
   // Lazy load data
   if (id === 'automation') loadAutomationStatus();
+  if (id === 'inbox') loadInboxItems();
 
   // Close mobile sidebar
   document.getElementById('sidebar').classList.remove('open');
@@ -608,6 +711,339 @@ function exportSettings() {
   }
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'portal-settings.json'; a.click();
+}
+
+// ===== INBOX Triage =====
+const CAT_LABELS = { machap:'MACHAP', dome:'モルックドーム', molhub:'モルハブ', personal:'個人' };
+const CAT_COLORS = { machap:'var(--cyan)', dome:'var(--orange)', molhub:'var(--green)', personal:'var(--sub)' };
+const CAT_PILLS = { machap:'pill-cyan', dome:'pill-orange', molhub:'pill-green', personal:'pill-dim' };
+const ALL_CATS = ['machap','dome','molhub','personal'];
+
+let inboxItems = {};   // key → item
+let inboxFilter = 'all';
+let inboxProcessedItems = {};
+
+// Gemini proxy for classification
+const GEMINI_URL = 'https://vercel-api-orpin-one.vercel.app/api/gemini';
+
+async function loadInboxCount() {
+  try {
+    const r = await fetch(FB + '/inbox.json?orderBy="status"&equalTo="pending"&shallow=true');
+    const d = await r.json();
+    const count = d ? Object.keys(d).length : 0;
+    const badge = document.getElementById('inboxBadge');
+    const dash = document.getElementById('dInbox');
+    if (badge) { badge.textContent = count; badge.style.display = count > 0 ? '' : 'none'; }
+    if (dash) dash.textContent = count;
+    return count;
+  } catch(e) { console.error('Inbox count error', e); return 0; }
+}
+
+async function loadInboxItems() {
+  try {
+    const [pendingR, processedR] = await Promise.all([
+      fetch(FB + '/inbox.json?orderBy="status"&equalTo="pending"'),
+      fetch(FB + '/inbox.json?orderBy="status"&limitToLast=50')
+    ]);
+    const pendingD = await pendingR.json();
+    const allD = await processedR.json();
+
+    inboxItems = pendingD || {};
+    inboxProcessedItems = {};
+    if (allD) {
+      for (const [k, v] of Object.entries(allD)) {
+        if (v.status && v.status !== 'pending') inboxProcessedItems[k] = v;
+      }
+    }
+
+    renderFilterBar();
+    renderInboxList();
+    renderInboxProcessed();
+    loadInboxCount();
+  } catch(e) {
+    document.getElementById('inboxList').innerHTML = `<div class="empty" style="color:var(--red)">取得失敗: ${escapeHtml(e.message)}</div>`;
+  }
+}
+
+function renderFilterBar() {
+  const counts = { all: 0 };
+  ALL_CATS.forEach(c => counts[c] = 0);
+  for (const item of Object.values(inboxItems)) {
+    counts.all++;
+    const cat = (item.classification || 'personal').toLowerCase();
+    if (counts[cat] !== undefined) counts[cat]++;
+  }
+
+  const bar = document.getElementById('inboxFilterBar');
+  let html = `<div class="inbox-tab ${inboxFilter==='all'?'active':''}" onclick="filterInbox('all')">ALL <span class="tab-count">${counts.all}</span></div>`;
+  for (const c of ALL_CATS) {
+    html += `<div class="inbox-tab ${inboxFilter===c?'active':''}" onclick="filterInbox('${c}')">${CAT_LABELS[c]} <span class="tab-count">${counts[c]}</span></div>`;
+  }
+  bar.innerHTML = html;
+
+  // Show/hide batch bar
+  const batchBar = document.getElementById('inboxBatchBar');
+  if (inboxFilter !== 'all' && counts[inboxFilter] > 0) {
+    batchBar.style.display = '';
+    document.getElementById('batchRouteBtn').textContent = `Route All ${CAT_LABELS[inboxFilter]} (${counts[inboxFilter]})`;
+  } else {
+    batchBar.style.display = 'none';
+  }
+}
+
+function filterInbox(cat) {
+  inboxFilter = cat;
+  renderFilterBar();
+  renderInboxList();
+}
+
+function renderInboxList() {
+  const box = document.getElementById('inboxList');
+  const entries = Object.entries(inboxItems)
+    .map(([k, v]) => ({ key: k, ...v }))
+    .filter(item => inboxFilter === 'all' || (item.classification || 'personal').toLowerCase() === inboxFilter)
+    .sort((a, b) => (b.created || '').localeCompare(a.created || ''));
+
+  if (entries.length === 0) {
+    box.innerHTML = '<div class="empty">未処理アイテムなし</div>';
+    return;
+  }
+
+  box.innerHTML = entries.map(item => {
+    const cat = (item.classification || 'personal').toLowerCase();
+    const conf = item.confidence ? Math.round(item.confidence * 100) : '?';
+    const timeAgo = getTimeAgo(item.created);
+    const reason = item.reason ? escapeHtml(item.reason) : '';
+    return `
+    <div class="inbox-card-wrap" id="wrap-${item.key}"
+         ontouchstart="swipeStart(event,'${item.key}')" ontouchmove="swipeMove(event,'${item.key}')" ontouchend="swipeEnd(event,'${item.key}')">
+      <div class="inbox-card-reveal reveal-route">Route &#10132;</div>
+      <div class="inbox-card-reveal reveal-dismiss" style="display:none">&#10132; Dismiss</div>
+      <div class="inbox-card" id="card-${item.key}">
+        <div class="inbox-text">${escapeHtml(item.text || '')}</div>
+        <div class="inbox-meta">
+          <span class="pill ${CAT_PILLS[cat] || 'pill-dim'}">${CAT_LABELS[cat] || cat}</span>
+          <span class="inbox-conf" style="color:${conf >= 80 ? 'var(--green)' : conf >= 50 ? 'var(--orange)' : 'var(--red)'}">${conf}%</span>
+          <span>${timeAgo}</span>
+          ${reason ? `<span style="color:var(--dim)">${reason}</span>` : ''}
+        </div>
+        <div class="inbox-actions">
+          <button class="btn btn-sm btn-success" onclick="routeItem('${item.key}')">Route</button>
+          <button class="btn btn-sm btn-primary" onclick="doneItem('${item.key}')">Done</button>
+          <button class="btn btn-sm btn-danger" onclick="dismissItem('${item.key}')">Dismiss</button>
+          <button class="btn btn-sm btn-outline" onclick="toggleReclass('${item.key}')">&#9998;</button>
+        </div>
+        <div class="reclass-row" id="reclass-${item.key}">
+          ${ALL_CATS.map(c => `<div class="reclass-pill ${c===cat?'current':''}" onclick="reclassifyItem('${item.key}','${c}')">${CAT_LABELS[c]}</div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleReclass(key) {
+  const row = document.getElementById('reclass-' + key);
+  if (row) row.classList.toggle('open');
+}
+
+async function routeItem(key) {
+  await updateInboxStatus(key, 'routed');
+}
+async function doneItem(key) {
+  await updateInboxStatus(key, 'done');
+}
+async function dismissItem(key) {
+  await updateInboxStatus(key, 'dismissed');
+}
+
+async function updateInboxStatus(key, status) {
+  try {
+    await fetch(FB + `/inbox/${key}/status.json`, { method: 'PUT', body: JSON.stringify(status) });
+    await fetch(FB + `/inbox/${key}/processed_at.json`, { method: 'PUT', body: JSON.stringify(new Date().toISOString()) });
+    // Move from pending to processed locally
+    if (inboxItems[key]) {
+      inboxProcessedItems[key] = { ...inboxItems[key], status, processed_at: new Date().toISOString() };
+      delete inboxItems[key];
+    }
+    renderFilterBar();
+    renderInboxList();
+    renderInboxProcessed();
+    loadInboxCount();
+    showToast(`${status}: ${(inboxProcessedItems[key]?.text || '').substring(0, 30)}...`);
+  } catch(e) {
+    showToast('Error: ' + e.message);
+  }
+}
+
+async function reclassifyItem(key, newCat) {
+  try {
+    await Promise.all([
+      fetch(FB + `/inbox/${key}/classification.json`, { method: 'PUT', body: JSON.stringify(newCat) }),
+      fetch(FB + `/inbox/${key}/confidence.json`, { method: 'PUT', body: JSON.stringify(1.0) }),
+      fetch(FB + `/inbox/${key}/reason.json`, { method: 'PUT', body: JSON.stringify('手動再分類') })
+    ]);
+    if (inboxItems[key]) {
+      inboxItems[key].classification = newCat;
+      inboxItems[key].confidence = 1.0;
+      inboxItems[key].reason = '手動再分類';
+    }
+    renderFilterBar();
+    renderInboxList();
+    showToast(`再分類: ${CAT_LABELS[newCat]}`);
+  } catch(e) {
+    showToast('Error: ' + e.message);
+  }
+}
+
+async function batchRoute() {
+  const keys = Object.entries(inboxItems)
+    .filter(([, v]) => (v.classification || 'personal').toLowerCase() === inboxFilter)
+    .map(([k]) => k);
+  if (keys.length === 0) return;
+  if (!confirm(`${CAT_LABELS[inboxFilter]} の ${keys.length}件 を全て Route しますか？`)) return;
+  for (const k of keys) {
+    await updateInboxStatus(k, 'routed');
+  }
+  showToast(`${keys.length}件をRouteしました`);
+}
+
+async function addInboxItem() {
+  const input = document.getElementById('inboxQuickInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.disabled = true;
+
+  // Classify via Gemini
+  let classification = { category: 'personal', confidence: 0.5, reason: 'デフォルト' };
+  try {
+    const prompt = `以下のテキストを分類してください。カテゴリ: machap(3人チーム事業・ツール開発), dome(川西モルックの会・練習会・大会), molhub(MOLKKY HUBメディア・記事・SEO), personal(個人)。JSON形式で返してください: {"category":"...","confidence":0.0-1.0,"reason":"..."}\n\nテキスト: ${text}`;
+    const r = await fetch(GEMINI_URL, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+    const d = await r.json();
+    const raw = (d.text || d.response || '').replace(/```json\n?|\n?```/g, '').trim();
+    classification = JSON.parse(raw);
+  } catch(e) { console.warn('Classification fallback', e); }
+
+  const entry = {
+    text,
+    classification: classification.category,
+    confidence: classification.confidence,
+    reason: classification.reason,
+    created: new Date().toISOString(),
+    status: 'pending'
+  };
+
+  try {
+    const r = await fetch(FB + '/inbox.json', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entry) });
+    const d = await r.json();
+    if (d.name) {
+      inboxItems[d.name] = entry;
+      renderFilterBar();
+      renderInboxList();
+      loadInboxCount();
+      input.value = '';
+      showToast(`追加: [${CAT_LABELS[entry.classification] || entry.classification}] ${text.substring(0, 30)}`);
+    }
+  } catch(e) { showToast('追加失敗: ' + e.message); }
+  input.disabled = false;
+  input.focus();
+}
+
+// ===== Processed items =====
+function renderInboxProcessed() {
+  const entries = Object.entries(inboxProcessedItems)
+    .map(([k, v]) => ({ key: k, ...v }))
+    .sort((a, b) => (b.processed_at || b.created || '').localeCompare(a.processed_at || a.created || ''))
+    .slice(0, 30);
+  document.getElementById('procCount').textContent = entries.length;
+  const box = document.getElementById('inboxProcessed');
+  if (entries.length === 0) { box.innerHTML = '<div class="empty">処理済みなし</div>'; return; }
+
+  const icons = { routed: '&#10132;', done: '&#10003;', dismissed: '&#10007;' };
+  const iconColors = { routed: 'var(--green)', done: 'var(--blue)', dismissed: 'var(--red)' };
+  box.innerHTML = entries.map(item => {
+    const cat = (item.classification || 'personal').toLowerCase();
+    return `<div class="inbox-processed-item">
+      <span class="inbox-status-icon" style="color:${iconColors[item.status] || 'var(--sub)'}">${icons[item.status] || '?'}</span>
+      <span class="pill ${CAT_PILLS[cat] || 'pill-dim'}" style="font-size:9px">${CAT_LABELS[cat] || cat}</span>
+      <span class="proc-text">${escapeHtml(item.text || '')}</span>
+      <span style="font-size:10px;color:var(--dim)">${getTimeAgo(item.processed_at || item.created)}</span>
+    </div>`;
+  }).join('');
+}
+
+function toggleProcessed() {
+  const list = document.getElementById('inboxProcessed');
+  const arrow = document.getElementById('procArrow');
+  const isOpen = list.classList.toggle('open');
+  arrow.innerHTML = isOpen ? '&#9660;' : '&#9654;';
+}
+
+// ===== Swipe Gesture =====
+let swipeState = {};
+function swipeStart(e, key) {
+  const touch = e.touches[0];
+  swipeState = { key, startX: touch.clientX, startY: touch.clientY, dx: 0, decided: false, dir: null };
+}
+function swipeMove(e, key) {
+  if (!swipeState.key || swipeState.key !== key) return;
+  const touch = e.touches[0];
+  const dx = touch.clientX - swipeState.startX;
+  const dy = touch.clientY - swipeState.startY;
+
+  if (!swipeState.decided) {
+    if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+      swipeState.decided = true;
+      swipeState.dir = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
+    }
+    return;
+  }
+  if (swipeState.dir !== 'h') return;
+  e.preventDefault();
+
+  swipeState.dx = dx;
+  const card = document.getElementById('card-' + key);
+  const wrap = document.getElementById('wrap-' + key);
+  if (!card || !wrap) return;
+
+  card.style.transform = `translateX(${dx}px)`;
+  card.style.transition = 'none';
+
+  // Show reveal bg
+  const routeReveal = wrap.querySelector('.reveal-route');
+  const dismissReveal = wrap.querySelector('.reveal-dismiss');
+  if (dx > 20) {
+    routeReveal.style.display = ''; dismissReveal.style.display = 'none';
+  } else if (dx < -20) {
+    routeReveal.style.display = 'none'; dismissReveal.style.display = '';
+  } else {
+    routeReveal.style.display = ''; dismissReveal.style.display = 'none';
+  }
+}
+function swipeEnd(e, key) {
+  if (!swipeState.key || swipeState.key !== key) return;
+  const dx = swipeState.dx;
+  const card = document.getElementById('card-' + key);
+  if (card) { card.style.transform = ''; card.style.transition = ''; }
+
+  if (dx > 80) { routeItem(key); }
+  else if (dx < -80) { dismissItem(key); }
+  swipeState = {};
+}
+
+// ===== Utility =====
+function getTimeAgo(iso) {
+  if (!iso) return '';
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return '今';
+  if (mins < 60) return mins + '分前';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + '時間前';
+  const days = Math.floor(hrs / 24);
+  return days + '日前';
 }
 </script>
 </body>

@@ -50,6 +50,36 @@
       "action": "skipped",
       "source": "ifttt-x-search",
       "timestamp": "2026-03-05T12:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/Y_3_0223/status/2029524845898387797",
+      "title": "（ノイズ）モルック練習報告",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-05T22:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/0418_ryohei/status/2029538183617339556",
+      "title": "第5回モルックアルファカップin小千谷",
+      "action": "posted",
+      "post_id": 6479,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-05T22:37:32+09:00"
+    },
+    {
+      "url": "https://twitter.com/ototto17/status/2029540914306408862",
+      "title": "名古屋NFTモルック大会",
+      "action": "posted",
+      "post_id": 6480,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-05T22:37:35+09:00"
+    },
+    {
+      "url": "https://twitter.com/marutomo_awaji/status/2029542160098554211",
+      "title": "（ノイズ）モルックドーム見学報告",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-05T22:00:00+09:00"
     }
   ]
 }
