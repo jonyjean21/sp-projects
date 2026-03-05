@@ -1246,6 +1246,28 @@ select { min-height: 44px; }
   </div>
 </div>
 
+<!-- Import Merge Modal -->
+<div class="modal-overlay" id="importMergeModal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box">
+    <h3>データのインポート方法</h3>
+    <div style="font-size:13px;color:var(--sub);margin-bottom:16px">
+      既存データが存在します。インポート方法を選択してください。
+    </div>
+    <div id="importMergeSummary" style="margin-bottom:16px"></div>
+    <div class="btn-row" style="gap:12px">
+      <button class="btn btn-danger" onclick="executeImport('overwrite')" style="flex:1">
+        上書き<br><span style="font-size:10px;font-weight:400">既存データを完全に置き換え</span>
+      </button>
+      <button class="btn btn-primary" onclick="executeImport('merge')" style="flex:1">
+        マージ<br><span style="font-size:10px;font-weight:400">両方のデータを統合（競合は新しい方優先）</span>
+      </button>
+      <button class="btn btn-outline" onclick="document.getElementById('importMergeModal').style.display='none'" style="flex:0.5">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ===== Data Store (localStorage) =====
 const STORAGE_KEY = 'machap_portal_data';
@@ -1334,6 +1356,23 @@ function migrateStore(store) {
       if (item.lineId === undefined) item.lineId = null;
     });
   });
+  // v2: Seed sample ideas on first load
+  if (!store._sampleSeeded) {
+    const sampleIdeas = [
+      { id: 'sample_1', title: 'チーム紹介LP作成', summary: '各チームの魅力を発信するランディングページ。写真・活動内容・メンバー紹介を掲載', target: 'モルック団体', category: 'モルック', step: 'find', priority: 'high', status: 'adopted', votes: { 'サノ': true, '中': true }, created: '2026-03-01T10:00:00Z', updated: '2026-03-03T10:00:00Z' },
+      { id: 'sample_2', title: 'SNSスケジューラー構築', summary: 'X・Instagram・ブログへの発信を一括管理・予約投稿できるツール', target: 'MACHAP内部', category: 'ツール', step: 'find', priority: 'medium', status: 'reviewing', votes: { 'サノ': true }, created: '2026-03-02T09:00:00Z', updated: '2026-03-04T09:00:00Z' },
+      { id: 'sample_3', title: 'イベント告知テンプレ', summary: '大会・練習会の告知を素早く作成できるテンプレート集', target: 'モルック主催者', category: 'モルック', step: 'find', priority: 'medium', status: 'discovered', votes: {}, created: '2026-03-03T11:00:00Z', updated: '2026-03-03T11:00:00Z' },
+      { id: 'sample_4', title: 'FAQ自動応答BOT', summary: 'よくある質問に自動で返答するチャットBOT。LINEまたはWebウィジェット', target: 'コミュニティ運営者', category: 'ツール', step: 'find', priority: 'low', status: 'discovered', votes: { 'ししょー': true }, created: '2026-03-03T14:00:00Z', updated: '2026-03-03T14:00:00Z' },
+      { id: 'sample_5', title: 'メンバー活動ログ', summary: 'チームメンバーの活動（発信・開発・提供）を自動記録し可視化する仕組み', target: 'MACHAPチーム', category: 'ビジネス', step: 'find', priority: 'medium', status: 'in-progress', votes: { 'サノ': true, '中': true, 'ししょー': true }, created: '2026-03-01T08:00:00Z', updated: '2026-03-05T08:00:00Z' },
+      { id: 'sample_6', title: '活動報告書テンプレ', summary: '月次の活動レポートを半自動生成するテンプレートとスクリプト', target: 'コミュニティ団体', category: 'コミュニティ', step: 'find', priority: 'low', status: 'discovered', votes: {}, created: '2026-03-04T10:00:00Z', updated: '2026-03-04T10:00:00Z' },
+      { id: 'sample_7', title: 'パートナー管理ダッシュボード', summary: 'スポンサー・協賛の状況を一覧管理し、更新通知を送るダッシュボード', target: 'モルック団体幹部', category: 'ビジネス', step: 'find', priority: 'high', status: 'completed', votes: { 'サノ': true, '中': true }, created: '2026-02-28T09:00:00Z', updated: '2026-03-05T09:00:00Z' }
+    ];
+    // Only seed if ideas array is empty
+    if (store.ideas.length === 0) {
+      store.ideas = sampleIdeas;
+    }
+    store._sampleSeeded = true;
+  }
   return store;
 }
 
@@ -1521,17 +1560,61 @@ function saveIdea() {
   };
   if (editId) {
     const idx = store.ideas.findIndex(i => i.id === editId);
+    const oldStatus = idx >= 0 ? store.ideas[idx].status : null;
     if (idx >= 0) store.ideas[idx] = idea;
+    // Auto Line Creation: when status changes to 採用 (adopted)
+    if (idea.status === 'adopted' && oldStatus !== 'adopted') {
+      autoCreateLineFromIdea(store, idea);
+    }
   } else {
     store.ideas.push(idea);
     addActivity(store, `FIND: "${title}" を登録`);
+    // Auto Line Creation: if new idea is created directly as adopted
+    if (idea.status === 'adopted') {
+      autoCreateLineFromIdea(store, idea);
+    }
   }
   setStore(store);
   document.getElementById('ideaModal').style.display = 'none';
   renderFindList();
+  renderLines();
   updateNavCounts();
   updateDashboard();
   showToast('Saved');
+}
+
+function autoCreateLineFromIdea(store, idea) {
+  // Check if a line already exists for this idea
+  const existing = (store.lines || []).find(l => l.ideaId === idea.id);
+  if (existing) return;
+  const now = new Date().toISOString();
+  const line = {
+    id: 'line_' + genId(),
+    title: idea.title,
+    origin: 'find',
+    status: 'active',
+    ideaId: idea.id,
+    productId: null,
+    offerIds: [],
+    pubPlanIds: [],
+    consultIds: [],
+    steps: {
+      find: { status: 'completed', date: now.slice(0,10) },
+      make: { status: 'not-started', date: null },
+      offer: { status: 'not-started', date: null },
+      present: { status: 'not-started', date: null },
+      consult: { status: 'not-started', date: null }
+    },
+    relatedLineIds: [],
+    tags: [idea.category || 'その他'],
+    aiSuggestions: [],
+    created: now,
+    updated: now
+  };
+  store.lines.push(line);
+  addActivity(store, `LINE: "${idea.title}" を自動作成（FIND採用）`);
+  // Toast will be shown after save
+  setTimeout(() => showToast('ライン自動作成しました'), 300);
 }
 
 function deleteIdea(id) {
@@ -2948,6 +3031,8 @@ function exportData() {
   showToast('Exported');
 }
 
+let _pendingImportData = null;
+
 function importData(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -2955,25 +3040,141 @@ function importData(event) {
   reader.onload = (e) => {
     try {
       const data = JSON.parse(e.target.result);
-      setStore(data);
-      restorePhases();
-      restoreNotes();
-      renderAll();
-      updateDashboard();
-      updateNavCounts();
-      renderCategoryTags();
-      renderProductList();
-      renderPubPlans();
-      renderTemplateList();
-      renderPubCalendar();
-      renderChannelSummary();
-      renderOfferPipeline();
-      populateCategorySelects();
-      renderLines();
-      showToast('Imported');
+      const currentStore = getStore();
+      // Check if existing data has any items
+      const hasExisting = ['ideas','tasks','offers','presents','consults','projects','products','pubPlans','templates','lines']
+        .some(key => (currentStore[key] || []).length > 0);
+      if (hasExisting) {
+        // Show merge dialog
+        _pendingImportData = data;
+        showImportMergeSummary(currentStore, data);
+        document.getElementById('importMergeModal').style.display = 'flex';
+      } else {
+        // No existing data, just overwrite
+        applyImport(data);
+      }
     } catch(err) { showToast('Import failed: ' + err.message); }
   };
   reader.readAsText(file);
+  // Reset file input so same file can be re-imported
+  event.target.value = '';
+}
+
+function showImportMergeSummary(current, incoming) {
+  const collections = [
+    { key: 'ideas', label: 'アイデア' },
+    { key: 'tasks', label: 'タスク' },
+    { key: 'offers', label: '提供先' },
+    { key: 'presents', label: '発信' },
+    { key: 'consults', label: '相談' },
+    { key: 'projects', label: 'プロジェクト' },
+    { key: 'products', label: 'プロダクト' },
+    { key: 'lines', label: 'ライン' },
+    { key: 'pubPlans', label: '発信プラン' },
+    { key: 'templates', label: 'テンプレート' }
+  ];
+  const box = document.getElementById('importMergeSummary');
+  box.innerHTML = `<div class="table-wrap"><table>
+    <tr><th>データ種別</th><th>現在</th><th>インポート</th></tr>
+    ${collections.map(c => {
+      const cur = (current[c.key] || []).length;
+      const inc = (incoming[c.key] || []).length;
+      return `<tr><td>${c.label}</td><td>${cur}件</td><td>${inc}件</td></tr>`;
+    }).join('')}
+  </table></div>`;
+}
+
+function executeImport(mode) {
+  if (!_pendingImportData) return;
+  document.getElementById('importMergeModal').style.display = 'none';
+  if (mode === 'overwrite') {
+    applyImport(_pendingImportData);
+    showToast('上書きインポート完了');
+  } else {
+    mergeImport(_pendingImportData);
+    showToast('マージインポート完了');
+  }
+  _pendingImportData = null;
+}
+
+function mergeImport(incoming) {
+  const current = getStore();
+  const arrayKeys = ['ideas','tasks','offers','presents','consults','projects','products','pubPlans','templates','lines'];
+
+  arrayKeys.forEach(key => {
+    const currentItems = current[key] || [];
+    const incomingItems = incoming[key] || [];
+    const merged = [...currentItems];
+    const idMap = new Map(currentItems.map(item => [item.id, item]));
+
+    incomingItems.forEach(inc => {
+      const existing = idMap.get(inc.id);
+      if (existing) {
+        // Conflict: newer timestamp wins
+        const existingTime = existing.updated || existing.created || '';
+        const incomingTime = inc.updated || inc.created || '';
+        if (incomingTime > existingTime) {
+          const idx = merged.findIndex(m => m.id === inc.id);
+          if (idx >= 0) merged[idx] = inc;
+        }
+      } else {
+        // New item from import
+        merged.push(inc);
+      }
+    });
+    current[key] = merged;
+  });
+
+  // Merge categories (union)
+  const currentCats = new Set(current.categories || []);
+  (incoming.categories || []).forEach(c => currentCats.add(c));
+  current.categories = [...currentCats];
+
+  // Merge activity (combine and sort by date, keep 50)
+  const allActivity = [...(current.activity || []), ...(incoming.activity || [])];
+  // Deduplicate by text+date
+  const activityMap = new Map();
+  allActivity.forEach(a => {
+    const key = a.text + '|' + a.date;
+    if (!activityMap.has(key)) activityMap.set(key, a);
+  });
+  current.activity = [...activityMap.values()]
+    .sort((a,b) => (b.date||'').localeCompare(a.date||''))
+    .slice(0, 50);
+
+  // Merge notes: append if different
+  if (incoming.notes && incoming.notes !== current.notes) {
+    current.notes = current.notes
+      ? current.notes + '\n---\n' + incoming.notes
+      : incoming.notes;
+  }
+
+  // Merge phases: incoming wins for checked items
+  if (incoming.phases) {
+    Object.entries(incoming.phases).forEach(([k,v]) => {
+      if (v === true) current.phases[k] = true;
+    });
+  }
+
+  applyImport(current);
+}
+
+function applyImport(data) {
+  setStore(data);
+  restorePhases();
+  restoreNotes();
+  renderAll();
+  updateDashboard();
+  updateNavCounts();
+  renderCategoryTags();
+  renderProductList();
+  renderPubPlans();
+  renderTemplateList();
+  renderPubCalendar();
+  renderChannelSummary();
+  renderOfferPipeline();
+  populateCategorySelects();
+  renderLines();
 }
 
 function resetData() {
@@ -3152,6 +3353,41 @@ function toggleLineDetail(lineId) {
   if (el) el.classList.toggle('open');
 }
 
+function getLineStepLinkedCount(store, line, stepKey) {
+  switch(stepKey) {
+    case 'find': {
+      const ideaCount = line.ideaId ? 1 : 0;
+      return ideaCount > 0 ? `${ideaCount}アイデア` : '-';
+    }
+    case 'make': {
+      const tasks = (store.tasks || []).filter(t => t.lineId === line.id);
+      const products = line.productId ? 1 : 0;
+      const parts = [];
+      if (tasks.length > 0) parts.push(`${tasks.length}タスク`);
+      if (products > 0) parts.push(`${products}PD`);
+      return parts.length > 0 ? parts.join(', ') : '-';
+    }
+    case 'offer': {
+      const count = (line.offerIds || []).length;
+      return count > 0 ? `${count}提供` : '-';
+    }
+    case 'present': {
+      const count = (line.pubPlanIds || []).length;
+      return count > 0 ? `${count}プラン` : '-';
+    }
+    case 'consult': {
+      const count = (line.consultIds || []).length;
+      return count > 0 ? `${count}案件` : '-';
+    }
+    default: return '-';
+  }
+}
+
+function stepToSection(stepKey) {
+  const map = { find: 'find', make: 'make', offer: 'offer', present: 'present', consult: 'consult' };
+  return map[stepKey] || 'dashboard';
+}
+
 function renderLines() {
   const store = getStore();
   const lines = (store.lines || []).filter(l => l.status !== 'completed');
@@ -3205,13 +3441,17 @@ function renderLines() {
           const st = steps[s.key]?.status || 'not-started';
           const pct = statusPct[st];
           const dateStr = steps[s.key]?.date || '';
+          const linkedCount = getLineStepLinkedCount(store, line, s.key);
+          const sectionId = stepToSection(s.key);
           return `<div class="line-detail-step">
             <span style="width:70px;font-weight:600;color:${s.color};font-size:11px">${s.label}</span>
             <div class="line-detail-bar">
               <div class="line-detail-fill" style="width:${pct}%;background:${s.color}"></div>
             </div>
+            <span style="font-size:10px;color:var(--cyan);min-width:60px;text-align:center">${linkedCount}</span>
             <span style="font-size:10px;color:var(--sub);width:50px;text-align:right">${statusLabels[st]}</span>
             <span style="font-size:10px;color:var(--dim);width:70px;text-align:right">${dateStr}</span>
+            <button class="btn btn-sm btn-outline" onclick="event.stopPropagation();showSection('${sectionId}')" style="padding:2px 8px;font-size:9px;min-height:28px;min-width:28px;margin-left:4px" title="${s.label}セクションへ">&#10132;</button>
           </div>`;
         }).join('')}
         <div class="btn-row" style="margin-top:8px" onclick="event.stopPropagation()">
