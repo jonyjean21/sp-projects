@@ -28,6 +28,10 @@ function checkNewTranscripts() {
   let newCount = 0;
   const processedDates = {}; // 同一dateLabel重複防止
 
+  // 直近14日以内のファイルのみ処理（古いファイルの暴走防止）
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - 14);
+
   while (files.hasNext()) {
     const file = files.next();
     const id = file.getId();
@@ -41,6 +45,13 @@ function checkNewTranscripts() {
 
     const [_, year, month, day] = dateMatch;
     const dateLabel = `${year.slice(2)}${month}${day}`;
+
+    // 直近14日以内のファイルのみ処理
+    const fileDate = new Date(+year, +month - 1, +day);
+    if (fileDate < cutoffDate) {
+      markAsProcessed_(id);
+      continue;
+    }
 
     // 同一日付の重複防止（1回の実行内）
     if (processedDates[dateLabel]) {
@@ -147,7 +158,7 @@ function callGemini_(notes, year, month, day) {
   const dow = days[new Date(+year, +month - 1, +day).getDay()];
 
   const prompt = `あなたはチャプチェ会（チャプ会）の議事録作成アシスタントです。
-以下はGoogle Meetの文字起こし（Geminiメモ）のノート部分です。簡潔な議事録JSONに変換してください。
+以下はGoogle Meetの文字起こし（Geminiメモ）のノート部分です。議事録JSONに変換してください。
 
 ## ルール
 - 人名: 「モルックドーム」「中博司」→「中」 / 「master morikawa」→「ししょー」 / 「SP」「サノ」→「サノ」
@@ -159,16 +170,18 @@ function callGemini_(notes, year, month, day) {
 {
   "time": "開始時刻（例: 21:54）",
   "participants": ["中", "ししょー", "サノ"],
+  "summary": "会議全体の要約。3〜5文で、この会議で何が話し合われ、何が決まったかを簡潔にまとめる。見返した時にすぐ内容を把握できるように。",
   "decisions": ["決定事項1", "決定事項2"],
   "actions": [{"who":"中","what":"やること"}],
-  "topics": [{"name":"PJ名やトピック（担当者）","items":["内容1","内容2"]}],
+  "topics": [{"name":"PJ名やトピック（担当者）","summary":"このトピックの要約を1〜2文で","items":["内容1","内容2"]}],
   "next_meeting": "未定"
 }
 
 ## 出力のポイント
+- summary（全体要約）は最上部に表示される。3人が見返した時に一瞬で内容把握できる文章にする
 - decisions（決定事項）は最重要。会議で決まったことを明確に
 - actions（アクションアイテム）は誰が何をするかを明確に
-- topics（議論・進捗メモ）はPJ別にまとめ、担当者名を括弧で付記
+- topics（議論・進捗メモ）はPJ別にまとめ、担当者名を括弧で付記。各トピックにもsummaryを付ける
 - 不要な情報は省略。簡潔さ重視
 
 ## 入力:
@@ -209,6 +222,13 @@ function postToNotion_(dateLabel, m) {
   blocks.push(bullet_(`参加: ${(m.participants || ['中','ししょー','サノ']).join(' / ')}`));
   blocks.push({ divider: {} });
 
+  // 全体要約（見返した時にすぐ把握できる）
+  if (m.summary) {
+    blocks.push(h2_('要約'));
+    blocks.push(callout_(m.summary));
+    blocks.push({ divider: {} });
+  }
+
   // 決定事項（最重要 → 上部に配置）
   if (m.decisions && m.decisions.length) {
     blocks.push(h2_('決定事項'));
@@ -228,6 +248,7 @@ function postToNotion_(dateLabel, m) {
     blocks.push(h2_('議論・進捗メモ'));
     for (const t of m.topics) {
       blocks.push(bold_(t.name));
+      if (t.summary) blocks.push(para_(`💡 ${t.summary}`));
       for (const item of (t.items || [])) blocks.push(bullet_(item));
     }
     blocks.push({ divider: {} });
@@ -286,6 +307,7 @@ function num_(t) { return { numbered_list_item: { rich_text: [{ text: { content:
 function todo_(t) { return { to_do: { rich_text: [{ text: { content: t } }], checked: false } }; }
 function para_(t) { return { paragraph: { rich_text: [{ text: { content: t } }] } }; }
 function bold_(t) { return { paragraph: { rich_text: [{ text: { content: t }, annotations: { bold: true } }] } }; }
+function callout_(t) { return { callout: { rich_text: [{ text: { content: t } }], icon: { emoji: '📋' } } }; }
 
 // ===== Firebase =====
 
