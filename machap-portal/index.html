@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>MACHAP Portal</title>
 <style>
 :root {
@@ -289,6 +289,114 @@ td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
 .cat-tag .del-cat { cursor: pointer; color: var(--dim); font-size: 14px; line-height: 1; }
 .cat-tag .del-cat:hover { color: var(--red); }
 
+/* Touch Target Optimization — min 44x44px */
+.vote-btn { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+.btn-sm { min-height: 44px; min-width: 44px; }
+.sub-tab { min-height: 44px; display: inline-flex; align-items: center; }
+.nav-item { min-height: 44px; }
+.view-toggle button { min-height: 44px; min-width: 44px; }
+select { min-height: 44px; }
+.cycle-step { min-height: 44px; display: inline-flex; align-items: center; }
+.template-card { min-height: 44px; }
+.category-card { min-height: 44px; }
+
+/* Bottom Tab Bar (mobile) */
+.bottom-tab-bar {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--bg2); border-top: 1px solid var(--border);
+  z-index: 60; height: 60px;
+}
+.bottom-tab-bar .tab-items {
+  display: flex; height: 100%; align-items: center; justify-content: space-around;
+}
+.bottom-tab-bar .tab-item {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; flex: 1; height: 100%; cursor: pointer; color: var(--dim);
+  transition: color 0.15s; text-decoration: none; position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+.bottom-tab-bar .tab-item.active { color: var(--cyan); }
+.bottom-tab-bar .tab-icon { font-size: 20px; line-height: 1; }
+.bottom-tab-bar .tab-label { font-size: 9px; font-weight: 700; letter-spacing: 0.05em; }
+.bottom-tab-bar .tab-badge {
+  position: absolute; top: 4px; right: calc(50% - 20px);
+  background: var(--red); color: #fff; font-size: 8px; font-weight: 700;
+  padding: 1px 4px; border-radius: 6px; min-width: 14px; text-align: center;
+  display: none;
+}
+.bottom-tab-bar .tab-badge.visible { display: block; }
+
+/* FAB (Floating Action Button) */
+.fab-container { position: fixed; right: 16px; bottom: 24px; z-index: 70; }
+.fab-btn {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--cyan));
+  border: none; color: #fff; font-size: 28px; font-weight: 300;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(6,182,212,0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.fab-btn:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(6,182,212,0.5); }
+.fab-btn.open { transform: rotate(45deg); }
+.fab-menu {
+  position: absolute; bottom: 68px; right: 0;
+  display: none; flex-direction: column; gap: 8px; align-items: flex-end;
+}
+.fab-menu.open { display: flex; }
+.fab-menu-item {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 10px 16px; cursor: pointer;
+  color: var(--text); font-size: 13px; font-weight: 600;
+  white-space: nowrap; transition: border-color 0.15s;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  min-height: 44px; min-width: 44px;
+  animation: fabItemIn 0.15s ease-out;
+  -webkit-tap-highlight-color: transparent;
+}
+.fab-menu-item:hover { border-color: var(--cyan); }
+.fab-menu-item .fab-item-icon { font-size: 18px; }
+@keyframes fabItemIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Lines Section */
+.line-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px; margin-bottom: 10px; transition: border-color 0.15s; cursor: pointer;
+}
+.line-card:hover { border-color: var(--border-active); }
+.line-steps {
+  display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin: 10px 0 6px;
+}
+.line-step-dot {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 600;
+}
+.line-step-dot .dot { font-size: 14px; line-height: 1; }
+.line-step-dot .dot.completed { color: var(--green); }
+.line-step-dot .dot.in-progress { color: var(--orange); }
+.line-step-dot .dot.not-started { color: var(--dim); }
+.line-arrow { color: var(--dim); font-size: 10px; }
+.line-legend {
+  font-size: 10px; color: var(--dim); margin-top: 4px;
+  display: flex; gap: 10px; flex-wrap: wrap;
+}
+.line-meta {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  font-size: 11px; color: var(--sub); margin-top: 4px;
+}
+
+/* Line Detail Expanded */
+.line-detail { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+.line-detail.open { display: block; }
+.line-detail-step {
+  display: flex; align-items: center; gap: 8px; padding: 6px 0;
+  font-size: 12px;
+}
+.line-detail-bar { flex: 1; height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+.line-detail-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+
 /* Responsive */
 .sidebar-overlay { display: none; }
 @media (max-width: 768px) {
@@ -297,13 +405,20 @@ td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
   .sidebar-overlay { display: block; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 49; opacity: 0; pointer-events: none; }
   .sidebar-overlay.show { opacity: 1; pointer-events: auto; }
   .hamburger { display: block; }
-  .main-body { padding: 16px; }
+  .main-body { padding: 16px 16px 80px; }
   .stat-grid { grid-template-columns: repeat(2, 1fr); }
   .field-row { grid-template-columns: 1fr; }
   .team-grid { flex-direction: column; }
   .category-view { grid-template-columns: 1fr; }
   .offer-pipeline { grid-template-columns: 1fr; }
   .channel-summary { grid-template-columns: repeat(2, 1fr); }
+
+  /* Show bottom tab bar on mobile */
+  .bottom-tab-bar { display: block; }
+  .fab-container { bottom: 76px; }
+
+  /* Toast above tab bar */
+  .toast { bottom: 80px; }
 }
 </style>
 </head>
@@ -482,6 +597,20 @@ td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
               <div class="team-avatar" style="background:var(--orange)">師</div>
               <div><div class="team-name">ししょー</div><div class="team-role">意見出し + 拡散</div></div>
             </div>
+          </div>
+        </div>
+
+        <!-- Lines (一気通貫ライン) -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Lines（一気通貫ライン）</h3>
+            <button class="btn btn-sm btn-primary" onclick="showLineModal()">+ 新規ライン</button>
+          </div>
+          <div id="dashLines"></div>
+          <div class="line-legend">
+            <span><span style="color:var(--green)">●</span> 完了</span>
+            <span><span style="color:var(--orange)">◐</span> 進行中</span>
+            <span><span style="color:var(--dim)">○</span> 未着手</span>
           </div>
         </div>
 
@@ -813,6 +942,103 @@ td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
   </div><!-- /main -->
 </div><!-- /app -->
 
+<!-- Bottom Tab Bar (mobile) -->
+<div class="bottom-tab-bar" id="bottomTabBar">
+  <div class="tab-items">
+    <div class="tab-item active" data-section="dashboard" onclick="showSectionFromTab('dashboard')">
+      <span class="tab-badge" id="tabBadgeDashboard"></span>
+      <span class="tab-icon">&#128202;</span>
+      <span class="tab-label">HOME</span>
+    </div>
+    <div class="tab-item" data-section="find" onclick="showSectionFromTab('find')">
+      <span class="tab-badge" id="tabBadgeFind"></span>
+      <span class="tab-icon">&#128161;</span>
+      <span class="tab-label">FIND</span>
+    </div>
+    <div class="tab-item" data-section="make" onclick="showSectionFromTab('make')">
+      <span class="tab-badge" id="tabBadgeMake"></span>
+      <span class="tab-icon">&#128296;</span>
+      <span class="tab-label">MAKE</span>
+    </div>
+    <div class="tab-item" data-section="offer" onclick="showSectionFromTab('offer')">
+      <span class="tab-badge" id="tabBadgeOffer"></span>
+      <span class="tab-icon">&#128228;</span>
+      <span class="tab-label">OFFER</span>
+    </div>
+    <div class="tab-item" data-section="present" onclick="showSectionFromTab('present')">
+      <span class="tab-badge" id="tabBadgePresent"></span>
+      <span class="tab-icon">&#128226;</span>
+      <span class="tab-label">PRESENT</span>
+    </div>
+  </div>
+</div>
+
+<!-- FAB (Floating Action Button) -->
+<div class="fab-container" id="fabContainer">
+  <div class="fab-menu" id="fabMenu">
+    <div class="fab-menu-item" onclick="fabAction('idea')">
+      <span class="fab-item-icon">&#128161;</span> アイデア投稿
+    </div>
+    <div class="fab-menu-item" onclick="fabAction('task')">
+      <span class="fab-item-icon">&#128221;</span> タスク追加
+    </div>
+    <div class="fab-menu-item" onclick="fabAction('present')">
+      <span class="fab-item-icon">&#128226;</span> 発信ログ追加
+    </div>
+    <div class="fab-menu-item" onclick="fabAction('consult')">
+      <span class="fab-item-icon">&#128172;</span> 相談案件追加
+    </div>
+  </div>
+  <button class="fab-btn" id="fabBtn" onclick="toggleFab()">+</button>
+</div>
+
+<!-- Line Modal -->
+<div class="modal-overlay" id="lineModal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box">
+    <h3 id="lineModalTitle">新規ライン</h3>
+    <input type="hidden" id="lineEditId">
+    <div class="field"><label>ライン名</label><input type="text" id="lineTitle" placeholder="アイデア→プロダクトの一気通貫名"></div>
+    <div class="field-row">
+      <div class="field"><label>起点STEP</label>
+        <select id="lineOrigin"><option value="find">FIND</option><option value="make">MAKE</option><option value="offer">OFFER</option><option value="present">PRESENT</option><option value="consult">CONSULT</option></select>
+      </div>
+      <div class="field"><label>ステータス</label>
+        <select id="lineStatus"><option value="active">Active</option><option value="paused">Paused</option><option value="completed">Completed</option></select>
+      </div>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="display:block;font-size:11px;font-weight:600;color:var(--sub);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em">各STEPの進捗</label>
+      <div style="display:grid;gap:6px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="width:70px;font-size:12px;font-weight:600;color:#4a90e2">FIND</span>
+          <select id="lineStepFind" style="flex:1"><option value="not-started">未着手</option><option value="in-progress">進行中</option><option value="completed">完了</option></select>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="width:70px;font-size:12px;font-weight:600;color:var(--purple)">MAKE</span>
+          <select id="lineStepMake" style="flex:1"><option value="not-started">未着手</option><option value="in-progress">進行中</option><option value="completed">完了</option></select>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="width:70px;font-size:12px;font-weight:600;color:var(--cyan)">OFFER</span>
+          <select id="lineStepOffer" style="flex:1"><option value="not-started">未着手</option><option value="in-progress">進行中</option><option value="completed">完了</option></select>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="width:70px;font-size:12px;font-weight:600;color:var(--orange)">PRESENT</span>
+          <select id="lineStepPresent" style="flex:1"><option value="not-started">未着手</option><option value="in-progress">進行中</option><option value="completed">完了</option></select>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="width:70px;font-size:12px;font-weight:600;color:var(--green)">CONSULT</span>
+          <select id="lineStepConsult" style="flex:1"><option value="not-started">未着手</option><option value="in-progress">進行中</option><option value="completed">完了</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveLine()">Save</button>
+      <button class="btn btn-outline" onclick="document.getElementById('lineModal').style.display='none'">Cancel</button>
+      <button class="btn btn-danger btn-sm" id="lineDeleteBtn" style="display:none;margin-left:auto" onclick="deleteLine()">Delete</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <!-- Idea Modal -->
@@ -1040,6 +1266,7 @@ function defaultStore() {
     products: [],
     pubPlans: [],
     templates: [],
+    lines: [],
     categories: ['モルック','コミュニティ','ビジネス','ツール','その他'],
     phases: {},
     notes: '',
@@ -1064,6 +1291,48 @@ function migrateStore(store) {
   (store.ideas || []).forEach(i => {
     if (!i.category) i.category = 'その他';
     if (!i.step) i.step = 'find';
+  });
+  // v2: Lines migration
+  if (!store.lines) store.lines = [];
+  // Seed initial sample lines if lines array is empty and this is a fresh v2 migration
+  if (store.lines.length === 0 && !store._lineSeeded) {
+    store.lines = [
+      {
+        id: 'line_maltamura', title: 'マルタ村ポータル横展開',
+        origin: 'find', status: 'active',
+        ideaId: null, productId: null, offerIds: [], pubPlanIds: [], consultIds: [],
+        steps: {
+          find: { status: 'completed', date: '2026-03-01' },
+          make: { status: 'in-progress', date: '2026-03-03' },
+          offer: { status: 'not-started', date: null },
+          present: { status: 'not-started', date: null },
+          consult: { status: 'not-started', date: null }
+        },
+        relatedLineIds: [], tags: ['コミュニティ'], aiSuggestions: [],
+        created: '2026-03-01T00:00:00Z', updated: '2026-03-05T00:00:00Z'
+      },
+      {
+        id: 'line_ytdashboard', title: 'YouTubeダッシュボード',
+        origin: 'find', status: 'active',
+        ideaId: null, productId: null, offerIds: [], pubPlanIds: [], consultIds: [],
+        steps: {
+          find: { status: 'completed', date: '2026-03-02' },
+          make: { status: 'in-progress', date: '2026-03-04' },
+          offer: { status: 'not-started', date: null },
+          present: { status: 'not-started', date: null },
+          consult: { status: 'not-started', date: null }
+        },
+        relatedLineIds: [], tags: ['ツール'], aiSuggestions: [],
+        created: '2026-03-02T00:00:00Z', updated: '2026-03-05T00:00:00Z'
+      }
+    ];
+    store._lineSeeded = true;
+  }
+  // Ensure existing items have lineId field
+  ['ideas','tasks','offers','products','presents','consults'].forEach(key => {
+    (store[key] || []).forEach(item => {
+      if (item.lineId === undefined) item.lineId = null;
+    });
   });
   return store;
 }
@@ -1094,6 +1363,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderAll();
   updateDashboard();
   updateNavCounts();
+  updateTabBadges();
   renderCategoryTags();
   renderProductList();
   renderPubPlans();
@@ -1102,6 +1372,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderChannelSummary();
   renderOfferPipeline();
   populateCategorySelects();
+  renderLines();
 });
 
 // ===== Navigation =====
@@ -1121,6 +1392,18 @@ function showSection(id) {
 
   document.getElementById('sidebar').classList.remove('open');
   document.getElementById('sidebarOverlay').classList.remove('show');
+
+  // Update bottom tab bar active state
+  document.querySelectorAll('.bottom-tab-bar .tab-item').forEach(t => {
+    t.classList.toggle('active', t.getAttribute('data-section') === id);
+  });
+
+  // Close FAB if open
+  closeFab();
+}
+
+function showSectionFromTab(id) {
+  showSection(id);
 }
 
 function toggleSidebar() {
@@ -1853,6 +2136,7 @@ function updateNavCounts() {
   document.getElementById('navOfferCount').textContent = (store.offers||[]).length;
   document.getElementById('navPresentCount').textContent = (store.presents||[]).length;
   document.getElementById('navConsultCount').textContent = (store.consults||[]).length;
+  updateTabBadges();
 }
 
 function updateDashboard() {
@@ -2685,6 +2969,7 @@ function importData(event) {
       renderChannelSummary();
       renderOfferPipeline();
       populateCategorySelects();
+      renderLines();
       showToast('Imported');
     } catch(err) { showToast('Import failed: ' + err.message); }
   };
@@ -2694,6 +2979,247 @@ function importData(event) {
 function resetData() {
   localStorage.removeItem(STORAGE_KEY);
   location.reload();
+}
+
+// ===== FAB (Floating Action Button) =====
+function toggleFab() {
+  const menu = document.getElementById('fabMenu');
+  const btn = document.getElementById('fabBtn');
+  const isOpen = menu.classList.contains('open');
+  if (isOpen) {
+    closeFab();
+  } else {
+    menu.classList.add('open');
+    btn.classList.add('open');
+  }
+}
+
+function closeFab() {
+  const menu = document.getElementById('fabMenu');
+  const btn = document.getElementById('fabBtn');
+  if (menu) menu.classList.remove('open');
+  if (btn) btn.classList.remove('open');
+}
+
+function fabAction(type) {
+  closeFab();
+  switch(type) {
+    case 'idea':
+      showSection('find');
+      setTimeout(() => document.getElementById('quickIdeaInput')?.focus(), 100);
+      break;
+    case 'task':
+      showSection('make');
+      showTaskModal();
+      break;
+    case 'present':
+      showSection('present');
+      setPresentTab('log');
+      showPresentModal();
+      break;
+    case 'consult':
+      showSection('consult');
+      showConsultModal();
+      break;
+  }
+}
+
+// Close FAB when tapping outside
+document.addEventListener('click', (e) => {
+  const fab = document.getElementById('fabContainer');
+  if (fab && !fab.contains(e.target)) {
+    closeFab();
+  }
+});
+
+// ===== Bottom Tab Bar Badges =====
+function updateTabBadges() {
+  const store = getStore();
+  const badges = {
+    Find: (store.ideas || []).filter(i => i.status !== 'rejected').length,
+    Make: (store.tasks || []).filter(t => t.status !== 'completed').length,
+    Offer: (store.offers || []).length,
+    Present: (store.presents || []).length
+  };
+  Object.entries(badges).forEach(([key, count]) => {
+    const badge = document.getElementById('tabBadge' + key);
+    if (badge) {
+      badge.textContent = count;
+      badge.classList.toggle('visible', count > 0);
+    }
+  });
+}
+
+// ===== Lines =====
+function showLineModal(id) {
+  const modal = document.getElementById('lineModal');
+  const deleteBtn = document.getElementById('lineDeleteBtn');
+  if (id) {
+    const store = getStore();
+    const line = store.lines.find(l => l.id === id);
+    if (!line) return;
+    document.getElementById('lineModalTitle').textContent = 'ライン編集';
+    document.getElementById('lineEditId').value = id;
+    document.getElementById('lineTitle').value = line.title;
+    document.getElementById('lineOrigin').value = line.origin || 'find';
+    document.getElementById('lineStatus').value = line.status || 'active';
+    document.getElementById('lineStepFind').value = line.steps?.find?.status || 'not-started';
+    document.getElementById('lineStepMake').value = line.steps?.make?.status || 'not-started';
+    document.getElementById('lineStepOffer').value = line.steps?.offer?.status || 'not-started';
+    document.getElementById('lineStepPresent').value = line.steps?.present?.status || 'not-started';
+    document.getElementById('lineStepConsult').value = line.steps?.consult?.status || 'not-started';
+    deleteBtn.style.display = 'inline-flex';
+  } else {
+    document.getElementById('lineModalTitle').textContent = '新規ライン';
+    document.getElementById('lineEditId').value = '';
+    document.getElementById('lineTitle').value = '';
+    document.getElementById('lineOrigin').value = 'find';
+    document.getElementById('lineStatus').value = 'active';
+    document.getElementById('lineStepFind').value = 'not-started';
+    document.getElementById('lineStepMake').value = 'not-started';
+    document.getElementById('lineStepOffer').value = 'not-started';
+    document.getElementById('lineStepPresent').value = 'not-started';
+    document.getElementById('lineStepConsult').value = 'not-started';
+    deleteBtn.style.display = 'none';
+  }
+  modal.style.display = 'flex';
+}
+
+function saveLine() {
+  const title = document.getElementById('lineTitle').value.trim();
+  if (!title) { showToast('ライン名を入力してください'); return; }
+  const store = getStore();
+  const editId = document.getElementById('lineEditId').value;
+  const now = new Date().toISOString();
+
+  const stepKeys = ['find','make','offer','present','consult'];
+  const steps = {};
+  stepKeys.forEach(key => {
+    const val = document.getElementById('lineStep' + key.charAt(0).toUpperCase() + key.slice(1)).value;
+    const existing = editId ? (store.lines.find(l => l.id === editId)?.steps?.[key]) : null;
+    steps[key] = {
+      status: val,
+      date: val !== 'not-started' ? (existing?.date || now.slice(0,10)) : null
+    };
+  });
+
+  const line = {
+    id: editId || ('line_' + genId()),
+    title,
+    origin: document.getElementById('lineOrigin').value,
+    status: document.getElementById('lineStatus').value,
+    ideaId: editId ? (store.lines.find(l => l.id === editId)?.ideaId || null) : null,
+    productId: editId ? (store.lines.find(l => l.id === editId)?.productId || null) : null,
+    offerIds: editId ? (store.lines.find(l => l.id === editId)?.offerIds || []) : [],
+    pubPlanIds: editId ? (store.lines.find(l => l.id === editId)?.pubPlanIds || []) : [],
+    consultIds: editId ? (store.lines.find(l => l.id === editId)?.consultIds || []) : [],
+    steps,
+    relatedLineIds: editId ? (store.lines.find(l => l.id === editId)?.relatedLineIds || []) : [],
+    tags: editId ? (store.lines.find(l => l.id === editId)?.tags || []) : [],
+    aiSuggestions: editId ? (store.lines.find(l => l.id === editId)?.aiSuggestions || []) : [],
+    created: editId ? (store.lines.find(l => l.id === editId)?.created || now) : now,
+    updated: now
+  };
+
+  if (editId) {
+    const idx = store.lines.findIndex(l => l.id === editId);
+    if (idx >= 0) store.lines[idx] = line;
+  } else {
+    store.lines.push(line);
+    addActivity(store, `LINE: "${title}" を作成`);
+  }
+  setStore(store);
+  document.getElementById('lineModal').style.display = 'none';
+  renderLines();
+  updateDashboard();
+  showToast('Saved');
+}
+
+function deleteLine() {
+  const editId = document.getElementById('lineEditId').value;
+  if (!editId || !confirm('このラインを削除しますか？')) return;
+  const store = getStore();
+  store.lines = store.lines.filter(l => l.id !== editId);
+  setStore(store);
+  document.getElementById('lineModal').style.display = 'none';
+  renderLines();
+  updateDashboard();
+  showToast('Deleted');
+}
+
+function toggleLineDetail(lineId) {
+  const el = document.getElementById('lineDetail_' + lineId);
+  if (el) el.classList.toggle('open');
+}
+
+function renderLines() {
+  const store = getStore();
+  const lines = (store.lines || []).filter(l => l.status !== 'completed');
+  const box = document.getElementById('dashLines');
+  if (!box) return;
+
+  if (lines.length === 0) {
+    box.innerHTML = '<div class="empty">ラインはまだありません</div>';
+    return;
+  }
+
+  const stepDefs = [
+    { key: 'find', label: 'FIND', color: '#4a90e2' },
+    { key: 'make', label: 'MAKE', color: 'var(--purple)' },
+    { key: 'offer', label: 'OFFER', color: 'var(--cyan)' },
+    { key: 'present', label: 'PRESENT', color: 'var(--orange)' },
+    { key: 'consult', label: 'CONSULT', color: 'var(--green)' }
+  ];
+
+  const statusDots = { completed: '●', 'in-progress': '◐', 'not-started': '○' };
+  const statusClasses = { completed: 'completed', 'in-progress': 'in-progress', 'not-started': 'not-started' };
+  const statusPct = { completed: 100, 'in-progress': 50, 'not-started': 0 };
+  const statusLabels = { completed: '完了', 'in-progress': '進行中', 'not-started': '未着手' };
+
+  box.innerHTML = lines.map(line => {
+    const steps = line.steps || {};
+    const completedCount = stepDefs.filter(s => steps[s.key]?.status === 'completed').length;
+    const overallPct = Math.round(completedCount / stepDefs.length * 100);
+
+    return `<div class="line-card" onclick="toggleLineDetail('${line.id}')">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:14px;font-weight:700;flex:1">${escapeHtml(line.title)}</span>
+        <span class="pill pill-${line.status === 'active' ? 'cyan' : line.status === 'paused' ? 'orange' : 'green'}" style="font-size:10px">${line.status}</span>
+      </div>
+      <div class="line-steps">
+        ${stepDefs.map((s, i) => {
+          const st = steps[s.key]?.status || 'not-started';
+          return (i > 0 ? '<span class="line-arrow">&#9654;</span>' : '') +
+            `<span class="line-step-dot">
+              <span class="dot ${statusClasses[st]}">${statusDots[st]}</span>
+              <span style="color:${s.color};font-size:10px">${s.label}</span>
+            </span>`;
+        }).join('')}
+      </div>
+      <div class="line-meta">
+        <span>進捗: ${overallPct}%</span>
+        ${line.tags?.length ? line.tags.map(t => `<span class="pill pill-dim" style="font-size:9px">${escapeHtml(t)}</span>`).join('') : ''}
+      </div>
+      <div class="line-detail" id="lineDetail_${line.id}">
+        ${stepDefs.map(s => {
+          const st = steps[s.key]?.status || 'not-started';
+          const pct = statusPct[st];
+          const dateStr = steps[s.key]?.date || '';
+          return `<div class="line-detail-step">
+            <span style="width:70px;font-weight:600;color:${s.color};font-size:11px">${s.label}</span>
+            <div class="line-detail-bar">
+              <div class="line-detail-fill" style="width:${pct}%;background:${s.color}"></div>
+            </div>
+            <span style="font-size:10px;color:var(--sub);width:50px;text-align:right">${statusLabels[st]}</span>
+            <span style="font-size:10px;color:var(--dim);width:70px;text-align:right">${dateStr}</span>
+          </div>`;
+        }).join('')}
+        <div class="btn-row" style="margin-top:8px" onclick="event.stopPropagation()">
+          <button class="btn btn-sm btn-outline" onclick="showLineModal('${line.id}')">Edit</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 </script>
 </body>
