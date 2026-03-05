@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#06B6D4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<title>SP INBOX</title>
+<style>
+:root {
+  --bg: #0F1F3D; --bg2: #0A1628; --card: #1E3A5F;
+  --border: rgba(26,86,219,0.2); --text: #F0F4FF; --sub: #7FAACC; --dim: #3E5C7A;
+  --cyan: #06B6D4; --blue: #1A56DB; --orange: #F97316; --green: #10B981;
+  --red: #EF4444; --purple: #A78BFA;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh;
+  display: flex; flex-direction: column;
+}
+
+.header {
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+}
+.logo {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--blue), var(--cyan));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 14px; color: #fff; flex-shrink: 0;
+}
+.header-text h1 { font-size: 16px; font-weight: 700; }
+.header-text p { font-size: 11px; color: var(--sub); }
+.header-link {
+  margin-left: auto; font-size: 12px; color: var(--cyan);
+  text-decoration: none; padding: 8px 12px; border-radius: 8px;
+  border: 1px solid var(--border); min-height: 44px;
+  display: flex; align-items: center;
+}
+
+/* Input area */
+.input-area {
+  padding: 20px;
+  flex: 1; display: flex; flex-direction: column; gap: 12px;
+}
+.input-wrap {
+  position: relative;
+}
+.input-wrap textarea {
+  width: 100%; padding: 16px; font-size: 16px;
+  background: var(--bg2); border: 2px solid var(--border);
+  border-radius: 14px; color: var(--text); font-family: inherit;
+  resize: none; min-height: 100px; line-height: 1.5;
+  transition: border-color 0.2s;
+}
+.input-wrap textarea:focus {
+  outline: none; border-color: var(--cyan);
+}
+.input-wrap textarea::placeholder { color: var(--dim); }
+.char-count {
+  position: absolute; bottom: 8px; right: 12px;
+  font-size: 10px; color: var(--dim);
+}
+
+.submit-btn {
+  width: 100%; padding: 16px; font-size: 16px; font-weight: 700;
+  background: linear-gradient(135deg, var(--blue), var(--cyan));
+  color: #fff; border: none; border-radius: 14px; cursor: pointer;
+  min-height: 56px; transition: opacity 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.submit-btn:active:not(:disabled) { opacity: 0.8; }
+
+/* Result card */
+.result-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px; display: none;
+  animation: fadeIn 0.3s;
+}
+.result-card.show { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.result-category {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 20px;
+  font-size: 13px; font-weight: 700; margin-bottom: 8px;
+}
+.cat-machap { background: rgba(6,182,212,0.15); color: var(--cyan); }
+.cat-dome { background: rgba(249,115,22,0.15); color: var(--orange); }
+.cat-molhub { background: rgba(16,185,129,0.15); color: var(--green); }
+.cat-personal { background: rgba(127,170,204,0.15); color: var(--sub); }
+
+.result-reason { font-size: 12px; color: var(--sub); margin-bottom: 8px; }
+.result-confidence { font-size: 11px; color: var(--dim); }
+.result-actions { display: flex; gap: 8px; margin-top: 12px; }
+.result-actions button {
+  flex: 1; padding: 10px; font-size: 13px; font-weight: 600;
+  border-radius: 10px; border: none; cursor: pointer;
+  min-height: 44px; -webkit-tap-highlight-color: transparent;
+}
+.btn-accept { background: var(--cyan); color: #fff; }
+.btn-reclassify { background: var(--bg2); color: var(--sub); border: 1px solid var(--border) !important; }
+
+/* History */
+.history-section {
+  padding: 0 20px 20px;
+}
+.history-title {
+  font-size: 12px; font-weight: 700; color: var(--dim);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  margin-bottom: 8px; padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.history-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 13px;
+}
+.history-cat {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.history-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.history-time { font-size: 10px; color: var(--dim); flex-shrink: 0; }
+
+/* Loading spinner */
+.spinner {
+  display: inline-block; width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
+  border-radius: 50%; animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Status bar */
+.status-bar {
+  padding: 8px 20px; font-size: 11px; color: var(--dim);
+  text-align: center; border-top: 1px solid var(--border);
+}
+.status-bar.online { color: var(--green); }
+.status-bar.offline { color: var(--orange); }
+
+/* Reclassify dropdown */
+.reclassify-row {
+  display: none; margin-top: 8px; gap: 8px; align-items: center;
+}
+.reclassify-row.show { display: flex; }
+.reclassify-row select {
+  flex: 1; padding: 10px; font-size: 14px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text); min-height: 44px;
+}
+.reclassify-row button {
+  padding: 10px 16px; font-size: 13px; font-weight: 600;
+  background: var(--cyan); color: #fff; border: none;
+  border-radius: 10px; min-height: 44px; cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">IN</div>
+  <div class="header-text">
+    <h1>SP INBOX</h1>
+    <p>思いついたらすぐ入力</p>
+  </div>
+  <a class="header-link" href="../machap-portal/" target="_blank">Portal</a>
+</div>
+
+<div class="input-area">
+  <div class="input-wrap">
+    <textarea id="inboxInput" placeholder="何でも入力... タスク、アイデア、メモ" autofocus rows="3"></textarea>
+    <span class="char-count" id="charCount">0</span>
+  </div>
+  <button class="submit-btn" id="submitBtn" onclick="submitInbox()" disabled>
+    送信 + AI分類
+  </button>
+
+  <div class="result-card" id="resultCard">
+    <div class="result-category" id="resultCategory"></div>
+    <div class="result-reason" id="resultReason"></div>
+    <div class="result-confidence" id="resultConfidence"></div>
+    <div class="result-actions">
+      <button class="btn-accept" onclick="acceptResult()">OK</button>
+      <button class="btn-reclassify" onclick="showReclassify()">再分類</button>
+    </div>
+    <div class="reclassify-row" id="reclassifyRow">
+      <select id="reclassifySelect">
+        <option value="machap">MACHAP</option>
+        <option value="dome">モルックドーム</option>
+        <option value="molhub">モルハブ</option>
+        <option value="personal">個人</option>
+      </select>
+      <button onclick="applyReclassify()">適用</button>
+    </div>
+  </div>
+</div>
+
+<div class="history-section" id="historySection"></div>
+
+<div class="status-bar" id="statusBar">接続中...</div>
+
+<script>
+const FB_URL = 'https://viisi-master-app-default-rtdb.firebaseio.com';
+const GEMINI_URL = 'https://vercel-api-orpin-one.vercel.app/api/gemini';
+
+const CAT_LABELS = { machap: 'MACHAP', dome: 'モルックドーム', molhub: 'モルハブ', personal: '個人' };
+const CAT_COLORS = { machap: 'var(--cyan)', dome: 'var(--orange)', molhub: 'var(--green)', personal: 'var(--sub)' };
+const CAT_CLASSES = { machap: 'cat-machap', dome: 'cat-dome', molhub: 'cat-molhub', personal: 'cat-personal' };
+const CAT_DOT_COLORS = { machap: '#06B6D4', dome: '#F97316', molhub: '#10B981', personal: '#7FAACC' };
+
+let lastResult = null;
+let lastFirebaseKey = null;
+
+// Input handling
+const input = document.getElementById('inboxInput');
+const submitBtn = document.getElementById('submitBtn');
+const charCount = document.getElementById('charCount');
+
+input.addEventListener('input', () => {
+  const len = input.value.trim().length;
+  charCount.textContent = len;
+  submitBtn.disabled = len === 0;
+});
+
+// Submit on Ctrl+Enter or Cmd+Enter
+input.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && !submitBtn.disabled) {
+    submitInbox();
+  }
+});
+
+async function submitInbox() {
+  const text = input.value.trim();
+  if (!text) return;
+
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span class="spinner"></span> 分類中...';
+  document.getElementById('resultCard').classList.remove('show');
+
+  let classification = { category: 'personal', confidence: 0.5, reason: 'デフォルト分類' };
+
+  try {
+    classification = await classifyWithGemini(text);
+  } catch (err) {
+    console.warn('Gemini classification failed, using fallback:', err);
+    classification = fallbackClassify(text);
+  }
+
+  // Save to Firebase
+  const entry = {
+    text,
+    classification: classification.category,
+    confidence: classification.confidence,
+    reason: classification.reason,
+    created: new Date().toISOString(),
+    status: 'pending'
+  };
+
+  try {
+    const res = await fetch(FB_URL + '/inbox.json', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entry)
+    });
+    const data = await res.json();
+    lastFirebaseKey = data.name;
+    updateStatus('online');
+  } catch (err) {
+    console.error('Firebase save failed:', err);
+    // Save locally for later sync
+    saveLocal(entry);
+    updateStatus('offline');
+  }
+
+  lastResult = classification;
+  showResult(classification, text);
+
+  submitBtn.innerHTML = '送信 + AI分類';
+  submitBtn.disabled = false;
+  input.value = '';
+  charCount.textContent = '0';
+}
+
+async function classifyWithGemini(text) {
+  const prompt = `あなたはSPの業務振り分けアシスタントです。入力テキストを以下のカテゴリに分類し、JSONのみで返してください:
+{"category":"machap|dome|molhub|personal","confidence":0.0-1.0,"reason":"一行の理由"}
+
+- machap: 3人チーム事業。ツール開発、コミュニティ支援、提案型の仕事
+- dome: 川西モルックの会。練習会、大会運営、ランキング、会場
+- molhub: MOLKKY HUB。記事、SEO、パートナー、大会情報収集
+- personal: 個人タスク、家計、プライベート
+
+入力: ${text}`;
+
+  const res = await fetch(GEMINI_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt })
+  });
+
+  if (!res.ok) throw new Error('Gemini API error: ' + res.status);
+
+  const data = await res.json();
+  const responseText = data.text || data.response || '';
+
+  // Extract JSON from response
+  const jsonMatch = responseText.match(/\{[^}]+\}/);
+  if (jsonMatch) {
+    const parsed = JSON.parse(jsonMatch[0]);
+    // Validate category
+    if (['machap', 'dome', 'molhub', 'personal'].includes(parsed.category)) {
+      return parsed;
+    }
+  }
+  throw new Error('Invalid Gemini response');
+}
+
+function fallbackClassify(text) {
+  const lower = text.toLowerCase();
+  const rules = [
+    { cat: 'dome', words: ['川西', 'ドーム', '練習会', 'ランキング', '新人戦', '合戦'] },
+    { cat: 'molhub', words: ['モルハブ', 'molkky hub', '記事', 'SEO', 'パートナー', '大会情報', 'ワードプレス', 'WP'] },
+    { cat: 'machap', words: ['machap', 'マチャプ', 'ツール開発', 'ポータル', 'コミュニティ支援', '提案', '中さん', 'ししょー'] },
+    { cat: 'personal', words: ['家計', '個人', 'プライベート', '買い物', '予定'] }
+  ];
+
+  for (const rule of rules) {
+    const matched = rule.words.filter(w => lower.includes(w.toLowerCase())).length;
+    if (matched > 0) {
+      return { category: rule.cat, confidence: Math.min(0.9, 0.5 + matched * 0.15), reason: 'キーワードマッチ分類' };
+    }
+  }
+  return { category: 'personal', confidence: 0.3, reason: '分類不明のためデフォルト' };
+}
+
+function showResult(result, text) {
+  const card = document.getElementById('resultCard');
+  const catEl = document.getElementById('resultCategory');
+  const reasonEl = document.getElementById('resultReason');
+  const confEl = document.getElementById('resultConfidence');
+
+  catEl.className = 'result-category ' + (CAT_CLASSES[result.category] || 'cat-personal');
+  catEl.textContent = CAT_LABELS[result.category] || result.category;
+  reasonEl.textContent = result.reason || '';
+  confEl.textContent = `確信度: ${Math.round(result.confidence * 100)}%`;
+
+  card.classList.add('show');
+  document.getElementById('reclassifyRow').classList.remove('show');
+
+  // Add to local history display
+  addToHistory(text, result);
+}
+
+function acceptResult() {
+  document.getElementById('resultCard').classList.remove('show');
+  input.focus();
+}
+
+function showReclassify() {
+  const row = document.getElementById('reclassifyRow');
+  row.classList.toggle('show');
+  if (lastResult) {
+    document.getElementById('reclassifySelect').value = lastResult.category;
+  }
+}
+
+async function applyReclassify() {
+  const newCat = document.getElementById('reclassifySelect').value;
+  if (lastFirebaseKey) {
+    try {
+      await fetch(FB_URL + '/inbox/' + lastFirebaseKey + '/classification.json', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newCat)
+      });
+      await fetch(FB_URL + '/inbox/' + lastFirebaseKey + '/confidence.json', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(1.0)
+      });
+      await fetch(FB_URL + '/inbox/' + lastFirebaseKey + '/reason.json', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify('手動再分類')
+      });
+    } catch (err) {
+      console.error('Reclassify failed:', err);
+    }
+  }
+  lastResult = { ...lastResult, category: newCat, confidence: 1.0, reason: '手動再分類' };
+  // Update display
+  const catEl = document.getElementById('resultCategory');
+  catEl.className = 'result-category ' + (CAT_CLASSES[newCat] || 'cat-personal');
+  catEl.textContent = CAT_LABELS[newCat] || newCat;
+  document.getElementById('resultReason').textContent = '手動再分類';
+  document.getElementById('resultConfidence').textContent = '確信度: 100%';
+  document.getElementById('reclassifyRow').classList.remove('show');
+}
+
+// Local storage fallback for offline
+function saveLocal(entry) {
+  const queue = JSON.parse(localStorage.getItem('inbox_offline_queue') || '[]');
+  queue.push(entry);
+  localStorage.setItem('inbox_offline_queue', JSON.stringify(queue));
+}
+
+async function syncOfflineQueue() {
+  const queue = JSON.parse(localStorage.getItem('inbox_offline_queue') || '[]');
+  if (queue.length === 0) return;
+  const remaining = [];
+  for (const entry of queue) {
+    try {
+      await fetch(FB_URL + '/inbox.json', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(entry)
+      });
+    } catch {
+      remaining.push(entry);
+    }
+  }
+  localStorage.setItem('inbox_offline_queue', JSON.stringify(remaining));
+  if (remaining.length === 0 && queue.length > 0) {
+    updateStatus('online');
+  }
+}
+
+// History display (session only, from Firebase)
+let historyItems = [];
+
+function addToHistory(text, result) {
+  historyItems.unshift({ text, category: result.category, time: new Date() });
+  if (historyItems.length > 10) historyItems = historyItems.slice(0, 10);
+  renderHistory();
+}
+
+function renderHistory() {
+  const section = document.getElementById('historySection');
+  if (historyItems.length === 0) { section.innerHTML = ''; return; }
+  section.innerHTML = `
+    <div class="history-title">今回の入力 (${historyItems.length}件)</div>
+    ${historyItems.map(h => `
+      <div class="history-item">
+        <span class="history-cat" style="background:${CAT_DOT_COLORS[h.category] || '#7FAACC'}"></span>
+        <span class="history-text">${escapeHtml(h.text)}</span>
+        <span class="history-time">${h.time.toLocaleTimeString('ja-JP', {hour:'numeric',minute:'numeric'})}</span>
+      </div>
+    `).join('')}
+  `;
+}
+
+function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+function updateStatus(status) {
+  const bar = document.getElementById('statusBar');
+  bar.className = 'status-bar ' + status;
+  bar.textContent = status === 'online' ? 'Firebase接続OK' : 'オフライン（ローカル保存中）';
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+  // Check connectivity
+  fetch(FB_URL + '/inbox.json?shallow=true')
+    .then(() => updateStatus('online'))
+    .catch(() => updateStatus('offline'));
+
+  // Sync offline queue
+  syncOfflineQueue();
+
+  // Focus input
+  setTimeout(() => input.focus(), 100);
+});
+
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>

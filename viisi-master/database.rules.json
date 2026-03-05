@@ -32,6 +32,15 @@
         ".validate": "newData.hasChildren(['url', 'timestamp'])"
       },
       ".indexOn": ["status", "timestamp"]
+    },
+    "machap": {
+      ".read": true,
+      ".write": true
+    },
+    "inbox": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": ["classification", "status", "created"]
     }
   }
 }

@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>MACHAP Portal</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <style>
 :root {
   --bg: #0F1F3D; --bg2: #0A1628; --card: #1E3A5F; --card2: #1A2D52;
@@ -419,7 +420,98 @@ select { min-height: 44px; }
 
   /* Toast above tab bar */
   .toast { bottom: 80px; }
+
+  /* Charts responsive */
+  .charts-grid { grid-template-columns: 1fr !important; }
 }
+
+/* ===== Sync Indicator ===== */
+.sync-indicator {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 600; padding: 3px 8px;
+  border-radius: 8px; margin-left: auto;
+}
+.sync-indicator.synced { color: var(--green); background: var(--green-dim); }
+.sync-indicator.syncing { color: var(--orange); background: var(--orange-dim); }
+.sync-indicator.offline { color: var(--red); background: var(--red-dim); }
+.sync-dot { width: 6px; height: 6px; border-radius: 50%; }
+.sync-indicator.synced .sync-dot { background: var(--green); }
+.sync-indicator.syncing .sync-dot { background: var(--orange); animation: pulse 1s infinite; }
+.sync-indicator.offline .sync-dot { background: var(--red); }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+/* ===== INBOX Badge ===== */
+.inbox-badge {
+  background: var(--red); color: #fff; font-size: 9px; font-weight: 700;
+  padding: 1px 5px; border-radius: 8px; min-width: 16px; text-align: center;
+  margin-left: auto; display: none;
+}
+.inbox-badge.visible { display: inline-block; }
+
+/* ===== Charts ===== */
+.charts-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px;
+}
+.chart-box {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px;
+}
+.chart-box h4 { font-size: 12px; font-weight: 700; color: var(--sub); margin-bottom: 10px; }
+.chart-box canvas { width: 100% !important; max-height: 200px; }
+
+/* ===== Progress Slider ===== */
+.progress-wrap {
+  display: flex; align-items: center; gap: 8px;
+}
+.progress-wrap input[type="range"] {
+  flex: 1; -webkit-appearance: none; height: 6px;
+  background: var(--bg); border-radius: 3px; border: none; padding: 0;
+}
+.progress-wrap input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 18px; height: 18px;
+  border-radius: 50%; background: var(--cyan); cursor: pointer;
+}
+.progress-pct { font-size: 13px; font-weight: 700; color: var(--cyan); min-width: 36px; text-align: right; }
+
+/* ===== Inline Progress Bar (list items) ===== */
+.inline-progress {
+  height: 4px; background: var(--bg); border-radius: 2px; overflow: hidden; margin-top: 6px;
+}
+.inline-progress-fill { height: 100%; border-radius: 2px; transition: width 0.3s; background: var(--purple); }
+
+/* ===== Amount Display ===== */
+.amount-display { font-size: 16px; font-weight: 800; color: var(--cyan); }
+
+/* ===== Deadline Badge ===== */
+.deadline-badge {
+  font-size: 10px; padding: 2px 6px; border-radius: 4px;
+  background: var(--orange-dim); color: var(--orange);
+}
+.deadline-badge.overdue { background: var(--red-dim); color: var(--red); }
+.deadline-badge.soon { background: var(--orange-dim); color: var(--orange); }
+
+/* ===== Line Timeline ===== */
+.line-timeline {
+  display: flex; align-items: center; gap: 2px; margin-top: 8px;
+}
+.line-tl-seg {
+  height: 6px; flex: 1; border-radius: 3px; position: relative;
+}
+.line-tl-label {
+  font-size: 8px; color: var(--dim); text-align: center; margin-top: 2px;
+}
+
+/* ===== INBOX Items in Portal ===== */
+.inbox-item {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px; margin-bottom: 8px; transition: border-color 0.15s;
+}
+.inbox-item:hover { border-color: var(--border-active); }
+.inbox-item-text { font-size: 13px; margin-bottom: 6px; }
+.inbox-item-meta { font-size: 11px; color: var(--sub); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.inbox-item-actions { display: flex; gap: 6px; margin-top: 8px; }
+
+/* ===== Bottleneck Highlight ===== */
+.bottleneck { border-left: 3px solid var(--orange); padding-left: 8px; }
 </style>
 </head>
 <body>
@@ -468,6 +560,14 @@ select { min-height: 44px; }
     </div>
 
     <div class="nav-section">
+      <div class="nav-label">Inbox</div>
+      <div class="nav-item" data-section="inbox" onclick="showSection('inbox')">
+        <div class="nav-dot" style="background:var(--red)"></div> INBOX
+        <span class="inbox-badge" id="navInboxBadge">0</span>
+      </div>
+    </div>
+
+    <div class="nav-section">
       <div class="nav-label">Management</div>
       <div class="nav-item" data-section="projects" onclick="showSection('projects')">
         <div class="nav-dot" style="background:var(--orange)"></div> Projects
@@ -489,6 +589,7 @@ select { min-height: 44px; }
       <button class="hamburger" onclick="toggleSidebar()">&#9776;</button>
       <h2 id="pageTitle">Dashboard</h2>
       <span class="header-badge" id="phaseLabel">Phase 1</span>
+      <span class="sync-indicator offline" id="syncIndicator"><span class="sync-dot"></span><span id="syncText">offline</span></span>
     </div>
 
     <div class="main-body">
@@ -614,11 +715,40 @@ select { min-height: 44px; }
           </div>
         </div>
 
+        <!-- Charts (G) -->
+        <div class="charts-grid">
+          <div class="chart-box"><h4>月別アクティビティ</h4><canvas id="chartActivity"></canvas></div>
+          <div class="chart-box"><h4>STEP別アイテム分布</h4><canvas id="chartStepDist"></canvas></div>
+          <div class="chart-box"><h4>カテゴリ別比率</h4><canvas id="chartCatRatio"></canvas></div>
+          <div class="chart-box"><h4>CONSULT収益推移</h4><canvas id="chartRevenue"></canvas></div>
+        </div>
+
         <!-- Recent Activity -->
         <div class="card">
           <h3>Recent Activity</h3>
           <div id="dashActivity" class="timeline">
             <div class="empty">アクティビティはまだありません</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== INBOX ===== -->
+      <div class="section" id="sec-inbox">
+        <div class="card">
+          <div class="card-header">
+            <h3>MACHAP向けアイテム</h3>
+            <a class="btn btn-sm btn-cyan" href="../inbox/" target="_blank">+ INBOX入力</a>
+          </div>
+          <div id="inboxMachapList"></div>
+        </div>
+
+        <div class="card" style="cursor:pointer" onclick="var b=document.getElementById('inboxOtherBody');b.style.display=b.style.display==='none'?'block':'none'">
+          <div class="card-header">
+            <h3>その他カテゴリ</h3>
+            <span class="pill pill-dim" id="inboxOtherCount">0件</span>
+          </div>
+          <div class="inbox-other-body" id="inboxOtherBody" style="display:none" onclick="event.stopPropagation()">
+            <div id="inboxOtherList"></div>
           </div>
         </div>
       </div>
@@ -933,6 +1063,7 @@ select { min-height: 44px; }
           <div class="btn-row">
             <button class="btn btn-sm btn-outline" onclick="exportData()">Export JSON</button>
             <label class="btn btn-sm btn-outline" style="cursor:pointer">Import JSON<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>
+            <button class="btn btn-sm btn-cyan" onclick="initFirebaseSync().then(()=>{renderAll();updateDashboard();renderDashboardCharts();showToast('Synced')})">Firebase Sync</button>
             <button class="btn btn-sm btn-danger" onclick="if(confirm('全データを削除しますか？'))resetData()">Reset</button>
           </div>
         </div>
@@ -949,6 +1080,11 @@ select { min-height: 44px; }
       <span class="tab-badge" id="tabBadgeDashboard"></span>
       <span class="tab-icon">&#128202;</span>
       <span class="tab-label">HOME</span>
+    </div>
+    <div class="tab-item" data-section="inbox" onclick="showSectionFromTab('inbox')">
+      <span class="tab-badge" id="tabBadgeInbox"></span>
+      <span class="tab-icon">&#128229;</span>
+      <span class="tab-label">INBOX</span>
     </div>
     <div class="tab-item" data-section="find" onclick="showSectionFromTab('find')">
       <span class="tab-badge" id="tabBadgeFind"></span>
@@ -1087,6 +1223,16 @@ select { min-height: 44px; }
         <select id="taskStatus"><option value="todo">TODO</option><option value="in-progress">進行中</option><option value="completed">完了</option></select>
       </div>
     </div>
+    <div class="field"><label>進捗</label>
+      <div class="progress-wrap">
+        <input type="range" id="taskProgress" min="0" max="100" value="0" oninput="document.getElementById('taskProgressPct').textContent=this.value+'%'">
+        <span class="progress-pct" id="taskProgressPct">0%</span>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>期限</label><input type="date" id="taskDeadline"></div>
+      <div class="field"><label>見積時間 (h)</label><input type="number" id="taskEstHours" placeholder="0"></div>
+    </div>
     <div class="field"><label>成果物URL</label><input type="url" id="taskUrl" placeholder="https://..."></div>
     <div class="btn-row">
       <button class="btn btn-primary" onclick="saveTask()">Save</button>
@@ -1110,6 +1256,16 @@ select { min-height: 44px; }
         <select id="offerStatus"><option value="published">公開済み</option><option value="feedback">FB中</option><option value="completed">完了</option></select>
       </div>
     </div>
+    <div class="field-row">
+      <div class="field"><label>担当者/連絡先</label><input type="text" id="offerContact" placeholder="担当者名"></div>
+      <div class="field"><label>金額 (円)</label><input type="number" id="offerAmount" placeholder="0"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>契約状態</label>
+        <select id="offerContractStatus"><option value="">-- 未設定 --</option><option value="proposing">提案中</option><option value="negotiating">交渉中</option><option value="closed">成約</option><option value="done">完了</option></select>
+      </div>
+      <div class="field"><label>期限</label><input type="date" id="offerDeadline"></div>
+    </div>
     <div class="field"><label>フィードバック</label><textarea id="offerFeedback" rows="3" placeholder="相手の反応・フィードバック"></textarea></div>
     <div class="btn-row">
       <button class="btn btn-primary" onclick="saveOffer()">Save</button>
@@ -1130,7 +1286,15 @@ select { min-height: 44px; }
       </div>
       <div class="field"><label>リーチ数</label><input type="number" id="presentReach" placeholder="0" style="width:100%"></div>
     </div>
-    <div class="field"><label>URL</label><input type="url" id="presentUrl" placeholder="https://..."></div>
+    <div class="field-row">
+      <div class="field"><label>予定日</label><input type="date" id="presentScheduledDate"></div>
+      <div class="field"><label>URL</label><input type="url" id="presentUrl" placeholder="https://..."></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>いいね数</label><input type="number" id="presentLikes" placeholder="0"></div>
+      <div class="field"><label>RT数</label><input type="number" id="presentRetweets" placeholder="0"></div>
+    </div>
+    <div class="field"><label>インプレッション</label><input type="number" id="presentImpressions" placeholder="0"></div>
     <div class="field"><label>メモ</label><textarea id="presentMemo" rows="2" placeholder="反応など"></textarea></div>
     <div class="btn-row">
       <button class="btn btn-primary" onclick="savePresent()">Save</button>
@@ -1147,11 +1311,18 @@ select { min-height: 44px; }
     <div class="field"><label>相談元</label><input type="text" id="consultFrom" placeholder="団体名 or 個人名"></div>
     <div class="field"><label>相談内容</label><textarea id="consultContent" rows="3" placeholder="どんな相談？"></textarea></div>
     <div class="field-row">
+      <div class="field"><label>詳細ステータス</label>
+        <select id="consultDetailedStatus"><option value="proposing">提案中</option><option value="negotiating">交渉中</option><option value="accepted">受注</option><option value="working">作業中</option><option value="delivered">納品済</option></select>
+      </div>
       <div class="field"><label>ステータス</label>
         <select id="consultStatus"><option value="received">受付</option><option value="in-progress">対応中</option><option value="completed">完了</option></select>
       </div>
-      <div class="field"><label>収益 (円)</label><input type="number" id="consultRevenue" placeholder="0" style="width:100%"></div>
     </div>
+    <div class="field-row">
+      <div class="field"><label>収益 (円)</label><input type="number" id="consultRevenue" placeholder="0"></div>
+      <div class="field"><label>期限</label><input type="date" id="consultDeadline"></div>
+    </div>
+    <div class="field"><label>成果物リスト</label><textarea id="consultDeliverables" rows="2" placeholder="納品物・成果物（1行1項目）"></textarea></div>
     <div class="field"><label>メモ</label><textarea id="consultMemo" rows="2" placeholder="対応メモ"></textarea></div>
     <div class="btn-row">
       <button class="btn btn-primary" onclick="saveConsult()">Save</button>
@@ -1356,6 +1527,29 @@ function migrateStore(store) {
       if (item.lineId === undefined) item.lineId = null;
     });
   });
+  // v3: STEP enrichment fields
+  (store.offers || []).forEach(o => {
+    if (o.contact === undefined) o.contact = '';
+    if (o.amount === undefined) o.amount = 0;
+    if (o.contractStatus === undefined) o.contractStatus = '';
+    if (o.deadline === undefined) o.deadline = '';
+  });
+  (store.consults || []).forEach(c => {
+    if (c.deadline === undefined) c.deadline = '';
+    if (c.deliverables === undefined) c.deliverables = '';
+    if (c.detailedStatus === undefined) c.detailedStatus = '';
+  });
+  (store.tasks || []).forEach(t => {
+    if (t.progress === undefined) t.progress = t.status === 'completed' ? 100 : 0;
+    if (t.deadline === undefined) t.deadline = '';
+    if (t.estimatedHours === undefined) t.estimatedHours = 0;
+  });
+  (store.presents || []).forEach(p => {
+    if (p.scheduledDate === undefined) p.scheduledDate = '';
+    if (p.likes === undefined) p.likes = 0;
+    if (p.retweets === undefined) p.retweets = 0;
+    if (p.impressions === undefined) p.impressions = 0;
+  });
   // v2: Seed sample ideas on first load
   if (!store._sampleSeeded) {
     const sampleIdeas = [
@@ -1376,8 +1570,58 @@ function migrateStore(store) {
   return store;
 }
 
+const FB_URL = 'https://viisi-master-app-default-rtdb.firebaseio.com';
+let _syncStatus = 'offline';
+
 function setStore(data) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  // Fire-and-forget Firebase sync
+  firebaseSync(data);
+}
+
+function firebaseSync(data) {
+  setSyncStatus('syncing');
+  fetch(FB_URL + '/machap.json', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  }).then(() => setSyncStatus('synced'))
+    .catch(() => setSyncStatus('offline'));
+}
+
+function setSyncStatus(status) {
+  _syncStatus = status;
+  const el = document.getElementById('syncIndicator');
+  if (!el) return;
+  el.className = 'sync-indicator ' + status;
+  const labels = { synced: 'synced', syncing: 'syncing...', offline: 'offline' };
+  document.getElementById('syncText').textContent = labels[status] || status;
+}
+
+async function initFirebaseSync() {
+  try {
+    const res = await fetch(FB_URL + '/machap.json');
+    if (!res.ok) throw new Error('fetch failed');
+    const remote = await res.json();
+    if (!remote) {
+      // Firebase empty → upload local
+      const local = getStore();
+      await fetch(FB_URL + '/machap.json', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(local)
+      });
+      setSyncStatus('synced');
+      return;
+    }
+    // Merge remote into local
+    const local = getStore();
+    mergeImport(remote);
+    setSyncStatus('synced');
+  } catch (err) {
+    console.warn('Firebase sync failed:', err);
+    setSyncStatus('offline');
+  }
 }
 
 function genId() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 5); }
@@ -1412,6 +1656,12 @@ document.addEventListener('DOMContentLoaded', () => {
   renderOfferPipeline();
   populateCategorySelects();
   renderLines();
+  // Firebase sync (B)
+  initFirebaseSync();
+  // Dashboard charts (G)
+  setTimeout(renderDashboardCharts, 100);
+  // INBOX load (D)
+  loadInboxItems();
 });
 
 // ===== Navigation =====
@@ -1423,7 +1673,7 @@ function showSection(id) {
   if (navItem) navItem.classList.add('active');
 
   const titles = {
-    dashboard: 'Dashboard', find: 'FIND - 課題・アイデア発見', make: 'MAKE - プロダクト化',
+    dashboard: 'Dashboard', inbox: 'INBOX - 振り分け', find: 'FIND - 課題・アイデア発見', make: 'MAKE - プロダクト化',
     offer: 'OFFER - 公開・提供', present: 'PRESENT - 発信管理', consult: 'CONSULT - 相談',
     projects: 'Projects', docs: 'Docs / Settings'
   };
@@ -1727,6 +1977,10 @@ function showTaskModal(id) {
     document.getElementById('taskProject').value = task.projectId || '';
     document.getElementById('taskAssignee').value = task.assignee || 'サノ';
     document.getElementById('taskStatus').value = task.status || 'todo';
+    document.getElementById('taskProgress').value = task.progress || 0;
+    document.getElementById('taskProgressPct').textContent = (task.progress || 0) + '%';
+    document.getElementById('taskDeadline').value = task.deadline || '';
+    document.getElementById('taskEstHours').value = task.estimatedHours || '';
     document.getElementById('taskUrl').value = task.url || '';
   } else {
     document.getElementById('taskModalTitle').textContent = 'タスク追加';
@@ -1734,6 +1988,10 @@ function showTaskModal(id) {
     ['taskName','taskUrl'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('taskAssignee').value = 'サノ';
     document.getElementById('taskStatus').value = 'todo';
+    document.getElementById('taskProgress').value = 0;
+    document.getElementById('taskProgressPct').textContent = '0%';
+    document.getElementById('taskDeadline').value = '';
+    document.getElementById('taskEstHours').value = '';
   }
   modal.style.display = 'flex';
 }
@@ -1748,6 +2006,9 @@ function saveTask() {
     projectId: document.getElementById('taskProject').value,
     assignee: document.getElementById('taskAssignee').value,
     status: document.getElementById('taskStatus').value,
+    progress: parseInt(document.getElementById('taskProgress').value) || 0,
+    deadline: document.getElementById('taskDeadline').value || '',
+    estimatedHours: parseFloat(document.getElementById('taskEstHours').value) || 0,
     url: document.getElementById('taskUrl').value.trim(),
     created: editId ? (store.tasks.find(t => t.id === editId)?.created || new Date().toISOString()) : new Date().toISOString(),
     updated: new Date().toISOString()
@@ -1793,6 +2054,8 @@ function renderMakeList() {
     const pj = store.projects.find(p => p.id === t.projectId);
     const stClass = t.status === 'completed' ? 'st-completed' : t.status === 'in-progress' ? 'st-in-progress' : 'st-discovered';
     const assigneeColors = {'サノ':'var(--blue)','中':'var(--cyan)','ししょー':'var(--orange)'};
+    const deadlineHtml = t.deadline ? `<span class="deadline-badge ${isOverdue(t.deadline)?'overdue':isSoon(t.deadline)?'soon':''}">${t.deadline}</span>` : '';
+    const progressPct = t.progress || 0;
     return `<div class="item-card">
       <div class="item-title">${escapeHtml(t.name)}</div>
       <div class="item-meta">
@@ -1800,7 +2063,10 @@ function renderMakeList() {
         <span style="color:${assigneeColors[t.assignee]||'var(--sub)'};font-size:11px;font-weight:600">${t.assignee}</span>
         ${pj ? `<span style="font-size:11px">PJ: ${escapeHtml(pj.name)}</span>` : ''}
         ${t.url ? `<a href="${escapeHtml(t.url)}" target="_blank" style="font-size:11px;color:var(--cyan)">Link</a>` : ''}
+        ${deadlineHtml}
+        ${t.estimatedHours ? `<span style="font-size:10px;color:var(--dim)">${t.estimatedHours}h</span>` : ''}
       </div>
+      ${progressPct > 0 && t.status !== 'completed' ? `<div class="inline-progress"><div class="inline-progress-fill" style="width:${progressPct}%"></div></div>` : ''}
       <div class="item-actions">
         <button class="btn btn-sm btn-outline" onclick="showTaskModal('${t.id}')">Edit</button>
         <button class="btn btn-sm btn-outline" onclick="deleteTask('${t.id}')" style="color:var(--red)">Del</button>
@@ -1854,15 +2120,21 @@ function showOfferModal(id) {
     document.getElementById('offerName').value = offer.name;
     document.getElementById('offerProduct').value = offer.projectId || '';
     document.getElementById('offerMethod').value = offer.method || 'direct';
-    // Map old statuses to new ones
     let st = offer.status || 'published';
     if (st === 'offered' || st === 'negotiating') st = 'published';
     document.getElementById('offerStatus').value = st;
+    document.getElementById('offerContact').value = offer.contact || '';
+    document.getElementById('offerAmount').value = offer.amount || '';
+    document.getElementById('offerContractStatus').value = offer.contractStatus || '';
+    document.getElementById('offerDeadline').value = offer.deadline || '';
     document.getElementById('offerFeedback').value = offer.feedback || '';
   } else {
     document.getElementById('offerModalTitle').textContent = '追加';
     document.getElementById('offerEditId').value = '';
-    ['offerName','offerFeedback'].forEach(id => document.getElementById(id).value = '');
+    ['offerName','offerFeedback','offerContact'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('offerAmount').value = '';
+    document.getElementById('offerContractStatus').value = '';
+    document.getElementById('offerDeadline').value = '';
     document.getElementById('offerMethod').value = 'direct';
     document.getElementById('offerStatus').value = 'published';
   }
@@ -1879,6 +2151,10 @@ function saveOffer() {
     projectId: document.getElementById('offerProduct').value,
     method: document.getElementById('offerMethod').value,
     status: document.getElementById('offerStatus').value,
+    contact: document.getElementById('offerContact').value.trim(),
+    amount: parseInt(document.getElementById('offerAmount').value) || 0,
+    contractStatus: document.getElementById('offerContractStatus').value,
+    deadline: document.getElementById('offerDeadline').value || '',
     feedback: document.getElementById('offerFeedback').value.trim(),
     created: editId ? (store.offers.find(o => o.id === editId)?.created || new Date().toISOString()) : new Date().toISOString(),
     updated: new Date().toISOString()
@@ -1911,12 +2187,20 @@ function renderOfferList() {
     const pj = store.projects.find(p => p.id === o.projectId);
     const methods = {direct:'直接提供',web:'Web公開',referral:'紹介'};
     const stClass = o.status==='completed'?'st-completed':o.status==='feedback'?'st-reviewing':'st-in-progress';
+    const contractLabels = {proposing:'提案中',negotiating:'交渉中',closed:'成約',done:'完了'};
+    const deadlineHtml = o.deadline ? `<span class="deadline-badge ${isOverdue(o.deadline)?'overdue':isSoon(o.deadline)?'soon':''}">${o.deadline}</span>` : '';
     return `<div class="item-card">
-      <div class="item-title">${escapeHtml(o.name)}</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="item-title" style="flex:1">${escapeHtml(o.name)}</div>
+        ${o.amount ? `<span class="amount-display">&yen;${o.amount.toLocaleString()}</span>` : ''}
+      </div>
       <div class="item-meta">
         <span class="status-badge ${stClass}">${statusLabels[o.status]||o.status}</span>
+        ${o.contractStatus ? `<span class="pill pill-cyan" style="font-size:10px">${contractLabels[o.contractStatus]||o.contractStatus}</span>` : ''}
         <span style="font-size:11px">${methods[o.method]||o.method}</span>
         ${pj ? `<span style="font-size:11px">PJ: ${escapeHtml(pj.name)}</span>` : ''}
+        ${o.contact ? `<span style="font-size:11px">担当: ${escapeHtml(o.contact)}</span>` : ''}
+        ${deadlineHtml}
       </div>
       ${o.feedback ? `<div style="font-size:12px;color:var(--sub);margin-top:6px;padding:8px;background:var(--bg);border-radius:6px">${escapeHtml(o.feedback)}</div>` : ''}
       <div class="item-actions">
@@ -1950,12 +2234,20 @@ function showPresentModal(id) {
     document.getElementById('presentChannelInput').value = item.channel || 'x';
     document.getElementById('presentReach').value = item.reach || 0;
     document.getElementById('presentUrl').value = item.url || '';
+    document.getElementById('presentScheduledDate').value = item.scheduledDate || '';
+    document.getElementById('presentLikes').value = item.likes || '';
+    document.getElementById('presentRetweets').value = item.retweets || '';
+    document.getElementById('presentImpressions').value = item.impressions || '';
     document.getElementById('presentMemo').value = item.memo || '';
   } else {
     document.getElementById('presentModalTitle').textContent = '発信追加';
     document.getElementById('presentEditId').value = '';
     ['presentTitle','presentUrl','presentMemo'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('presentReach').value = '';
+    document.getElementById('presentScheduledDate').value = '';
+    document.getElementById('presentLikes').value = '';
+    document.getElementById('presentRetweets').value = '';
+    document.getElementById('presentImpressions').value = '';
     document.getElementById('presentChannelInput').value = 'x';
   }
   modal.style.display = 'flex';
@@ -1971,6 +2263,10 @@ function savePresent() {
     channel: document.getElementById('presentChannelInput').value,
     reach: parseInt(document.getElementById('presentReach').value) || 0,
     url: document.getElementById('presentUrl').value.trim(),
+    scheduledDate: document.getElementById('presentScheduledDate').value || '',
+    likes: parseInt(document.getElementById('presentLikes').value) || 0,
+    retweets: parseInt(document.getElementById('presentRetweets').value) || 0,
+    impressions: parseInt(document.getElementById('presentImpressions').value) || 0,
     memo: document.getElementById('presentMemo').value.trim(),
     created: editId ? (store.presents.find(p => p.id === editId)?.created || new Date().toISOString()) : new Date().toISOString()
   };
@@ -2034,14 +2330,19 @@ function showConsultModal(id) {
     document.getElementById('consultFrom').value = item.from;
     document.getElementById('consultContent').value = item.content || '';
     document.getElementById('consultStatus').value = item.status || 'received';
+    document.getElementById('consultDetailedStatus').value = item.detailedStatus || 'proposing';
     document.getElementById('consultRevenue').value = item.revenue || 0;
+    document.getElementById('consultDeadline').value = item.deadline || '';
+    document.getElementById('consultDeliverables').value = item.deliverables || '';
     document.getElementById('consultMemo').value = item.memo || '';
   } else {
     document.getElementById('consultModalTitle').textContent = '相談案件追加';
     document.getElementById('consultEditId').value = '';
-    ['consultFrom','consultContent','consultMemo'].forEach(id => document.getElementById(id).value = '');
+    ['consultFrom','consultContent','consultMemo','consultDeliverables'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('consultRevenue').value = '';
+    document.getElementById('consultDeadline').value = '';
     document.getElementById('consultStatus').value = 'received';
+    document.getElementById('consultDetailedStatus').value = 'proposing';
   }
   modal.style.display = 'flex';
 }
@@ -2055,7 +2356,10 @@ function saveConsult() {
     id: editId || genId(), from,
     content: document.getElementById('consultContent').value.trim(),
     status: document.getElementById('consultStatus').value,
+    detailedStatus: document.getElementById('consultDetailedStatus').value,
     revenue: parseInt(document.getElementById('consultRevenue').value) || 0,
+    deadline: document.getElementById('consultDeadline').value || '',
+    deliverables: document.getElementById('consultDeliverables').value.trim(),
     memo: document.getElementById('consultMemo').value.trim(),
     created: editId ? (store.consults.find(c => c.id === editId)?.created || new Date().toISOString()) : new Date().toISOString()
   };
@@ -2082,15 +2386,22 @@ function renderConsultList() {
   const items = store.consults || [];
   const box = document.getElementById('consultList');
   if (items.length === 0) { box.innerHTML = '<div class="empty">相談案件はまだありません</div>'; return; }
+  const detailedLabels = {proposing:'提案中',negotiating:'交渉中',accepted:'受注',working:'作業中',delivered:'納品済'};
   box.innerHTML = items.map(c => {
     const stClass = c.status === 'completed' ? 'st-completed' : c.status === 'in-progress' ? 'st-in-progress' : 'st-discovered';
+    const deadlineHtml = c.deadline ? `<span class="deadline-badge ${isOverdue(c.deadline)?'overdue':isSoon(c.deadline)?'soon':''}">${c.deadline}</span>` : '';
     return `<div class="item-card">
-      <div class="item-title">${escapeHtml(c.from)}</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="item-title" style="flex:1">${escapeHtml(c.from)}</div>
+        ${c.revenue ? `<span class="amount-display">&yen;${c.revenue.toLocaleString()}</span>` : ''}
+      </div>
       <div style="font-size:12px;color:var(--sub);margin:4px 0">${escapeHtml(c.content||'')}</div>
       <div class="item-meta">
         <span class="status-badge ${stClass}">${c.status}</span>
-        ${c.revenue ? `<span style="font-size:11px;color:var(--green);font-weight:600">${c.revenue.toLocaleString()}円</span>` : ''}
+        ${c.detailedStatus ? `<span class="pill pill-green" style="font-size:10px">${detailedLabels[c.detailedStatus]||c.detailedStatus}</span>` : ''}
+        ${deadlineHtml}
       </div>
+      ${c.deliverables ? `<div style="font-size:11px;color:var(--dim);margin-top:4px">成果物: ${escapeHtml(c.deliverables).replace(/\n/g, ', ')}</div>` : ''}
       ${c.memo ? `<div style="font-size:12px;color:var(--sub);margin-top:4px">${escapeHtml(c.memo)}</div>` : ''}
       <div class="item-actions">
         <button class="btn btn-sm btn-outline" onclick="showConsultModal('${c.id}')">Edit</button>
@@ -3175,6 +3486,7 @@ function applyImport(data) {
   renderOfferPipeline();
   populateCategorySelects();
   renderLines();
+  renderDashboardCharts();
 }
 
 function resetData() {
@@ -3348,6 +3660,19 @@ function deleteLine() {
   showToast('Deleted');
 }
 
+// ===== Deadline helpers =====
+function isOverdue(dateStr) {
+  if (!dateStr) return false;
+  return new Date(dateStr) < new Date(new Date().toDateString());
+}
+function isSoon(dateStr) {
+  if (!dateStr) return false;
+  const d = new Date(dateStr);
+  const now = new Date(new Date().toDateString());
+  const diff = (d - now) / (1000*60*60*24);
+  return diff >= 0 && diff <= 3;
+}
+
 function toggleLineDetail(lineId) {
   const el = document.getElementById('lineDetail_' + lineId);
   if (el) el.classList.toggle('open');
@@ -3412,10 +3737,18 @@ function renderLines() {
   const statusPct = { completed: 100, 'in-progress': 50, 'not-started': 0 };
   const statusLabels = { completed: '完了', 'in-progress': '進行中', 'not-started': '未着手' };
 
+  // Find first incomplete step for bottleneck
+  const firstIncomplete = stepDefs.find(s => (steps[s.key]?.status || 'not-started') !== 'completed');
+  const bottleneckKey = firstIncomplete ? firstIncomplete.key : null;
+
   box.innerHTML = lines.map(line => {
     const steps = line.steps || {};
     const completedCount = stepDefs.filter(s => steps[s.key]?.status === 'completed').length;
     const overallPct = Math.round(completedCount / stepDefs.length * 100);
+
+    // Bottleneck detection
+    const bnStep = stepDefs.find(s => (steps[s.key]?.status || 'not-started') !== 'completed');
+    const bnKey = bnStep ? bnStep.key : null;
 
     return `<div class="line-card" onclick="toggleLineDetail('${line.id}')">
       <div style="display:flex;align-items:center;gap:8px">
@@ -3434,7 +3767,16 @@ function renderLines() {
       </div>
       <div class="line-meta">
         <span>進捗: ${overallPct}%</span>
+        ${bnKey ? `<span style="font-size:10px;color:var(--orange)">ボトルネック: ${bnKey.toUpperCase()}</span>` : ''}
         ${line.tags?.length ? line.tags.map(t => `<span class="pill pill-dim" style="font-size:9px">${escapeHtml(t)}</span>`).join('') : ''}
+      </div>
+      <!-- Timeline bar (F) -->
+      <div class="line-timeline">
+        ${stepDefs.map(s => {
+          const st = steps[s.key]?.status || 'not-started';
+          const color = st === 'completed' ? s.color : st === 'in-progress' ? s.color+'88' : 'var(--bg)';
+          return `<div class="line-tl-seg" style="background:${color};border:1px solid ${s.color}44"></div>`;
+        }).join('')}
       </div>
       <div class="line-detail" id="lineDetail_${line.id}">
         ${stepDefs.map(s => {
@@ -3443,7 +3785,8 @@ function renderLines() {
           const dateStr = steps[s.key]?.date || '';
           const linkedCount = getLineStepLinkedCount(store, line, s.key);
           const sectionId = stepToSection(s.key);
-          return `<div class="line-detail-step">
+          const isBn = s.key === bnKey;
+          return `<div class="line-detail-step${isBn ? ' bottleneck' : ''}">
             <span style="width:70px;font-weight:600;color:${s.color};font-size:11px">${s.label}</span>
             <div class="line-detail-bar">
               <div class="line-detail-fill" style="width:${pct}%;background:${s.color}"></div>
@@ -3454,6 +3797,8 @@ function renderLines() {
             <button class="btn btn-sm btn-outline" onclick="event.stopPropagation();showSection('${sectionId}')" style="padding:2px 8px;font-size:9px;min-height:28px;min-width:28px;margin-left:4px" title="${s.label}セクションへ">&#10132;</button>
           </div>`;
         }).join('')}
+        <!-- Linked items inline (F) -->
+        ${renderLineLinkedItems(store, line, stepDefs)}
         <div class="btn-row" style="margin-top:8px" onclick="event.stopPropagation()">
           <button class="btn btn-sm btn-outline" onclick="showLineModal('${line.id}')">Edit</button>
         </div>
@@ -3461,6 +3806,259 @@ function renderLines() {
     </div>`;
   }).join('');
 }
+
+// ===== Line Linked Items (F) =====
+function renderLineLinkedItems(store, line, stepDefs) {
+  let html = '';
+  // FIND: linked idea
+  if (line.ideaId) {
+    const idea = (store.ideas || []).find(i => i.id === line.ideaId);
+    if (idea) html += `<div style="font-size:11px;color:var(--sub);padding:4px 0;border-top:1px solid var(--border);margin-top:6px"><span style="color:#4a90e2;font-weight:600">FIND:</span> ${escapeHtml(idea.title)} <span class="status-badge st-${idea.status}" style="font-size:9px">${idea.status}</span></div>`;
+  }
+  // MAKE: linked tasks
+  const tasks = (store.tasks || []).filter(t => t.lineId === line.id);
+  if (tasks.length) {
+    html += `<div style="font-size:11px;color:var(--sub);padding:4px 0"><span style="color:var(--purple);font-weight:600">MAKE:</span> ${tasks.map(t => escapeHtml(t.name) + (t.progress ? ` (${t.progress}%)` : '')).join(', ')}</div>`;
+  }
+  // OFFER: linked offers
+  if (line.offerIds?.length) {
+    const offers = (store.offers || []).filter(o => line.offerIds.includes(o.id));
+    if (offers.length) html += `<div style="font-size:11px;color:var(--sub);padding:4px 0"><span style="color:var(--cyan);font-weight:600">OFFER:</span> ${offers.map(o => escapeHtml(o.name)).join(', ')}</div>`;
+  }
+  return html;
+}
+
+// ===== Dashboard Charts (G) =====
+let _charts = {};
+
+function renderDashboardCharts() {
+  if (typeof Chart === 'undefined') return;
+  Chart.defaults.color = '#7FAACC';
+  Chart.defaults.borderColor = 'rgba(26,86,219,0.15)';
+
+  const store = getStore();
+
+  // 1. Monthly activity bar chart
+  renderMonthlyActivityChart(store);
+  // 2. Step distribution donut
+  renderStepDistChart(store);
+  // 3. Category ratio
+  renderCatRatioChart(store);
+  // 4. Consult revenue line
+  renderRevenueChart(store);
+}
+
+function renderMonthlyActivityChart(store) {
+  const ctx = document.getElementById('chartActivity');
+  if (!ctx) return;
+  if (_charts.activity) _charts.activity.destroy();
+
+  const months = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({ label: `${d.getMonth()+1}月`, year: d.getFullYear(), month: d.getMonth() });
+  }
+
+  const allItems = [...(store.ideas||[]), ...(store.tasks||[]), ...(store.offers||[]), ...(store.presents||[]), ...(store.consults||[])];
+  const data = months.map(m => allItems.filter(item => {
+    const d = new Date(item.created || item.updated || '');
+    return d.getFullYear() === m.year && d.getMonth() === m.month;
+  }).length);
+
+  _charts.activity = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: months.map(m => m.label), datasets: [{ label: 'アクティビティ', data, backgroundColor: 'rgba(6,182,212,0.6)', borderRadius: 4 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+  });
+}
+
+function renderStepDistChart(store) {
+  const ctx = document.getElementById('chartStepDist');
+  if (!ctx) return;
+  if (_charts.stepDist) _charts.stepDist.destroy();
+
+  const counts = {
+    FIND: (store.ideas||[]).length,
+    MAKE: (store.tasks||[]).length,
+    OFFER: (store.offers||[]).length,
+    PRESENT: (store.presents||[]).length,
+    CONSULT: (store.consults||[]).length
+  };
+  const colors = ['#4a90e2','#A78BFA','#06B6D4','#F97316','#10B981'];
+
+  _charts.stepDist = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels: Object.keys(counts), datasets: [{ data: Object.values(counts), backgroundColor: colors }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } }
+  });
+}
+
+function renderCatRatioChart(store) {
+  const ctx = document.getElementById('chartCatRatio');
+  if (!ctx) return;
+  if (_charts.catRatio) _charts.catRatio.destroy();
+
+  const catCount = {};
+  (store.ideas||[]).forEach(i => { const c = i.category || 'その他'; catCount[c] = (catCount[c]||0) + 1; });
+  const labels = Object.keys(catCount);
+  const data = Object.values(catCount);
+  const colors = labels.map((_, i) => ['#4a90e2','#A78BFA','#06B6D4','#F97316','#10B981','#EF4444'][i % 6]);
+
+  _charts.catRatio = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets: [{ data, backgroundColor: colors, borderRadius: 4 }] },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+  });
+}
+
+function renderRevenueChart(store) {
+  const ctx = document.getElementById('chartRevenue');
+  if (!ctx) return;
+  if (_charts.revenue) _charts.revenue.destroy();
+
+  const consults = (store.consults||[]).filter(c => c.revenue > 0).sort((a,b) => (a.created||'').localeCompare(b.created||''));
+  if (consults.length === 0) {
+    _charts.revenue = new Chart(ctx, {
+      type: 'line',
+      data: { labels: ['データなし'], datasets: [{ data: [0], borderColor: '#10B981' }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+    });
+    return;
+  }
+
+  let cumulative = 0;
+  const labels = consults.map(c => { const d = new Date(c.created); return `${d.getMonth()+1}/${d.getDate()}`; });
+  const data = consults.map(c => { cumulative += c.revenue; return cumulative; });
+
+  _charts.revenue = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets: [{ label: '累計収益', data, borderColor: '#10B981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.3 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+}
+
+// ===== INBOX Functions (D) =====
+let _inboxItems = [];
+
+async function loadInboxItems() {
+  try {
+    const res = await fetch(FB_URL + '/inbox.json?orderBy="status"&equalTo="pending"');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data) { _inboxItems = []; renderInbox(); return; }
+    _inboxItems = Object.entries(data).map(([key, val]) => ({ ...val, _key: key }));
+    _inboxItems.sort((a,b) => (b.created||'').localeCompare(a.created||''));
+    renderInbox();
+    updateInboxBadge();
+  } catch (err) {
+    console.warn('Inbox load failed:', err);
+  }
+}
+
+function renderInbox() {
+  const macahpItems = _inboxItems.filter(i => i.classification === 'machap');
+  const otherItems = _inboxItems.filter(i => i.classification !== 'machap');
+
+  const catLabels = { machap:'MACHAP', dome:'モルックドーム', molhub:'モルハブ', personal:'個人' };
+  const catClasses = { machap:'pill-cyan', dome:'pill-orange', molhub:'pill-green', personal:'pill-dim' };
+
+  const macahpBox = document.getElementById('inboxMachapList');
+  if (macahpBox) {
+    macahpBox.innerHTML = macahpItems.length === 0 ? '<div class="empty">MACHAP向けアイテムなし</div>' :
+      macahpItems.map(item => renderInboxItem(item, catLabels, catClasses)).join('');
+  }
+
+  const otherBox = document.getElementById('inboxOtherList');
+  if (otherBox) {
+    otherBox.innerHTML = otherItems.length === 0 ? '<div class="empty">なし</div>' :
+      otherItems.map(item => renderInboxItem(item, catLabels, catClasses)).join('');
+  }
+  const otherCount = document.getElementById('inboxOtherCount');
+  if (otherCount) otherCount.textContent = otherItems.length + '件';
+}
+
+function renderInboxItem(item, catLabels, catClasses) {
+  const conf = Math.round((item.confidence||0)*100);
+  const d = item.created ? new Date(item.created) : null;
+  const dateStr = d ? `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}` : '';
+  return `<div class="inbox-item">
+    <div class="inbox-item-text">${escapeHtml(item.text)}</div>
+    <div class="inbox-item-meta">
+      <span class="pill ${catClasses[item.classification]||'pill-dim'}" style="font-size:10px">${catLabels[item.classification]||item.classification}</span>
+      <span style="font-size:10px;color:var(--dim)">${conf}%</span>
+      ${item.reason ? `<span style="font-size:10px;color:var(--dim)">${escapeHtml(item.reason)}</span>` : ''}
+      <span style="font-size:10px;color:var(--dim)">${dateStr}</span>
+    </div>
+    <div class="inbox-item-actions">
+      <button class="btn btn-sm btn-primary" onclick="inboxToFind('${item._key}')">FIND変換</button>
+      <button class="btn btn-sm btn-outline" onclick="dismissInbox('${item._key}')" style="color:var(--red)">却下</button>
+    </div>
+  </div>`;
+}
+
+async function inboxToFind(key) {
+  const item = _inboxItems.find(i => i._key === key);
+  if (!item) return;
+  // Create idea from inbox
+  const store = getStore();
+  const idea = {
+    id: genId(),
+    title: item.text.length > 50 ? item.text.slice(0,50) + '...' : item.text,
+    summary: item.text,
+    target: '', category: 'その他', step: 'find',
+    priority: 'medium', status: 'discovered',
+    votes: {}, created: new Date().toISOString(), updated: new Date().toISOString()
+  };
+  store.ideas.push(idea);
+  addActivity(store, `INBOX→FIND: "${idea.title}"`);
+  setStore(store);
+  // Mark inbox item as processed
+  await updateInboxStatus(key, 'converted');
+  _inboxItems = _inboxItems.filter(i => i._key !== key);
+  renderInbox();
+  renderFindList();
+  updateNavCounts();
+  updateInboxBadge();
+  showToast('FINDに変換しました');
+}
+
+async function dismissInbox(key) {
+  await updateInboxStatus(key, 'dismissed');
+  _inboxItems = _inboxItems.filter(i => i._key !== key);
+  renderInbox();
+  updateInboxBadge();
+  showToast('却下しました');
+}
+
+async function updateInboxStatus(key, status) {
+  try {
+    await fetch(FB_URL + '/inbox/' + key + '/status.json', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(status)
+    });
+  } catch (err) {
+    console.error('Inbox status update failed:', err);
+  }
+}
+
+function updateInboxBadge() {
+  const count = _inboxItems.length;
+  const navBadge = document.getElementById('navInboxBadge');
+  if (navBadge) {
+    navBadge.textContent = count;
+    navBadge.classList.toggle('visible', count > 0);
+  }
+  const tabBadge = document.getElementById('tabBadgeInbox');
+  if (tabBadge) {
+    tabBadge.textContent = count;
+    tabBadge.classList.toggle('visible', count > 0);
+  }
+}
+
+// ===== Settings: Manual Sync Button =====
+// Add to Docs section init
 </script>
 </body>
 </html>
