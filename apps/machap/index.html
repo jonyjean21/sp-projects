@@ -3,201 +3,796 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MACHAP — マチャップ 事業計画</title>
+<title>MACHAP — アイデアを1週間でプロダクト化</title>
+<meta name="description" content="見つけて、作って、届けて、広めて、伴走する。25+のプロダクトを生み出した3人チームが、あなたのアイデアを形にします。">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
-  --bg: #0F1F3D;
-  --card: #1E3A5F;
+  --bg: #0A1628;
+  --bg2: #0F1F3D;
+  --card: #162544;
+  --card-hover: #1E3358;
+  --border: rgba(26,86,219,0.2);
   --blue: #1A56DB;
   --cyan: #06B6D4;
   --orange: #F97316;
+  --green: #10B981;
+  --purple: #A78BFA;
   --white: #FFFFFF;
   --sub: #7FAACC;
-  --border: #1A56DB33;
+  --dim: #4A6B8A;
+  --radius: 14px;
+  --radius-sm: 10px;
 }
+* { margin: 0; padding: 0; box-sizing: border-box; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', sans-serif;
-  background: var(--bg);
-  color: var(--white);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 48px 20px;
+  background: var(--bg); color: var(--white);
+  line-height: 1.7; -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
-.logo {
-  font-size: 13px;
-  letter-spacing: 0.15em;
-  color: var(--cyan);
-  font-weight: 600;
-  margin-bottom: 12px;
-  text-transform: uppercase;
+a { color: var(--cyan); text-decoration: none; }
+a:hover { opacity: 0.85; }
+
+/* ===== Layout ===== */
+.container { max-width: 960px; margin: 0 auto; padding: 0 20px; }
+
+/* ===== Hero ===== */
+.hero {
+  padding: 72px 20px 56px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 0%, rgba(26,86,219,0.15) 0%, transparent 60%);
 }
-h1 {
-  font-size: clamp(36px, 8vw, 64px);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  background: linear-gradient(135deg, var(--white) 40%, var(--cyan));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.hero-label {
+  font-size: 12px; letter-spacing: 3px; color: var(--cyan);
+  font-weight: 600; text-transform: uppercase; margin-bottom: 16px;
+}
+.hero h1 {
+  font-size: clamp(28px, 6vw, 48px); font-weight: 800;
+  line-height: 1.3; margin-bottom: 16px; letter-spacing: -0.02em;
+}
+.hero h1 em {
+  font-style: normal;
+  background: linear-gradient(135deg, var(--cyan), var(--blue));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-bottom: 16px;
-  text-align: center;
 }
-.tagline {
-  font-size: clamp(14px, 3vw, 18px);
-  color: var(--sub);
-  text-align: center;
-  max-width: 520px;
-  line-height: 1.7;
-  margin-bottom: 48px;
+.hero-sub {
+  font-size: clamp(14px, 2.5vw, 17px); color: var(--sub);
+  max-width: 540px; margin: 0 auto 36px; line-height: 1.8;
 }
-.cycle {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  flex-wrap: wrap;
+.hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 13px 28px; border-radius: 10px; font-size: 14px;
+  font-weight: 600; text-decoration: none; transition: all 0.2s; border: none; cursor: pointer;
+}
+.btn-primary { background: var(--blue); color: var(--white); }
+.btn-primary:hover { background: #1549BD; transform: translateY(-1px); }
+.btn-outline { background: transparent; color: var(--white); border: 1px solid var(--border); }
+.btn-outline:hover { border-color: var(--cyan); color: var(--cyan); }
+
+/* ===== Metrics ===== */
+.metrics {
+  display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;
+  padding: 32px 20px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  background: rgba(15,31,61,0.5);
+}
+.metric { text-align: center; }
+.metric-value {
+  font-size: clamp(28px, 5vw, 40px); font-weight: 800;
+  background: linear-gradient(135deg, var(--white) 40%, var(--cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.metric-label { font-size: 12px; color: var(--sub); margin-top: 2px; }
+
+/* ===== Sections ===== */
+.section { padding: 64px 20px; }
+.section-bg { background: var(--bg2); }
+.section-label {
+  font-size: 11px; letter-spacing: 2px; color: var(--cyan);
+  font-weight: 700; text-transform: uppercase; margin-bottom: 8px;
+}
+.section-title {
+  font-size: clamp(22px, 4vw, 32px); font-weight: 800;
+  margin-bottom: 12px; line-height: 1.3;
+}
+.section-desc { font-size: 15px; color: var(--sub); margin-bottom: 40px; max-width: 600px; }
+.section-center { text-align: center; }
+.section-center .section-desc { margin-left: auto; margin-right: auto; }
+
+/* ===== 5STEP Cycle ===== */
+.cycle-bar {
+  display: flex; align-items: center; justify-content: center;
+  gap: 4px; flex-wrap: wrap; margin-bottom: 40px;
+}
+.cycle-step {
+  padding: 8px 18px; border-radius: 8px; font-size: 12px;
+  font-weight: 700; letter-spacing: 0.05em; white-space: nowrap;
+}
+.cycle-arrow { color: var(--dim); font-size: 14px; margin: 0 2px; }
+.step-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px; max-width: 900px; margin: 0 auto;
+}
+.step-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 20px 16px; text-align: center;
+}
+.step-num {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+.step-name { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.step-desc { font-size: 12px; color: var(--sub); line-height: 1.6; }
+
+/* ===== Product Grid ===== */
+.filter-bar {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px;
   justify-content: center;
-  margin-bottom: 48px;
 }
-.step {
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
+.filter-btn {
+  padding: 6px 16px; border-radius: 20px; font-size: 12px;
+  font-weight: 600; border: 1px solid var(--border); background: transparent;
+  color: var(--sub); cursor: pointer; transition: all 0.2s;
 }
-.arrow { color: var(--sub); font-size: 14px; }
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 16px;
-  width: 100%;
-  max-width: 700px;
-  margin-bottom: 48px;
+.filter-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+.filter-btn.active { background: var(--blue); border-color: var(--blue); color: var(--white); }
+.product-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px; max-width: 960px; margin: 0 auto;
 }
-.card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 24px;
+.product-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+  transition: all 0.2s; position: relative;
+  display: flex; flex-direction: column;
 }
-.card-label {
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  color: var(--cyan);
+.product-card:hover { border-color: rgba(6,182,212,0.4); background: var(--card-hover); }
+.product-card[style*="display: none"] { display: none !important; }
+.pc-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.pc-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.pc-title { font-size: 14px; font-weight: 700; flex: 1; }
+.pc-status {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+}
+.pc-status-live { background: var(--green); }
+.pc-status-dev { background: var(--orange); }
+.pc-desc { font-size: 12px; color: var(--sub); line-height: 1.6; margin-bottom: 12px; flex: 1; }
+.pc-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+.pc-tag {
+  font-size: 10px; padding: 2px 8px; border-radius: 10px;
   font-weight: 600;
-  margin-bottom: 8px;
-  text-transform: uppercase;
 }
-.card-title {
-  font-size: 16px;
-  font-weight: 700;
-  margin-bottom: 8px;
+.tag-pages { background: #1f2a3d; color: #58a6ff; }
+.tag-wp { background: #2a2117; color: #d29922; }
+.tag-firebase { background: #2a1f2d; color: #bc8cff; }
+.tag-gas { background: #1a2a2a; color: #39d2c0; }
+.tag-vercel { background: #1a2417; color: #3fb950; }
+.tag-ai { background: #2a1a2a; color: #f0abfc; }
+.pc-link {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: var(--radius);
 }
-.card-desc {
-  font-size: 13px;
-  color: var(--sub);
-  line-height: 1.6;
+.product-count {
+  text-align: center; font-size: 13px; color: var(--dim); margin-top: 20px;
+}
+
+/* ===== Case Study ===== */
+.case-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 32px; max-width: 700px; margin: 0 auto;
+}
+.case-label {
+  font-size: 11px; letter-spacing: 0.1em; color: var(--orange);
+  font-weight: 600; margin-bottom: 12px; text-transform: uppercase;
+}
+.case-title { font-size: 20px; font-weight: 800; margin-bottom: 16px; }
+.case-flow {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
   margin-bottom: 20px;
 }
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: opacity 0.2s;
+.case-step-tag {
+  padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600;
 }
-.btn:hover { opacity: 0.8; }
-.btn-primary { background: var(--blue); color: var(--white); }
-.btn-secondary { background: var(--orange); color: var(--white); }
-.team {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-bottom: 48px;
+.case-arrow { color: var(--dim); font-size: 14px; }
+.case-desc { font-size: 14px; color: var(--sub); line-height: 1.8; }
+.case-desc strong { color: var(--white); }
+
+/* ===== Team ===== */
+.team-grid {
+  display: flex; gap: 32px; justify-content: center; flex-wrap: wrap;
 }
-.member {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
+.team-member { text-align: center; }
+.team-avatar {
+  width: 64px; height: 64px; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; font-weight: 800; color: var(--white);
+  margin: 0 auto 10px;
 }
-.avatar {
-  width: 52px;
-  height: 52px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--white);
+.team-name { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+.team-role { font-size: 12px; color: var(--sub); max-width: 120px; margin: 0 auto; line-height: 1.5; }
+
+/* ===== CTA ===== */
+.cta-section {
+  text-align: center; padding: 64px 20px;
+  background: radial-gradient(ellipse at 50% 100%, rgba(26,86,219,0.12) 0%, transparent 60%);
 }
-.member-name { font-size: 14px; font-weight: 600; }
-.member-role { font-size: 11px; color: var(--sub); text-align: center; max-width: 100px; line-height: 1.4; }
-footer {
-  font-size: 11px;
-  color: var(--sub);
-  text-align: center;
-  margin-top: auto;
-  padding-top: 32px;
+.cta-title {
+  font-size: clamp(22px, 4vw, 30px); font-weight: 800; margin-bottom: 12px;
 }
+.cta-desc { font-size: 15px; color: var(--sub); margin-bottom: 32px; max-width: 480px; margin-left: auto; margin-right: auto; }
+.cta-options {
+  display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; max-width: 600px; margin: 0 auto;
+}
+.cta-option {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px 20px;
+  flex: 1; min-width: 220px; text-align: center;
+  transition: all 0.2s; text-decoration: none; color: var(--white);
+}
+.cta-option:hover { border-color: var(--cyan); background: var(--card-hover); }
+.cta-option-icon { font-size: 28px; margin-bottom: 8px; }
+.cta-option-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.cta-option-desc { font-size: 12px; color: var(--sub); }
+
+/* ===== Footer ===== */
+.footer {
+  padding: 32px 20px; text-align: center;
+  border-top: 1px solid var(--border);
+}
+.footer-links { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 12px; }
+.footer-links a { font-size: 13px; color: var(--sub); }
+.footer-links a:hover { color: var(--white); }
+.footer-copy { font-size: 11px; color: var(--dim); }
+
+/* ===== Responsive ===== */
+@media (max-width: 600px) {
+  .hero { padding: 48px 16px 40px; }
+  .section { padding: 48px 16px; }
+  .metrics { gap: 24px; }
+  .step-grid { grid-template-columns: repeat(2, 1fr); }
+  .product-grid { grid-template-columns: 1fr; }
+  .case-card { padding: 24px 18px; }
+  .cta-options { flex-direction: column; align-items: center; }
+  .cta-option { min-width: 100%; max-width: 320px; }
+}
+
+/* ===== Animation ===== */
+@keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+.fade-in { opacity: 0; }
+.fade-in.visible { animation: fadeUp 0.5s ease forwards; }
 </style>
 </head>
 <body>
 
-<div class="logo">MACHAP — マチャップ</div>
-<h1>MACHAP</h1>
-<p class="tagline">アイデアを1週間でプロダクト化し、届け、広め、相談を受ける。<br>5STEPのビジネスサイクルを高速で回すチーム。</p>
+<!-- ==================== Hero ==================== -->
+<section class="hero">
+  <div class="container">
+    <p class="hero-label">MACHAP — マチャップ</p>
+    <h1>見つけて、作って、届けて、<br>広めて、<em>伴走する。</em></h1>
+    <p class="hero-sub">アイデアを形にする手段がない？<br>25+のプロダクトを生み出してきた3人チームが、<br>あなたのアイデアを最速でプロダクト化します。</p>
+    <div class="hero-cta">
+      <a href="https://x.com/messages/compose?recipient_id=1721227068053479424" target="_blank" class="btn btn-primary">DMで相談する →</a>
+      <a href="#products" class="btn btn-outline">プロダクトを見る</a>
+    </div>
+  </div>
+</section>
 
-<div class="cycle">
-  <span class="step" style="background:#1A56DB22;color:#1A56DB;border:1px solid #1A56DB55">FIND</span>
-  <span class="arrow">→</span>
-  <span class="step" style="background:#7C3AED22;color:#A78BFA;border:1px solid #7C3AED55">MAKE</span>
-  <span class="arrow">→</span>
-  <span class="step" style="background:#06B6D422;color:#06B6D4;border:1px solid #06B6D455">OFFER</span>
-  <span class="arrow">→</span>
-  <span class="step" style="background:#F9731622;color:#F97316;border:1px solid #F9731655">PRESENT</span>
-  <span class="arrow">→</span>
-  <span class="step" style="background:#10B98122;color:#10B981;border:1px solid #10B98155">CONSULT</span>
-</div>
-
-<div class="cards">
-  <div class="card">
-    <div class="card-label">Draft v1</div>
-    <div class="card-title">事業計画書 v1</div>
-    <div class="card-desc">チーム内共有用のドラフト版。ビジョン・モデル・チーム体制・アクションプランを13スライドで整理。</div>
-    <a class="btn btn-primary" href="./plan.html">📄 事業計画を見る</a>
-    <a class="btn btn-secondary" href="./MACHAP_事業計画_v1.pptx" download style="margin-top:8px">⬇ PPTX ダウンロード</a>
+<!-- ==================== Metrics ==================== -->
+<div class="metrics">
+  <div class="metric">
+    <div class="metric-value">25+</div>
+    <div class="metric-label">公開プロダクト</div>
+  </div>
+  <div class="metric">
+    <div class="metric-value">7日</div>
+    <div class="metric-label">平均開発期間</div>
+  </div>
+  <div class="metric">
+    <div class="metric-value">3人</div>
+    <div class="metric-label">チーム</div>
+  </div>
+  <div class="metric">
+    <div class="metric-value">6+</div>
+    <div class="metric-label">自動化システム</div>
   </div>
 </div>
 
-<div class="team">
-  <div class="member">
-    <div class="avatar" style="background:#1A56DB">サ</div>
-    <div class="member-name">サノ</div>
-    <div class="member-role">全体管理＋コンセプト展開</div>
-  </div>
-  <div class="member">
-    <div class="avatar" style="background:#06B6D4">中</div>
-    <div class="member-name">中</div>
-    <div class="member-role">プロダクト開発＋各フェーズ主導</div>
-  </div>
-  <div class="member">
-    <div class="avatar" style="background:#F97316">師</div>
-    <div class="member-name">ししょー</div>
-    <div class="member-role">意見出し＋拡散</div>
-  </div>
-</div>
+<!-- ==================== 5STEP ==================== -->
+<section class="section section-bg" id="cycle">
+  <div class="container section-center">
+    <p class="section-label">How We Work</p>
+    <h2 class="section-title">5STEPサイクル</h2>
+    <p class="section-desc">課題発見から収益化まで。一気通貫で回すから速い。</p>
 
-<footer>MACHAP &nbsp;|&nbsp; 2026 &nbsp;|&nbsp; Confidential</footer>
+    <div class="cycle-bar">
+      <span class="cycle-step" style="background:#1A56DB22;color:#1A56DB;border:1px solid #1A56DB55">FIND</span>
+      <span class="cycle-arrow">→</span>
+      <span class="cycle-step" style="background:#7C3AED22;color:#A78BFA;border:1px solid #7C3AED55">MAKE</span>
+      <span class="cycle-arrow">→</span>
+      <span class="cycle-step" style="background:#06B6D422;color:#06B6D4;border:1px solid #06B6D455">OFFER</span>
+      <span class="cycle-arrow">→</span>
+      <span class="cycle-step" style="background:#F9731622;color:#F97316;border:1px solid #F9731655">PRESENT</span>
+      <span class="cycle-arrow">→</span>
+      <span class="cycle-step" style="background:#10B98122;color:#10B981;border:1px solid #10B98155">CONSULT</span>
+    </div>
+
+    <div class="step-grid">
+      <div class="step-card fade-in">
+        <div class="step-num" style="color:#1A56DB">STEP 1</div>
+        <div class="step-name">FIND</div>
+        <div class="step-desc">課題・アイデアを見つける。日常の「面倒」がプロダクトの種。</div>
+      </div>
+      <div class="step-card fade-in">
+        <div class="step-num" style="color:#A78BFA">STEP 2</div>
+        <div class="step-name">MAKE</div>
+        <div class="step-desc">最速でプロダクト化。AI活用で1週間以内にMVP。</div>
+      </div>
+      <div class="step-card fade-in">
+        <div class="step-num" style="color:#06B6D4">STEP 3</div>
+        <div class="step-name">OFFER</div>
+        <div class="step-desc">使う人に届ける。フィードバックを即座に反映。</div>
+      </div>
+      <div class="step-card fade-in">
+        <div class="step-num" style="color:#F97316">STEP 4</div>
+        <div class="step-name">PRESENT</div>
+        <div class="step-desc">SNS・イベントで広める。認知を資産に変える。</div>
+      </div>
+      <div class="step-card fade-in">
+        <div class="step-num" style="color:#10B981">STEP 5</div>
+        <div class="step-name">CONSULT</div>
+        <div class="step-desc">相談を受けて伴走。ノウハウが次のFINDにつながる。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== Products ==================== -->
+<section class="section" id="products">
+  <div class="container section-center">
+    <p class="section-label">Products</p>
+    <h2 class="section-title">つくってきたもの</h2>
+    <p class="section-desc">コミュニティ運営、メディア、日常のツール、裏側の自動化。全部、課題から生まれた。</p>
+
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all">すべて</button>
+      <button class="filter-btn" data-filter="community">コミュニティ</button>
+      <button class="filter-btn" data-filter="media">メディア</button>
+      <button class="filter-btn" data-filter="life">ライフ</button>
+      <button class="filter-btn" data-filter="auto">自動化</button>
+    </div>
+
+    <div class="product-grid" id="productGrid">
+
+      <!-- ===== コミュニティ ===== -->
+      <div class="product-card" data-cat="community">
+        <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/viisi-master/" target="_blank" aria-label="5先王"></a>
+        <div class="pc-header">
+          <div class="pc-icon" style="background:#1f2a3d">👑</div>
+          <div class="pc-title">5先王（ヴィーシマスター）</div>
+          <div class="pc-status pc-status-live"></div>
+        </div>
+        <div class="pc-desc">モルック試合結果を記録し、Xに自動投稿。チャンピオン戦・レーティング対応。</div>
+        <div class="pc-tags">
+          <span class="pc-tag tag-pages">GitHub Pages</span>
+          <span class="pc-tag tag-firebase">Firebase</span>
+        </div>
+      </div>
+
+      <div class="product-card" data-cat="community">
+        <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/championship/" target="_blank" aria-label="選手権トラッカー"></a>
+        <div class="pc-header">
+          <div class="pc-icon" style="background:#2a2010">🏅</div>
+          <div class="pc-title">日本選手権トラッカー</div>
+          <div class="pc-status pc-status-live"></div>
+        </div>
+        <div class="pc-desc">全日本モルック選手権 6ブロック10会場の予選結果・通過者をリアルタイム追跡。</div>
+        <div class="pc-tags">
+          <span class="pc-tag tag-pages">GitHub Pages</span>
+          <span class="pc-tag tag-firebase">Firebase</span>
+        </div>
+      </div>
+
+      <div class="product-card" data-cat="community">
+        <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/naimol-admin/" target="_blank" aria-label="ナイモル管理"></a>
+        <div class="pc-header">
+          <div class="pc-icon" style="background:#2a2117">🏆</div>
+          <div class="pc-title">ナイモル大会管理</div>
+          <div class="pc-status pc-status-live"></div>
+        </div>
+        <div class="pc-desc">スプシ連動で結果ページ自動生成・写真管理・ギャラリー・公開まで一括。</div>
+        <div class="pc-tags">
+          <span class="pc-tag tag-pages">GitHub Pages</span>
+          <span class="pc-tag tag-wp">WP API</span>
+        </div>
+      </div>
+
+      <div class="product-card" data-cat="community">
+        <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/tournament-submit/" target="_blank" aria-label="大会投稿ツール"></a>
+        <div class="pc-header">
+          <div class="pc-icon" style="background:#1f2a3d">📣</div>
+          <div class="pc-title">大会情報投稿ツール</div>
+          <div class="pc-status pc-status-live"></div>
+        </div>
+        <div class="pc-desc">URLを貼るだけで大会情報を抽出し、WordPressに自動投稿。</div>
+        <div class="pc-tags">
+          <span class="pc-tag tag-pages">GitHub Pages</span>
+          <span class="pc-tag tag-firebase">Firebase</span>
+        </div>
+      </div>
+
+      <div class="product-card" data-cat="community">
+        <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/teamride/" target="_blank" aria-label="チームライド"></a>
+        <div class="pc-header">
+          <div class="pc-icon" style="background:#1a2a1a">🚗</div>
+          <div class="pc-title">チームライド</div>
+          <div class="pc-status pc-status-live"></div>
+        </div>
+        <div class="pc-desc">少年サッカーの配車問題を解決。出欠管理・自動配車・催促テキスト生成。</div>
+        <div class="pc-tags">
+          <span class="pc-tag tag-pages">GitHub Pages</span>
+          <span class="pc-tag tag-firebase">Firebase</span>
+        </div>
+      </div>
+
+      <div class="product-card" data-cat="community">
+        <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/projects/molkky-dome/ranking/" target="_blank" aria-label="シーズン大会"></a>
+        <div class="pc-header">
+          <div class="pc-icon" style="background:#2a1a10">🔥</div>
+          <div class="pc-title">シーズン大会 企画書</div>
+          <div class="pc-status pc-status-live"></div>
+        </div>
+        <div class="pc-desc">3ヶ月ポイントレース → 上位12名の頂上決戦。モルック大会の新フォーマット。</div>
+        <div class="pc-tags">
+          <span class="pc-tag tag-pages">GitHub Pages</span>
+        </div>
+      </div>
+
+      <!-- ===== メディア ===== -->
+      <div class="product-card" data-cat="media">
+        <a class="pc-link" href="https://molkky-hub.com" target="_blank" aria-label="MOLKKY HUB"></a>
+        <div class="pc-header">
+          <div class="pc-icon" style="background:#2a2117">📰</div>
+          <div class="pc-title">MOLKKY HUB</div>
+          <div class="pc-status pc-status-live"></div>
+        </div>
+        <div class="pc-desc">日本唯一のモルック専門メディア。大会DB・チーム紹介・週間まとめを自動運用。</div>
+        <div class="pc-tags">
+          <span class="pc-tag tag-wp">WordPress</span>
+          <span class="pc-tag tag-ai">AI自動化</span>
+        </div>
+      </div>
+
+      <div class="product-card" data-cat="media">
+        <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/molkky-portal/" target="_blank" aria-label="HUBポータル"></a>
+        <div class="pc-header">
+          <div class="pc-icon" style="background:linear-gradient(135deg,#0a1a2a,#06B6D4)">🌐</div>
+          <div class="pc-title">MOLKKY HUB Portal</div>
+          <div class="pc-status pc-status-live"></div>
+        </div>
+        <div class="pc-desc">メディア全機能統合: ダッシュボード・記事管理・大会管理・アナリティクス。</div>
+        <div class="pc-tags">
+          <span class="pc-tag tag-pages">GitHub Pages</span>
+          <span class="pc-tag tag-wp">WP API</span>
+          <span class="pc-tag tag-firebase">Firebase</span>
+        </div>
+      </div>
+
+      <div class="product-card" data-cat="media">
+        <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/promote/" target="_blank" aria-label="Xポスト生成"></a>
+        <div class="pc-header">
+          <div class="pc-icon" style="background:#101a2a">📱</div>
+          <div class="pc-title">Xポスト生成ツール</div>
+          <div class="pc-status pc-status-live"></div>
+        </div>
+        <div class="pc-desc">記事URLからXポスト案をAI自動生成。ペルソナに基づく一貫した発信。</div>
+        <div class="pc-tags">
+          <span class="pc-tag tag-pages">GitHub Pages</span>
+          <span class="pc-tag tag-ai">Gemini AI</span>
+        </div>
+      </div>
+
+      <div class="product-card" data-cat="media">
+        <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/repost/" target="_blank" aria-label="リポスト生成"></a>
+        <div class="pc-header">
+          <div class="pc-icon" style="background:#1a1530">💬</div>
+          <div class="pc-title">引用リポスト生成</div>
+          <div class="pc-status pc-status-live"></div>
+        </div>
+        <div class="pc-desc">メンション・関連ポストに対する引用リポスト案をAIが3パターン生成。</div>
+        <div class="pc-tags">
+          <span class="pc-tag tag-pages">GitHub Pages</span>
+          <span class="pc-tag tag-ai">Gemini AI</span>
+        </div>
+      </div>
+
+      <div class="product-card" data-cat="media">
+        <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/partner-portal/" target="_blank" aria-label="循環ポータル"></a>
+        <div class="pc-header">
+          <div class="pc-icon" style="background:#2a2117">🤝</div>
+          <div class="pc-title">パートナー循環ポータル</div>
+          <div class="pc-status pc-status-live"></div>
+        </div>
+        <div class="pc-desc">パートナーの提供品がどこに届いたかをリアルタイム可視化。透明性を担保。</div>
+        <div class="pc-tags">
+          <span class="pc-tag tag-pages">GitHub Pages</span>
+          <span class="pc-tag tag-firebase">Firebase</span>
+        </div>
+      </div>
+
+      <!-- ===== ライフ ===== -->
+      <div class="product-card" data-cat="life">
+        <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/youtube/" target="_blank" aria-label="YouTube Dashboard"></a>
+        <div class="pc-header">
+          <div class="pc-icon" style="background:linear-gradient(135deg,#0a0a1f,#d4ff47)">📊</div>
+          <div class="pc-title">YouTube Analytics</div>
+          <div class="pc-status pc-status-live"></div>
+        </div>
+        <div class="pc-desc">チャンネル分析ダッシュボード。ヘルスチェック・6軸レーダー・デモモード付き。</div>
+        <div class="pc-tags">
+          <span class="pc-tag tag-pages">GitHub Pages</span>
+          <span class="pc-tag" style="background:#1a2a20;color:#d4ff47">Chart.js</span>
+        </div>
+      </div>
+
+      <div class="product-card" data-cat="life">
+        <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/meguri/" target="_blank" aria-label="めぐり帳"></a>
+        <div class="pc-header">
+          <div class="pc-icon" style="background:#1a2417">🍃</div>
+          <div class="pc-title">めぐり帳</div>
+          <div class="pc-status pc-status-live"></div>
+        </div>
+        <div class="pc-desc">恩・約束・貸し借りを記録。人とのつながりを「見える化」するアプリ。</div>
+        <div class="pc-tags">
+          <span class="pc-tag tag-pages">GitHub Pages</span>
+          <span class="pc-tag tag-firebase">Firebase Auth</span>
+        </div>
+      </div>
+
+      <div class="product-card" data-cat="life">
+        <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/recipe/" target="_blank" aria-label="レシピBOX"></a>
+        <div class="pc-header">
+          <div class="pc-icon" style="background:#2a2117">🍳</div>
+          <div class="pc-title">レシピBOX</div>
+          <div class="pc-status pc-status-live"></div>
+        </div>
+        <div class="pc-desc">レシピ保存・管理。URL取込・写真OCR・家族共有。</div>
+        <div class="pc-tags">
+          <span class="pc-tag tag-pages">GitHub Pages</span>
+          <span class="pc-tag tag-firebase">Firebase Auth</span>
+        </div>
+      </div>
+
+      <div class="product-card" data-cat="life">
+        <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/inbox/" target="_blank" aria-label="INBOX"></a>
+        <div class="pc-header">
+          <div class="pc-icon" style="background:linear-gradient(135deg,#1A56DB,#06B6D4)">📥</div>
+          <div class="pc-title">SP INBOX（PWA）</div>
+          <div class="pc-status pc-status-live"></div>
+        </div>
+        <div class="pc-desc">GTD的クイック入力。Gemini AIが自動分類。オフライン対応PWA。</div>
+        <div class="pc-tags">
+          <span class="pc-tag tag-pages">GitHub Pages</span>
+          <span class="pc-tag tag-firebase">Firebase</span>
+          <span class="pc-tag tag-ai">Gemini AI</span>
+        </div>
+      </div>
+
+      <!-- ===== 自動化 ===== -->
+      <div class="product-card" data-cat="auto">
+        <div class="pc-header">
+          <div class="pc-icon" style="background:#1a2a2a">📝</div>
+          <div class="pc-title">議事録自動化</div>
+          <div class="pc-status pc-status-live"></div>
+        </div>
+        <div class="pc-desc">Google Meet文字起こし → AI議事録変換 → Notion自動投稿。完全無人運転。</div>
+        <div class="pc-tags">
+          <span class="pc-tag tag-gas">GAS</span>
+          <span class="pc-tag tag-firebase">Firebase</span>
+          <span class="pc-tag tag-ai">Claude AI</span>
+        </div>
+      </div>
+
+      <div class="product-card" data-cat="auto">
+        <div class="pc-header">
+          <div class="pc-icon" style="background:#1a2a2a">📡</div>
+          <div class="pc-title">RSS自動収集</div>
+          <div class="pc-status pc-status-live"></div>
+        </div>
+        <div class="pc-desc">JMA公式・こくちーずを毎日巡回。大会情報をFirebaseキューに自動登録。</div>
+        <div class="pc-tags">
+          <span class="pc-tag tag-gas">GAS</span>
+          <span class="pc-tag tag-firebase">Firebase</span>
+        </div>
+      </div>
+
+      <div class="product-card" data-cat="auto">
+        <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/report-admin/" target="_blank" aria-label="日報"></a>
+        <div class="pc-header">
+          <div class="pc-icon" style="background:#1a2a2a">📊</div>
+          <div class="pc-title">日報自動生成</div>
+          <div class="pc-status pc-status-live"></div>
+        </div>
+        <div class="pc-desc">毎朝4時にgitコミットからAI日報を自動生成。カレンダー・統計・エクスポート。</div>
+        <div class="pc-tags">
+          <span class="pc-tag tag-gas">GAS</span>
+          <span class="pc-tag tag-firebase">Firebase</span>
+          <span class="pc-tag tag-ai">Gemini AI</span>
+        </div>
+      </div>
+
+      <div class="product-card" data-cat="auto">
+        <div class="pc-header">
+          <div class="pc-icon" style="background:#1a2a2a">🤖</div>
+          <div class="pc-title">marutamura-bot</div>
+          <div class="pc-status pc-status-live"></div>
+        </div>
+        <div class="pc-desc">コミュニティ用LINE Bot。Claude AIが自然言語で応答。</div>
+        <div class="pc-tags">
+          <span class="pc-tag tag-vercel">Vercel</span>
+          <span class="pc-tag tag-ai">Claude AI</span>
+        </div>
+      </div>
+
+      <div class="product-card" data-cat="auto">
+        <div class="pc-header">
+          <div class="pc-icon" style="background:#1a2a2a">💰</div>
+          <div class="pc-title">月次マネー振り分け</div>
+          <div class="pc-status pc-status-live"></div>
+        </div>
+        <div class="pc-desc">家計口座11個+カード7枚の月次振り分け指示をAI自動生成。</div>
+        <div class="pc-tags">
+          <span class="pc-tag tag-ai">Claude AI</span>
+        </div>
+      </div>
+
+    </div>
+    <div class="product-count" id="productCount"></div>
+  </div>
+</section>
+
+<!-- ==================== Case Study ==================== -->
+<section class="section section-bg">
+  <div class="container section-center">
+    <p class="section-label">Case Study</p>
+    <h2 class="section-title">実例: MOLKKY HUB</h2>
+    <p class="section-desc">「大会情報が散らばっていて探せない」→ 日本最大のモルック大会DBに。</p>
+
+    <div class="case-card" style="text-align:left;">
+      <div class="case-label">5STEPの実践例</div>
+      <div class="case-title">散らばった大会情報を統一DB化</div>
+      <div class="case-flow">
+        <span class="case-step-tag" style="background:#1A56DB22;color:#1A56DB">FIND: X上の大会告知が散在</span>
+        <span class="case-arrow">→</span>
+        <span class="case-step-tag" style="background:#7C3AED22;color:#A78BFA">MAKE: WP + 自動収集基盤</span>
+        <span class="case-arrow">→</span>
+        <span class="case-step-tag" style="background:#06B6D422;color:#06B6D4">OFFER: 月3,000セッション</span>
+      </div>
+      <div class="case-flow">
+        <span class="case-step-tag" style="background:#F9731622;color:#F97316">PRESENT: X自動投稿 + 週間まとめ</span>
+        <span class="case-arrow">→</span>
+        <span class="case-step-tag" style="background:#10B98122;color:#10B981">CONSULT: パートナー制度で収益化</span>
+      </div>
+      <div class="case-desc" style="margin-top:20px;">
+        Xに散在していた大会情報を<strong>RSS + IFTTT + Claude Code</strong>で自動収集し、WordPressに蓄積。<strong>580+件の大会DB</strong>を構築。<br>
+        週間まとめ記事の自動公開、Xポストの自動生成まで全て無人運転。<br>
+        パートナー制度を構築し、<strong>メディア→収益の循環モデル</strong>を確立。
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== Team ==================== -->
+<section class="section">
+  <div class="container section-center">
+    <p class="section-label">Team</p>
+    <h2 class="section-title">3人で回す。</h2>
+    <p class="section-desc">それぞれの得意を持ち寄って、最速でサイクルを回す。</p>
+
+    <div class="team-grid">
+      <div class="team-member fade-in">
+        <div class="team-avatar" style="background:var(--blue)">サ</div>
+        <div class="team-name">サノ</div>
+        <div class="team-role">全体管理 + コンセプト展開 + AI開発</div>
+      </div>
+      <div class="team-member fade-in">
+        <div class="team-avatar" style="background:var(--cyan)">中</div>
+        <div class="team-name">中</div>
+        <div class="team-role">プロダクト開発 + 各フェーズ主導</div>
+      </div>
+      <div class="team-member fade-in">
+        <div class="team-avatar" style="background:var(--orange)">師</div>
+        <div class="team-name">ししょー</div>
+        <div class="team-role">意見出し + 拡散 + テストユーザー</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== CTA ==================== -->
+<section class="cta-section">
+  <div class="container">
+    <h2 class="cta-title">形にしたいアイデア、ありませんか。</h2>
+    <p class="cta-desc">「こういうの作れる？」「自分たちのコミュニティにも使える？」<br>まずは気軽に話しましょう。</p>
+
+    <div class="cta-options">
+      <a class="cta-option" href="https://x.com/messages/compose?recipient_id=1721227068053479424" target="_blank">
+        <div class="cta-option-icon">💬</div>
+        <div class="cta-option-title">X DMで相談</div>
+        <div class="cta-option-desc">@molkkyhub にDM。気軽にどうぞ。</div>
+      </a>
+      <a class="cta-option" href="./plan.html">
+        <div class="cta-option-icon">📄</div>
+        <div class="cta-option-title">事業計画を見る</div>
+        <div class="cta-option-desc">MACHAPのビジョンと戦略を13スライドで。</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== Footer ==================== -->
+<footer class="footer">
+  <div class="footer-links">
+    <a href="https://molkky-hub.com" target="_blank">MOLKKY HUB</a>
+    <a href="https://jonyjean21.github.io/sp-projects/apps/" target="_blank">SP Output Catalog</a>
+    <a href="https://x.com/molkkyhub" target="_blank">X (@molkkyhub)</a>
+    <a href="./plan.html">事業計画</a>
+  </div>
+  <div class="footer-copy">MACHAP &copy; 2026</div>
+</footer>
+
+<script>
+// Filter
+const btns = document.querySelectorAll('.filter-btn');
+const cards = document.querySelectorAll('.product-card');
+const countEl = document.getElementById('productCount');
+
+function updateCount(n, total) {
+  countEl.textContent = n === total ? `${total} products` : `${n} / ${total} products`;
+}
+
+btns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    btns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const f = btn.dataset.filter;
+    let shown = 0;
+    cards.forEach(c => {
+      const show = f === 'all' || c.dataset.cat === f;
+      c.style.display = show ? '' : 'none';
+      if (show) shown++;
+    });
+    updateCount(shown, cards.length);
+  });
+});
+updateCount(cards.length, cards.length);
+
+// Scroll animation
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.15 });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+</script>
 
 </body>
 </html>
