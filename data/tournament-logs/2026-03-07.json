@@ -1,7 +1,7 @@
 {
   "date": "2026-03-07",
   "source": "ifttt-x-search",
-  "total": 17,
+  "total": 19,
   "results": [
     {"key": "-On1RfhINrx8gF_fZAC0", "user": "zugakousakuka", "action": "skipped", "reason": "not_tournament: 未確定の大会企画話"},
     {"key": "-On1SsZ9tRaJZPS43v6R", "user": "TN522", "action": "skipped", "reason": "not_tournament: 練習報告"},
@@ -19,6 +19,8 @@
     {"key": "-On2eZbSVxnwghyu9Z1n", "user": "ryotanomo", "action": "skipped", "reason": "not_tournament: 思い出話"},
     {"key": "-On2j5bcq44t88ojP-td", "user": "fukuimolkky007", "action": "skipped", "reason": "not_tournament: 個人報告"},
     {"key": "-On2ncyr1bhJMUfiYOQf", "user": "molkkyclubjp", "action": "skipped", "reason": "not_tournament: ツール要望"},
-    {"key": "-On2nd3rY-nGzw098ivH", "user": "FUMOTO_YVT", "action": "skipped", "reason": "not_tournament: 活動報告"}
+    {"key": "-On2nd3rY-nGzw098ivH", "user": "FUMOTO_YVT", "action": "skipped", "reason": "not_tournament: 活動報告"},
+    {"key": "-On4BzcRBXAdG5e-L9he", "user": "mayoi68", "action": "skipped", "reason": "not_tournament: 町内会のモルック大会（正式名称・場所不明、個人日常ツイート）"},
+    {"key": "-On4FNzos--FUdDWzW8Z", "user": "yuusuikun1", "action": "posted", "post_id": 6560, "title": "清水町長カップ モルック大会"}
   ]
 }
