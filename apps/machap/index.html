@@ -29,6 +29,12 @@
   --radius-sm: 12px;
   --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04);
   --shadow-hover: 0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08);
+  --cat-molkky: #EFF6FF;
+  --cat-molkky-text: #2563EB;
+  --cat-team: #ECFDF5;
+  --cat-team-text: #059669;
+  --cat-life: #FEF3C7;
+  --cat-life-text: #B45309;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
@@ -103,6 +109,21 @@ a { color: var(--accent); text-decoration: none; }
   font-size: 12px; font-weight: 800; color: #fff; flex-shrink: 0;
 }
 
+/* ===== Filter Bar ===== */
+.filter-bar {
+  display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+.filter-pill {
+  padding: 7px 18px; border-radius: 20px; font-size: 13px; font-weight: 600;
+  border: 1.5px solid var(--border); background: var(--card); color: var(--text-sub);
+  cursor: pointer; transition: all 0.2s; user-select: none;
+}
+.filter-pill:hover { border-color: var(--accent); color: var(--accent); }
+.filter-pill.active {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+}
+
 /* ===== Product Grid ===== */
 .product-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -113,18 +134,20 @@ a { color: var(--accent); text-decoration: none; }
   border-radius: var(--radius); overflow: hidden;
   transition: all 0.25s; box-shadow: var(--shadow);
   display: block; color: var(--text); text-decoration: none;
+  cursor: default;
 }
 .product-card:hover {
   box-shadow: var(--shadow-hover); transform: translateY(-3px);
   border-color: var(--accent);
 }
+.product-card.hidden { display: none; }
 .pc-img {
   width: 100%; aspect-ratio: 5/3; object-fit: cover;
   border-bottom: 1px solid var(--border-light); display: block;
   background: #F5F0EB;
 }
 .pc-body { padding: 16px 18px 18px; }
-.pc-top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.pc-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
 .pc-name { font-size: 15px; font-weight: 700; flex: 1; }
 .pc-maker {
   font-size: 10px; font-weight: 700; padding: 2px 8px;
@@ -133,7 +156,29 @@ a { color: var(--accent); text-decoration: none; }
 .maker-sano { background: #EFF6FF; color: var(--blue); }
 .maker-naka { background: #ECFDF5; color: var(--green); }
 .maker-both { background: #FEF3C7; color: #B45309; }
-.pc-desc { font-size: 13px; color: var(--text-sub); line-height: 1.7; }
+.pc-category {
+  font-size: 10px; font-weight: 700; padding: 2px 8px;
+  border-radius: 10px; flex-shrink: 0; letter-spacing: 0.03em;
+}
+.cat-molkky { background: var(--cat-molkky); color: var(--cat-molkky-text); }
+.cat-team { background: var(--cat-team); color: var(--cat-team-text); }
+.cat-life { background: var(--cat-life); color: var(--cat-life-text); }
+.pc-desc { font-size: 13px; color: var(--text-sub); line-height: 1.7; margin-bottom: 8px; }
+.pc-features {
+  list-style: none; padding: 0; margin: 0 0 10px;
+}
+.pc-features li {
+  font-size: 12px; color: var(--text-sub); line-height: 1.6;
+  padding-left: 14px; position: relative;
+}
+.pc-features li::before {
+  content: '・'; position: absolute; left: 0; color: var(--accent);
+}
+.pc-link {
+  display: inline-block; font-size: 12px; color: var(--text-dim);
+  transition: color 0.2s;
+}
+.pc-link:hover { color: var(--accent); }
 
 /* ===== Case ===== */
 .case-card {
@@ -192,6 +237,8 @@ a { color: var(--accent); text-decoration: none; }
   .product-grid { grid-template-columns: 1fr; }
   .how-steps { gap: 6px; }
   .how-step { padding: 10px 14px; font-size: 13px; }
+  .filter-bar { gap: 6px; }
+  .filter-pill { padding: 6px 14px; font-size: 12px; }
 }
 
 /* ===== Animation ===== */
@@ -243,121 +290,198 @@ a { color: var(--accent); text-decoration: none; }
 <!-- ==================== Products ==================== -->
 <section class="section section-warm" id="products">
   <div class="container section-center">
-    <p class="section-label">つくったもの</p>
+    <p class="section-label">プロダクトカタログ</p>
     <h2 class="section-title">全部、誰かの「困った」から生まれた。</h2>
-    <p class="section-desc">実際に使われているツールの一部をご紹介します。<br>タップすると実物を見れます。</p>
+    <p class="section-desc">実際に使われているツールをご紹介します。</p>
+
+    <div class="filter-bar">
+      <button class="filter-pill active" data-filter="all">すべて</button>
+      <button class="filter-pill" data-filter="molkky">モルック</button>
+      <button class="filter-pill" data-filter="team">チーム運営</button>
+      <button class="filter-pill" data-filter="life">くらし</button>
+    </div>
 
     <div class="product-grid">
 
-      <a class="product-card fade-in" href="https://molkky-hub.com" target="_blank">
+      <div class="product-card fade-in" data-category="molkky">
         <img class="pc-img" src="./img/molkky-hub.jpg" alt="MOLKKY HUB" loading="lazy">
         <div class="pc-body">
           <div class="pc-top">
             <div class="pc-name">MOLKKY HUB</div>
+            <span class="pc-category cat-molkky">モルック</span>
             <span class="pc-maker maker-sano">サノ</span>
           </div>
-          <div class="pc-desc">全国の大会情報がまとまったモルック専門サイト。大会の自動収集から記事公開まで全て自動運用。</div>
+          <div class="pc-desc">全国のモルック大会情報を自動収集。580件以上のデータベース。毎月3,000人が利用するモルック専門メディア。</div>
+          <ul class="pc-features">
+            <li>大会情報を自動で収集・公開</li>
+            <li>チーム紹介70件以上</li>
+            <li>週間まとめを毎週自動配信</li>
+          </ul>
+          <a class="pc-link" href="https://molkky-hub.com" target="_blank">実物を見る →</a>
         </div>
-      </a>
+      </div>
 
-      <a class="product-card fade-in" href="https://jonyjean21.github.io/sp-projects/viisi-master/" target="_blank">
+      <div class="product-card fade-in" data-category="molkky">
         <img class="pc-img" src="./img/viisi-master.jpg" alt="5先王" loading="lazy">
         <div class="pc-body">
           <div class="pc-top">
             <div class="pc-name">5先王（ヴィーシマスター）</div>
+            <span class="pc-category cat-molkky">モルック</span>
             <span class="pc-maker maker-sano">サノ</span>
           </div>
-          <div class="pc-desc">モルックの試合結果を記録するアプリ。記録したらXに自動で投稿。チャンピオン戦にも対応。</div>
+          <div class="pc-desc">試合結果をその場で記録。終わったらXに自動投稿。チャンピオン戦モードも搭載。</div>
+          <ul class="pc-features">
+            <li>スコアをリアルタイム入力</li>
+            <li>試合結果をXに自動投稿</li>
+            <li>チャンピオン戦に対応</li>
+          </ul>
+          <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/viisi-master/" target="_blank">実物を見る →</a>
         </div>
-      </a>
+      </div>
 
-      <a class="product-card fade-in" href="https://jonyjean21.github.io/sp-projects/championship/" target="_blank">
+      <div class="product-card fade-in" data-category="molkky">
         <img class="pc-img" src="./img/championship.jpg" alt="選手権トラッカー" loading="lazy">
         <div class="pc-body">
           <div class="pc-top">
             <div class="pc-name">日本選手権トラッカー</div>
+            <span class="pc-category cat-molkky">モルック</span>
             <span class="pc-maker maker-sano">サノ</span>
           </div>
-          <div class="pc-desc">全日本モルック選手権の予選結果をリアルタイムで追跡。6ブロック10会場を一画面で。</div>
+          <div class="pc-desc">全国6ブロック10会場の予選結果をリアルタイム表示。進行状況がひと目でわかる。</div>
+          <ul class="pc-features">
+            <li>6ブロック10会場を一画面で</li>
+            <li>結果をリアルタイム反映</li>
+            <li>管理画面から簡単入力</li>
+          </ul>
+          <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/championship/" target="_blank">実物を見る →</a>
         </div>
-      </a>
+      </div>
 
-      <a class="product-card fade-in" href="https://jonyjean21.github.io/sp-projects/naimol-admin/" target="_blank">
+      <div class="product-card fade-in" data-category="molkky">
         <img class="pc-img" src="./img/naimol-admin.jpg" alt="ナイモル大会管理" loading="lazy">
         <div class="pc-body">
           <div class="pc-top">
             <div class="pc-name">ナイモル大会管理</div>
+            <span class="pc-category cat-molkky">モルック</span>
             <span class="pc-maker maker-sano">サノ</span>
           </div>
-          <div class="pc-desc">大会の結果ページを自動で作成。スプレッドシートに入力するだけで写真付きの結果ページが完成。</div>
+          <div class="pc-desc">スプレッドシートに入力→結果ページ自動生成。写真付きの見栄えする結果ページ。</div>
+          <ul class="pc-features">
+            <li>スプシ入力だけで結果ページ完成</li>
+            <li>写真付きで見栄えよく</li>
+            <li>過去大会の記録も一覧</li>
+          </ul>
+          <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/naimol-admin/" target="_blank">実物を見る →</a>
         </div>
-      </a>
+      </div>
 
-      <a class="product-card fade-in" href="https://jonyjean21.github.io/sp-projects/teamride/" target="_blank">
+      <div class="product-card fade-in" data-category="team">
         <img class="pc-img" src="./img/teamride.jpg" alt="チームライド" loading="lazy">
         <div class="pc-body">
           <div class="pc-top">
             <div class="pc-name">チームライド</div>
+            <span class="pc-category cat-team">チーム運営</span>
             <span class="pc-maker maker-sano">サノ</span>
           </div>
-          <div class="pc-desc">子供の送迎を自動で割り振り。出欠を入れたら配車が決まって、催促メッセージも自動生成。</div>
+          <div class="pc-desc">出欠を入れたら配車が自動で決定。催促もLINE共有もワンタップ。</div>
+          <ul class="pc-features">
+            <li>出欠入力→自動配車</li>
+            <li>催促メッセージ自動生成</li>
+            <li>LINE共有ワンタップ</li>
+          </ul>
+          <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/teamride/" target="_blank">実物を見る →</a>
         </div>
-      </a>
+      </div>
 
-      <a class="product-card fade-in" href="https://jonyjean21.github.io/sp-projects/partner-portal/" target="_blank">
+      <div class="product-card fade-in" data-category="team">
         <img class="pc-img" src="./img/partner-portal.jpg" alt="循環ポータル" loading="lazy">
         <div class="pc-body">
           <div class="pc-top">
             <div class="pc-name">パートナー循環ポータル</div>
+            <span class="pc-category cat-team">チーム運営</span>
             <span class="pc-maker maker-sano">サノ</span>
           </div>
-          <div class="pc-desc">応援品がどこに届いたかを見える化。パートナーも受け取った人も、流れが全部わかる。</div>
+          <div class="pc-desc">応援品の流れを見える化。誰から届いて、どこに届いたかが全部わかる。</div>
+          <ul class="pc-features">
+            <li>応援品の流れをリアルタイム表示</li>
+            <li>パートナーへの感謝も見える化</li>
+            <li>信頼の循環を可視化</li>
+          </ul>
+          <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/partner-portal/" target="_blank">実物を見る →</a>
         </div>
-      </a>
+      </div>
 
-      <a class="product-card fade-in" href="https://jonyjean21.github.io/sp-projects/youtube/" target="_blank">
+      <div class="product-card fade-in" data-category="life">
         <img class="pc-img" src="./img/youtube.jpg" alt="YouTube分析" loading="lazy">
         <div class="pc-body">
           <div class="pc-top">
             <div class="pc-name">YouTube分析ダッシュボード</div>
+            <span class="pc-category cat-life">くらし</span>
             <span class="pc-maker maker-sano">サノ</span>
           </div>
-          <div class="pc-desc">YouTubeチャンネルの状態がひと目でわかる。動画ごとの成績やチャンネル全体の健康度を表示。</div>
+          <div class="pc-desc">チャンネルの状態がひと目でわかるダッシュボード。動画ごとの成績もチャンネル全体の健康度も。</div>
+          <ul class="pc-features">
+            <li>動画ごとの再生数・エンゲージメント</li>
+            <li>チャンネル全体の健康度スコア</li>
+            <li>わかりやすいグラフで可視化</li>
+          </ul>
+          <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/youtube/" target="_blank">実物を見る →</a>
         </div>
-      </a>
+      </div>
 
-      <a class="product-card fade-in" href="https://jonyjean21.github.io/sp-projects/meguri/" target="_blank">
+      <div class="product-card fade-in" data-category="life">
         <img class="pc-img" src="./img/meguri.jpg" alt="めぐり帳" loading="lazy">
         <div class="pc-body">
           <div class="pc-top">
             <div class="pc-name">めぐり帳</div>
+            <span class="pc-category cat-life">くらし</span>
             <span class="pc-maker maker-sano">サノ</span>
           </div>
-          <div class="pc-desc">人からもらった恩、約束、貸し借りを記録。忘れたくない「ありがとう」を残すアプリ。</div>
+          <div class="pc-desc">人からもらった恩、約束、貸し借りを記録。忘れたくない「ありがとう」を残す。</div>
+          <ul class="pc-features">
+            <li>もらった恩・約束を記録</li>
+            <li>返し忘れをリマインド</li>
+            <li>感謝のログが貯まっていく</li>
+          </ul>
+          <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/meguri/" target="_blank">実物を見る →</a>
         </div>
-      </a>
+      </div>
 
-      <a class="product-card fade-in" href="https://jonyjean21.github.io/sp-projects/recipe/" target="_blank">
+      <div class="product-card fade-in" data-category="life">
         <img class="pc-img" src="./img/recipe.jpg" alt="レシピBOX" loading="lazy">
         <div class="pc-body">
           <div class="pc-top">
             <div class="pc-name">レシピBOX</div>
+            <span class="pc-category cat-life">くらし</span>
             <span class="pc-maker maker-sano">サノ</span>
           </div>
-          <div class="pc-desc">レシピをURLで保存。写真から材料を読み取り。家族みんなで共有できる。</div>
+          <div class="pc-desc">レシピをURLで保存。写真から材料を読み取り。家族で共有。</div>
+          <ul class="pc-features">
+            <li>URLでレシピを保存</li>
+            <li>写真→材料リスト自動抽出</li>
+            <li>家族みんなで共有</li>
+          </ul>
+          <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/recipe/" target="_blank">実物を見る →</a>
         </div>
-      </a>
+      </div>
 
-      <a class="product-card fade-in" href="https://marutaportal.manus.space/" target="_blank">
+      <div class="product-card fade-in" data-category="team">
         <div class="pc-img" style="background:linear-gradient(135deg,#1a3a5a,#2a6a8a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:28px;font-weight:800;">マルタ村</div>
         <div class="pc-body">
           <div class="pc-top">
             <div class="pc-name">マルタ村ポータル</div>
+            <span class="pc-category cat-team">チーム運営</span>
             <span class="pc-maker maker-naka">中</span>
           </div>
-          <div class="pc-desc">コミュニティの情報共有ポータル。メンバー管理・お知らせ・スケジュールを一箇所に。</div>
+          <div class="pc-desc">コミュニティの情報共有ポータル。お知らせ・スケジュール・メンバー管理を一箇所に。</div>
+          <ul class="pc-features">
+            <li>お知らせ・スケジュール一元管理</li>
+            <li>メンバー情報の共有</li>
+            <li>Google SSO対応</li>
+          </ul>
+          <a class="pc-link" href="https://marutaportal.manus.space/" target="_blank">実物を見る →</a>
         </div>
-      </a>
+      </div>
 
     </div>
   </div>
@@ -419,6 +543,22 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
     e.preventDefault();
     const t = document.querySelector(a.getAttribute('href'));
     if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+// Category filter
+document.querySelectorAll('.filter-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    const filter = pill.dataset.filter;
+    document.querySelectorAll('.product-card').forEach(card => {
+      if (filter === 'all' || card.dataset.category === filter) {
+        card.classList.remove('hidden');
+      } else {
+        card.classList.add('hidden');
+      }
+    });
   });
 });
 </script>
