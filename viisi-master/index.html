@@ -567,7 +567,7 @@ const DEFAULT_DATA = {
     x_account: "https://x.com/viisimaster5",
     rules_url: "https://nutritious-cesium-455.notion.site/5-2a8d31a2c3eb80c486fafbbef4592477"
   },
-  champion: { name: "こ〜すけ", x_handle: "@kou1109_kei823", since: "2026-02-07", defenses: 0 },
+  champion: { name: "フトシ", x_handle: "@tairafutoshi42", since: "2026-03-05", defenses: 0 },
   gatekeepers: [
     { name: "こ〜すけ", x_handle: "@kou1109_kei823" },
     { name: "サノ", x_handle: "@sasesisusomen" },
@@ -576,7 +576,7 @@ const DEFAULT_DATA = {
     { name: "川上", x_handle: "@4hoc9qrebm70371" }
   ],
   players: {
-    "こ〜すけ": { x: "@kou1109_kei823", role: "champion" },
+    "こ〜すけ": { x: "@kou1109_kei823", role: "former_champion" },
     "サノ": { x: "@sasesisusomen", role: "gatekeeper" },
     "とめ": { x: "@dayumachika1220", role: "former_champion" },
     "ケニー": { x: "@kennyfuruchan", role: "former_champion" },
@@ -584,7 +584,7 @@ const DEFAULT_DATA = {
     "まつ": { x: "@8iwedehwyg35lvp", role: "gatekeeper" },
     "お〜はし": { x: "@ketupuri_molkky", role: "gatekeeper" },
     "サキ": { x: "@saki_1221_0121", role: "challenger" },
-    "フトシ": { x: "@tairafutoshi42", role: "challenger" },
+    "フトシ": { x: "@tairafutoshi42", role: "champion" },
     "ヒジ": { x: null, role: "challenger" },
     "テラ": { x: "@jhite250", role: "challenger" },
     "ししょー": { x: "@morikawashisho0", role: "challenger" },
@@ -598,7 +598,10 @@ const DEFAULT_DATA = {
     "かお": { x: "@kao_molkkytrail", role: "challenger" },
     "ノブ": { x: null, role: "challenger" },
     "ミツハタ": { x: "@t_mitsuhata", role: "challenger" },
-    "あつかん": { x: "@atsukan_mlml", role: "challenger" }
+    "あつかん": { x: "@atsukan_mlml", role: "challenger" },
+    "カイ": { x: "@kai_no_tubukai", role: "challenger" },
+    "うどん": { x: "@nan_yaku_ch", role: "challenger" },
+    "こーだい": { x: "@ko_dai_molkky50", role: "challenger" }
   },
   matches: [
     // --- 2025-11-14 ---
@@ -657,7 +660,24 @@ const DEFAULT_DATA = {
     // --- 2026-02-15 ---
     { date: "2026-02-15", challenger: "ヒジ", defender: "川上", role: "gatekeeper", sc: 2, sd: 5, winner: "川上" },
     // --- 2026-02-17 ---
-    { date: "2026-02-17", challenger: "とめ", defender: "まつ", role: "gatekeeper", sc: 3, sd: 5, winner: "まつ" }
+    { date: "2026-02-17", challenger: "とめ", defender: "まつ", role: "gatekeeper", sc: 3, sd: 5, winner: "まつ" },
+    // --- 2026-02-21 ---
+    { date: "2026-02-21", challenger: "カイ", defender: "サノ", role: "gatekeeper", sc: 5, sd: 2, winner: "カイ" },
+    { date: "2026-02-21", challenger: "うどん", defender: "まつ", role: "gatekeeper", sc: 2, sd: 5, winner: "まつ" },
+    { date: "2026-02-21", challenger: "ヒジ", defender: "まつ", role: "gatekeeper", sc: 5, sd: 3, winner: "ヒジ" },
+    { date: "2026-02-21", challenger: "フトシ", defender: "川上", role: "gatekeeper", sc: 5, sd: 3, winner: "フトシ" },
+    // --- 2026-02-22 ---
+    { date: "2026-02-22", challenger: "こーだい", defender: "お〜はし", role: "gatekeeper", sc: 5, sd: 2, winner: "こーだい" },
+    { date: "2026-02-22", challenger: "テラ", defender: "川上", role: "gatekeeper", sc: 0, sd: 5, winner: "川上" },
+    // --- 2026-02-23 ---
+    { date: "2026-02-23", challenger: "かお", defender: "まつ", role: "gatekeeper", sc: 5, sd: 3, winner: "かお" },
+    // --- 2026-02-28 ---
+    { date: "2026-02-28", challenger: "かお", defender: "お〜はし", role: "gatekeeper", sc: 1, sd: 5, winner: "お〜はし" },
+    { date: "2026-02-28", challenger: "ししょー", defender: "お〜はし", role: "gatekeeper", sc: 0, sd: 5, winner: "お〜はし" },
+    // --- 2026-03-01 タイトルマッチ ---
+    { date: "2026-03-01", challenger: "サキ", defender: "こ〜すけ", role: "champion", sc: 2, sd: 5, winner: "こ〜すけ" },
+    // --- 2026-03-05 タイトルマッチ ---
+    { date: "2026-03-05", challenger: "フトシ", defender: "こ〜すけ", role: "champion", sc: 5, sd: 3, winner: "フトシ" }
   ]
 };
 
@@ -1195,6 +1215,27 @@ function saveOnly() {
     });
     saveLocalCache();
   }
+
+  // チャンピオン自動更新: タイトルマッチで挑戦者が勝ったら王座交代
+  matchesToSave.forEach(match => {
+    if (match.role === 'champion' && match.winner === match.challenger) {
+      const newChamp = match.challenger;
+      const p = D.players[newChamp] || {};
+      D.champion = { name: newChamp, x_handle: p.x || null, since: match.date, defenses: 0 };
+      if (D.players[newChamp]) D.players[newChamp].role = 'champion';
+      // 旧チャンピオンを元王者に
+      const oldChamp = match.defender;
+      if (D.players[oldChamp] && D.players[oldChamp].role === 'champion') {
+        D.players[oldChamp].role = 'former_champion';
+      }
+      saveData();
+      showToast(`👑 新チャンピオン: ${newChamp}!`);
+    } else if (match.role === 'champion' && match.winner === match.defender) {
+      // 防衛成功: defenses +1
+      D.champion.defenses = (D.champion.defenses || 0) + 1;
+      saveData();
+    }
+  });
 
   showToast(`${count}試合を記録しました`);
   entries = [];
