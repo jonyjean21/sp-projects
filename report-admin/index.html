@@ -37,21 +37,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
 .btn-sm { padding: 0.3rem 0.7rem; font-size: 0.75rem; }
 .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
 .btn-outline:hover:not(:disabled) { border-color: var(--dim); }
-.btn-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 
 .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.8rem; margin-bottom: 1rem; }
 .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; text-align: center; }
 .stat-card .stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
 .stat-card .stat-label { font-size: 0.72rem; color: var(--dim); margin-top: 0.3rem; }
-
-.pill { display: inline-block; font-size: 0.68rem; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
-.pill-feat { background: rgba(34,197,94,0.15); color: var(--ok); }
-.pill-fix { background: rgba(239,68,68,0.15); color: var(--err); }
-.pill-refactor { background: rgba(167,139,250,0.15); color: var(--purple); }
-.pill-docs { background: rgba(74,158,255,0.15); color: var(--blue); }
-.pill-style { background: rgba(6,182,212,0.15); color: var(--cyan); }
-.pill-chore { background: rgba(136,136,136,0.15); color: var(--dim); }
-.pill-test { background: rgba(245,158,11,0.15); color: var(--warn); }
 
 /* ===== Calendar ===== */
 .cal-nav { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
@@ -59,15 +49,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
 .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
 .cal-head { font-size: 0.7rem; color: var(--dim); text-align: center; padding: 0.3rem; }
 .cal-day {
-  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
-  font-size: 0.8rem; border-radius: 8px; cursor: default; color: var(--dim);
-  position: relative;
+  aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-size: 0.8rem; border-radius: 8px; cursor: default; color: var(--dim); position: relative;
 }
 .cal-day.current-month { color: var(--text); }
 .cal-day.has-report { background: rgba(99,102,241,0.15); color: var(--accent); cursor: pointer; font-weight: 600; }
 .cal-day.has-report:hover { background: rgba(99,102,241,0.3); }
-.cal-day.today { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 8px; }
-.cal-commits { position: absolute; bottom: 2px; font-size: 0.5rem; color: var(--dim); }
+.cal-day.today { outline: 2px solid var(--accent); outline-offset: -2px; }
+.cal-headline { font-size: 0.4rem; color: var(--dim); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 2px; }
 
 /* ===== Report Viewer ===== */
 .report-nav { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
@@ -77,29 +66,32 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
   border-radius: 8px; padding: 0.3rem 0.6rem; font-size: 0.8rem;
 }
 .headline-card { background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(6,182,212,0.1)); border: 1px solid rgba(99,102,241,0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
-.headline-card h2 { font-size: 1.2rem; margin-bottom: 0.5rem; color: var(--accent); }
-.headline-card p { font-size: 0.85rem; line-height: 1.6; color: var(--text); }
+.headline-card h2 { font-size: 1.2rem; margin-bottom: 0.8rem; color: var(--accent); }
+.headline-card .summary-body { font-size: 0.88rem; line-height: 1.8; color: var(--text); margin-bottom: 0.8rem; }
+.headline-card .areas-narrative { font-size: 0.82rem; line-height: 1.6; color: var(--dim); border-top: 1px solid rgba(99,102,241,0.2); padding-top: 0.8rem; }
 
 .highlights { list-style: none; padding: 0; }
-.highlights li { padding: 0.4rem 0; font-size: 0.85rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.5rem; }
+.highlights li { padding: 0.5rem 0; font-size: 0.88rem; line-height: 1.5; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 0.6rem; }
 .highlights li:last-child { border-bottom: none; }
-.highlights li::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--ok); flex-shrink: 0; }
+.highlights li::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); flex-shrink: 0; margin-top: 0.35rem; }
+
+/* Product cards */
+.product-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; margin-bottom: 0.6rem; }
+.product-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
+.product-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.product-name { font-size: 0.9rem; font-weight: 600; flex: 1; }
+.product-meta { font-size: 0.72rem; color: var(--dim); }
+.product-items { padding-left: 1rem; }
+.product-items li { font-size: 0.82rem; color: var(--dim); padding: 0.15rem 0; line-height: 1.4; list-style: disc; }
+.product-items li .feat-label { color: var(--ok); font-weight: 500; }
+.product-items li .fix-label { color: var(--err); font-weight: 500; }
+.product-items li .refactor-label { color: var(--purple); font-weight: 500; }
 
 /* Area bars */
 .area-bar-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; font-size: 0.8rem; }
 .area-bar-label { width: 120px; text-align: right; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--dim); }
-.area-bar-track { flex: 1; height: 20px; background: var(--bg); border-radius: 4px; overflow: hidden; position: relative; }
+.area-bar-track { flex: 1; height: 20px; background: var(--bg); border-radius: 4px; overflow: hidden; }
 .area-bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s; display: flex; align-items: center; padding-left: 6px; font-size: 0.7rem; color: #fff; font-weight: 600; min-width: 24px; }
-.area-bar-value { font-size: 0.75rem; color: var(--dim); width: 30px; text-align: right; flex-shrink: 0; }
-
-/* Commits list */
-.commit-row { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0; border-bottom: 1px solid rgba(42,42,58,0.5); font-size: 0.8rem; }
-.commit-row:last-child { border-bottom: none; }
-.commit-time { color: var(--dim); font-size: 0.75rem; width: 40px; flex-shrink: 0; font-family: monospace; }
-.commit-msg { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.commit-stats { font-size: 0.7rem; color: var(--dim); white-space: nowrap; }
-.commit-stats .add { color: var(--ok); }
-.commit-stats .del { color: var(--err); }
 
 /* ===== Stats Tab ===== */
 .period-selector { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
@@ -107,15 +99,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
 .period-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(99,102,241,0.1); }
 
 .bar-chart { display: flex; align-items: flex-end; gap: 2px; height: 120px; padding-top: 8px; }
-.bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; height: 100%; justify-content: flex-end; }
-.bar { background: var(--accent); border-radius: 3px 3px 0 0; width: 100%; min-height: 2px; transition: height 0.3s; cursor: pointer; position: relative; }
+.bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; height: 100%; justify-content: flex-end; cursor: pointer; }
+.bar { background: var(--accent); border-radius: 3px 3px 0 0; width: 100%; min-height: 2px; transition: height 0.3s; position: relative; }
 .bar:hover { opacity: 0.8; }
-.bar-label { font-size: 0.55rem; color: var(--dim); writing-mode: vertical-lr; text-orientation: mixed; max-height: 30px; overflow: hidden; }
+.bar-label { font-size: 0.55rem; color: var(--dim); }
 .bar-tooltip { display: none; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; font-size: 0.7rem; white-space: nowrap; z-index: 10; }
 .bar:hover .bar-tooltip { display: block; }
 
 .h-bar-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem; font-size: 0.8rem; }
-.h-bar-label { width: 80px; text-align: right; color: var(--dim); flex-shrink: 0; }
+.h-bar-label { width: 100px; text-align: right; color: var(--dim); flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .h-bar-track { flex: 1; height: 22px; background: var(--bg); border-radius: 4px; overflow: hidden; }
 .h-bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 0.7rem; color: #fff; font-weight: 600; min-width: 28px; }
 .h-bar-value { font-size: 0.75rem; color: var(--dim); width: 40px; flex-shrink: 0; text-align: right; }
@@ -137,12 +129,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
 .copy-btn:hover { border-color: var(--accent); }
 .copy-btn.copied { border-color: var(--ok); color: var(--ok); }
 
-/* Empty state */
 .empty { text-align: center; padding: 3rem; color: var(--dim); font-size: 0.9rem; }
 
 @media (max-width: 640px) {
   .stat-grid { grid-template-columns: repeat(2, 1fr); }
-  .area-bar-label { width: 80px; font-size: 0.7rem; }
+  .area-bar-label, .h-bar-label { width: 80px; font-size: 0.7rem; }
   .content { padding: 0.8rem; }
 }
 </style>
@@ -209,43 +200,30 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
 <script>
 const FIREBASE_URL = 'https://viisi-master-app-default-rtdb.firebaseio.com';
 const REPORT_PATH = '/daily-reports';
+const AREA_COLORS = ['var(--accent)','var(--ok)','var(--cyan)','var(--purple)','var(--warn)','var(--blue)','var(--err)','#e879f9','#fb923c','#94a3b8'];
 
-// State
 let allReports = {};
 let calYear, calMonth;
 let currentPeriod = 7;
-let currentReportDate = '';
 
 // ===== Init =====
 async function init() {
   const badge = document.getElementById('connBadge');
   try {
-    const resp = await fetch(`${FIREBASE_URL}${REPORT_PATH}.json?shallow=true`);
-    const keys = await resp.json();
-    if (keys) {
-      const dates = Object.keys(keys);
-      badge.textContent = `${dates.length}日分`;
-      badge.classList.add('ok');
-      // Load all report data for stats
-      await loadAllReports();
-    } else {
-      badge.textContent = 'データなし';
-    }
+    const resp = await fetch(`${FIREBASE_URL}${REPORT_PATH}.json`);
+    allReports = await resp.json() || {};
+    const count = Object.keys(allReports).length;
+    badge.textContent = `${count}日分`;
+    badge.classList.add('ok');
   } catch (e) {
     badge.textContent = 'エラー';
   }
 
   const now = new Date();
-  // JST
   const jstNow = new Date(now.getTime() + 9 * 3600000);
   calYear = jstNow.getUTCFullYear();
   calMonth = jstNow.getUTCMonth();
   renderCalendar();
-}
-
-async function loadAllReports() {
-  const resp = await fetch(`${FIREBASE_URL}${REPORT_PATH}.json`);
-  allReports = await resp.json() || {};
 }
 
 // ===== Tabs =====
@@ -256,7 +234,6 @@ function switchTab(name) {
   });
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel-' + name).classList.add('active');
-
   if (name === 'stats') renderStats();
 }
 
@@ -269,70 +246,56 @@ function calNav(dir) {
 }
 
 function renderCalendar() {
-  const title = `${calYear}年${calMonth + 1}月`;
-  document.getElementById('calTitle').textContent = title;
+  document.getElementById('calTitle').textContent = `${calYear}年${calMonth + 1}月`;
 
   // Month stats
-  let mCommits = 0, mAdd = 0, mDel = 0, mDays = 0;
+  let mProjects = new Set(), mAdd = 0, mDel = 0, mDays = 0;
+  const prefix = `${calYear}-${String(calMonth+1).padStart(2,'0')}`;
   Object.entries(allReports).forEach(([date, r]) => {
-    if (date.startsWith(`${calYear}-${String(calMonth+1).padStart(2,'0')}`)) {
-      mCommits += r.stats?.total_commits || 0;
+    if (date.startsWith(prefix) && (r.stats?.total_commits || 0) > 0) {
       mAdd += r.stats?.total_additions || 0;
       mDel += r.stats?.total_deletions || 0;
-      if ((r.stats?.total_commits || 0) > 0) mDays++;
+      mDays++;
+      if (r.stats?.areas) Object.keys(r.stats.areas).forEach(a => mProjects.add(a));
     }
   });
   document.getElementById('calMonthStats').innerHTML = `
-    <div class="stat-card"><div class="stat-value">${mCommits}</div><div class="stat-label">コミット</div></div>
+    <div class="stat-card"><div class="stat-value">${mDays}</div><div class="stat-label">活動日</div></div>
+    <div class="stat-card"><div class="stat-value">${mProjects.size}</div><div class="stat-label">プロダクト数</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--ok)">+${mAdd.toLocaleString()}</div><div class="stat-label">追加行</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--err)">-${mDel.toLocaleString()}</div><div class="stat-label">削除行</div></div>
-    <div class="stat-card"><div class="stat-value">${mDays}</div><div class="stat-label">活動日</div></div>
   `;
 
-  // Calendar grid
   const grid = document.getElementById('calGrid');
   const weekdays = ['月','火','水','木','金','土','日'];
   let html = weekdays.map(d => `<div class="cal-head">${d}</div>`).join('');
 
-  const firstDay = new Date(calYear, calMonth, 1);
-  let startDow = firstDay.getDay(); // 0=Sun
-  startDow = startDow === 0 ? 6 : startDow - 1; // Convert to Mon=0
-
+  let startDow = new Date(calYear, calMonth, 1).getDay();
+  startDow = startDow === 0 ? 6 : startDow - 1;
   const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
 
-  // Today (JST)
   const now = new Date();
   const jstNow = new Date(now.getTime() + 9 * 3600000);
   const todayStr = `${jstNow.getUTCFullYear()}-${String(jstNow.getUTCMonth()+1).padStart(2,'0')}-${String(jstNow.getUTCDate()).padStart(2,'0')}`;
 
-  // Previous month padding
   const prevDays = new Date(calYear, calMonth, 0).getDate();
-  for (let i = startDow - 1; i >= 0; i--) {
-    html += `<div class="cal-day">${prevDays - i}</div>`;
-  }
+  for (let i = startDow - 1; i >= 0; i--) html += `<div class="cal-day">${prevDays - i}</div>`;
 
-  // Current month days
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const report = allReports[dateStr];
-    const commits = report?.stats?.total_commits || 0;
-    const hasReport = commits > 0;
+    const hasData = (report?.stats?.total_commits || 0) > 0;
     const isToday = dateStr === todayStr;
-
     let cls = 'cal-day current-month';
-    if (hasReport) cls += ' has-report';
+    if (hasData) cls += ' has-report';
     if (isToday) cls += ' today';
-    const onclick = hasReport ? `onclick="openReport('${dateStr}')"` : '';
-    const commitBadge = hasReport ? `<span class="cal-commits">${commits}c</span>` : '';
-    html += `<div class="${cls}" ${onclick}>${d}${commitBadge}</div>`;
+    const onclick = hasData ? `onclick="openReport('${dateStr}')"` : '';
+    const headline = hasData && report?.summary?.headline ? `<span class="cal-headline">${esc(report.summary.headline)}</span>` : '';
+    html += `<div class="${cls}" ${onclick}>${d}${headline}</div>`;
   }
 
-  // Next month padding
-  const totalCells = startDow + daysInMonth;
-  const remaining = (7 - totalCells % 7) % 7;
-  for (let i = 1; i <= remaining; i++) {
-    html += `<div class="cal-day">${i}</div>`;
-  }
+  const remaining = (7 - (startDow + daysInMonth) % 7) % 7;
+  for (let i = 1; i <= remaining; i++) html += `<div class="cal-day">${i}</div>`;
 
   grid.innerHTML = html;
 }
@@ -358,12 +321,11 @@ function reportNav(dir) {
 }
 
 function loadReport(dateStr) {
-  currentReportDate = dateStr;
   const container = document.getElementById('reportContent');
   const report = allReports[dateStr];
 
-  if (!report) {
-    container.innerHTML = `<div class="empty">この日の日報はありません（${dateStr}）</div>`;
+  if (!report || (report.stats?.total_commits || 0) === 0) {
+    container.innerHTML = `<div class="empty">${report ? 'この日はオフ' : 'データなし'}（${dateStr}）</div>`;
     return;
   }
 
@@ -371,20 +333,11 @@ function loadReport(dateStr) {
   const sum = report.summary || {};
   const commits = report.commits || [];
 
-  // Headline
-  let html = `
-    <div class="headline-card">
-      <h2>${sum.headline || dateStr}</h2>
-      <p>${sum.body || '要約なし'}</p>
-    </div>
-  `;
-
-  // Stats
-  html += `<div class="stat-grid">
-    <div class="stat-card"><div class="stat-value">${s.total_commits || 0}</div><div class="stat-label">コミット</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--ok)">+${(s.total_additions||0).toLocaleString()}</div><div class="stat-label">追加行</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--err)">-${(s.total_deletions||0).toLocaleString()}</div><div class="stat-label">削除行</div></div>
-    <div class="stat-card"><div class="stat-value">${s.time_range?.first || '-'}<small style="font-size:0.6rem;color:var(--dim)">〜</small>${s.time_range?.last || '-'}</div><div class="stat-label">活動時間</div></div>
+  // Headline + Summary + Areas narrative
+  let html = `<div class="headline-card">
+    <h2>${sum.headline || dateStr}</h2>
+    <div class="summary-body">${esc(sum.body || '')}</div>
+    ${sum.areas_narrative ? `<div class="areas-narrative">${esc(sum.areas_narrative)}</div>` : ''}
   </div>`;
 
   // Highlights
@@ -394,35 +347,54 @@ function loadReport(dateStr) {
     html += `</ul></div>`;
   }
 
-  // Area breakdown
+  // Product breakdown - grouped by area with commit messages
   if (s.areas && Object.keys(s.areas).length) {
-    const maxCommits = Math.max(...Object.values(s.areas).map(a => a.commits));
-    const colors = ['var(--accent)','var(--ok)','var(--cyan)','var(--purple)','var(--warn)','var(--blue)','var(--err)'];
-    html += `<div class="card"><h3>プロジェクト別内訳</h3>`;
-    Object.entries(s.areas)
-      .sort((a, b) => b[1].commits - a[1].commits)
-      .forEach(([name, data], i) => {
-        const pct = (data.commits / maxCommits * 100).toFixed(0);
-        const color = colors[i % colors.length];
-        html += `<div class="area-bar-row">
-          <div class="area-bar-label">${esc(name)}</div>
-          <div class="area-bar-track"><div class="area-bar-fill" style="width:${pct}%;background:${color}">${data.commits}</div></div>
-          <div class="area-bar-value">+${data.additions}</div>
-        </div>`;
-      });
-    html += `</div>`;
-  }
+    html += `<div class="card"><h3>今日のプロダクト</h3>`;
+    const sorted = Object.entries(s.areas).sort((a, b) => b[1].commits - a[1].commits);
+    sorted.forEach(([area, data], i) => {
+      const color = AREA_COLORS[i % AREA_COLORS.length];
+      const areaCommits = commits.filter(c => c.area === area);
 
-  // Commits list
-  if (commits.length) {
-    html += `<div class="card"><h3>コミット一覧（${commits.length}件）</h3>`;
-    commits.forEach(c => {
-      html += `<div class="commit-row">
-        <span class="commit-time">${c.time}</span>
-        <span class="pill pill-${c.type}">${c.type}</span>
-        <span class="commit-msg" title="${esc(c.message)}">${esc(c.message)}</span>
-        <span class="commit-stats"><span class="add">+${c.additions}</span> <span class="del">-${c.deletions}</span></span>
-      </div>`;
+      // Group by type for cleaner display
+      const feats = areaCommits.filter(c => c.type === 'feat');
+      const fixes = areaCommits.filter(c => c.type === 'fix');
+      const others = areaCommits.filter(c => c.type !== 'feat' && c.type !== 'fix');
+
+      html += `<div class="product-card">
+        <div class="product-header">
+          <div class="product-dot" style="background:${color}"></div>
+          <div class="product-name">${esc(area)}</div>
+          <div class="product-meta">+${data.additions.toLocaleString()} / -${data.deletions.toLocaleString()}</div>
+        </div>
+        <ul class="product-items">`;
+
+      // Show deduplicated meaningful messages (skip prefix like "feat: ")
+      const shown = new Set();
+      const cleanMsg = msg => msg.replace(/^(feat|fix|refactor|docs|style|chore|test|add|update|enhance|log|data|security|apps|machap|ranking|teamride|naimol|promote|repost|dashboard|championship|gallery|result|income|hub-dashboard)[:(]\s*/i, '').replace(/^[:(]\s*/, '');
+
+      feats.forEach(c => {
+        const clean = cleanMsg(c.message);
+        if (!shown.has(clean) && clean.length > 5) {
+          shown.add(clean);
+          html += `<li><span class="feat-label">+</span> ${esc(clean)}</li>`;
+        }
+      });
+      fixes.forEach(c => {
+        const clean = cleanMsg(c.message);
+        if (!shown.has(clean) && clean.length > 5) {
+          shown.add(clean);
+          html += `<li><span class="fix-label">fix</span> ${esc(clean)}</li>`;
+        }
+      });
+      others.forEach(c => {
+        const clean = cleanMsg(c.message);
+        if (!shown.has(clean) && clean.length > 5) {
+          shown.add(clean);
+          html += `<li><span class="refactor-label">${esc(c.type)}</span> ${esc(clean)}</li>`;
+        }
+      });
+
+      html += `</ul></div>`;
     });
     html += `</div>`;
   }
@@ -451,76 +423,59 @@ function renderStats() {
     dates.push(`${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`);
   }
 
-  // Aggregate
-  let totalCommits = 0, totalAdd = 0, totalDel = 0, activeDays = 0;
-  const typeAgg = {};
+  let totalAdd = 0, totalDel = 0, activeDays = 0;
   const areaAgg = {};
-  const dailyCommits = [];
+  const dailyData = [];
+  const allProjects = new Set();
 
   dates.forEach(date => {
     const r = allReports[date];
     const commits = r?.stats?.total_commits || 0;
-    dailyCommits.push({ date, commits });
-    totalCommits += commits;
+    const headline = r?.summary?.headline || '';
+    dailyData.push({ date, commits, headline });
     totalAdd += r?.stats?.total_additions || 0;
     totalDel += r?.stats?.total_deletions || 0;
     if (commits > 0) activeDays++;
 
-    if (r?.stats?.types) {
-      Object.entries(r.stats.types).forEach(([t, n]) => { typeAgg[t] = (typeAgg[t] || 0) + n; });
-    }
     if (r?.stats?.areas) {
-      Object.entries(r.stats.areas).forEach(([a, d]) => { areaAgg[a] = (areaAgg[a] || 0) + d.commits; });
+      Object.entries(r.stats.areas).forEach(([a, d]) => {
+        areaAgg[a] = (areaAgg[a] || 0) + d.commits;
+        allProjects.add(a);
+      });
     }
   });
 
   let html = `<div class="stat-grid">
-    <div class="stat-card"><div class="stat-value">${totalCommits}</div><div class="stat-label">${currentPeriod}日間コミット</div></div>
+    <div class="stat-card"><div class="stat-value">${activeDays}<small style="font-size:0.9rem;color:var(--dim)">/${currentPeriod}</small></div><div class="stat-label">活動日</div></div>
+    <div class="stat-card"><div class="stat-value">${allProjects.size}</div><div class="stat-label">関わったプロダクト</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--ok)">+${totalAdd.toLocaleString()}</div><div class="stat-label">追加行</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--err)">-${totalDel.toLocaleString()}</div><div class="stat-label">削除行</div></div>
-    <div class="stat-card"><div class="stat-value">${activeDays}<small style="font-size:0.9rem;color:var(--dim)">/${currentPeriod}</small></div><div class="stat-label">活動日</div></div>
   </div>`;
 
-  // Daily commits bar chart
-  const maxDaily = Math.max(...dailyCommits.map(d => d.commits), 1);
-  html += `<div class="card"><h3>コミット推移</h3><div class="bar-chart">`;
-  dailyCommits.forEach(d => {
-    const h = (d.commits / maxDaily * 100).toFixed(0);
-    const dayLabel = d.date.slice(5); // MM-DD
-    html += `<div class="bar-col">
+  // Activity bar chart (clickable to navigate)
+  const maxDaily = Math.max(...dailyData.map(d => d.commits), 1);
+  html += `<div class="card"><h3>活動推移</h3><div class="bar-chart">`;
+  dailyData.forEach(d => {
+    const h = d.commits > 0 ? Math.max((d.commits / maxDaily * 100), 4).toFixed(0) : 0;
+    const dayLabel = d.date.slice(8); // DD
+    const onclick = d.commits > 0 ? `onclick="openReport('${d.date}')"` : '';
+    html += `<div class="bar-col" ${onclick}>
       <div class="bar" style="height:${h}%">
-        <div class="bar-tooltip">${d.date}: ${d.commits}c</div>
+        <div class="bar-tooltip">${d.date}${d.headline ? ': ' + d.headline : ''}</div>
       </div>
       ${currentPeriod <= 30 ? `<span class="bar-label">${dayLabel}</span>` : ''}
     </div>`;
   });
   html += `</div></div>`;
 
-  // Type breakdown
-  const typeColors = { feat: 'var(--ok)', fix: 'var(--err)', refactor: 'var(--purple)', docs: 'var(--blue)', style: 'var(--cyan)', chore: 'var(--dim)', test: 'var(--warn)' };
-  const maxType = Math.max(...Object.values(typeAgg), 1);
-  if (Object.keys(typeAgg).length) {
-    html += `<div class="card"><h3>タイプ別割合</h3>`;
-    Object.entries(typeAgg).sort((a,b) => b[1]-a[1]).forEach(([t, n]) => {
-      const pct = (n / totalCommits * 100).toFixed(0);
-      html += `<div class="h-bar-row">
-        <div class="h-bar-label">${t}</div>
-        <div class="h-bar-track"><div class="h-bar-fill" style="width:${n/maxType*100}%;background:${typeColors[t]||'var(--accent)'}">${pct}%</div></div>
-        <div class="h-bar-value">${n}</div>
-      </div>`;
-    });
-    html += `</div>`;
-  }
-
-  // Area breakdown
+  // Project breakdown
   const maxArea = Math.max(...Object.values(areaAgg), 1);
-  const areaColors = ['var(--accent)','var(--ok)','var(--cyan)','var(--purple)','var(--warn)','var(--blue)','var(--err)'];
   if (Object.keys(areaAgg).length) {
-    html += `<div class="card"><h3>プロジェクト別コミット数</h3>`;
+    html += `<div class="card"><h3>プロダクト別活動量</h3>`;
     Object.entries(areaAgg).sort((a,b) => b[1]-a[1]).forEach(([a, n], i) => {
       html += `<div class="h-bar-row">
-        <div class="h-bar-label" style="width:120px">${esc(a)}</div>
-        <div class="h-bar-track"><div class="h-bar-fill" style="width:${n/maxArea*100}%;background:${areaColors[i%areaColors.length]}">${n}</div></div>
+        <div class="h-bar-label">${esc(a)}</div>
+        <div class="h-bar-track"><div class="h-bar-fill" style="width:${n/maxArea*100}%;background:${AREA_COLORS[i%AREA_COLORS.length]}">${n}</div></div>
         <div class="h-bar-value">${n}</div>
       </div>`;
     });
@@ -534,16 +489,11 @@ function renderStats() {
 function loadExport(dateStr) {
   const container = document.getElementById('exportContent');
   const report = allReports[dateStr];
-
-  if (!report || !report.exports) {
-    container.innerHTML = `<div class="empty">この日のエクスポートデータはありません</div>`;
-    return;
-  }
+  if (!report?.exports) { container.innerHTML = '<div class="empty">この日のエクスポートデータはありません</div>'; return; }
 
   const exp = report.exports;
   let html = '';
 
-  // note.com markdown
   if (exp.note_markdown) {
     html += `<div class="card">
       <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.8rem">
@@ -554,7 +504,6 @@ function loadExport(dateStr) {
     </div>`;
   }
 
-  // X thread
   if (exp.x_thread?.length) {
     html += `<div class="card">
       <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.8rem">
@@ -566,24 +515,18 @@ function loadExport(dateStr) {
       const cls = len > 140 ? 'over' : len > 120 ? 'warn' : '';
       html += `<div class="tweet-card" data-tweet="${esc(tweet)}">
         <p>${esc(tweet)}</p>
-        <div class="tweet-meta">
-          <span>${i + 1}/${exp.x_thread.length}</span>
-          <span class="char-count ${cls}">${len}/140文字</span>
-        </div>
+        <div class="tweet-meta"><span>${i+1}/${exp.x_thread.length}</span><span class="char-count ${cls}">${len}/140</span></div>
       </div>`;
     });
     html += `</div>`;
   }
 
-  if (!html) html = '<div class="empty">エクスポートデータが空です</div>';
-  container.innerHTML = html;
+  container.innerHTML = html || '<div class="empty">エクスポートデータが空です</div>';
 }
 
-function copyText(btn, areaId) {
-  const text = document.getElementById(areaId).textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    btn.textContent = 'コピー済み';
-    btn.classList.add('copied');
+function copyText(btn, id) {
+  navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
+    btn.textContent = 'コピー済み'; btn.classList.add('copied');
     setTimeout(() => { btn.textContent = 'コピー'; btn.classList.remove('copied'); }, 2000);
   });
 }
@@ -591,17 +534,12 @@ function copyText(btn, areaId) {
 function copyAllTweets(btn) {
   const tweets = [...document.querySelectorAll('.tweet-card')].map(c => c.dataset.tweet);
   navigator.clipboard.writeText(tweets.join('\n\n---\n\n')).then(() => {
-    btn.textContent = 'コピー済み';
-    btn.classList.add('copied');
+    btn.textContent = 'コピー済み'; btn.classList.add('copied');
     setTimeout(() => { btn.textContent = '全コピー'; btn.classList.remove('copied'); }, 2000);
   });
 }
 
-// ===== Util =====
-function esc(str) {
-  if (!str) return '';
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+function esc(s) { return s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; }
 
 init();
 </script>
