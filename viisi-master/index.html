@@ -120,6 +120,31 @@
   }
   .keyword-input:focus { outline: none; border-color: #fbbf24; }
   .keyword-input::placeholder { color: #475569; }
+
+  /* 記録後モーダル */
+  .result-modal { max-width: 440px; width: 100%; max-height: 85vh; overflow-y: auto; }
+  .result-summary {
+    background: #0f172a; border-radius: 10px; padding: 12px; margin-bottom: 12px;
+    font-size: 13px; line-height: 1.6;
+  }
+  .result-summary .match-line { padding: 4px 0; }
+  .result-summary .winner-name { color: #fbbf24; font-weight: 700; }
+  .result-label {
+    font-size: 11px; font-weight: 700; color: #94a3b8; letter-spacing: 1px;
+    margin: 12px 0 6px; display: flex; align-items: center; gap: 6px;
+  }
+  .result-text-box {
+    background: #0f172a; border: 1px solid #334155; border-radius: 8px;
+    padding: 10px; font-size: 12px; line-height: 1.6; white-space: pre-wrap;
+    word-break: break-all; max-height: 150px; overflow-y: auto;
+  }
+  .result-actions { display: flex; gap: 8px; margin-top: 6px; }
+  .result-actions .btn-full { font-size: 13px; padding: 10px; }
+  .btn-line { background: #06C75522; color: #06C755; border: 1px solid #06C75544; }
+  .btn-line:active { background: #06C75555; }
+  .btn-x-intent { background: #1d9bf022; color: #1d9bf0; border: 1px solid #1d9bf044; }
+  .btn-x-intent:active { background: #1d9bf055; }
+
   .btn-danger { background: #ef444422; color: #f87171; border: 1px solid #ef444444; }
 
   /* 出力プレビュー */
@@ -500,6 +525,30 @@
       <button class="btn-full btn-secondary" onclick="hideModal('edit-match-modal')" style="flex:1;">キャンセル</button>
       <button class="btn-full btn-primary" onclick="saveEditMatch()" style="flex:1;">保存</button>
     </div>
+  </div>
+</div>
+
+<!-- ===== 記録後結果モーダル ===== -->
+<div class="modal-overlay" id="result-modal">
+  <div class="modal result-modal">
+    <h3 id="result-modal-title">記録完了</h3>
+    <div class="result-summary" id="result-summary"></div>
+
+    <div class="result-label">𝕏 投稿用</div>
+    <div class="result-text-box" id="result-x-text"></div>
+    <div class="result-actions">
+      <button class="btn-full btn-copy" onclick="copyResultText('result-x-text', this)" style="flex:1;">コピー</button>
+      <button class="btn-full btn-x-intent" onclick="openXIntent()" style="flex:1;">𝕏 で開く</button>
+    </div>
+
+    <div class="result-label">OpenChat用</div>
+    <div class="result-text-box" id="result-oc-text"></div>
+    <div class="result-actions">
+      <button class="btn-full btn-copy" onclick="copyResultText('result-oc-text', this)" style="flex:1;">コピー</button>
+      <button class="btn-full btn-line" onclick="shareLine()" style="flex:1;">LINEで共有</button>
+    </div>
+
+    <button class="btn-full btn-secondary" onclick="hideModal('result-modal')" style="margin-top: 12px;">閉じる</button>
   </div>
 </div>
 
@@ -1238,6 +1287,10 @@ function saveOnly() {
   });
 
   showToast(`${count}試合を記録しました`);
+
+  // 記録後モーダルを表示
+  showResultModal(matchesToSave);
+
   entries = [];
   entryCount = 0;
   document.getElementById('match-entries').innerHTML = '';
@@ -1575,6 +1628,98 @@ async function doPostToX(btn) {
     showToast('投稿エラー: ' + e.message);
     btn.textContent = '𝕏 に投稿';
     btn.classList.remove('posted');
+  }
+}
+
+// ============================================================
+// 記録後モーダル（X + OpenChat テキスト自動生成）
+// ============================================================
+function showResultModal(matches) {
+  if (!matches || matches.length === 0) return;
+
+  // タイトル
+  const hasNewChamp = matches.some(m => m.role === 'champion' && m.winner === m.challenger);
+  const hasDefense = matches.some(m => m.role === 'champion' && m.winner === m.defender);
+  let title = '記録完了';
+  if (hasNewChamp) title = '👑 新チャンピオン誕生!';
+  else if (hasDefense) title = '👑 王者防衛!';
+  else if (matches.length > 1) title = `${matches.length}試合を記録`;
+  document.getElementById('result-modal-title').textContent = title;
+
+  // サマリー
+  let summary = '';
+  matches.forEach(m => {
+    const icon = m.role === 'champion' ? '👑' : '🛡️';
+    const won = m.winner === m.challenger;
+    const tag = won ? (m.role === 'champion' ? '新王!' : '撃破') : '防衛';
+    summary += `<div class="match-line">${icon} ${m.challenger} vs ${m.defender}  <b>${m.sc}-${m.sd}</b>  `;
+    summary += `<span class="${won ? 'winner-name' : ''}">[${tag}]</span></div>`;
+  });
+  document.getElementById('result-summary').innerHTML = summary;
+
+  // X用テキスト（最適テンプレ自動選択）
+  const xText = autoSelectTemplate(matches);
+  document.getElementById('result-x-text').textContent = xText;
+
+  // OpenChat用テキスト（カジュアル短縮版）
+  const ocText = genOpenChatText(matches);
+  document.getElementById('result-oc-text').textContent = ocText;
+
+  document.getElementById('result-modal').classList.add('show');
+}
+
+function autoSelectTemplate(ms) {
+  const hasNewChamp = ms.find(m => m.role === 'champion' && m.winner === m.challenger);
+  if (hasNewChamp) return genNewChamp(ms);
+  const hasChampDefense = ms.find(m => m.role === 'champion' && m.winner === m.defender);
+  if (hasChampDefense) return genResults(ms);
+  if (ms.length >= 2) return genResults(ms);
+  return genMatchDay(ms);
+}
+
+function genOpenChatText(ms) {
+  let t = '【5先王】結果報告\n\n';
+  ms.forEach(m => {
+    const icon = m.role === 'champion' ? '👑' : '⚔️';
+    const won = m.winner === m.challenger;
+    const result = won
+      ? (m.role === 'champion' ? `${m.challenger}が新チャンピオンに!` : `${m.challenger}が門番${m.defender}を撃破!`)
+      : `${m.defender}が防衛 (${m.sd}-${m.sc})`;
+    t += `${icon} ${m.challenger} vs ${m.defender}  ${m.sc}-${m.sd}\n`;
+    t += `→ ${result}\n`;
+    if (m.keywords && m.keywords.length > 0) t += `(${m.keywords.join(' / ')})\n`;
+    t += '\n';
+  });
+  t += `現チャンピオン: ${D.champion.name}`;
+  return t;
+}
+
+function copyResultText(elementId, btn) {
+  const text = document.getElementById(elementId).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'コピー完了!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = orig;
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+function openXIntent() {
+  const text = document.getElementById('result-x-text').textContent;
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(text), '_blank');
+}
+
+function shareLine() {
+  const text = document.getElementById('result-oc-text').textContent;
+  // Web Share API があればそれを使う（LINEが選択肢に出る）
+  if (navigator.share) {
+    navigator.share({ text }).catch(() => {});
+  } else {
+    // fallback: LINEのシェアURL
+    window.open('https://line.me/R/share?text=' + encodeURIComponent(text), '_blank');
   }
 }
 
