@@ -1333,10 +1333,14 @@ function renderPostSelector() {
       const prefix = m.role === 'champion' ? '👑' : '🛡️';
       const won = m.winner === m.challenger;
       const result = won ? (m.role === 'champion' ? '新王' : '撃破') : '防衛';
+      const existingKw = (m.keywords && m.keywords.length > 0) ? m.keywords.join(', ') : '';
+      html += `<div class="post-match-wrap">`;
       html += `<label class="post-match-row">`;
       html += `<input type="checkbox" class="post-match-cb" data-idx="${idx}" data-date="${date}" onchange="onPostMatchCheck()">`;
       html += `<span>${prefix} ${m.challenger} vs ${m.defender} ${m.sc}-${m.sd} [${result}]</span>`;
       html += `</label>`;
+      html += `<input type="text" class="keyword-input post-kw" data-idx="${idx}" value="${existingKw}" placeholder="キーワード" style="display:none;margin:2px 0 6px 26px;font-size:11px;padding:6px 10px;">`;
+      html += `</div>`;
     });
     html += `</div>`;
   });
@@ -1358,6 +1362,11 @@ function onPostMatchCheck() {
   if (checked.length === 0) {
     document.getElementById('post-output-area').style.display = 'none';
   }
+  // キーワード入力欄の表示切り替え
+  document.querySelectorAll('.post-match-cb').forEach(cb => {
+    const kwInput = cb.closest('.post-match-wrap')?.querySelector('.post-kw');
+    if (kwInput) kwInput.style.display = cb.checked ? 'block' : 'none';
+  });
   // 日付ヘッダーのチェック同期
   document.querySelectorAll('.post-date-cb').forEach(dcb => {
     const date = dcb.dataset.date;
@@ -1369,7 +1378,16 @@ function onPostMatchCheck() {
 
 function generateFromSelected() {
   const checked = document.querySelectorAll('.post-match-cb:checked');
-  selectedPostMatches = [...checked].map(cb => D.matches[parseInt(cb.dataset.idx)]);
+  selectedPostMatches = [...checked].map(cb => {
+    const idx = parseInt(cb.dataset.idx);
+    const match = { ...D.matches[idx] };
+    // 投稿ページのキーワード入力を反映
+    const kwInput = cb.closest('.post-match-wrap')?.querySelector('.post-kw');
+    if (kwInput && kwInput.value.trim()) {
+      match.keywords = kwInput.value.trim().split(/[,、]/).map(k => k.trim()).filter(Boolean);
+    }
+    return match;
+  });
   if (selectedPostMatches.length === 0) return;
   generateOutputs(selectedPostMatches);
   document.getElementById('post-output-area').style.display = 'block';
