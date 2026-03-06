@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MACHAP — 「こんなの欲しかった」を形にするチーム</title>
-<meta name="description" content="あなたの「面倒」「不便」を解決するツールを作ります。コミュニティ運営、情報管理、日々の暮らしまで。まずはお気軽にご相談ください。">
+<title>MACHAP — コミュニティの「あったらいいな」を動くものにする</title>
+<meta name="description" content="モルック・スポーツ・地域コミュニティの面倒をWebツールで解決。10以上のプロダクト実績。まずはお気軽にご相談ください。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -28,12 +28,9 @@
   --radius: 14px;
   --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04);
   --shadow-hover: 0 4px 12px rgba(0,0,0,0.08), 0 12px 28px rgba(0,0,0,0.1);
-  --cat-molkky: #EFF6FF;
-  --cat-molkky-text: #2563EB;
-  --cat-team: #ECFDF5;
-  --cat-team-text: #059669;
-  --cat-life: #FEF3C7;
-  --cat-life-text: #B45309;
+  --cat-molkky: #EFF6FF; --cat-molkky-text: #2563EB;
+  --cat-team: #ECFDF5; --cat-team-text: #059669;
+  --cat-life: #FEF3C7; --cat-life-text: #B45309;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
@@ -44,9 +41,33 @@ body {
 a { color: var(--accent); text-decoration: none; }
 .container { max-width: 960px; margin: 0 auto; padding: 0 20px; }
 
+/* ===== Nav (固定) ===== */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(253,252,249,0.92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-light);
+  padding: 0 20px; height: 56px;
+  display: flex; align-items: center; justify-content: center;
+}
+.nav-inner {
+  max-width: 960px; width: 100%;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo { font-size: 16px; font-weight: 800; color: var(--text); }
+.nav-links { display: flex; align-items: center; gap: 20px; }
+.nav-links a { font-size: 13px; font-weight: 600; color: var(--text-sub); transition: color 0.2s; }
+.nav-links a:hover { color: var(--accent); }
+.nav-cta {
+  font-size: 13px; font-weight: 700; color: #fff !important;
+  background: var(--accent); padding: 7px 18px; border-radius: 10px;
+  transition: all 0.2s;
+}
+.nav-cta:hover { background: var(--accent-hover); }
+body { padding-top: 56px; }
+
 /* ===== Hero ===== */
 .hero {
-  padding: 72px 20px 48px; text-align: center;
+  padding: 64px 20px 40px; text-align: center;
   background: linear-gradient(180deg, #FFF8F3 0%, var(--bg) 100%);
 }
 .hero-badge {
@@ -56,20 +77,37 @@ a { color: var(--accent); text-decoration: none; }
   letter-spacing: 0.05em;
 }
 .hero h1 {
-  font-size: clamp(26px, 5.5vw, 42px); font-weight: 800;
-  line-height: 1.4; margin-bottom: 16px;
+  font-size: clamp(24px, 5vw, 38px); font-weight: 800;
+  line-height: 1.45; margin-bottom: 16px;
 }
 .hero-sub {
-  font-size: clamp(14px, 2.5vw, 17px); color: var(--text-sub);
-  max-width: 520px; margin: 0 auto 36px; line-height: 1.9;
+  font-size: clamp(14px, 2.5vw, 16px); color: var(--text-sub);
+  max-width: 500px; margin: 0 auto 28px; line-height: 1.9;
 }
-.hero-cta {
+.hero-ctas { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.btn-primary {
   display: inline-flex; align-items: center; gap: 8px;
-  background: var(--accent); color: #fff; padding: 14px 32px;
+  background: var(--accent); color: #fff; padding: 13px 28px;
   border-radius: 12px; font-size: 15px; font-weight: 700;
   transition: all 0.2s; box-shadow: 0 4px 14px rgba(217,91,43,0.25);
 }
-.hero-cta:hover { background: var(--accent-hover); transform: translateY(-1px); color: #fff; }
+.btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); color: #fff; }
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--card); color: var(--text); padding: 13px 28px;
+  border-radius: 12px; font-size: 15px; font-weight: 700;
+  border: 1.5px solid var(--border); transition: all 0.2s;
+}
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ===== Stats Bar ===== */
+.stats-bar {
+  display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;
+  padding: 28px 20px 20px; text-align: center;
+}
+.stat-item {}
+.stat-num { font-size: 28px; font-weight: 800; color: var(--accent); line-height: 1.2; }
+.stat-label { font-size: 12px; color: var(--text-dim); font-weight: 600; }
 
 /* ===== Section ===== */
 .section { padding: 56px 20px; }
@@ -79,7 +117,7 @@ a { color: var(--accent); text-decoration: none; }
   letter-spacing: 0.08em; margin-bottom: 8px;
 }
 .section-title {
-  font-size: clamp(22px, 4vw, 30px); font-weight: 800;
+  font-size: clamp(22px, 4vw, 28px); font-weight: 800;
   margin-bottom: 12px; line-height: 1.4;
 }
 .section-desc {
@@ -90,26 +128,27 @@ a { color: var(--accent); text-decoration: none; }
 .section-center .section-desc { margin-left: auto; margin-right: auto; }
 
 /* ===== How ===== */
-.how-steps {
-  display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+.how-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
   margin-bottom: 40px;
 }
-.how-step {
-  display: flex; align-items: center; gap: 8px;
+.how-card {
   background: var(--card); border: 1px solid var(--border);
-  border-radius: 12px; padding: 12px 18px;
-  font-size: 14px; font-weight: 600; box-shadow: var(--shadow);
+  border-radius: var(--radius); padding: 20px 16px; text-align: left;
+  box-shadow: var(--shadow);
 }
 .how-num {
-  width: 26px; height: 26px; border-radius: 50%;
+  width: 30px; height: 30px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 800; color: #fff; flex-shrink: 0;
+  font-size: 13px; font-weight: 800; color: #fff; margin-bottom: 10px;
 }
+.how-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.how-desc { font-size: 12px; color: var(--text-sub); line-height: 1.6; }
 
 /* ===== Filter ===== */
 .filter-bar {
   display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 }
 .filter-pill {
   padding: 8px 20px; border-radius: 20px; font-size: 14px; font-weight: 600;
@@ -119,40 +158,27 @@ a { color: var(--accent); text-decoration: none; }
 .filter-pill:hover { border-color: var(--accent); color: var(--accent); }
 .filter-pill.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-/* ===== Product Grid (2列) ===== */
-.product-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr);
-  gap: 28px;
-}
+/* ===== Product Grid ===== */
+.product-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
 .product-card {
   background: var(--card); border: 1px solid var(--border);
   border-radius: var(--radius); overflow: hidden;
   box-shadow: var(--shadow); transition: all 0.25s;
 }
-.product-card:hover {
-  box-shadow: var(--shadow-hover); transform: translateY(-4px);
-  border-color: var(--accent);
-}
+.product-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-4px); border-color: var(--accent); }
 .product-card.hidden { display: none; }
 
-/* ===== Carousel ===== */
-.pc-carousel {
-  position: relative; background: #F5F0EB;
-}
+/* Carousel */
+.pc-carousel { position: relative; background: #F5F0EB; }
 .pc-slides {
-  display: flex; overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
+  display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch; scrollbar-width: none;
 }
 .pc-slides::-webkit-scrollbar { display: none; }
 .pc-slide { flex: 0 0 100%; scroll-snap-align: start; }
-.pc-slide img {
-  width: 100%; aspect-ratio: 16/10; object-fit: cover; display: block;
-}
+.pc-slide img { width: 100%; aspect-ratio: 16/10; object-fit: cover; display: block; }
 .pc-dots {
-  position: absolute; bottom: 10px; left: 50%;
-  transform: translateX(-50%);
+  position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
   display: flex; gap: 7px;
 }
 .pc-dot {
@@ -180,94 +206,98 @@ a { color: var(--accent); text-decoration: none; }
   border-radius: 8px; pointer-events: none;
 }
 
-/* ===== Card Body ===== */
-.pc-body { padding: 18px 20px 20px; text-align: left; }
-.pc-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
-.pc-name { font-size: 17px; font-weight: 800; }
-.pc-category {
-  font-size: 10px; font-weight: 700; padding: 2px 9px;
-  border-radius: 10px; letter-spacing: 0.03em;
-}
+.pc-body { padding: 16px 20px 20px; text-align: left; }
+.pc-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+.pc-name { font-size: 16px; font-weight: 800; }
+.pc-category { font-size: 10px; font-weight: 700; padding: 2px 9px; border-radius: 10px; }
 .cat-molkky { background: var(--cat-molkky); color: var(--cat-molkky-text); }
 .cat-team { background: var(--cat-team); color: var(--cat-team-text); }
 .cat-life { background: var(--cat-life); color: var(--cat-life-text); }
-.pc-desc {
-  font-size: 13px; color: var(--text-sub); line-height: 1.7;
-  margin-bottom: 10px;
-}
-.pc-features { list-style: none; padding: 0; margin: 0 0 12px; }
-.pc-features li {
-  font-size: 12.5px; color: var(--text); line-height: 1.7;
-  padding-left: 16px; position: relative;
-}
-.pc-features li::before {
-  content: ''; position: absolute; left: 0; top: 9px;
-  width: 7px; height: 7px; border-radius: 2px;
-  background: var(--accent); opacity: 0.5;
-}
-.pc-link {
-  display: inline-block; font-size: 13px; color: var(--accent);
-  font-weight: 600; transition: color 0.2s;
-}
+.pc-desc { font-size: 13px; color: var(--text-sub); line-height: 1.7; margin-bottom: 8px; }
+.pc-features { list-style: none; padding: 0; margin: 0 0 10px; }
+.pc-features li { font-size: 12.5px; color: var(--text); line-height: 1.7; padding-left: 16px; position: relative; }
+.pc-features li::before { content: ''; position: absolute; left: 0; top: 9px; width: 7px; height: 7px; border-radius: 2px; background: var(--accent); opacity: 0.5; }
+.pc-link { display: inline-block; font-size: 13px; color: var(--accent); font-weight: 600; }
 .pc-link:hover { color: var(--accent-hover); }
 
-/* ===== Case ===== */
+/* ===== Mid CTA ===== */
+.mid-cta {
+  text-align: center; padding: 40px 20px;
+  background: var(--bg);
+}
+.mid-cta-text { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+
+/* ===== Cases ===== */
+.cases-grid { display: grid; grid-template-columns: 1fr; gap: 20px; max-width: 700px; margin: 0 auto; }
 .case-card {
   background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 28px 24px;
-  box-shadow: var(--shadow); max-width: 680px; margin: 0 auto;
+  border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow);
+  text-align: left;
 }
 .case-badge {
   display: inline-block; font-size: 11px; font-weight: 700;
-  color: var(--teal); background: var(--teal-light);
-  padding: 3px 12px; border-radius: 12px; margin-bottom: 12px;
+  padding: 3px 12px; border-radius: 12px; margin-bottom: 10px;
 }
-.case-title { font-size: 18px; font-weight: 800; margin-bottom: 14px; }
-.case-desc { font-size: 14px; color: var(--text-sub); line-height: 1.9; }
-.case-desc strong { color: var(--text); }
+.case-badge-molkky { color: var(--cat-molkky-text); background: var(--cat-molkky); }
+.case-badge-team { color: var(--cat-team-text); background: var(--cat-team); }
+.case-title { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+.case-desc { font-size: 13px; color: var(--text-sub); line-height: 1.8; margin-bottom: 12px; }
+.case-result {
+  display: flex; gap: 20px; flex-wrap: wrap;
+}
+.case-stat { text-align: center; }
+.case-stat-num { font-size: 22px; font-weight: 800; color: var(--accent); line-height: 1.2; }
+.case-stat-label { font-size: 11px; color: var(--text-dim); }
 
-/* ===== CTA ===== */
+/* ===== FAQ ===== */
+.faq-list { max-width: 640px; margin: 0 auto; }
+.faq-item {
+  border-bottom: 1px solid var(--border); padding: 18px 0;
+}
+.faq-q {
+  font-size: 15px; font-weight: 700; cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.faq-q::after { content: '+'; font-size: 20px; color: var(--text-dim); transition: transform 0.2s; }
+.faq-item.open .faq-q::after { content: '−'; }
+.faq-a {
+  font-size: 14px; color: var(--text-sub); line-height: 1.8;
+  max-height: 0; overflow: hidden; transition: max-height 0.3s, padding 0.3s;
+  padding-top: 0;
+}
+.faq-item.open .faq-a { max-height: 200px; padding-top: 12px; }
+
+/* ===== CTA Final ===== */
 .cta-section {
   padding: 64px 20px; text-align: center;
   background: linear-gradient(180deg, var(--bg) 0%, #FFF8F3 100%);
 }
-.cta-title { font-size: clamp(22px, 4vw, 30px); font-weight: 800; margin-bottom: 12px; }
+.cta-title { font-size: clamp(22px, 4vw, 28px); font-weight: 800; margin-bottom: 12px; }
 .cta-desc {
-  font-size: 15px; color: var(--text-sub); margin-bottom: 32px;
+  font-size: 15px; color: var(--text-sub); margin-bottom: 28px;
   max-width: 480px; margin-left: auto; margin-right: auto; line-height: 1.9;
 }
-.cta-box {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 32px; max-width: 480px;
-  margin: 0 auto; box-shadow: var(--shadow);
-}
-.cta-box-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
-.cta-box-desc { font-size: 13px; color: var(--text-sub); margin-bottom: 20px; line-height: 1.7; }
-.cta-btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: var(--accent); color: #fff; padding: 14px 32px;
-  border-radius: 12px; font-size: 15px; font-weight: 700;
-  transition: all 0.2s; box-shadow: 0 4px 14px rgba(217,91,43,0.25);
-}
-.cta-btn:hover { background: var(--accent-hover); transform: translateY(-1px); color: #fff; }
-.cta-note { font-size: 12px; color: var(--text-dim); margin-top: 16px; }
+.cta-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 12px; }
+.cta-note { font-size: 12px; color: var(--text-dim); }
 
 .footer {
   padding: 32px 20px; text-align: center;
-  border-top: 1px solid var(--border);
-  font-size: 12px; color: var(--text-dim);
+  border-top: 1px solid var(--border); font-size: 12px; color: var(--text-dim);
 }
 
 /* ===== Responsive ===== */
 @media (max-width: 700px) {
-  .hero { padding: 48px 16px 36px; }
+  .hero { padding: 48px 16px 32px; }
   .section { padding: 40px 16px; }
+  .stats-bar { gap: 24px; }
+  .stat-num { font-size: 24px; }
+  .how-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .product-grid { grid-template-columns: 1fr; gap: 20px; }
-  .how-steps { gap: 6px; }
-  .how-step { padding: 10px 14px; font-size: 13px; }
   .filter-bar { gap: 6px; }
   .filter-pill { padding: 6px 14px; font-size: 12px; }
   .pc-nav { opacity: 0.8; }
+  .nav-links a:not(.nav-cta) { display: none; }
+  .case-result { gap: 16px; }
 }
 
 @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
@@ -277,29 +307,70 @@ a { color: var(--accent); text-decoration: none; }
 </head>
 <body>
 
+<!-- ===== Nav ===== -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-logo">MACHAP</div>
+    <div class="nav-links">
+      <a href="#products">プロダクト</a>
+      <a href="#cases">事例</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact" class="nav-cta">相談する</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== Hero ===== -->
 <section class="hero">
   <div class="container">
     <div class="hero-badge">MACHAP</div>
-    <h1>「こんなの欲しかった」を<br>形にするチーム。</h1>
-    <p class="hero-sub">大会の運営、チームの管理、日々の記録。<br>あなたの「面倒」「不便」を解決するツールを作ります。<br>パソコンが苦手でも大丈夫。まるっとお任せください。</p>
-    <a href="#contact" class="hero-cta">まずは相談してみる</a>
-  </div>
-</section>
-
-<section class="section section-center">
-  <div class="container">
-    <p class="section-label">できること</p>
-    <h2 class="section-title">困りごとを聞いて、ツールにして、届ける。</h2>
-    <p class="section-desc">「こういうのできない？」から始まります。<br>あとはこちらで作って、使えるようにして、使い方もサポートします。</p>
-    <div class="how-steps">
-      <div class="how-step fade-in"><div class="how-num" style="background:var(--blue)">1</div>困りごとを聞く</div>
-      <div class="how-step fade-in"><div class="how-num" style="background:#7C3AED">2</div>ツールを作る</div>
-      <div class="how-step fade-in"><div class="how-num" style="background:var(--teal)">3</div>届けて使えるようにする</div>
-      <div class="how-step fade-in"><div class="how-num" style="background:var(--amber)">4</div>広める・育てる</div>
+    <h1>コミュニティ運営の面倒、<br>全部ツールで解決します。</h1>
+    <p class="hero-sub">大会の運営、チームの管理、日々の記録。<br>あなたの「面倒」「不便」をWebツールに変えるチームです。</p>
+    <div class="hero-ctas">
+      <a href="#contact" class="btn-primary">無料で相談する</a>
+      <a href="#products" class="btn-secondary">プロダクトを見る</a>
     </div>
   </div>
 </section>
 
+<!-- ===== Stats ===== -->
+<div class="stats-bar fade-in">
+  <div class="stat-item"><div class="stat-num">10+</div><div class="stat-label">プロダクト</div></div>
+  <div class="stat-item"><div class="stat-num">3,000+</div><div class="stat-label">月間ユーザー</div></div>
+  <div class="stat-item"><div class="stat-num">580+</div><div class="stat-label">大会データ登録</div></div>
+</div>
+
+<!-- ===== How ===== -->
+<section class="section section-center">
+  <div class="container">
+    <p class="section-label">つくりかた</p>
+    <h2 class="section-title">困りごとを聞いて、ツールにして、届ける。</h2>
+    <div class="how-grid">
+      <div class="how-card fade-in">
+        <div class="how-num" style="background:var(--blue)">1</div>
+        <div class="how-title">聞く</div>
+        <div class="how-desc">XのDMで話しかけてください。どんな小さな困りごとでもOK。</div>
+      </div>
+      <div class="how-card fade-in">
+        <div class="how-num" style="background:#7C3AED">2</div>
+        <div class="how-title">作る</div>
+        <div class="how-desc">こちらで設計・開発。途中経過もお見せします。</div>
+      </div>
+      <div class="how-card fade-in">
+        <div class="how-num" style="background:var(--teal)">3</div>
+        <div class="how-title">届ける</div>
+        <div class="how-desc">使えるようにして、使い方もサポート。</div>
+      </div>
+      <div class="how-card fade-in">
+        <div class="how-num" style="background:var(--amber)">4</div>
+        <div class="how-title">育てる</div>
+        <div class="how-desc">使いながら改善。ずっと面倒を見ます。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Products ===== -->
 <section class="section section-warm" id="products">
   <div class="container section-center">
     <p class="section-label">プロダクトカタログ</p>
@@ -316,232 +387,145 @@ a { color: var(--accent); text-decoration: none; }
     <div class="product-grid">
 
       <div class="product-card fade-in" data-category="molkky">
-        <div class="pc-carousel">
-          <div class="pc-slides">
-            <div class="pc-slide"><img src="./img/molkky-hub-1.jpg" alt="MOLKKY HUB トップ" loading="lazy"></div>
-            <div class="pc-slide"><img src="./img/molkky-hub-2.jpg" alt="MOLKKY HUB 大会一覧" loading="lazy"></div>
-            <div class="pc-slide"><img src="./img/molkky-hub-3.jpg" alt="MOLKKY HUB スマホ" loading="lazy"></div>
-          </div>
-          <div class="pc-dots"></div>
-          <span class="pc-counter">1 / 3</span>
-          <button class="pc-nav pc-nav-prev" aria-label="前へ">&#8249;</button>
-          <button class="pc-nav pc-nav-next" aria-label="次へ">&#8250;</button>
-        </div>
+        <div class="pc-carousel"><div class="pc-slides">
+          <div class="pc-slide"><img src="./img/molkky-hub-1.jpg" alt="MOLKKY HUB" loading="lazy"></div>
+          <div class="pc-slide"><img src="./img/molkky-hub-2.jpg" alt="MOLKKY HUB" loading="lazy"></div>
+          <div class="pc-slide"><img src="./img/molkky-hub-3.jpg" alt="MOLKKY HUB" loading="lazy"></div>
+        </div><div class="pc-dots"></div><span class="pc-counter">1 / 3</span>
+        <button class="pc-nav pc-nav-prev">&#8249;</button><button class="pc-nav pc-nav-next">&#8250;</button></div>
         <div class="pc-body">
           <div class="pc-header"><div class="pc-name">MOLKKY HUB</div><span class="pc-category cat-molkky">モルック</span></div>
           <div class="pc-desc">全国のモルック大会情報を自動収集。580件超のDB、毎月3,000人が利用。</div>
-          <ul class="pc-features">
-            <li>大会情報を自動で収集・公開</li>
-            <li>チーム紹介70件以上</li>
-            <li>週間まとめを毎週自動配信</li>
-          </ul>
+          <ul class="pc-features"><li>大会情報を自動で収集・公開</li><li>チーム紹介70件以上</li><li>週間まとめを毎週自動配信</li></ul>
           <a class="pc-link" href="https://molkky-hub.com" target="_blank">実物を見る →</a>
         </div>
       </div>
 
       <div class="product-card fade-in" data-category="molkky">
-        <div class="pc-carousel">
-          <div class="pc-slides">
-            <div class="pc-slide"><img src="./img/viisi-master-1.jpg" alt="5先王 メイン" loading="lazy"></div>
-            <div class="pc-slide"><img src="./img/viisi-master-2.jpg" alt="5先王 スコア" loading="lazy"></div>
-            <div class="pc-slide"><img src="./img/viisi-master-3.jpg" alt="5先王 スマホ" loading="lazy"></div>
-          </div>
-          <div class="pc-dots"></div>
-          <span class="pc-counter">1 / 3</span>
-          <button class="pc-nav pc-nav-prev" aria-label="前へ">&#8249;</button>
-          <button class="pc-nav pc-nav-next" aria-label="次へ">&#8250;</button>
-        </div>
+        <div class="pc-carousel"><div class="pc-slides">
+          <div class="pc-slide"><img src="./img/viisi-master-1.jpg" alt="5先王" loading="lazy"></div>
+          <div class="pc-slide"><img src="./img/viisi-master-2.jpg" alt="5先王" loading="lazy"></div>
+          <div class="pc-slide"><img src="./img/viisi-master-3.jpg" alt="5先王" loading="lazy"></div>
+        </div><div class="pc-dots"></div><span class="pc-counter">1 / 3</span>
+        <button class="pc-nav pc-nav-prev">&#8249;</button><button class="pc-nav pc-nav-next">&#8250;</button></div>
         <div class="pc-body">
           <div class="pc-header"><div class="pc-name">5先王（ヴィーシマスター）</div><span class="pc-category cat-molkky">モルック</span></div>
           <div class="pc-desc">試合結果をその場で記録→Xに自動投稿。チャンピオン戦モードも搭載。</div>
-          <ul class="pc-features">
-            <li>スコアをリアルタイム入力</li>
-            <li>試合結果をXに自動投稿</li>
-            <li>チャンピオン戦に対応</li>
-          </ul>
+          <ul class="pc-features"><li>スコアをリアルタイム入力</li><li>試合結果をXに自動投稿</li><li>チャンピオン戦に対応</li></ul>
           <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/viisi-master/" target="_blank">実物を見る →</a>
         </div>
       </div>
 
       <div class="product-card fade-in" data-category="molkky">
-        <div class="pc-carousel">
-          <div class="pc-slides">
-            <div class="pc-slide"><img src="./img/championship-1.jpg" alt="選手権 全体" loading="lazy"></div>
-            <div class="pc-slide"><img src="./img/championship-2.jpg" alt="選手権 詳細" loading="lazy"></div>
-            <div class="pc-slide"><img src="./img/championship-3.jpg" alt="選手権 スマホ" loading="lazy"></div>
-          </div>
-          <div class="pc-dots"></div>
-          <span class="pc-counter">1 / 3</span>
-          <button class="pc-nav pc-nav-prev" aria-label="前へ">&#8249;</button>
-          <button class="pc-nav pc-nav-next" aria-label="次へ">&#8250;</button>
-        </div>
+        <div class="pc-carousel"><div class="pc-slides">
+          <div class="pc-slide"><img src="./img/championship-1.jpg" alt="選手権" loading="lazy"></div>
+          <div class="pc-slide"><img src="./img/championship-2.jpg" alt="選手権" loading="lazy"></div>
+          <div class="pc-slide"><img src="./img/championship-3.jpg" alt="選手権" loading="lazy"></div>
+        </div><div class="pc-dots"></div><span class="pc-counter">1 / 3</span>
+        <button class="pc-nav pc-nav-prev">&#8249;</button><button class="pc-nav pc-nav-next">&#8250;</button></div>
         <div class="pc-body">
           <div class="pc-header"><div class="pc-name">日本選手権トラッカー</div><span class="pc-category cat-molkky">モルック</span></div>
           <div class="pc-desc">全国6ブロック10会場の予選結果をリアルタイム表示。</div>
-          <ul class="pc-features">
-            <li>6ブロック10会場を一画面で</li>
-            <li>結果をリアルタイム反映</li>
-            <li>管理画面から簡単入力</li>
-          </ul>
+          <ul class="pc-features"><li>6ブロック10会場を一画面で</li><li>結果をリアルタイム反映</li><li>管理画面から簡単入力</li></ul>
           <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/championship/" target="_blank">実物を見る →</a>
         </div>
       </div>
 
       <div class="product-card fade-in" data-category="molkky">
-        <div class="pc-carousel">
-          <div class="pc-slides">
-            <div class="pc-slide"><img src="./img/naimol-admin-1.jpg" alt="ナイモル メイン" loading="lazy"></div>
-            <div class="pc-slide"><img src="./img/naimol-admin-2.jpg" alt="ナイモル 結果" loading="lazy"></div>
-            <div class="pc-slide"><img src="./img/naimol-admin-3.jpg" alt="ナイモル スマホ" loading="lazy"></div>
-          </div>
-          <div class="pc-dots"></div>
-          <span class="pc-counter">1 / 3</span>
-          <button class="pc-nav pc-nav-prev" aria-label="前へ">&#8249;</button>
-          <button class="pc-nav pc-nav-next" aria-label="次へ">&#8250;</button>
-        </div>
+        <div class="pc-carousel"><div class="pc-slides">
+          <div class="pc-slide"><img src="./img/naimol-admin-1.jpg" alt="ナイモル" loading="lazy"></div>
+          <div class="pc-slide"><img src="./img/naimol-admin-2.jpg" alt="ナイモル" loading="lazy"></div>
+          <div class="pc-slide"><img src="./img/naimol-admin-3.jpg" alt="ナイモル" loading="lazy"></div>
+        </div><div class="pc-dots"></div><span class="pc-counter">1 / 3</span>
+        <button class="pc-nav pc-nav-prev">&#8249;</button><button class="pc-nav pc-nav-next">&#8250;</button></div>
         <div class="pc-body">
           <div class="pc-header"><div class="pc-name">ナイモル大会管理</div><span class="pc-category cat-molkky">モルック</span></div>
           <div class="pc-desc">スプシ入力→結果ページ自動生成。写真付きで見栄え良し。</div>
-          <ul class="pc-features">
-            <li>スプシ入力だけで結果ページ完成</li>
-            <li>写真付きで見栄えよく</li>
-            <li>過去大会の記録も一覧</li>
-          </ul>
+          <ul class="pc-features"><li>スプシ入力だけで結果ページ完成</li><li>写真付きで見栄えよく</li><li>過去大会の記録も一覧</li></ul>
           <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/naimol-admin/" target="_blank">実物を見る →</a>
         </div>
       </div>
 
       <div class="product-card fade-in" data-category="team">
-        <div class="pc-carousel">
-          <div class="pc-slides">
-            <div class="pc-slide"><img src="./img/teamride-1.jpg" alt="チームライド PC" loading="lazy"></div>
-            <div class="pc-slide"><img src="./img/teamride-3.jpg" alt="チームライド スマホ" loading="lazy"></div>
-          </div>
-          <div class="pc-dots"></div>
-          <span class="pc-counter">1 / 2</span>
-          <button class="pc-nav pc-nav-prev" aria-label="前へ">&#8249;</button>
-          <button class="pc-nav pc-nav-next" aria-label="次へ">&#8250;</button>
-        </div>
+        <div class="pc-carousel"><div class="pc-slides">
+          <div class="pc-slide"><img src="./img/teamride-1.jpg" alt="チームライド" loading="lazy"></div>
+          <div class="pc-slide"><img src="./img/teamride-3.jpg" alt="チームライド" loading="lazy"></div>
+        </div><div class="pc-dots"></div><span class="pc-counter">1 / 2</span>
+        <button class="pc-nav pc-nav-prev">&#8249;</button><button class="pc-nav pc-nav-next">&#8250;</button></div>
         <div class="pc-body">
           <div class="pc-header"><div class="pc-name">チームライド</div><span class="pc-category cat-team">チーム運営</span></div>
           <div class="pc-desc">出欠入力→自動配車。催促もLINE共有もワンタップ。</div>
-          <ul class="pc-features">
-            <li>出欠入力→自動配車</li>
-            <li>催促メッセージ自動生成</li>
-            <li>LINE共有ワンタップ</li>
-          </ul>
+          <ul class="pc-features"><li>出欠入力→自動配車</li><li>催促メッセージ自動生成</li><li>LINE共有ワンタップ</li></ul>
           <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/teamride/" target="_blank">実物を見る →</a>
         </div>
       </div>
 
       <div class="product-card fade-in" data-category="team">
-        <div class="pc-carousel">
-          <div class="pc-slides">
-            <div class="pc-slide"><img src="./img/partner-portal-1.jpg" alt="パートナー メイン" loading="lazy"></div>
-            <div class="pc-slide"><img src="./img/partner-portal-2.jpg" alt="パートナー 詳細" loading="lazy"></div>
-            <div class="pc-slide"><img src="./img/partner-portal-3.jpg" alt="パートナー スマホ" loading="lazy"></div>
-          </div>
-          <div class="pc-dots"></div>
-          <span class="pc-counter">1 / 3</span>
-          <button class="pc-nav pc-nav-prev" aria-label="前へ">&#8249;</button>
-          <button class="pc-nav pc-nav-next" aria-label="次へ">&#8250;</button>
-        </div>
+        <div class="pc-carousel"><div class="pc-slides">
+          <div class="pc-slide"><img src="./img/partner-portal-1.jpg" alt="パートナー" loading="lazy"></div>
+          <div class="pc-slide"><img src="./img/partner-portal-2.jpg" alt="パートナー" loading="lazy"></div>
+          <div class="pc-slide"><img src="./img/partner-portal-3.jpg" alt="パートナー" loading="lazy"></div>
+        </div><div class="pc-dots"></div><span class="pc-counter">1 / 3</span>
+        <button class="pc-nav pc-nav-prev">&#8249;</button><button class="pc-nav pc-nav-next">&#8250;</button></div>
         <div class="pc-body">
           <div class="pc-header"><div class="pc-name">パートナー循環ポータル</div><span class="pc-category cat-team">チーム運営</span></div>
           <div class="pc-desc">応援品の流れを見える化。誰から届いてどこへ届いたかが全部わかる。</div>
-          <ul class="pc-features">
-            <li>応援品の流れをリアルタイム表示</li>
-            <li>パートナーへの感謝も見える化</li>
-            <li>信頼の循環を可視化</li>
-          </ul>
+          <ul class="pc-features"><li>応援品の流れをリアルタイム表示</li><li>パートナーへの感謝も見える化</li><li>信頼の循環を可視化</li></ul>
           <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/partner-portal/" target="_blank">実物を見る →</a>
         </div>
       </div>
 
       <div class="product-card fade-in" data-category="life">
-        <div class="pc-carousel">
-          <div class="pc-slides">
-            <div class="pc-slide"><img src="./img/youtube-1.jpg" alt="YouTube分析 PC" loading="lazy"></div>
-            <div class="pc-slide"><img src="./img/youtube-3.jpg" alt="YouTube分析 スマホ" loading="lazy"></div>
-          </div>
-          <div class="pc-dots"></div>
-          <span class="pc-counter">1 / 2</span>
-          <button class="pc-nav pc-nav-prev" aria-label="前へ">&#8249;</button>
-          <button class="pc-nav pc-nav-next" aria-label="次へ">&#8250;</button>
-        </div>
+        <div class="pc-carousel"><div class="pc-slides">
+          <div class="pc-slide"><img src="./img/youtube-1.jpg" alt="YouTube分析" loading="lazy"></div>
+          <div class="pc-slide"><img src="./img/youtube-3.jpg" alt="YouTube分析" loading="lazy"></div>
+        </div><div class="pc-dots"></div><span class="pc-counter">1 / 2</span>
+        <button class="pc-nav pc-nav-prev">&#8249;</button><button class="pc-nav pc-nav-next">&#8250;</button></div>
         <div class="pc-body">
           <div class="pc-header"><div class="pc-name">YouTube分析ダッシュボード</div><span class="pc-category cat-life">くらし</span></div>
-          <div class="pc-desc">チャンネルの状態がひと目でわかる。動画ごとの成績も全体の健康度も。</div>
-          <ul class="pc-features">
-            <li>動画ごとの再生数・エンゲージメント</li>
-            <li>チャンネル全体の健康度スコア</li>
-            <li>わかりやすいグラフで可視化</li>
-          </ul>
+          <div class="pc-desc">チャンネルの状態がひと目でわかる。動画の成績も全体の健康度も。</div>
+          <ul class="pc-features"><li>動画ごとの再生数・エンゲージメント</li><li>チャンネル全体の健康度スコア</li><li>わかりやすいグラフで可視化</li></ul>
           <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/youtube/" target="_blank">実物を見る →</a>
         </div>
       </div>
 
       <div class="product-card fade-in" data-category="life">
-        <div class="pc-carousel">
-          <div class="pc-slides">
-            <div class="pc-slide"><img src="./img/meguri-1.jpg" alt="めぐり帳 メイン" loading="lazy"></div>
-            <div class="pc-slide"><img src="./img/meguri-2.jpg" alt="めぐり帳 記録" loading="lazy"></div>
-            <div class="pc-slide"><img src="./img/meguri-3.jpg" alt="めぐり帳 スマホ" loading="lazy"></div>
-          </div>
-          <div class="pc-dots"></div>
-          <span class="pc-counter">1 / 3</span>
-          <button class="pc-nav pc-nav-prev" aria-label="前へ">&#8249;</button>
-          <button class="pc-nav pc-nav-next" aria-label="次へ">&#8250;</button>
-        </div>
+        <div class="pc-carousel"><div class="pc-slides">
+          <div class="pc-slide"><img src="./img/meguri-1.jpg" alt="めぐり帳" loading="lazy"></div>
+          <div class="pc-slide"><img src="./img/meguri-2.jpg" alt="めぐり帳" loading="lazy"></div>
+          <div class="pc-slide"><img src="./img/meguri-3.jpg" alt="めぐり帳" loading="lazy"></div>
+        </div><div class="pc-dots"></div><span class="pc-counter">1 / 3</span>
+        <button class="pc-nav pc-nav-prev">&#8249;</button><button class="pc-nav pc-nav-next">&#8250;</button></div>
         <div class="pc-body">
           <div class="pc-header"><div class="pc-name">めぐり帳</div><span class="pc-category cat-life">くらし</span></div>
           <div class="pc-desc">人からもらった恩、約束、貸し借りを記録。忘れたくない「ありがとう」を残す。</div>
-          <ul class="pc-features">
-            <li>もらった恩・約束を記録</li>
-            <li>返し忘れをリマインド</li>
-            <li>感謝のログが貯まっていく</li>
-          </ul>
+          <ul class="pc-features"><li>もらった恩・約束を記録</li><li>返し忘れをリマインド</li><li>感謝のログが貯まっていく</li></ul>
           <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/meguri/" target="_blank">実物を見る →</a>
         </div>
       </div>
 
       <div class="product-card fade-in" data-category="life">
-        <div class="pc-carousel">
-          <div class="pc-slides">
-            <div class="pc-slide"><img src="./img/recipe-1.jpg" alt="レシピBOX PC" loading="lazy"></div>
-            <div class="pc-slide"><img src="./img/recipe-3.jpg" alt="レシピBOX スマホ" loading="lazy"></div>
-          </div>
-          <div class="pc-dots"></div>
-          <span class="pc-counter">1 / 2</span>
-          <button class="pc-nav pc-nav-prev" aria-label="前へ">&#8249;</button>
-          <button class="pc-nav pc-nav-next" aria-label="次へ">&#8250;</button>
-        </div>
+        <div class="pc-carousel"><div class="pc-slides">
+          <div class="pc-slide"><img src="./img/recipe-1.jpg" alt="レシピBOX" loading="lazy"></div>
+          <div class="pc-slide"><img src="./img/recipe-3.jpg" alt="レシピBOX" loading="lazy"></div>
+        </div><div class="pc-dots"></div><span class="pc-counter">1 / 2</span>
+        <button class="pc-nav pc-nav-prev">&#8249;</button><button class="pc-nav pc-nav-next">&#8250;</button></div>
         <div class="pc-body">
           <div class="pc-header"><div class="pc-name">レシピBOX</div><span class="pc-category cat-life">くらし</span></div>
           <div class="pc-desc">レシピをURLで保存。写真から材料を読み取り。家族で共有。</div>
-          <ul class="pc-features">
-            <li>URLでレシピを保存</li>
-            <li>写真→材料リスト自動抽出</li>
-            <li>家族みんなで共有</li>
-          </ul>
+          <ul class="pc-features"><li>URLでレシピを保存</li><li>写真→材料リスト自動抽出</li><li>家族みんなで共有</li></ul>
           <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/recipe/" target="_blank">実物を見る →</a>
         </div>
       </div>
 
       <div class="product-card fade-in" data-category="team">
-        <div class="pc-carousel">
-          <div class="pc-slides">
-            <div class="pc-slide"><div style="width:100%;aspect-ratio:16/10;background:linear-gradient(135deg,#1a3a5a,#2a6a8a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:28px;font-weight:800;">マルタ村</div></div>
-          </div>
-        </div>
+        <div class="pc-carousel"><div class="pc-slides">
+          <div class="pc-slide"><div style="width:100%;aspect-ratio:16/10;background:linear-gradient(135deg,#1a3a5a,#2a6a8a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:28px;font-weight:800;">マルタ村</div></div>
+        </div></div>
         <div class="pc-body">
           <div class="pc-header"><div class="pc-name">マルタ村ポータル</div><span class="pc-category cat-team">チーム運営</span></div>
           <div class="pc-desc">コミュニティの情報共有ポータル。お知らせ・スケジュール・メンバー管理を一箇所に。</div>
-          <ul class="pc-features">
-            <li>お知らせ・スケジュール一元管理</li>
-            <li>メンバー情報の共有</li>
-            <li>Google SSO対応</li>
-          </ul>
+          <ul class="pc-features"><li>お知らせ・スケジュール一元管理</li><li>メンバー情報の共有</li><li>Google SSO対応</li></ul>
           <a class="pc-link" href="https://marutaportal.manus.space/" target="_blank">実物を見る →</a>
         </div>
       </div>
@@ -550,49 +534,105 @@ a { color: var(--accent); text-decoration: none; }
   </div>
 </section>
 
-<section class="section section-center">
+<!-- ===== Mid CTA ===== -->
+<div class="mid-cta">
+  <div class="mid-cta-text">「うちのコミュニティにも使えそう」と思ったら</div>
+  <a href="#contact" class="btn-primary">無料で相談する</a>
+</div>
+
+<!-- ===== Cases ===== -->
+<section class="section section-center" id="cases">
   <div class="container">
     <p class="section-label">事例</p>
-    <h2 class="section-title">「大会情報、バラバラで探しにくい」</h2>
-    <p class="section-desc">その一言から生まれたのが MOLKKY HUB でした。</p>
-    <div class="case-card" style="text-align:left;">
-      <div class="case-badge">MOLKKY HUB の場合</div>
-      <div class="case-title">散らばった大会情報を、ひとつにまとめた</div>
-      <div class="case-desc">
-        モルックの大会情報はXやブログにバラバラに散らばっていて、探すのが大変でした。<br><br>
-        そこで、<strong>全国の大会情報を自動で集めてくるサイト</strong>を構築。今では<strong>580件以上の大会情報</strong>が蓄積され、毎月3,000人以上が利用しています。<br><br>
-        大会情報の収集、記事の作成、SNSへの投稿まで、<strong>ほぼ全自動</strong>で運用。パートナー制度も導入し、応援の循環も生まれています。
+    <h2 class="section-title">実際に解決した「困った」の話。</h2>
+    <p class="section-desc">数字で見る、ツールの効果。</p>
+
+    <div class="cases-grid">
+      <div class="case-card fade-in">
+        <div class="case-badge case-badge-molkky">MOLKKY HUB</div>
+        <div class="case-title">「大会情報がバラバラで探しにくい」→ 自動で集めるサイトを構築</div>
+        <div class="case-desc">モルックの大会情報はXやブログに散らばっていて、探すのが大変だった。自動収集の仕組みを作り、記事の公開まで全自動で運用。</div>
+        <div class="case-result">
+          <div class="case-stat"><div class="case-stat-num">580+</div><div class="case-stat-label">大会情報</div></div>
+          <div class="case-stat"><div class="case-stat-num">3,000+</div><div class="case-stat-label">月間ユーザー</div></div>
+          <div class="case-stat"><div class="case-stat-num">全自動</div><div class="case-stat-label">運用</div></div>
+        </div>
+      </div>
+
+      <div class="case-card fade-in">
+        <div class="case-badge case-badge-team">チームライド</div>
+        <div class="case-title">「子供の送迎の割り振りが毎回大変」→ 出欠入力だけで自動配車</div>
+        <div class="case-desc">モルックチームで子供の大会送迎が必要。毎回LINEで調整するのが負担だった。出欠を入れるだけで配車が決まり、LINE共有もワンタップに。</div>
+        <div class="case-result">
+          <div class="case-stat"><div class="case-stat-num">10分→1分</div><div class="case-stat-label">配車調整時間</div></div>
+          <div class="case-stat"><div class="case-stat-num">0</div><div class="case-stat-label">調整の手間</div></div>
+        </div>
+      </div>
+
+      <div class="case-card fade-in">
+        <div class="case-badge case-badge-molkky">5先王</div>
+        <div class="case-title">「試合結果を記録してSNSに投稿するのが面倒」→ 記録したら自動投稿</div>
+        <div class="case-desc">モルックの試合をするたびに結果をメモしてXに投稿していた。スコアを入力するだけで自動投稿。チャンピオン戦にも対応。</div>
+        <div class="case-result">
+          <div class="case-stat"><div class="case-stat-num">ワンタップ</div><div class="case-stat-label">X投稿</div></div>
+          <div class="case-stat"><div class="case-stat-num">全試合</div><div class="case-stat-label">記録が残る</div></div>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
+<!-- ===== FAQ ===== -->
+<section class="section section-warm" id="faq">
+  <div class="container section-center">
+    <p class="section-label">よくある質問</p>
+    <h2 class="section-title">気になること、先に答えます。</h2>
+    <div class="faq-list" style="text-align:left;">
+      <div class="faq-item">
+        <div class="faq-q">料金はどれくらいですか？</div>
+        <div class="faq-a">内容によって異なります。まずは無料でご相談ください。小さなツールなら無料〜低コストで動くものを作ります。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">モルック以外のコミュニティでも頼めますか？</div>
+        <div class="faq-a">もちろんです。スポーツ・地域・趣味のコミュニティなら何でもご相談ください。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">完成までどれくらいかかりますか？</div>
+        <div class="faq-a">小さいものなら数日、大きなものでも2〜4週間ほどで動くプロトタイプをお見せします。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">作った後の維持費は？</div>
+        <div class="faq-a">多くのツールは無料〜月数百円のインフラで動きます。高額なサーバー代はかかりません。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA Final ===== -->
 <section class="cta-section" id="contact">
   <div class="container">
-    <h2 class="cta-title">困ってること、ありませんか？</h2>
-    <p class="cta-desc">「こういうのできる？」「うちのチームにも使える？」<br>ちょっとした相談から気軽にどうぞ。</p>
-    <div class="cta-box">
-      <div class="cta-box-title">X（旧Twitter）のDMで相談</div>
-      <div class="cta-box-desc">「こんなツール欲しい」「うちの大会運営を楽にしたい」など、<br>なんでもお気軽にメッセージください。</div>
-      <a href="https://x.com/messages/compose?recipient_id=1721227068053479424" target="_blank" class="cta-btn">メッセージを送る</a>
-      <div class="cta-note">@molkkyhub のDMが開きます。無料相談OK。</div>
+    <h2 class="cta-title">まず、話しかけてください。</h2>
+    <p class="cta-desc">「こういうのできる？」「うちでも使える？」<br>ちょっとした相談から気軽にどうぞ。無料です。</p>
+    <div class="cta-buttons">
+      <a href="https://x.com/messages/compose?recipient_id=1721227068053479424" target="_blank" class="btn-primary">XのDMで相談する</a>
+      <a href="https://forms.gle/placeholder" target="_blank" class="btn-secondary">フォームで相談する</a>
     </div>
+    <div class="cta-note">@molkkyhub のDMが開きます。フォームからでもOK。</div>
   </div>
 </section>
 
 <footer class="footer">MACHAP &copy; 2026</footer>
 
 <script>
-const observer = new IntersectionObserver((entries) => {
+// Fade-in
+const obs = new IntersectionObserver((entries) => {
   entries.forEach((e, i) => {
-    if (e.isIntersecting) {
-      setTimeout(() => e.target.classList.add('visible'), i * 80);
-      observer.unobserve(e.target);
-    }
+    if (e.isIntersecting) { setTimeout(() => e.target.classList.add('visible'), i * 60); obs.unobserve(e.target); }
   });
-}, { threshold: 0.15 });
-document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
 
+// Smooth scroll
 document.querySelectorAll('a[href^="#"]').forEach(a => {
   a.addEventListener('click', e => {
     e.preventDefault();
@@ -601,51 +641,42 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   });
 });
 
+// Filter
 document.querySelectorAll('.filter-pill').forEach(pill => {
   pill.addEventListener('click', () => {
     document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
     pill.classList.add('active');
-    const filter = pill.dataset.filter;
-    document.querySelectorAll('.product-card').forEach(card => {
-      card.classList.toggle('hidden', filter !== 'all' && card.dataset.category !== filter);
-    });
+    const f = pill.dataset.filter;
+    document.querySelectorAll('.product-card').forEach(c => c.classList.toggle('hidden', f !== 'all' && c.dataset.category !== f));
   });
 });
 
-document.querySelectorAll('.pc-carousel').forEach(carousel => {
-  const slides = carousel.querySelector('.pc-slides');
-  const slideEls = carousel.querySelectorAll('.pc-slide');
-  const dotsContainer = carousel.querySelector('.pc-dots');
-  const prevBtn = carousel.querySelector('.pc-nav-prev');
-  const nextBtn = carousel.querySelector('.pc-nav-next');
-  const counter = carousel.querySelector('.pc-counter');
-  const total = slideEls.length;
-
-  if (total <= 1) {
-    [dotsContainer, prevBtn, nextBtn, counter].forEach(el => { if (el) el.style.display = 'none'; });
-    return;
-  }
-
-  slideEls.forEach((_, i) => {
-    const dot = document.createElement('button');
-    dot.className = 'pc-dot' + (i === 0 ? ' active' : '');
-    dot.addEventListener('click', () => slides.scrollTo({ left: slideEls[i].offsetLeft, behavior: 'smooth' }));
-    dotsContainer.appendChild(dot);
+// Carousel
+document.querySelectorAll('.pc-carousel').forEach(car => {
+  const sl = car.querySelector('.pc-slides'), els = car.querySelectorAll('.pc-slide'),
+    dc = car.querySelector('.pc-dots'), pb = car.querySelector('.pc-nav-prev'),
+    nb = car.querySelector('.pc-nav-next'), ct = car.querySelector('.pc-counter'), n = els.length;
+  if (n <= 1) { [dc,pb,nb,ct].forEach(x => { if(x) x.style.display='none'; }); return; }
+  els.forEach((_, i) => {
+    const d = document.createElement('button');
+    d.className = 'pc-dot' + (i===0?' active':'');
+    d.addEventListener('click', () => sl.scrollTo({ left: els[i].offsetLeft, behavior: 'smooth' }));
+    dc.appendChild(d);
   });
+  const dots = dc.querySelectorAll('.pc-dot');
+  let t;
+  sl.addEventListener('scroll', () => { clearTimeout(t); t = setTimeout(() => {
+    const idx = Math.round(sl.scrollLeft / sl.offsetWidth);
+    dots.forEach((d,i) => d.classList.toggle('active', i===idx));
+    if(ct) ct.textContent = `${idx+1} / ${n}`;
+  }, 50); });
+  if(pb) pb.addEventListener('click', () => sl.scrollBy({ left: -sl.offsetWidth, behavior: 'smooth' }));
+  if(nb) nb.addEventListener('click', () => sl.scrollBy({ left: sl.offsetWidth, behavior: 'smooth' }));
+});
 
-  const dots = dotsContainer.querySelectorAll('.pc-dot');
-  let timer;
-  slides.addEventListener('scroll', () => {
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-      const idx = Math.round(slides.scrollLeft / slides.offsetWidth);
-      dots.forEach((d, i) => d.classList.toggle('active', i === idx));
-      if (counter) counter.textContent = `${idx + 1} / ${total}`;
-    }, 50);
-  });
-
-  if (prevBtn) prevBtn.addEventListener('click', () => slides.scrollBy({ left: -slides.offsetWidth, behavior: 'smooth' }));
-  if (nextBtn) nextBtn.addEventListener('click', () => slides.scrollBy({ left: slides.offsetWidth, behavior: 'smooth' }));
+// FAQ
+document.querySelectorAll('.faq-q').forEach(q => {
+  q.addEventListener('click', () => q.parentElement.classList.toggle('open'));
 });
 </script>
 </body>
