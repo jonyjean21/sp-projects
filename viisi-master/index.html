@@ -1723,7 +1723,12 @@ function renderStats() {
 
   // 門番（対戦履歴付き）
   document.getElementById('gk-list').innerHTML = D.gatekeepers.map(gk => {
-    const allMs = D.matches.filter(m => m.defender === gk.name && m.role === 'gatekeeper');
+    // 門番戦（防衛側）+ チャンピオン戦（防衛側 or 挑戦者）
+    const allMs = D.matches.filter(m =>
+      (m.defender === gk.name && m.role === 'gatekeeper') ||
+      (m.defender === gk.name && m.role === 'champion') ||
+      (m.challenger === gk.name && m.role === 'champion')
+    );
     const w = allMs.filter(m => m.winner === gk.name).length;
     const l = allMs.filter(m => m.winner && m.winner !== gk.name).length;
     const total = w + l;
@@ -1735,8 +1740,14 @@ function renderStats() {
       matchHistory = '<div class="gk-match-list">' + allMs.map(m => {
         const won = m.winner === gk.name;
         const mark = won ? '<span class="win-mark">W</span>' : '<span class="lose-mark">L</span>';
-        const scoreStr = (m.sc != null && m.sd != null) ? ` ${m.sd}-${m.sc}` : '';
-        return `<div class="gk-match-item">${mark} vs ${m.challenger}${scoreStr}</div>`;
+        const isChamp = m.role === 'champion';
+        const champTag = isChamp ? '<span style="color:#fbbf24;font-size:10px;margin-left:2px;">👑</span>' : '';
+        // 対戦相手を特定（自分がchallenger/defenderどちらでも対応）
+        const opponent = m.defender === gk.name ? m.challenger : m.defender;
+        const myScore = m.defender === gk.name ? m.sd : m.sc;
+        const oppScore = m.defender === gk.name ? m.sc : m.sd;
+        const scoreStr = (m.sc != null && m.sd != null) ? ` ${myScore}-${oppScore}` : '';
+        return `<div class="gk-match-item">${mark}${champTag} vs ${opponent}${scoreStr}</div>`;
       }).join('') + '</div>';
     }
 
@@ -1831,8 +1842,15 @@ function renderChallengerProgress() {
 
   progressEl.innerHTML = challengers.map(c => {
     const cMatches = D.matches.filter(m => m.role === 'gatekeeper' && m.challenger === c);
-    const wins = cMatches.filter(m => m.winner === c).length;
-    const losses = cMatches.filter(m => m.winner !== c).length;
+    // 全試合（門番戦 + チャンピオン戦）で成績を計算
+    const allCMatches = D.matches.filter(m =>
+      (m.challenger === c && m.role === 'gatekeeper') ||
+      (m.challenger === c && m.role === 'champion') ||
+      (m.defender === c && m.role === 'champion')
+    );
+    const wins = allCMatches.filter(m => m.winner === c).length;
+    const losses = allCMatches.filter(m => m.winner && m.winner !== c).length;
+    const champCount = allCMatches.filter(m => m.role === 'champion').length;
 
     // 各門番との結果（最新試合ベース）
     const pips = gkNames.map(gk => {
@@ -1845,12 +1863,13 @@ function renderChallengerProgress() {
     }).join('');
 
     const qualifiedTag = qualifiedNames.has(c) ? ' <span style="color:#fbbf24;font-size:10px;">-- 王者挑戦権獲得!</span>' : '';
+    const champTag = champCount > 0 ? ` <span style="color:#fbbf24;font-size:10px;">👑×${champCount}</span>` : '';
 
     return `
       <div class="challenger-card">
         <div class="challenger-header">
           <span class="challenger-name">${c}${qualifiedTag}</span>
-          <span class="challenger-record"><b>${wins}勝</b>${losses}敗</span>
+          <span class="challenger-record"><b>${wins}勝</b>${losses}敗${champTag}</span>
         </div>
         <div class="challenger-progress">${pips}</div>
       </div>
