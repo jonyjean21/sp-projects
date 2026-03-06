@@ -145,6 +145,22 @@
   .btn-x-intent { background: #1d9bf022; color: #1d9bf0; border: 1px solid #1d9bf044; }
   .btn-x-intent:active { background: #1d9bf055; }
 
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .ai-post-card {
+    background: #0f172a; border: 1px solid #334155; border-radius: 10px;
+    padding: 12px; margin-bottom: 10px;
+  }
+  .ai-post-card .ai-post-type {
+    font-size: 10px; font-weight: 700; color: #fbbf24; letter-spacing: 0.5px; margin-bottom: 6px;
+  }
+  .ai-post-card .ai-post-text {
+    font-size: 13px; line-height: 1.7; white-space: pre-wrap; word-break: break-all;
+  }
+  .ai-post-card .ai-post-chars { font-size: 10px; color: #64748b; text-align: right; margin-top: 4px; }
+  .ai-post-card .ai-post-chars.over { color: #f87171; }
+  .ai-post-actions { display: flex; gap: 6px; margin-top: 8px; }
+  .ai-post-actions .btn-full { font-size: 12px; padding: 8px; }
+
   .btn-danger { background: #ef444422; color: #f87171; border: 1px solid #ef444444; }
 
   /* 出力プレビュー */
@@ -375,20 +391,33 @@
   <div class="section-label">投稿する試合を選択</div>
   <div class="card" id="post-match-selector"></div>
 
-  <!-- X投稿セクション（試合選択後に表示） -->
+  <!-- AI生成セクション（試合選択後に表示） -->
   <div id="post-output-area" style="display:none;">
-    <div class="section-label" style="margin-top: 12px;">X投稿テンプレート</div>
-    <div class="template-tabs" id="template-tabs"></div>
-    <div class="card">
-      <div class="output-box" id="x-output"></div>
-      <div class="char-count" id="x-char-count">0 / 280</div>
-      <div style="display:flex;gap:8px;margin-top:8px;">
-        <button class="btn-full btn-copy" onclick="copyText('x-output', this)" style="flex:1;">
-          コピー
-        </button>
-        <button class="btn-full btn-post" id="btn-post-x" onclick="postToX(this)" style="flex:1;">
-          𝕏 に投稿
-        </button>
+    <div class="section-label" style="margin-top: 12px;">✨ AI生成ポスト</div>
+    <div id="ai-posts-area">
+      <div id="ai-loading" style="display:none;text-align:center;padding:20px;color:#94a3b8;font-size:13px;">
+        <div style="margin-bottom:8px;">🤖 ポスト案を生成中...</div>
+        <div style="width:40px;height:40px;border:3px solid #334155;border-top-color:#fbbf24;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto;"></div>
+      </div>
+      <div id="ai-posts-list"></div>
+    </div>
+
+    <div style="margin-top:8px;">
+      <button class="btn-full btn-secondary" onclick="toggleTemplates()" style="font-size:12px;padding:10px;" id="btn-toggle-tpl">
+        📋 テンプレートも見る
+      </button>
+    </div>
+
+    <div id="template-area" style="display:none;">
+      <div class="section-label" style="margin-top: 12px;">テンプレート</div>
+      <div class="template-tabs" id="template-tabs"></div>
+      <div class="card">
+        <div class="output-box" id="x-output"></div>
+        <div class="char-count" id="x-char-count">0 / 280</div>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button class="btn-full btn-copy" onclick="copyText('x-output', this)" style="flex:1;">コピー</button>
+          <button class="btn-full btn-x-intent" onclick="openXIntentFrom('x-output')" style="flex:1;">𝕏 で開く</button>
+        </div>
       </div>
     </div>
   </div>
@@ -534,14 +563,15 @@
     <h3 id="result-modal-title">記録完了</h3>
     <div class="result-summary" id="result-summary"></div>
 
-    <div class="result-label">𝕏 投稿用</div>
-    <div class="result-text-box" id="result-x-text"></div>
-    <div class="result-actions">
-      <button class="btn-full btn-copy" onclick="copyResultText('result-x-text', this)" style="flex:1;">コピー</button>
-      <button class="btn-full btn-x-intent" onclick="openXIntent()" style="flex:1;">𝕏 で開く</button>
+    <div class="result-label">✨ AI生成 Xポスト</div>
+    <div id="result-ai-area">
+      <div id="result-ai-loading" style="text-align:center;padding:12px;color:#94a3b8;font-size:12px;">
+        🤖 ポスト案を生成中...
+      </div>
+      <div id="result-ai-list"></div>
     </div>
 
-    <div class="result-label">OpenChat用</div>
+    <div class="result-label">💬 OpenChat用</div>
     <div class="result-text-box" id="result-oc-text"></div>
     <div class="result-actions">
       <button class="btn-full btn-copy" onclick="copyResultText('result-oc-text', this)" style="flex:1;">コピー</button>
@@ -1381,7 +1411,6 @@ function generateFromSelected() {
   selectedPostMatches = [...checked].map(cb => {
     const idx = parseInt(cb.dataset.idx);
     const match = { ...D.matches[idx] };
-    // 投稿ページのキーワード入力を反映
     const kwInput = cb.closest('.post-match-wrap')?.querySelector('.post-kw');
     if (kwInput && kwInput.value.trim()) {
       match.keywords = kwInput.value.trim().split(/[,、]/).map(k => k.trim()).filter(Boolean);
@@ -1389,9 +1418,121 @@ function generateFromSelected() {
     return match;
   });
   if (selectedPostMatches.length === 0) return;
+
+  // テンプレートも裏で生成（フォールバック用）
   generateOutputs(selectedPostMatches);
+
+  // AI生成
   document.getElementById('post-output-area').style.display = 'block';
+  document.getElementById('template-area').style.display = 'none';
+  generateAIPosts(selectedPostMatches);
   document.getElementById('post-output-area').scrollIntoView({ behavior: 'smooth' });
+}
+
+const VERCEL_API = 'https://vercel-api-orpin-one.vercel.app';
+
+async function callGeminiForPosts(ms) {
+  const matchInfo = ms.map(m => {
+    const type = m.role === 'champion' ? 'タイトルマッチ(王者戦)' : '門番戦';
+    const won = m.winner === m.challenger;
+    const result = won ? (m.role === 'champion' ? '挑戦者が王者を倒して新チャンピオンに' : '挑戦者が門番を撃破') : '防衛側が防衛成功';
+    const kw = (m.keywords && m.keywords.length > 0) ? `キーワード: ${m.keywords.join(', ')}` : '';
+    return `- ${type}: ${m.challenger}(挑戦者) vs ${m.defender}(防衛側) ${m.sc}-${m.sd} → ${result}${kw ? '\n  ' + kw : ''}`;
+  }).join('\n');
+
+  const handles = ms.map(m => {
+    const cx = D.players[m.challenger]?.x ? normalizeHandle(D.players[m.challenger].x) : null;
+    const dx = D.players[m.defender]?.x ? normalizeHandle(D.players[m.defender].x) : null;
+    return [cx ? `${m.challenger}: ${cx}` : null, dx ? `${m.defender}: ${dx}` : null].filter(Boolean).join('\n');
+  }).join('\n');
+
+  const prompt = `あなたは「5先王」というモルック（フィンランド発の投てきスポーツ）の個人戦コンテンツのX(Twitter)公式アカウントの中の人です。
+
+以下の試合結果について、Xポスト案を3パターン生成してください。
+
+【試合結果】
+${matchInfo}
+現チャンピオン: ${D.champion.name}
+
+【ルール】
+- 各ポスト280文字以内（厳守）
+- #5先王 #モルック のハッシュタグを必ず末尾に付ける
+- 選手名にはXアカウントを()付きで添える（わかる場合のみ）
+- AI臭い定型文は絶対NG。リアルな人間が書いたような自然な文体で
+- 敬語は不要。カジュアルでOK。熱量があると良い
+- キーワードがあれば自然に文中に織り込む（無理に全部使わなくていい）
+- 絵文字は適度に使ってOK
+
+【選手Xアカウント】
+${handles}
+
+【出力形式】
+JSON配列で返してください:
+[
+  {"type": "パターン名(3文字程度)", "text": "ポスト本文"},
+  {"type": "パターン名", "text": "ポスト本文"},
+  {"type": "パターン名", "text": "ポスト本文"}
+]`;
+
+  const resp = await fetch(`${VERCEL_API}/api/gemini`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt, temperature: 0.8 })
+  });
+  if (!resp.ok) throw new Error(`API error: ${resp.status}`);
+  const data = await resp.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error('Empty response');
+  return JSON.parse(text);
+}
+
+function renderAIPostCards(posts, listEl, idPrefix) {
+  posts.forEach((post, i) => {
+    const len = post.text.length;
+    const overClass = len > 280 ? ' over' : '';
+    listEl.innerHTML += `
+      <div class="ai-post-card">
+        <div class="ai-post-type">${escapeHtml(post.type)}</div>
+        <div class="ai-post-text" id="${idPrefix}-${i}">${escapeHtml(post.text)}</div>
+        <div class="ai-post-chars${overClass}">${len} / 280</div>
+        <div class="ai-post-actions">
+          <button class="btn-full btn-copy" onclick="copyText('${idPrefix}-${i}', this)" style="flex:1;">コピー</button>
+          <button class="btn-full btn-x-intent" onclick="openXIntentFrom('${idPrefix}-${i}')" style="flex:1;">𝕏 で開く</button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+async function generateAIPosts(ms) {
+  const listEl = document.getElementById('ai-posts-list');
+  const loadEl = document.getElementById('ai-loading');
+  listEl.innerHTML = '';
+  loadEl.style.display = 'block';
+
+  try {
+    const posts = await callGeminiForPosts(ms);
+    loadEl.style.display = 'none';
+    renderAIPostCards(posts, listEl, 'ai-post');
+  } catch (e) {
+    loadEl.style.display = 'none';
+    listEl.innerHTML = `<div style="color:#f87171;font-size:12px;padding:8px;">AI生成エラー: ${e.message}<br>下のテンプレートをご利用ください</div>`;
+    document.getElementById('template-area').style.display = 'block';
+  }
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function toggleTemplates() {
+  const area = document.getElementById('template-area');
+  area.style.display = area.style.display === 'none' ? 'block' : 'none';
+}
+
+function openXIntentFrom(elementId) {
+  const text = document.getElementById(elementId).textContent;
+  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(text), '_blank');
 }
 
 function normalizeHandle(x) {
@@ -1675,15 +1816,15 @@ function showResultModal(matches) {
   });
   document.getElementById('result-summary').innerHTML = summary;
 
-  // X用テキスト（最適テンプレ自動選択）
-  const xText = autoSelectTemplate(matches);
-  document.getElementById('result-x-text').textContent = xText;
-
   // OpenChat用テキスト（カジュアル短縮版）
   const ocText = genOpenChatText(matches);
   document.getElementById('result-oc-text').textContent = ocText;
 
+  // AI生成Xポスト
+  document.getElementById('result-ai-loading').style.display = 'block';
+  document.getElementById('result-ai-list').innerHTML = '';
   document.getElementById('result-modal').classList.add('show');
+  generateResultAIPosts(matches);
 }
 
 function autoSelectTemplate(ms) {
@@ -1725,9 +1866,27 @@ function copyResultText(elementId, btn) {
   });
 }
 
-function openXIntent() {
-  const text = document.getElementById('result-x-text').textContent;
-  window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(text), '_blank');
+async function generateResultAIPosts(ms) {
+  const loadEl = document.getElementById('result-ai-loading');
+  const listEl = document.getElementById('result-ai-list');
+  try {
+    const posts = await callGeminiForPosts(ms);
+    loadEl.style.display = 'none';
+    renderAIPostCards(posts, listEl, 'result-ai-post');
+  } catch (e) {
+    loadEl.style.display = 'none';
+    const fallback = autoSelectTemplate(ms);
+    listEl.innerHTML = `
+      <div style="color:#94a3b8;font-size:11px;margin-bottom:6px;">AI生成失敗 → テンプレート表示</div>
+      <div class="ai-post-card">
+        <div class="ai-post-text" id="result-ai-post-fb">${escapeHtml(fallback)}</div>
+        <div class="ai-post-actions">
+          <button class="btn-full btn-copy" onclick="copyResultText('result-ai-post-fb', this)" style="flex:1;">コピー</button>
+          <button class="btn-full btn-x-intent" onclick="openXIntentFrom('result-ai-post-fb')" style="flex:1;">𝕏 で開く</button>
+        </div>
+      </div>
+    `;
+  }
 }
 
 function shareLine() {
