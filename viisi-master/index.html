@@ -137,8 +137,6 @@
   }
   .result-actions { display: flex; gap: 8px; margin-top: 6px; }
   .result-actions .btn-full { font-size: 13px; padding: 10px; }
-  .btn-line { background: #06C75522; color: #06C755; border: 1px solid #06C75544; }
-  .btn-line:active { background: #06C75555; }
   .btn-x-intent { background: #1d9bf022; color: #1d9bf0; border: 1px solid #1d9bf044; }
   .btn-x-intent:active { background: #1d9bf055; }
 
@@ -384,14 +382,6 @@
       <div id="ai-posts-list"></div>
     </div>
 
-    <div class="section-label" style="margin-top: 16px;">💬 OpenChat用</div>
-    <div class="card">
-      <div class="result-text-box" id="post-oc-text" style="max-height:200px;"></div>
-      <div style="display:flex;gap:8px;margin-top:8px;">
-        <button class="btn-full btn-copy" onclick="copyText('post-oc-text', this)" style="flex:1;">コピー</button>
-        <button class="btn-full btn-line" onclick="shareLineFrom('post-oc-text')" style="flex:1;">LINEで共有</button>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -541,13 +531,6 @@
         🤖 ポスト案を生成中...
       </div>
       <div id="result-ai-list"></div>
-    </div>
-
-    <div class="result-label">💬 OpenChat用</div>
-    <div class="result-text-box" id="result-oc-text"></div>
-    <div class="result-actions">
-      <button class="btn-full btn-copy" onclick="copyResultText('result-oc-text', this)" style="flex:1;">コピー</button>
-      <button class="btn-full btn-line" onclick="shareLine()" style="flex:1;">LINEで共有</button>
     </div>
 
     <button class="btn-full btn-secondary" onclick="hideModal('result-modal')" style="margin-top: 12px;">閉じる</button>
@@ -1378,9 +1361,6 @@ function generateFromSelected() {
   });
   if (selectedPostMatches.length === 0) return;
 
-  // OpenChat用テキスト
-  document.getElementById('post-oc-text').textContent = genOpenChatText(selectedPostMatches);
-
   // AI生成
   document.getElementById('post-output-area').style.display = 'block';
   generateAIPosts(selectedPostMatches);
@@ -1579,7 +1559,7 @@ function copyText(elementId, btn) {
 }
 
 // ============================================================
-// 記録後モーダル（AI生成 + OpenChat テキスト）
+// 記録後モーダル（AI生成Xポスト）
 // ============================================================
 function showResultModal(matches) {
   if (!matches || matches.length === 0) return;
@@ -1604,10 +1584,6 @@ function showResultModal(matches) {
   });
   document.getElementById('result-summary').innerHTML = summary;
 
-  // OpenChat用テキスト（カジュアル短縮版）
-  const ocText = genOpenChatText(matches);
-  document.getElementById('result-oc-text').textContent = ocText;
-
   // AI生成Xポスト
   document.getElementById('result-ai-loading').style.display = 'block';
   document.getElementById('result-ai-list').innerHTML = '';
@@ -1622,23 +1598,6 @@ function autoSelectTemplate(ms) {
   if (hasChampDefense) return genResults(ms);
   if (ms.length >= 2) return genResults(ms);
   return genMatchDay(ms);
-}
-
-function genOpenChatText(ms) {
-  let t = '【5先王】結果報告\n\n';
-  ms.forEach(m => {
-    const icon = m.role === 'champion' ? '👑' : '⚔️';
-    const won = m.winner === m.challenger;
-    const result = won
-      ? (m.role === 'champion' ? `${m.challenger}が新チャンピオンに!` : `${m.challenger}が門番${m.defender}を撃破!`)
-      : `${m.defender}が防衛 (${m.sd}-${m.sc})`;
-    t += `${icon} ${m.challenger} vs ${m.defender}  ${m.sc}-${m.sd}\n`;
-    t += `→ ${result}\n`;
-    if (m.keywords && m.keywords.length > 0) t += `(${m.keywords.join(' / ')})\n`;
-    t += '\n';
-  });
-  t += `現チャンピオン: ${D.champion.name}`;
-  return t;
 }
 
 function copyResultText(elementId, btn) {
@@ -1674,26 +1633,6 @@ async function generateResultAIPosts(ms) {
         </div>
       </div>
     `;
-  }
-}
-
-function shareLineFrom(elementId) {
-  const text = document.getElementById(elementId).textContent;
-  if (navigator.share) {
-    navigator.share({ text }).catch(() => {});
-  } else {
-    window.open('https://line.me/R/share?text=' + encodeURIComponent(text), '_blank');
-  }
-}
-
-function shareLine() {
-  const text = document.getElementById('result-oc-text').textContent;
-  // Web Share API があればそれを使う（LINEが選択肢に出る）
-  if (navigator.share) {
-    navigator.share({ text }).catch(() => {});
-  } else {
-    // fallback: LINEのシェアURL
-    window.open('https://line.me/R/share?text=' + encodeURIComponent(text), '_blank');
   }
 }
 
