@@ -25,10 +25,9 @@
   --blue: #3B82F6;
   --green: #10B981;
   --amber: #F59E0B;
-  --radius: 16px;
-  --radius-sm: 12px;
+  --radius: 14px;
   --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04);
-  --shadow-hover: 0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08);
+  --shadow-hover: 0 4px 12px rgba(0,0,0,0.08), 0 12px 28px rgba(0,0,0,0.1);
   --cat-molkky: #EFF6FF;
   --cat-molkky-text: #2563EB;
   --cat-team: #ECFDF5;
@@ -43,7 +42,6 @@ body {
   line-height: 1.8; -webkit-font-smoothing: antialiased;
 }
 a { color: var(--accent); text-decoration: none; }
-
 .container { max-width: 960px; margin: 0 auto; padding: 0 20px; }
 
 /* ===== Hero ===== */
@@ -99,7 +97,7 @@ a { color: var(--accent); text-decoration: none; }
 .how-step {
   display: flex; align-items: center; gap: 8px;
   background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); padding: 12px 18px;
+  border-radius: 12px; padding: 12px 18px;
   font-size: 14px; font-weight: 600; box-shadow: var(--shadow);
 }
 .how-num {
@@ -108,7 +106,7 @@ a { color: var(--accent); text-decoration: none; }
   font-size: 12px; font-weight: 800; color: #fff; flex-shrink: 0;
 }
 
-/* ===== Filter Bar ===== */
+/* ===== Filter ===== */
 .filter-bar {
   display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
   margin-bottom: 32px;
@@ -121,72 +119,60 @@ a { color: var(--accent); text-decoration: none; }
 .filter-pill:hover { border-color: var(--accent); color: var(--accent); }
 .filter-pill.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-/* ===== Product List (横並びカタログ) ===== */
-.product-list {
-  display: flex; flex-direction: column; gap: 24px;
+/* ===== Product Grid (2列) ===== */
+.product-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
 }
 .product-card {
   background: var(--card); border: 1px solid var(--border);
   border-radius: var(--radius); overflow: hidden;
   box-shadow: var(--shadow); transition: all 0.25s;
-  display: grid; grid-template-columns: 1fr 1fr;
 }
 .product-card:hover {
-  box-shadow: var(--shadow-hover); border-color: var(--accent);
+  box-shadow: var(--shadow-hover); transform: translateY(-4px);
+  border-color: var(--accent);
 }
 .product-card.hidden { display: none; }
-
-/* 偶数行は画像右 */
-.product-card:nth-child(even) { direction: rtl; }
-.product-card:nth-child(even) > * { direction: ltr; }
 
 /* ===== Carousel ===== */
 .pc-carousel {
   position: relative; background: #F5F0EB;
-  min-height: 240px;
 }
 .pc-slides {
   display: flex; overflow-x: auto;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; height: 100%;
+  scrollbar-width: none;
 }
 .pc-slides::-webkit-scrollbar { display: none; }
-.pc-slide {
-  flex: 0 0 100%; scroll-snap-align: start;
-}
+.pc-slide { flex: 0 0 100%; scroll-snap-align: start; }
 .pc-slide img {
-  width: 100%; height: 100%; object-fit: cover; display: block;
+  width: 100%; aspect-ratio: 16/10; object-fit: cover; display: block;
 }
 .pc-dots {
   position: absolute; bottom: 10px; left: 50%;
   transform: translateX(-50%);
-  display: flex; gap: 8px;
+  display: flex; gap: 7px;
 }
 .pc-dot {
   width: 8px; height: 8px; border-radius: 50%;
-  background: rgba(255,255,255,0.45); border: 1.5px solid rgba(255,255,255,0.7);
+  background: rgba(255,255,255,0.4); border: 1.5px solid rgba(255,255,255,0.8);
   padding: 0; cursor: pointer; transition: all 0.2s;
   box-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
-.pc-dot.active { background: #fff; transform: scale(1.3); }
+.pc-dot.active { background: #fff; transform: scale(1.25); }
 .pc-nav {
   position: absolute; top: 50%; transform: translateY(-50%);
-  width: 32px; height: 32px; border-radius: 50%;
+  width: 30px; height: 30px; border-radius: 50%;
   background: rgba(255,255,255,0.9); border: none;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
-  font-size: 16px; color: var(--text); opacity: 0;
+  font-size: 15px; color: var(--text); opacity: 0;
   transition: opacity 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 .pc-carousel:hover .pc-nav { opacity: 1; }
 .pc-nav-prev { left: 8px; }
 .pc-nav-next { right: 8px; }
-.pc-slide-label {
-  position: absolute; bottom: 10px; right: 10px;
-  font-size: 10px; font-weight: 600; color: #fff;
-  background: rgba(0,0,0,0.5); padding: 2px 10px;
-  border-radius: 8px; pointer-events: none;
-}
 .pc-counter {
   position: absolute; top: 10px; right: 10px;
   font-size: 11px; font-weight: 600; color: #fff;
@@ -195,36 +181,33 @@ a { color: var(--accent); text-decoration: none; }
 }
 
 /* ===== Card Body ===== */
-.pc-body {
-  padding: 28px 28px 24px; display: flex; flex-direction: column;
-  justify-content: center; text-align: left;
-}
-.pc-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
-.pc-name { font-size: 20px; font-weight: 800; line-height: 1.3; }
+.pc-body { padding: 18px 20px 20px; text-align: left; }
+.pc-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.pc-name { font-size: 17px; font-weight: 800; }
 .pc-category {
-  font-size: 11px; font-weight: 700; padding: 3px 10px;
-  border-radius: 10px; flex-shrink: 0; letter-spacing: 0.03em;
+  font-size: 10px; font-weight: 700; padding: 2px 9px;
+  border-radius: 10px; letter-spacing: 0.03em;
 }
 .cat-molkky { background: var(--cat-molkky); color: var(--cat-molkky-text); }
 .cat-team { background: var(--cat-team); color: var(--cat-team-text); }
 .cat-life { background: var(--cat-life); color: var(--cat-life-text); }
 .pc-desc {
-  font-size: 14px; color: var(--text-sub); line-height: 1.8;
-  margin-bottom: 14px;
+  font-size: 13px; color: var(--text-sub); line-height: 1.7;
+  margin-bottom: 10px;
 }
-.pc-features { list-style: none; padding: 0; margin: 0 0 16px; }
+.pc-features { list-style: none; padding: 0; margin: 0 0 12px; }
 .pc-features li {
-  font-size: 13px; color: var(--text); line-height: 1.7;
-  padding-left: 18px; position: relative;
+  font-size: 12.5px; color: var(--text); line-height: 1.7;
+  padding-left: 16px; position: relative;
 }
 .pc-features li::before {
-  content: ''; position: absolute; left: 0; top: 10px;
-  width: 8px; height: 8px; border-radius: 2px;
-  background: var(--accent); opacity: 0.6;
+  content: ''; position: absolute; left: 0; top: 9px;
+  width: 7px; height: 7px; border-radius: 2px;
+  background: var(--accent); opacity: 0.5;
 }
 .pc-link {
   display: inline-block; font-size: 13px; color: var(--accent);
-  font-weight: 600; transition: all 0.2s;
+  font-weight: 600; transition: color 0.2s;
 }
 .pc-link:hover { color: var(--accent-hover); }
 
@@ -279,21 +262,14 @@ a { color: var(--accent); text-decoration: none; }
 @media (max-width: 700px) {
   .hero { padding: 48px 16px 36px; }
   .section { padding: 40px 16px; }
+  .product-grid { grid-template-columns: 1fr; gap: 20px; }
   .how-steps { gap: 6px; }
   .how-step { padding: 10px 14px; font-size: 13px; }
   .filter-bar { gap: 6px; }
   .filter-pill { padding: 6px 14px; font-size: 12px; }
-  .product-card {
-    grid-template-columns: 1fr !important;
-  }
-  .product-card:nth-child(even) { direction: ltr; }
-  .pc-carousel { min-height: 200px; }
-  .pc-body { padding: 20px 18px 18px; }
-  .pc-name { font-size: 17px; }
   .pc-nav { opacity: 0.8; }
 }
 
-/* ===== Animation ===== */
 @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
 .fade-in { opacity: 0; }
 .fade-in.visible { animation: fadeUp 0.5s ease forwards; }
@@ -301,7 +277,6 @@ a { color: var(--accent); text-decoration: none; }
 </head>
 <body>
 
-<!-- ==================== Hero ==================== -->
 <section class="hero">
   <div class="container">
     <div class="hero-badge">MACHAP</div>
@@ -311,7 +286,6 @@ a { color: var(--accent); text-decoration: none; }
   </div>
 </section>
 
-<!-- ==================== How ==================== -->
 <section class="section section-center">
   <div class="container">
     <p class="section-label">できること</p>
@@ -326,7 +300,6 @@ a { color: var(--accent); text-decoration: none; }
   </div>
 </section>
 
-<!-- ==================== Products ==================== -->
 <section class="section section-warm" id="products">
   <div class="container section-center">
     <p class="section-label">プロダクトカタログ</p>
@@ -340,15 +313,14 @@ a { color: var(--accent); text-decoration: none; }
       <button class="filter-pill" data-filter="life">くらし</button>
     </div>
 
-    <div class="product-list">
+    <div class="product-grid">
 
-      <!-- MOLKKY HUB -->
       <div class="product-card fade-in" data-category="molkky">
         <div class="pc-carousel">
           <div class="pc-slides">
-            <div class="pc-slide"><img src="./img/molkky-hub-1.jpg" alt="MOLKKY HUB トップページ" loading="lazy"></div>
+            <div class="pc-slide"><img src="./img/molkky-hub-1.jpg" alt="MOLKKY HUB トップ" loading="lazy"></div>
             <div class="pc-slide"><img src="./img/molkky-hub-2.jpg" alt="MOLKKY HUB 大会一覧" loading="lazy"></div>
-            <div class="pc-slide"><img src="./img/molkky-hub-3.jpg" alt="MOLKKY HUB スマホ表示" loading="lazy"></div>
+            <div class="pc-slide"><img src="./img/molkky-hub-3.jpg" alt="MOLKKY HUB スマホ" loading="lazy"></div>
           </div>
           <div class="pc-dots"></div>
           <span class="pc-counter">1 / 3</span>
@@ -356,11 +328,8 @@ a { color: var(--accent); text-decoration: none; }
           <button class="pc-nav pc-nav-next" aria-label="次へ">&#8250;</button>
         </div>
         <div class="pc-body">
-          <div class="pc-header">
-            <div class="pc-name">MOLKKY HUB</div>
-            <span class="pc-category cat-molkky">モルック</span>
-          </div>
-          <div class="pc-desc">全国のモルック大会情報を自動収集。580件以上のデータベース。毎月3,000人が利用するモルック専門メディア。</div>
+          <div class="pc-header"><div class="pc-name">MOLKKY HUB</div><span class="pc-category cat-molkky">モルック</span></div>
+          <div class="pc-desc">全国のモルック大会情報を自動収集。580件超のDB、毎月3,000人が利用。</div>
           <ul class="pc-features">
             <li>大会情報を自動で収集・公開</li>
             <li>チーム紹介70件以上</li>
@@ -370,13 +339,12 @@ a { color: var(--accent); text-decoration: none; }
         </div>
       </div>
 
-      <!-- 5先王 -->
       <div class="product-card fade-in" data-category="molkky">
         <div class="pc-carousel">
           <div class="pc-slides">
-            <div class="pc-slide"><img src="./img/viisi-master-1.jpg" alt="5先王 メイン画面" loading="lazy"></div>
-            <div class="pc-slide"><img src="./img/viisi-master-2.jpg" alt="5先王 スコア入力" loading="lazy"></div>
-            <div class="pc-slide"><img src="./img/viisi-master-3.jpg" alt="5先王 スマホ表示" loading="lazy"></div>
+            <div class="pc-slide"><img src="./img/viisi-master-1.jpg" alt="5先王 メイン" loading="lazy"></div>
+            <div class="pc-slide"><img src="./img/viisi-master-2.jpg" alt="5先王 スコア" loading="lazy"></div>
+            <div class="pc-slide"><img src="./img/viisi-master-3.jpg" alt="5先王 スマホ" loading="lazy"></div>
           </div>
           <div class="pc-dots"></div>
           <span class="pc-counter">1 / 3</span>
@@ -384,11 +352,8 @@ a { color: var(--accent); text-decoration: none; }
           <button class="pc-nav pc-nav-next" aria-label="次へ">&#8250;</button>
         </div>
         <div class="pc-body">
-          <div class="pc-header">
-            <div class="pc-name">5先王（ヴィーシマスター）</div>
-            <span class="pc-category cat-molkky">モルック</span>
-          </div>
-          <div class="pc-desc">試合結果をその場で記録。終わったらXに自動投稿。チャンピオン戦モードも搭載。</div>
+          <div class="pc-header"><div class="pc-name">5先王（ヴィーシマスター）</div><span class="pc-category cat-molkky">モルック</span></div>
+          <div class="pc-desc">試合結果をその場で記録→Xに自動投稿。チャンピオン戦モードも搭載。</div>
           <ul class="pc-features">
             <li>スコアをリアルタイム入力</li>
             <li>試合結果をXに自動投稿</li>
@@ -398,13 +363,12 @@ a { color: var(--accent); text-decoration: none; }
         </div>
       </div>
 
-      <!-- 選手権トラッカー -->
       <div class="product-card fade-in" data-category="molkky">
         <div class="pc-carousel">
           <div class="pc-slides">
-            <div class="pc-slide"><img src="./img/championship-1.jpg" alt="選手権トラッカー 全体" loading="lazy"></div>
-            <div class="pc-slide"><img src="./img/championship-2.jpg" alt="選手権トラッカー ブロック詳細" loading="lazy"></div>
-            <div class="pc-slide"><img src="./img/championship-3.jpg" alt="選手権トラッカー スマホ表示" loading="lazy"></div>
+            <div class="pc-slide"><img src="./img/championship-1.jpg" alt="選手権 全体" loading="lazy"></div>
+            <div class="pc-slide"><img src="./img/championship-2.jpg" alt="選手権 詳細" loading="lazy"></div>
+            <div class="pc-slide"><img src="./img/championship-3.jpg" alt="選手権 スマホ" loading="lazy"></div>
           </div>
           <div class="pc-dots"></div>
           <span class="pc-counter">1 / 3</span>
@@ -412,11 +376,8 @@ a { color: var(--accent); text-decoration: none; }
           <button class="pc-nav pc-nav-next" aria-label="次へ">&#8250;</button>
         </div>
         <div class="pc-body">
-          <div class="pc-header">
-            <div class="pc-name">日本選手権トラッカー</div>
-            <span class="pc-category cat-molkky">モルック</span>
-          </div>
-          <div class="pc-desc">全国6ブロック10会場の予選結果をリアルタイム表示。進行状況がひと目でわかる。</div>
+          <div class="pc-header"><div class="pc-name">日本選手権トラッカー</div><span class="pc-category cat-molkky">モルック</span></div>
+          <div class="pc-desc">全国6ブロック10会場の予選結果をリアルタイム表示。</div>
           <ul class="pc-features">
             <li>6ブロック10会場を一画面で</li>
             <li>結果をリアルタイム反映</li>
@@ -426,13 +387,12 @@ a { color: var(--accent); text-decoration: none; }
         </div>
       </div>
 
-      <!-- ナイモル大会管理 -->
       <div class="product-card fade-in" data-category="molkky">
         <div class="pc-carousel">
           <div class="pc-slides">
             <div class="pc-slide"><img src="./img/naimol-admin-1.jpg" alt="ナイモル メイン" loading="lazy"></div>
-            <div class="pc-slide"><img src="./img/naimol-admin-2.jpg" alt="ナイモル 結果入力" loading="lazy"></div>
-            <div class="pc-slide"><img src="./img/naimol-admin-3.jpg" alt="ナイモル スマホ表示" loading="lazy"></div>
+            <div class="pc-slide"><img src="./img/naimol-admin-2.jpg" alt="ナイモル 結果" loading="lazy"></div>
+            <div class="pc-slide"><img src="./img/naimol-admin-3.jpg" alt="ナイモル スマホ" loading="lazy"></div>
           </div>
           <div class="pc-dots"></div>
           <span class="pc-counter">1 / 3</span>
@@ -440,11 +400,8 @@ a { color: var(--accent); text-decoration: none; }
           <button class="pc-nav pc-nav-next" aria-label="次へ">&#8250;</button>
         </div>
         <div class="pc-body">
-          <div class="pc-header">
-            <div class="pc-name">ナイモル大会管理</div>
-            <span class="pc-category cat-molkky">モルック</span>
-          </div>
-          <div class="pc-desc">スプレッドシートに入力→結果ページ自動生成。写真付きの見栄えする結果ページ。</div>
+          <div class="pc-header"><div class="pc-name">ナイモル大会管理</div><span class="pc-category cat-molkky">モルック</span></div>
+          <div class="pc-desc">スプシ入力→結果ページ自動生成。写真付きで見栄え良し。</div>
           <ul class="pc-features">
             <li>スプシ入力だけで結果ページ完成</li>
             <li>写真付きで見栄えよく</li>
@@ -454,7 +411,6 @@ a { color: var(--accent); text-decoration: none; }
         </div>
       </div>
 
-      <!-- チームライド -->
       <div class="product-card fade-in" data-category="team">
         <div class="pc-carousel">
           <div class="pc-slides">
@@ -467,11 +423,8 @@ a { color: var(--accent); text-decoration: none; }
           <button class="pc-nav pc-nav-next" aria-label="次へ">&#8250;</button>
         </div>
         <div class="pc-body">
-          <div class="pc-header">
-            <div class="pc-name">チームライド</div>
-            <span class="pc-category cat-team">チーム運営</span>
-          </div>
-          <div class="pc-desc">出欠を入れたら配車が自動で決定。催促もLINE共有もワンタップ。</div>
+          <div class="pc-header"><div class="pc-name">チームライド</div><span class="pc-category cat-team">チーム運営</span></div>
+          <div class="pc-desc">出欠入力→自動配車。催促もLINE共有もワンタップ。</div>
           <ul class="pc-features">
             <li>出欠入力→自動配車</li>
             <li>催促メッセージ自動生成</li>
@@ -481,13 +434,12 @@ a { color: var(--accent); text-decoration: none; }
         </div>
       </div>
 
-      <!-- パートナー循環ポータル -->
       <div class="product-card fade-in" data-category="team">
         <div class="pc-carousel">
           <div class="pc-slides">
-            <div class="pc-slide"><img src="./img/partner-portal-1.jpg" alt="パートナーポータル メイン" loading="lazy"></div>
-            <div class="pc-slide"><img src="./img/partner-portal-2.jpg" alt="パートナーポータル 詳細" loading="lazy"></div>
-            <div class="pc-slide"><img src="./img/partner-portal-3.jpg" alt="パートナーポータル スマホ" loading="lazy"></div>
+            <div class="pc-slide"><img src="./img/partner-portal-1.jpg" alt="パートナー メイン" loading="lazy"></div>
+            <div class="pc-slide"><img src="./img/partner-portal-2.jpg" alt="パートナー 詳細" loading="lazy"></div>
+            <div class="pc-slide"><img src="./img/partner-portal-3.jpg" alt="パートナー スマホ" loading="lazy"></div>
           </div>
           <div class="pc-dots"></div>
           <span class="pc-counter">1 / 3</span>
@@ -495,11 +447,8 @@ a { color: var(--accent); text-decoration: none; }
           <button class="pc-nav pc-nav-next" aria-label="次へ">&#8250;</button>
         </div>
         <div class="pc-body">
-          <div class="pc-header">
-            <div class="pc-name">パートナー循環ポータル</div>
-            <span class="pc-category cat-team">チーム運営</span>
-          </div>
-          <div class="pc-desc">応援品の流れを見える化。誰から届いて、どこに届いたかが全部わかる。</div>
+          <div class="pc-header"><div class="pc-name">パートナー循環ポータル</div><span class="pc-category cat-team">チーム運営</span></div>
+          <div class="pc-desc">応援品の流れを見える化。誰から届いてどこへ届いたかが全部わかる。</div>
           <ul class="pc-features">
             <li>応援品の流れをリアルタイム表示</li>
             <li>パートナーへの感謝も見える化</li>
@@ -509,11 +458,10 @@ a { color: var(--accent); text-decoration: none; }
         </div>
       </div>
 
-      <!-- YouTube分析 -->
       <div class="product-card fade-in" data-category="life">
         <div class="pc-carousel">
           <div class="pc-slides">
-            <div class="pc-slide"><img src="./img/youtube-1.jpg" alt="YouTube分析 ダッシュボード" loading="lazy"></div>
+            <div class="pc-slide"><img src="./img/youtube-1.jpg" alt="YouTube分析 PC" loading="lazy"></div>
             <div class="pc-slide"><img src="./img/youtube-3.jpg" alt="YouTube分析 スマホ" loading="lazy"></div>
           </div>
           <div class="pc-dots"></div>
@@ -522,11 +470,8 @@ a { color: var(--accent); text-decoration: none; }
           <button class="pc-nav pc-nav-next" aria-label="次へ">&#8250;</button>
         </div>
         <div class="pc-body">
-          <div class="pc-header">
-            <div class="pc-name">YouTube分析ダッシュボード</div>
-            <span class="pc-category cat-life">くらし</span>
-          </div>
-          <div class="pc-desc">チャンネルの状態がひと目でわかるダッシュボード。動画ごとの成績もチャンネル全体の健康度も。</div>
+          <div class="pc-header"><div class="pc-name">YouTube分析ダッシュボード</div><span class="pc-category cat-life">くらし</span></div>
+          <div class="pc-desc">チャンネルの状態がひと目でわかる。動画ごとの成績も全体の健康度も。</div>
           <ul class="pc-features">
             <li>動画ごとの再生数・エンゲージメント</li>
             <li>チャンネル全体の健康度スコア</li>
@@ -536,12 +481,11 @@ a { color: var(--accent); text-decoration: none; }
         </div>
       </div>
 
-      <!-- めぐり帳 -->
       <div class="product-card fade-in" data-category="life">
         <div class="pc-carousel">
           <div class="pc-slides">
             <div class="pc-slide"><img src="./img/meguri-1.jpg" alt="めぐり帳 メイン" loading="lazy"></div>
-            <div class="pc-slide"><img src="./img/meguri-2.jpg" alt="めぐり帳 記録一覧" loading="lazy"></div>
+            <div class="pc-slide"><img src="./img/meguri-2.jpg" alt="めぐり帳 記録" loading="lazy"></div>
             <div class="pc-slide"><img src="./img/meguri-3.jpg" alt="めぐり帳 スマホ" loading="lazy"></div>
           </div>
           <div class="pc-dots"></div>
@@ -550,10 +494,7 @@ a { color: var(--accent); text-decoration: none; }
           <button class="pc-nav pc-nav-next" aria-label="次へ">&#8250;</button>
         </div>
         <div class="pc-body">
-          <div class="pc-header">
-            <div class="pc-name">めぐり帳</div>
-            <span class="pc-category cat-life">くらし</span>
-          </div>
+          <div class="pc-header"><div class="pc-name">めぐり帳</div><span class="pc-category cat-life">くらし</span></div>
           <div class="pc-desc">人からもらった恩、約束、貸し借りを記録。忘れたくない「ありがとう」を残す。</div>
           <ul class="pc-features">
             <li>もらった恩・約束を記録</li>
@@ -564,7 +505,6 @@ a { color: var(--accent); text-decoration: none; }
         </div>
       </div>
 
-      <!-- レシピBOX -->
       <div class="product-card fade-in" data-category="life">
         <div class="pc-carousel">
           <div class="pc-slides">
@@ -577,10 +517,7 @@ a { color: var(--accent); text-decoration: none; }
           <button class="pc-nav pc-nav-next" aria-label="次へ">&#8250;</button>
         </div>
         <div class="pc-body">
-          <div class="pc-header">
-            <div class="pc-name">レシピBOX</div>
-            <span class="pc-category cat-life">くらし</span>
-          </div>
+          <div class="pc-header"><div class="pc-name">レシピBOX</div><span class="pc-category cat-life">くらし</span></div>
           <div class="pc-desc">レシピをURLで保存。写真から材料を読み取り。家族で共有。</div>
           <ul class="pc-features">
             <li>URLでレシピを保存</li>
@@ -591,18 +528,14 @@ a { color: var(--accent); text-decoration: none; }
         </div>
       </div>
 
-      <!-- マルタ村ポータル -->
       <div class="product-card fade-in" data-category="team">
         <div class="pc-carousel">
           <div class="pc-slides">
-            <div class="pc-slide"><div style="width:100%;height:100%;min-height:200px;background:linear-gradient(135deg,#1a3a5a,#2a6a8a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:28px;font-weight:800;">マルタ村</div></div>
+            <div class="pc-slide"><div style="width:100%;aspect-ratio:16/10;background:linear-gradient(135deg,#1a3a5a,#2a6a8a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:28px;font-weight:800;">マルタ村</div></div>
           </div>
         </div>
         <div class="pc-body">
-          <div class="pc-header">
-            <div class="pc-name">マルタ村ポータル</div>
-            <span class="pc-category cat-team">チーム運営</span>
-          </div>
+          <div class="pc-header"><div class="pc-name">マルタ村ポータル</div><span class="pc-category cat-team">チーム運営</span></div>
           <div class="pc-desc">コミュニティの情報共有ポータル。お知らせ・スケジュール・メンバー管理を一箇所に。</div>
           <ul class="pc-features">
             <li>お知らせ・スケジュール一元管理</li>
@@ -617,7 +550,6 @@ a { color: var(--accent); text-decoration: none; }
   </div>
 </section>
 
-<!-- ==================== Case ==================== -->
 <section class="section section-center">
   <div class="container">
     <p class="section-label">事例</p>
@@ -635,7 +567,6 @@ a { color: var(--accent); text-decoration: none; }
   </div>
 </section>
 
-<!-- ==================== CTA ==================== -->
 <section class="cta-section" id="contact">
   <div class="container">
     <h2 class="cta-title">困ってること、ありませんか？</h2>
@@ -652,7 +583,6 @@ a { color: var(--accent); text-decoration: none; }
 <footer class="footer">MACHAP &copy; 2026</footer>
 
 <script>
-// Fade-in
 const observer = new IntersectionObserver((entries) => {
   entries.forEach((e, i) => {
     if (e.isIntersecting) {
@@ -663,7 +593,6 @@ const observer = new IntersectionObserver((entries) => {
 }, { threshold: 0.15 });
 document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 
-// Smooth scroll
 document.querySelectorAll('a[href^="#"]').forEach(a => {
   a.addEventListener('click', e => {
     e.preventDefault();
@@ -672,7 +601,6 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   });
 });
 
-// Category filter
 document.querySelectorAll('.filter-pill').forEach(pill => {
   pill.addEventListener('click', () => {
     document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
@@ -684,7 +612,6 @@ document.querySelectorAll('.filter-pill').forEach(pill => {
   });
 });
 
-// Carousel
 document.querySelectorAll('.pc-carousel').forEach(carousel => {
   const slides = carousel.querySelector('.pc-slides');
   const slideEls = carousel.querySelectorAll('.pc-slide');
@@ -695,41 +622,31 @@ document.querySelectorAll('.pc-carousel').forEach(carousel => {
   const total = slideEls.length;
 
   if (total <= 1) {
-    if (dotsContainer) dotsContainer.style.display = 'none';
-    if (prevBtn) prevBtn.style.display = 'none';
-    if (nextBtn) nextBtn.style.display = 'none';
-    if (counter) counter.style.display = 'none';
+    [dotsContainer, prevBtn, nextBtn, counter].forEach(el => { if (el) el.style.display = 'none'; });
     return;
   }
 
   slideEls.forEach((_, i) => {
     const dot = document.createElement('button');
     dot.className = 'pc-dot' + (i === 0 ? ' active' : '');
-    dot.addEventListener('click', () => {
-      slides.scrollTo({ left: slideEls[i].offsetLeft, behavior: 'smooth' });
-    });
+    dot.addEventListener('click', () => slides.scrollTo({ left: slideEls[i].offsetLeft, behavior: 'smooth' }));
     dotsContainer.appendChild(dot);
   });
 
   const dots = dotsContainer.querySelectorAll('.pc-dot');
-  let scrollTimer;
+  let timer;
   slides.addEventListener('scroll', () => {
-    clearTimeout(scrollTimer);
-    scrollTimer = setTimeout(() => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
       const idx = Math.round(slides.scrollLeft / slides.offsetWidth);
       dots.forEach((d, i) => d.classList.toggle('active', i === idx));
       if (counter) counter.textContent = `${idx + 1} / ${total}`;
     }, 50);
   });
 
-  if (prevBtn) prevBtn.addEventListener('click', () => {
-    slides.scrollBy({ left: -slides.offsetWidth, behavior: 'smooth' });
-  });
-  if (nextBtn) nextBtn.addEventListener('click', () => {
-    slides.scrollBy({ left: slides.offsetWidth, behavior: 'smooth' });
-  });
+  if (prevBtn) prevBtn.addEventListener('click', () => slides.scrollBy({ left: -slides.offsetWidth, behavior: 'smooth' }));
+  if (nextBtn) nextBtn.addEventListener('click', () => slides.scrollBy({ left: slides.offsetWidth, behavior: 'smooth' }));
 });
 </script>
-
 </body>
 </html>
