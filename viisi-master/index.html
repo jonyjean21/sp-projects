@@ -110,9 +110,6 @@
   .btn-copy { background: #10b98133; color: #34d399; border: 1px solid #10b98144; }
   .btn-copy:active { background: #10b98155; }
   .btn-copy.copied { background: #10b981; color: #fff; }
-  .btn-post { background: #1d9bf022; color: #1d9bf0; border: 1px solid #1d9bf044; }
-  .btn-post:active { background: #1d9bf055; }
-  .btn-post.posted { background: #1d9bf0; color: #fff; pointer-events: none; }
   .keyword-input {
     width: 100%; padding: 10px 14px; border-radius: 8px;
     border: 1px solid #334155; background: #0f172a; color: #e2e8f0;
@@ -169,21 +166,6 @@
     padding: 14px; white-space: pre-wrap; font-size: 13px; line-height: 1.7;
     min-height: 80px; margin-bottom: 8px; word-break: break-all;
   }
-  .char-count { font-size: 11px; color: #64748b; text-align: right; }
-  .char-count.over { color: #f87171; }
-
-  /* テンプレ選択 */
-  .template-tabs {
-    display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px;
-    -webkit-overflow-scrolling: touch; scrollbar-width: none;
-  }
-  .template-tabs::-webkit-scrollbar { display: none; }
-  .template-tab {
-    padding: 8px 14px; border-radius: 20px; border: 1px solid #334155;
-    background: #0f172a; color: #94a3b8; font-size: 12px; font-weight: 600;
-    white-space: nowrap; cursor: pointer; transition: all 0.2s;
-  }
-  .template-tab.active { background: #fbbf2422; color: #fbbf24; border-color: #fbbf2444; }
 
   /* 試合リスト */
   .match-item {
@@ -402,22 +384,12 @@
       <div id="ai-posts-list"></div>
     </div>
 
-    <div style="margin-top:8px;">
-      <button class="btn-full btn-secondary" onclick="toggleTemplates()" style="font-size:12px;padding:10px;" id="btn-toggle-tpl">
-        📋 テンプレートも見る
-      </button>
-    </div>
-
-    <div id="template-area" style="display:none;">
-      <div class="section-label" style="margin-top: 12px;">テンプレート</div>
-      <div class="template-tabs" id="template-tabs"></div>
-      <div class="card">
-        <div class="output-box" id="x-output"></div>
-        <div class="char-count" id="x-char-count">0 / 280</div>
-        <div style="display:flex;gap:8px;margin-top:8px;">
-          <button class="btn-full btn-copy" onclick="copyText('x-output', this)" style="flex:1;">コピー</button>
-          <button class="btn-full btn-x-intent" onclick="openXIntentFrom('x-output')" style="flex:1;">𝕏 で開く</button>
-        </div>
+    <div class="section-label" style="margin-top: 16px;">💬 OpenChat用</div>
+    <div class="card">
+      <div class="result-text-box" id="post-oc-text" style="max-height:200px;"></div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn-full btn-copy" onclick="copyText('post-oc-text', this)" style="flex:1;">コピー</button>
+        <button class="btn-full btn-line" onclick="shareLineFrom('post-oc-text')" style="flex:1;">LINEで共有</button>
       </div>
     </div>
   </div>
@@ -579,19 +551,6 @@
     </div>
 
     <button class="btn-full btn-secondary" onclick="hideModal('result-modal')" style="margin-top: 12px;">閉じる</button>
-  </div>
-</div>
-
-<!-- ===== IFTTT設定モーダル ===== -->
-<div class="modal-overlay" id="ifttt-modal">
-  <div class="modal">
-    <h3>𝕏 投稿設定</h3>
-    <div style="font-size:12px;color:#94a3b8;margin-bottom:12px;">IFTTT Webhookキーを入力（初回のみ・このデバイスに保存）</div>
-    <input class="input-field" id="ifttt-key-input" placeholder="IFTTT Webhook Key" autocomplete="off">
-    <div style="display: flex; gap: 8px; margin-top: 8px;">
-      <button class="btn-full btn-secondary" onclick="hideModal('ifttt-modal')" style="flex:1;">キャンセル</button>
-      <button class="btn-full btn-primary" onclick="saveIftttKey()" style="flex:1;">保存</button>
-    </div>
   </div>
 </div>
 
@@ -1419,12 +1378,11 @@ function generateFromSelected() {
   });
   if (selectedPostMatches.length === 0) return;
 
-  // テンプレートも裏で生成（フォールバック用）
-  generateOutputs(selectedPostMatches);
+  // OpenChat用テキスト
+  document.getElementById('post-oc-text').textContent = genOpenChatText(selectedPostMatches);
 
   // AI生成
   document.getElementById('post-output-area').style.display = 'block';
-  document.getElementById('template-area').style.display = 'none';
   generateAIPosts(selectedPostMatches);
   document.getElementById('post-output-area').scrollIntoView({ behavior: 'smooth' });
 }
@@ -1516,18 +1474,23 @@ async function generateAIPosts(ms) {
     renderAIPostCards(posts, listEl, 'ai-post');
   } catch (e) {
     loadEl.style.display = 'none';
-    listEl.innerHTML = `<div style="color:#f87171;font-size:12px;padding:8px;">AI生成エラー: ${e.message}<br>下のテンプレートをご利用ください</div>`;
-    document.getElementById('template-area').style.display = 'block';
+    // フォールバック: テンプレートで1案表示
+    const fallback = autoSelectTemplate(ms);
+    listEl.innerHTML = `
+      <div style="color:#94a3b8;font-size:11px;margin-bottom:6px;">AI生成失敗 → テンプレート表示</div>
+      <div class="ai-post-card">
+        <div class="ai-post-text" id="ai-post-fb">${escapeHtml(fallback)}</div>
+        <div class="ai-post-actions">
+          <button class="btn-full btn-copy" onclick="copyText('ai-post-fb', this)" style="flex:1;">コピー</button>
+          <button class="btn-full btn-x-intent" onclick="openXIntentFrom('ai-post-fb')" style="flex:1;">𝕏 で開く</button>
+        </div>
+      </div>
+    `;
   }
 }
 
 function escapeHtml(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-function toggleTemplates() {
-  const area = document.getElementById('template-area');
-  area.style.display = area.style.display === 'none' ? 'block' : 'none';
 }
 
 function openXIntentFrom(elementId) {
@@ -1551,52 +1514,8 @@ function withHandle(name) {
   return `${name}(${normalizeHandle(p.x)})`;
 }
 
-function generateOutputs(ms) {
-  if (!ms || ms.length === 0) return;
-
-  // === X投稿テンプレート ===
-  const templates = {
-    '🏆 結果報告': genResults(ms),
-    '💥 試合速報': genMatchDay(ms),
-    '💪 防衛報告': genDefense(ms),
-    '🎉 新王誕生': genNewChamp(ms),
-    '✏️ カスタム': genCustom(ms),
-    '📋 全試合結果': genNoteResults(ms),
-    '🛡️ 門番戦歴': genNoteGatekeeperHistory(),
-    '👑 タイトルマッチ': genNoteTitleMatch()
-  };
-
-  const tabsEl = document.getElementById('template-tabs');
-  tabsEl.innerHTML = '';
-  let first = true;
-  for (const [label, text] of Object.entries(templates)) {
-    const btn = document.createElement('button');
-    btn.className = 'template-tab' + (first ? ' active' : '');
-    btn.textContent = label;
-    btn.onclick = () => {
-      tabsEl.querySelectorAll('.template-tab').forEach(t => t.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('x-output').textContent = text;
-      updateCharCount(text);
-    };
-    tabsEl.appendChild(btn);
-    if (first) {
-      document.getElementById('x-output').textContent = text;
-      updateCharCount(text);
-    }
-    first = false;
-  }
-}
-
-function updateCharCount(text) {
-  const el = document.getElementById('x-char-count');
-  const len = text.length;
-  el.textContent = `${len} / 280`;
-  el.className = 'char-count' + (len > 280 ? ' over' : '');
-}
-
 // ============================================================
-// X投稿テンプレート
+// フォールバック用テンプレート（AI生成失敗時のみ使用）
 // ============================================================
 function genResults(ms) {
   let t = '🏆 #5先王 結果報告🏆\n\n';
@@ -1632,18 +1551,6 @@ function genMatchDay(ms) {
   return t;
 }
 
-function genDefense(ms) {
-  const challengers = [...new Set(ms.map(m => m.challenger))];
-  let t = 'この1週間も多くの挑戦者が門番にチャレンジ🔥\n';
-  const allDefense = ms.every(m => m.winner !== m.challenger);
-  t += allDefense ? '結果は門番の全勝で防衛が続く!💪✨\n\n' : '激戦の結果をお届け!💪✨\n\n';
-  t += 'ご挑戦ありがとうございました🙇\n';
-  challengers.forEach(c => { t += `⭐${withHandle(c)}\n`; });
-  t += `\n引き続きの挑戦をお待ちしております!👊\nチャンピオンへ挑むのは誰だ!?👑\n\n`;
-  t += '#5先王 #モルック';
-  return t;
-}
-
 function genNewChamp(ms) {
   const champMatch = ms.find(m => m.role === 'champion' && m.winner === m.challenger);
   if (!champMatch) return '（チャンピオン戦で挑戦者が勝利した試合がありません）\n\n#5先王 #モルック';
@@ -1652,64 +1559,6 @@ function genNewChamp(ms) {
   t += `チャンピオン・${withHandle(champMatch.defender)}を退け新たなチャンピオンに!🔥\n`;
   if (champMatch.keywords && champMatch.keywords.length > 0) t += `📌 ${champMatch.keywords.join(' / ')}\n`;
   t += '\n#5先王 #モルック';
-  return t;
-}
-
-function genCustom(ms) {
-  let t = '';
-  ms.forEach(m => {
-    const prefix = m.role === 'champion' ? '【王者】' : '【門番】';
-    t += `${prefix}${m.defender} vs ${m.challenger}: ${m.sd}-${m.sc}\n`;
-  });
-  t += '\n#5先王 #モルック';
-  return t;
-}
-
-// ============================================================
-// 追加テンプレート（詳細テキスト）
-// ============================================================
-function genNoteResults(ms) {
-  let t = '【5先王 試合結果】\n';
-  t += `${ms[0].date}\n\n`;
-  ms.forEach(m => {
-    const prefix = m.role === 'champion' ? '👑王者戦' : '⚔️門番戦';
-    const result = m.winner === m.challenger ? '挑戦者勝利' : '防衛成功';
-    t += `${prefix}: ${m.challenger} vs ${m.defender}\n`;
-    t += `スコア: ${m.sc}-${m.sd}（${result}）\n\n`;
-  });
-  t += '#5先王 #モルック';
-  return t;
-}
-
-function genNoteGatekeeperHistory() {
-  let t = '【5先王 門番戦歴】\n\n';
-  D.gatekeepers.forEach(gk => {
-    const allMs = D.matches.filter(m => m.defender === gk.name && m.role === 'gatekeeper');
-    const w = allMs.filter(m => m.winner === gk.name).length;
-    const l = allMs.filter(m => m.winner !== gk.name).length;
-    const total = w + l;
-    const rate = total > 0 ? Math.round(w / total * 100) : 0;
-    t += `🛡️${gk.name}: ${w}勝${l}敗（勝率${rate}%）\n`;
-    allMs.forEach(m => {
-      const mark = m.winner === gk.name ? '○' : '●';
-      t += `  ${mark} vs ${m.challenger} ${m.sd}-${m.sc}\n`;
-    });
-    t += '\n';
-  });
-  t += '#5先王 #モルック';
-  return t;
-}
-
-function genNoteTitleMatch() {
-  const champMs = D.matches.filter(m => m.role === 'champion');
-  if (champMs.length === 0) return '（タイトルマッチの記録なし）\n\n#5先王 #モルック';
-  let t = '【5先王 タイトルマッチ歴】\n\n';
-  champMs.forEach(m => {
-    const result = m.winner === m.challenger ? '→ 新王誕生!' : '→ 王者防衛';
-    t += `${m.date}: ${m.challenger} vs 👑${m.defender}\n`;
-    t += `スコア: ${m.sc}-${m.sd} ${result}\n\n`;
-  });
-  t += '#5先王 #モルック';
   return t;
 }
 
@@ -1730,68 +1579,7 @@ function copyText(elementId, btn) {
 }
 
 // ============================================================
-// X投稿（IFTTT Webhook）
-// ============================================================
-function getIftttKey() {
-  return localStorage.getItem('viisi-ifttt-key');
-}
-
-function saveIftttKey() {
-  const key = document.getElementById('ifttt-key-input').value.trim();
-  if (!key) return;
-  localStorage.setItem('viisi-ifttt-key', key);
-  hideModal('ifttt-modal');
-  showToast('IFTTT キーを保存しました');
-  if (pendingPostBtn) {
-    doPostToX(pendingPostBtn);
-    pendingPostBtn = null;
-  }
-}
-
-let pendingPostBtn = null;
-
-function postToX(btn) {
-  const key = getIftttKey();
-  if (!key) {
-    pendingPostBtn = btn;
-    document.getElementById('ifttt-key-input').value = '';
-    document.getElementById('ifttt-modal').classList.add('show');
-    return;
-  }
-  if (!confirm('この内容をXに投稿しますか？')) return;
-  doPostToX(btn);
-}
-
-async function doPostToX(btn) {
-  const text = document.getElementById('x-output').textContent;
-  if (!text) return;
-  const key = getIftttKey();
-  if (!key) return;
-
-  btn.textContent = '投稿中...';
-  btn.classList.add('posted');
-
-  try {
-    await fetch(`https://maker.ifttt.com/trigger/post_tweet/with/key/${key}`, {
-      method: 'POST',
-      mode: 'no-cors',
-      body: new URLSearchParams({ value1: text })
-    });
-    showToast('Xへの投稿リクエストを送信しました');
-    btn.textContent = '送信済 ✓';
-    setTimeout(() => {
-      btn.textContent = '𝕏 に投稿';
-      btn.classList.remove('posted');
-    }, 3000);
-  } catch (e) {
-    showToast('投稿エラー: ' + e.message);
-    btn.textContent = '𝕏 に投稿';
-    btn.classList.remove('posted');
-  }
-}
-
-// ============================================================
-// 記録後モーダル（X + OpenChat テキスト自動生成）
+// 記録後モーダル（AI生成 + OpenChat テキスト）
 // ============================================================
 function showResultModal(matches) {
   if (!matches || matches.length === 0) return;
@@ -1886,6 +1674,15 @@ async function generateResultAIPosts(ms) {
         </div>
       </div>
     `;
+  }
+}
+
+function shareLineFrom(elementId) {
+  const text = document.getElementById(elementId).textContent;
+  if (navigator.share) {
+    navigator.share({ text }).catch(() => {});
+  } else {
+    window.open('https://line.me/R/share?text=' + encodeURIComponent(text), '_blank');
   }
 }
 
