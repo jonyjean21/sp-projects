@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>日報ビューア</title>
+<style>
+:root {
+  --bg: #0a0a0f; --card: #12121a; --border: #2a2a3a;
+  --text: #e0e0e0; --dim: #888; --accent: #6366f1;
+  --ok: #22c55e; --err: #ef4444; --warn: #f59e0b;
+  --blue: #4a9eff; --cyan: #06b6d4; --purple: #a78bfa;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+.header { padding: 0.8rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+.header h1 { font-size: 1.1rem; flex: 1; }
+.conn-badge { font-size: 0.7rem; padding: 3px 10px; border-radius: 12px; background: var(--border); }
+.conn-badge.ok { background: rgba(34,197,94,0.15); color: var(--ok); }
+
+.tabs { display: flex; border-bottom: 1px solid var(--border); padding: 0 0.5rem; overflow-x: auto; }
+.tab { padding: 0.65rem 1rem; font-size: 0.8rem; color: var(--dim); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.content { padding: 1.2rem; max-width: 960px; margin: 0 auto; }
+.panel { display: none; }
+.panel.active { display: block; }
+
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem; margin-bottom: 1rem; }
+.card h3 { font-size: 0.9rem; margin-bottom: 0.8rem; color: var(--text); }
+
+.btn { padding: 0.5rem 1.2rem; border: none; border-radius: 8px; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: #4f46e5; }
+.btn-sm { padding: 0.3rem 0.7rem; font-size: 0.75rem; }
+.btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+.btn-outline:hover:not(:disabled) { border-color: var(--dim); }
+.btn-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.8rem; margin-bottom: 1rem; }
+.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; text-align: center; }
+.stat-card .stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+.stat-card .stat-label { font-size: 0.72rem; color: var(--dim); margin-top: 0.3rem; }
+
+.pill { display: inline-block; font-size: 0.68rem; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+.pill-feat { background: rgba(34,197,94,0.15); color: var(--ok); }
+.pill-fix { background: rgba(239,68,68,0.15); color: var(--err); }
+.pill-refactor { background: rgba(167,139,250,0.15); color: var(--purple); }
+.pill-docs { background: rgba(74,158,255,0.15); color: var(--blue); }
+.pill-style { background: rgba(6,182,212,0.15); color: var(--cyan); }
+.pill-chore { background: rgba(136,136,136,0.15); color: var(--dim); }
+.pill-test { background: rgba(245,158,11,0.15); color: var(--warn); }
+
+/* ===== Calendar ===== */
+.cal-nav { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+.cal-nav h2 { font-size: 1rem; flex: 1; text-align: center; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.cal-head { font-size: 0.7rem; color: var(--dim); text-align: center; padding: 0.3rem; }
+.cal-day {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; border-radius: 8px; cursor: default; color: var(--dim);
+  position: relative;
+}
+.cal-day.current-month { color: var(--text); }
+.cal-day.has-report { background: rgba(99,102,241,0.15); color: var(--accent); cursor: pointer; font-weight: 600; }
+.cal-day.has-report:hover { background: rgba(99,102,241,0.3); }
+.cal-day.today { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 8px; }
+.cal-commits { position: absolute; bottom: 2px; font-size: 0.5rem; color: var(--dim); }
+
+/* ===== Report Viewer ===== */
+.report-nav { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+.report-nav h2 { font-size: 1rem; flex: 1; text-align: center; }
+.report-nav input[type="date"] {
+  background: var(--card); border: 1px solid var(--border); color: var(--text);
+  border-radius: 8px; padding: 0.3rem 0.6rem; font-size: 0.8rem;
+}
+.headline-card { background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(6,182,212,0.1)); border: 1px solid rgba(99,102,241,0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+.headline-card h2 { font-size: 1.2rem; margin-bottom: 0.5rem; color: var(--accent); }
+.headline-card p { font-size: 0.85rem; line-height: 1.6; color: var(--text); }
+
+.highlights { list-style: none; padding: 0; }
+.highlights li { padding: 0.4rem 0; font-size: 0.85rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.5rem; }
+.highlights li:last-child { border-bottom: none; }
+.highlights li::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--ok); flex-shrink: 0; }
+
+/* Area bars */
+.area-bar-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; font-size: 0.8rem; }
+.area-bar-label { width: 120px; text-align: right; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--dim); }
+.area-bar-track { flex: 1; height: 20px; background: var(--bg); border-radius: 4px; overflow: hidden; position: relative; }
+.area-bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s; display: flex; align-items: center; padding-left: 6px; font-size: 0.7rem; color: #fff; font-weight: 600; min-width: 24px; }
+.area-bar-value { font-size: 0.75rem; color: var(--dim); width: 30px; text-align: right; flex-shrink: 0; }
+
+/* Commits list */
+.commit-row { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0; border-bottom: 1px solid rgba(42,42,58,0.5); font-size: 0.8rem; }
+.commit-row:last-child { border-bottom: none; }
+.commit-time { color: var(--dim); font-size: 0.75rem; width: 40px; flex-shrink: 0; font-family: monospace; }
+.commit-msg { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.commit-stats { font-size: 0.7rem; color: var(--dim); white-space: nowrap; }
+.commit-stats .add { color: var(--ok); }
+.commit-stats .del { color: var(--err); }
+
+/* ===== Stats Tab ===== */
+.period-selector { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+.period-btn { padding: 0.35rem 1rem; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--dim); font-size: 0.8rem; cursor: pointer; }
+.period-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(99,102,241,0.1); }
+
+.bar-chart { display: flex; align-items: flex-end; gap: 2px; height: 120px; padding-top: 8px; }
+.bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; height: 100%; justify-content: flex-end; }
+.bar { background: var(--accent); border-radius: 3px 3px 0 0; width: 100%; min-height: 2px; transition: height 0.3s; cursor: pointer; position: relative; }
+.bar:hover { opacity: 0.8; }
+.bar-label { font-size: 0.55rem; color: var(--dim); writing-mode: vertical-lr; text-orientation: mixed; max-height: 30px; overflow: hidden; }
+.bar-tooltip { display: none; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; font-size: 0.7rem; white-space: nowrap; z-index: 10; }
+.bar:hover .bar-tooltip { display: block; }
+
+.h-bar-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem; font-size: 0.8rem; }
+.h-bar-label { width: 80px; text-align: right; color: var(--dim); flex-shrink: 0; }
+.h-bar-track { flex: 1; height: 22px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+.h-bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 0.7rem; color: #fff; font-weight: 600; min-width: 28px; }
+.h-bar-value { font-size: 0.75rem; color: var(--dim); width: 40px; flex-shrink: 0; text-align: right; }
+
+/* ===== Export Tab ===== */
+.export-area {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+  padding: 1rem; font-size: 0.82rem; line-height: 1.7; white-space: pre-wrap;
+  font-family: 'SFMono-Regular', Consolas, monospace; max-height: 400px; overflow-y: auto;
+}
+.tweet-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; margin-bottom: 0.6rem; }
+.tweet-card p { font-size: 0.85rem; line-height: 1.6; }
+.tweet-meta { display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.72rem; color: var(--dim); }
+.char-count { color: var(--dim); }
+.char-count.warn { color: var(--warn); }
+.char-count.over { color: var(--err); }
+
+.copy-btn { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 1rem; color: var(--text); font-size: 0.8rem; cursor: pointer; }
+.copy-btn:hover { border-color: var(--accent); }
+.copy-btn.copied { border-color: var(--ok); color: var(--ok); }
+
+/* Empty state */
+.empty { text-align: center; padding: 3rem; color: var(--dim); font-size: 0.9rem; }
+
+@media (max-width: 640px) {
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .area-bar-label { width: 80px; font-size: 0.7rem; }
+  .content { padding: 0.8rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>日報ビューア</h1>
+  <span class="conn-badge" id="connBadge">接続中...</span>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('calendar')">カレンダー</div>
+  <div class="tab" onclick="switchTab('report')">日報閲覧</div>
+  <div class="tab" onclick="switchTab('stats')">統計</div>
+  <div class="tab" onclick="switchTab('export')">エクスポート</div>
+</div>
+
+<div class="content">
+  <!-- ===== Calendar Panel ===== -->
+  <div class="panel active" id="panel-calendar">
+    <div class="cal-nav">
+      <button class="btn btn-sm btn-outline" onclick="calNav(-1)">&lt; 前月</button>
+      <h2 id="calTitle"></h2>
+      <button class="btn btn-sm btn-outline" onclick="calNav(1)">翌月 &gt;</button>
+    </div>
+    <div id="calMonthStats" class="stat-grid" style="margin-bottom:1rem"></div>
+    <div class="card">
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+  </div>
+
+  <!-- ===== Report Viewer Panel ===== -->
+  <div class="panel" id="panel-report">
+    <div class="report-nav">
+      <button class="btn btn-sm btn-outline" onclick="reportNav(-1)">&lt; 前日</button>
+      <input type="date" id="reportDate" onchange="loadReport(this.value)">
+      <button class="btn btn-sm btn-outline" onclick="reportNav(1)">翌日 &gt;</button>
+    </div>
+    <div id="reportContent"><div class="empty">日付を選択してください</div></div>
+  </div>
+
+  <!-- ===== Stats Panel ===== -->
+  <div class="panel" id="panel-stats">
+    <div class="period-selector">
+      <button class="period-btn active" onclick="setPeriod(7)">7日</button>
+      <button class="period-btn" onclick="setPeriod(30)">30日</button>
+      <button class="period-btn" onclick="setPeriod(90)">90日</button>
+    </div>
+    <div id="statsContent"><div class="empty">データを読み込み中...</div></div>
+  </div>
+
+  <!-- ===== Export Panel ===== -->
+  <div class="panel" id="panel-export">
+    <div class="report-nav" style="margin-bottom:1rem">
+      <label style="font-size:0.8rem;color:var(--dim)">日付:</label>
+      <input type="date" id="exportDate" onchange="loadExport(this.value)">
+      <button class="btn btn-sm btn-primary" onclick="loadExport(document.getElementById('exportDate').value)">読み込み</button>
+    </div>
+    <div id="exportContent"><div class="empty">日付を選んで読み込んでください</div></div>
+  </div>
+</div>
+
+<script>
+const FIREBASE_URL = 'https://viisi-master-app-default-rtdb.firebaseio.com';
+const REPORT_PATH = '/daily-reports';
+
+// State
+let allReports = {};
+let calYear, calMonth;
+let currentPeriod = 7;
+let currentReportDate = '';
+
+// ===== Init =====
+async function init() {
+  const badge = document.getElementById('connBadge');
+  try {
+    const resp = await fetch(`${FIREBASE_URL}${REPORT_PATH}.json?shallow=true`);
+    const keys = await resp.json();
+    if (keys) {
+      const dates = Object.keys(keys);
+      badge.textContent = `${dates.length}日分`;
+      badge.classList.add('ok');
+      // Load all report data for stats
+      await loadAllReports();
+    } else {
+      badge.textContent = 'データなし';
+    }
+  } catch (e) {
+    badge.textContent = 'エラー';
+  }
+
+  const now = new Date();
+  // JST
+  const jstNow = new Date(now.getTime() + 9 * 3600000);
+  calYear = jstNow.getUTCFullYear();
+  calMonth = jstNow.getUTCMonth();
+  renderCalendar();
+}
+
+async function loadAllReports() {
+  const resp = await fetch(`${FIREBASE_URL}${REPORT_PATH}.json`);
+  allReports = await resp.json() || {};
+}
+
+// ===== Tabs =====
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    const panels = ['calendar','report','stats','export'];
+    t.classList.toggle('active', panels[i] === name);
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+
+  if (name === 'stats') renderStats();
+}
+
+// ===== Calendar =====
+function calNav(dir) {
+  calMonth += dir;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const title = `${calYear}年${calMonth + 1}月`;
+  document.getElementById('calTitle').textContent = title;
+
+  // Month stats
+  let mCommits = 0, mAdd = 0, mDel = 0, mDays = 0;
+  Object.entries(allReports).forEach(([date, r]) => {
+    if (date.startsWith(`${calYear}-${String(calMonth+1).padStart(2,'0')}`)) {
+      mCommits += r.stats?.total_commits || 0;
+      mAdd += r.stats?.total_additions || 0;
+      mDel += r.stats?.total_deletions || 0;
+      if ((r.stats?.total_commits || 0) > 0) mDays++;
+    }
+  });
+  document.getElementById('calMonthStats').innerHTML = `
+    <div class="stat-card"><div class="stat-value">${mCommits}</div><div class="stat-label">コミット</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--ok)">+${mAdd.toLocaleString()}</div><div class="stat-label">追加行</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--err)">-${mDel.toLocaleString()}</div><div class="stat-label">削除行</div></div>
+    <div class="stat-card"><div class="stat-value">${mDays}</div><div class="stat-label">活動日</div></div>
+  `;
+
+  // Calendar grid
+  const grid = document.getElementById('calGrid');
+  const weekdays = ['月','火','水','木','金','土','日'];
+  let html = weekdays.map(d => `<div class="cal-head">${d}</div>`).join('');
+
+  const firstDay = new Date(calYear, calMonth, 1);
+  let startDow = firstDay.getDay(); // 0=Sun
+  startDow = startDow === 0 ? 6 : startDow - 1; // Convert to Mon=0
+
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+
+  // Today (JST)
+  const now = new Date();
+  const jstNow = new Date(now.getTime() + 9 * 3600000);
+  const todayStr = `${jstNow.getUTCFullYear()}-${String(jstNow.getUTCMonth()+1).padStart(2,'0')}-${String(jstNow.getUTCDate()).padStart(2,'0')}`;
+
+  // Previous month padding
+  const prevDays = new Date(calYear, calMonth, 0).getDate();
+  for (let i = startDow - 1; i >= 0; i--) {
+    html += `<div class="cal-day">${prevDays - i}</div>`;
+  }
+
+  // Current month days
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const report = allReports[dateStr];
+    const commits = report?.stats?.total_commits || 0;
+    const hasReport = commits > 0;
+    const isToday = dateStr === todayStr;
+
+    let cls = 'cal-day current-month';
+    if (hasReport) cls += ' has-report';
+    if (isToday) cls += ' today';
+    const onclick = hasReport ? `onclick="openReport('${dateStr}')"` : '';
+    const commitBadge = hasReport ? `<span class="cal-commits">${commits}c</span>` : '';
+    html += `<div class="${cls}" ${onclick}>${d}${commitBadge}</div>`;
+  }
+
+  // Next month padding
+  const totalCells = startDow + daysInMonth;
+  const remaining = (7 - totalCells % 7) % 7;
+  for (let i = 1; i <= remaining; i++) {
+    html += `<div class="cal-day">${i}</div>`;
+  }
+
+  grid.innerHTML = html;
+}
+
+function openReport(dateStr) {
+  document.getElementById('reportDate').value = dateStr;
+  switchTab('report');
+  loadReport(dateStr);
+}
+
+// ===== Report Viewer =====
+function reportNav(dir) {
+  const input = document.getElementById('reportDate');
+  if (!input.value) {
+    const now = new Date();
+    const jstNow = new Date(now.getTime() + 9 * 3600000);
+    input.value = `${jstNow.getUTCFullYear()}-${String(jstNow.getUTCMonth()+1).padStart(2,'0')}-${String(jstNow.getUTCDate()).padStart(2,'0')}`;
+  }
+  const d = new Date(input.value);
+  d.setDate(d.getDate() + dir);
+  input.value = d.toISOString().split('T')[0];
+  loadReport(input.value);
+}
+
+function loadReport(dateStr) {
+  currentReportDate = dateStr;
+  const container = document.getElementById('reportContent');
+  const report = allReports[dateStr];
+
+  if (!report) {
+    container.innerHTML = `<div class="empty">この日の日報はありません（${dateStr}）</div>`;
+    return;
+  }
+
+  const s = report.stats || {};
+  const sum = report.summary || {};
+  const commits = report.commits || [];
+
+  // Headline
+  let html = `
+    <div class="headline-card">
+      <h2>${sum.headline || dateStr}</h2>
+      <p>${sum.body || '要約なし'}</p>
+    </div>
+  `;
+
+  // Stats
+  html += `<div class="stat-grid">
+    <div class="stat-card"><div class="stat-value">${s.total_commits || 0}</div><div class="stat-label">コミット</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--ok)">+${(s.total_additions||0).toLocaleString()}</div><div class="stat-label">追加行</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--err)">-${(s.total_deletions||0).toLocaleString()}</div><div class="stat-label">削除行</div></div>
+    <div class="stat-card"><div class="stat-value">${s.time_range?.first || '-'}<small style="font-size:0.6rem;color:var(--dim)">〜</small>${s.time_range?.last || '-'}</div><div class="stat-label">活動時間</div></div>
+  </div>`;
+
+  // Highlights
+  if (sum.highlights?.length) {
+    html += `<div class="card"><h3>成果ハイライト</h3><ul class="highlights">`;
+    sum.highlights.forEach(h => { html += `<li>${esc(h)}</li>`; });
+    html += `</ul></div>`;
+  }
+
+  // Area breakdown
+  if (s.areas && Object.keys(s.areas).length) {
+    const maxCommits = Math.max(...Object.values(s.areas).map(a => a.commits));
+    const colors = ['var(--accent)','var(--ok)','var(--cyan)','var(--purple)','var(--warn)','var(--blue)','var(--err)'];
+    html += `<div class="card"><h3>プロジェクト別内訳</h3>`;
+    Object.entries(s.areas)
+      .sort((a, b) => b[1].commits - a[1].commits)
+      .forEach(([name, data], i) => {
+        const pct = (data.commits / maxCommits * 100).toFixed(0);
+        const color = colors[i % colors.length];
+        html += `<div class="area-bar-row">
+          <div class="area-bar-label">${esc(name)}</div>
+          <div class="area-bar-track"><div class="area-bar-fill" style="width:${pct}%;background:${color}">${data.commits}</div></div>
+          <div class="area-bar-value">+${data.additions}</div>
+        </div>`;
+      });
+    html += `</div>`;
+  }
+
+  // Commits list
+  if (commits.length) {
+    html += `<div class="card"><h3>コミット一覧（${commits.length}件）</h3>`;
+    commits.forEach(c => {
+      html += `<div class="commit-row">
+        <span class="commit-time">${c.time}</span>
+        <span class="pill pill-${c.type}">${c.type}</span>
+        <span class="commit-msg" title="${esc(c.message)}">${esc(c.message)}</span>
+        <span class="commit-stats"><span class="add">+${c.additions}</span> <span class="del">-${c.deletions}</span></span>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+// ===== Stats =====
+function setPeriod(days) {
+  currentPeriod = days;
+  document.querySelectorAll('.period-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.textContent) === days);
+  });
+  renderStats();
+}
+
+function renderStats() {
+  const container = document.getElementById('statsContent');
+  const dates = [];
+  const now = new Date();
+  const jstNow = new Date(now.getTime() + 9 * 3600000);
+
+  for (let i = currentPeriod - 1; i >= 0; i--) {
+    const d = new Date(jstNow);
+    d.setUTCDate(d.getUTCDate() - i);
+    dates.push(`${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`);
+  }
+
+  // Aggregate
+  let totalCommits = 0, totalAdd = 0, totalDel = 0, activeDays = 0;
+  const typeAgg = {};
+  const areaAgg = {};
+  const dailyCommits = [];
+
+  dates.forEach(date => {
+    const r = allReports[date];
+    const commits = r?.stats?.total_commits || 0;
+    dailyCommits.push({ date, commits });
+    totalCommits += commits;
+    totalAdd += r?.stats?.total_additions || 0;
+    totalDel += r?.stats?.total_deletions || 0;
+    if (commits > 0) activeDays++;
+
+    if (r?.stats?.types) {
+      Object.entries(r.stats.types).forEach(([t, n]) => { typeAgg[t] = (typeAgg[t] || 0) + n; });
+    }
+    if (r?.stats?.areas) {
+      Object.entries(r.stats.areas).forEach(([a, d]) => { areaAgg[a] = (areaAgg[a] || 0) + d.commits; });
+    }
+  });
+
+  let html = `<div class="stat-grid">
+    <div class="stat-card"><div class="stat-value">${totalCommits}</div><div class="stat-label">${currentPeriod}日間コミット</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--ok)">+${totalAdd.toLocaleString()}</div><div class="stat-label">追加行</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--err)">-${totalDel.toLocaleString()}</div><div class="stat-label">削除行</div></div>
+    <div class="stat-card"><div class="stat-value">${activeDays}<small style="font-size:0.9rem;color:var(--dim)">/${currentPeriod}</small></div><div class="stat-label">活動日</div></div>
+  </div>`;
+
+  // Daily commits bar chart
+  const maxDaily = Math.max(...dailyCommits.map(d => d.commits), 1);
+  html += `<div class="card"><h3>コミット推移</h3><div class="bar-chart">`;
+  dailyCommits.forEach(d => {
+    const h = (d.commits / maxDaily * 100).toFixed(0);
+    const dayLabel = d.date.slice(5); // MM-DD
+    html += `<div class="bar-col">
+      <div class="bar" style="height:${h}%">
+        <div class="bar-tooltip">${d.date}: ${d.commits}c</div>
+      </div>
+      ${currentPeriod <= 30 ? `<span class="bar-label">${dayLabel}</span>` : ''}
+    </div>`;
+  });
+  html += `</div></div>`;
+
+  // Type breakdown
+  const typeColors = { feat: 'var(--ok)', fix: 'var(--err)', refactor: 'var(--purple)', docs: 'var(--blue)', style: 'var(--cyan)', chore: 'var(--dim)', test: 'var(--warn)' };
+  const maxType = Math.max(...Object.values(typeAgg), 1);
+  if (Object.keys(typeAgg).length) {
+    html += `<div class="card"><h3>タイプ別割合</h3>`;
+    Object.entries(typeAgg).sort((a,b) => b[1]-a[1]).forEach(([t, n]) => {
+      const pct = (n / totalCommits * 100).toFixed(0);
+      html += `<div class="h-bar-row">
+        <div class="h-bar-label">${t}</div>
+        <div class="h-bar-track"><div class="h-bar-fill" style="width:${n/maxType*100}%;background:${typeColors[t]||'var(--accent)'}">${pct}%</div></div>
+        <div class="h-bar-value">${n}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Area breakdown
+  const maxArea = Math.max(...Object.values(areaAgg), 1);
+  const areaColors = ['var(--accent)','var(--ok)','var(--cyan)','var(--purple)','var(--warn)','var(--blue)','var(--err)'];
+  if (Object.keys(areaAgg).length) {
+    html += `<div class="card"><h3>プロジェクト別コミット数</h3>`;
+    Object.entries(areaAgg).sort((a,b) => b[1]-a[1]).forEach(([a, n], i) => {
+      html += `<div class="h-bar-row">
+        <div class="h-bar-label" style="width:120px">${esc(a)}</div>
+        <div class="h-bar-track"><div class="h-bar-fill" style="width:${n/maxArea*100}%;background:${areaColors[i%areaColors.length]}">${n}</div></div>
+        <div class="h-bar-value">${n}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  container.innerHTML = html || '<div class="empty">データがありません</div>';
+}
+
+// ===== Export =====
+function loadExport(dateStr) {
+  const container = document.getElementById('exportContent');
+  const report = allReports[dateStr];
+
+  if (!report || !report.exports) {
+    container.innerHTML = `<div class="empty">この日のエクスポートデータはありません</div>`;
+    return;
+  }
+
+  const exp = report.exports;
+  let html = '';
+
+  // note.com markdown
+  if (exp.note_markdown) {
+    html += `<div class="card">
+      <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.8rem">
+        <h3 style="margin:0;flex:1">note.com 用マークダウン</h3>
+        <button class="copy-btn" onclick="copyText(this, 'noteArea')">コピー</button>
+      </div>
+      <div class="export-area" id="noteArea">${esc(exp.note_markdown)}</div>
+    </div>`;
+  }
+
+  // X thread
+  if (exp.x_thread?.length) {
+    html += `<div class="card">
+      <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.8rem">
+        <h3 style="margin:0;flex:1">X スレッド（${exp.x_thread.length}ツイート）</h3>
+        <button class="copy-btn" onclick="copyAllTweets(this)">全コピー</button>
+      </div>`;
+    exp.x_thread.forEach((tweet, i) => {
+      const len = tweet.length;
+      const cls = len > 140 ? 'over' : len > 120 ? 'warn' : '';
+      html += `<div class="tweet-card" data-tweet="${esc(tweet)}">
+        <p>${esc(tweet)}</p>
+        <div class="tweet-meta">
+          <span>${i + 1}/${exp.x_thread.length}</span>
+          <span class="char-count ${cls}">${len}/140文字</span>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  if (!html) html = '<div class="empty">エクスポートデータが空です</div>';
+  container.innerHTML = html;
+}
+
+function copyText(btn, areaId) {
+  const text = document.getElementById(areaId).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'コピー済み';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'コピー'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function copyAllTweets(btn) {
+  const tweets = [...document.querySelectorAll('.tweet-card')].map(c => c.dataset.tweet);
+  navigator.clipboard.writeText(tweets.join('\n\n---\n\n')).then(() => {
+    btn.textContent = 'コピー済み';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '全コピー'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// ===== Util =====
+function esc(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+init();
+</script>
+</body>
+</html>

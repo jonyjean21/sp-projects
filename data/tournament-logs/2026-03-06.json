@@ -1,10 +1,207 @@
 {
   "date": "2026-03-06",
   "processed": [
-    {"url": "https://twitter.com/molkky46/status/2029565925855543474", "title": "molkky46 追悼ポスト", "action": "skipped", "source": "ifttt-x-search", "reason": "大会情報ではない（追悼ポスト）", "timestamp": "2026-03-06T00:00:00+09:00"},
-    {"url": "https://twitter.com/mukoshibamoldog/status/2029554671795446184", "title": "mukoshibamoldog 追悼ポスト", "action": "skipped", "source": "ifttt-x-search", "reason": "大会情報ではない（追悼ポスト）", "timestamp": "2026-03-06T00:00:00+09:00"},
-    {"url": "https://twitter.com/zugakousakuka/status/2029565747241058607", "title": "zugakousakuka S-möl祭り予告", "action": "skipped", "source": "ifttt-x-search", "reason": "詳細未定（春のS-möl祭り、招待制の可能性）", "timestamp": "2026-03-06T00:00:00+09:00"},
-    {"url": "https://twitter.com/47q6V2684nAE1zB/status/2029563533646782803", "title": "印西 福祉施設イベント", "action": "skipped", "source": "ifttt-x-search", "reason": "福祉施設の複合イベント（モルック大会ではない）", "timestamp": "2026-03-06T00:00:00+09:00"},
-    {"url": "https://twitter.com/blacksato_hot/status/2029568445600415809", "title": "blacksato_hot 追悼ポスト", "action": "skipped", "source": "ifttt-x-search", "reason": "大会情報ではない（追悼ポスト）", "timestamp": "2026-03-06T00:00:00+09:00"}
+    {
+      "url": "https://twitter.com/molkky46/status/2029565925855543474",
+      "title": "molkky46 追悼ポスト",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "reason": "大会情報ではない（追悼ポスト）",
+      "timestamp": "2026-03-06T00:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/mukoshibamoldog/status/2029554671795446184",
+      "title": "mukoshibamoldog 追悼ポスト",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "reason": "大会情報ではない（追悼ポスト）",
+      "timestamp": "2026-03-06T00:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/zugakousakuka/status/2029565747241058607",
+      "title": "zugakousakuka S-möl祭り予告",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "reason": "詳細未定（春のS-möl祭り、招待制の可能性）",
+      "timestamp": "2026-03-06T00:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/47q6V2684nAE1zB/status/2029563533646782803",
+      "title": "印西 福祉施設イベント",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "reason": "福祉施設の複合イベント（モルック大会ではない）",
+      "timestamp": "2026-03-06T00:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/blacksato_hot/status/2029568445600415809",
+      "title": "blacksato_hot 追悼ポスト",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "reason": "大会情報ではない（追悼ポスト）",
+      "timestamp": "2026-03-06T00:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/marutomo_awaji/status/2029679545486561406",
+      "title": "第1回EBURA杯（未確定アンケート）",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "未確定（アンケート段階）",
+      "timestamp": "2026-03-06T09:00:44+09:00"
+    },
+    {
+      "url": "https://twitter.com/ogamegoofy/status/2029701676308090947",
+      "title": "個人追悼ツイート",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "大会情報ではない",
+      "timestamp": "2026-03-06T09:00:44+09:00"
+    },
+    {
+      "url": "https://twitter.com/Atsu_mol2025/status/2029686140538667074",
+      "title": "モルック厚木カップ2026 in Winter",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "開催済み（2026/02/28）",
+      "timestamp": "2026-03-06T09:00:44+09:00"
+    },
+    {
+      "url": "https://twitter.com/molkkymatsumoto/status/2029682659757330690",
+      "title": "個人の思い出ツイート",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "大会情報ではない",
+      "timestamp": "2026-03-06T09:00:44+09:00"
+    },
+    {
+      "url": "https://twitter.com/EBURA_molkky/status/2029680459152773306",
+      "title": "EBURA杯予告（未確定）",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "skip_reason": "未確定（正式開催未定）",
+      "timestamp": "2026-03-06T09:00:44+09:00"
+    },
+    {
+      "url": "https://molkky.jp/tournament/32060/",
+      "title": "第１回北の女王決定戦ーMölkky Women's Singlesー",
+      "action": "updated",
+      "post_id": 6462,
+      "source": "rss-auto-JMA公式",
+      "reason": "既存ID:6462のevent_date(20260411)・detail_link・scaleを更新",
+      "timestamp": "2026-03-06T18:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/LIUB_Hakodate/status/2029753949645930733",
+      "title": "空港deゆる〜くモルック体験会 in 函館空港",
+      "action": "posted",
+      "post_id": 6540,
+      "source": "ifttt-x-search",
+      "timestamp": "2026-03-06T18:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/6Sixdeuxze67230/status/2029713566581018640",
+      "title": "6Sixdeuxze67230 朝練報告",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "reason": "朝練報告ツイート。大会告知ではない",
+      "timestamp": "2026-03-06T18:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/ymnk03/status/2029720753671962647",
+      "title": "ymnk03 個人練習報告",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "reason": "個人の朝投げ練習報告。大会告知ではない",
+      "timestamp": "2026-03-06T18:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/molkky233/status/2029709962893730117",
+      "title": "molkky233 追悼リプライ",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "reason": "UMAJ会長追悼リプライ。大会情報ではない",
+      "timestamp": "2026-03-06T18:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/CrawlOwl/status/2029708737750126694",
+      "title": "CrawlOwl 四日市オープンモルック情報削除報道",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "reason": "AIニュースボット。四日市オープンモルック情報削除の報道記事",
+      "timestamp": "2026-03-06T18:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/Molkky_Japan/status/2029753848517230736",
+      "title": "JMA モルック指導員認定講習会",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "reason": "JMA公式モルック指導員認定講習会の告知。大会ではなく講習会",
+      "timestamp": "2026-03-06T18:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/molkkyhub/status/2029760672054071470",
+      "title": "molkkyhub 週間まとめ記事Xポスト",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "reason": "自社MOLKKY HUBの週間まとめ記事Xポスト",
+      "timestamp": "2026-03-06T18:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/papakav369/status/2029727953601572997",
+      "title": "papakav369 大会参加予定リプライ",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "reason": "岡山大会参加予定のリプライ。大会告知ではない",
+      "timestamp": "2026-03-06T18:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/human_bridger/status/2029706490114887739",
+      "title": "全国小中学生モルック大会2nd 協賛募集",
+      "action": "already_exists",
+      "existing_post_id": 4484,
+      "source": "ifttt-x-search",
+      "reason": "全国小中学生モルック大会2nd (ID:4484) と重複",
+      "timestamp": "2026-03-06T18:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/kamagaya_city/status/2029782776833266062",
+      "title": "鎌ケ谷市 miniみんなのスポーツDay",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "reason": "体育館の複合スポーツイベント（miniみんなのスポーツDay: バドミントン・ボッチャ・モルック等）。モルック専用大会ではない",
+      "timestamp": "2026-03-06T14:42:33+09:00"
+    },
+    {
+      "url": "https://twitter.com/sake_molkky/status/2029783304782893174",
+      "title": "sake_molkky 個人近況報告",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "reason": "個人の近況報告（大学院退学・異動・世界大会出場予定）。大会告知ではない",
+      "timestamp": "2026-03-06T14:42:33+09:00"
+    },
+    {
+      "url": "https://twitter.com/ShintaKameoka/status/2029799182295519342",
+      "title": "ShintaKameoka 金曜モルック練習報告",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "reason": "大会告知ではない（金曜モルック練習の報告ツイート。12時間マラソン大会に言及しているが参加者目線の投稿）",
+      "timestamp": "2026-03-06T21:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/ShintaKameoka/status/2029799339825234379",
+      "title": "ShintaKameoka 金曜モルック練習報告（編集版）",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "reason": "Tweet 2029799182295519342 の編集版（重複）",
+      "timestamp": "2026-03-06T21:00:00+09:00"
+    },
+    {
+      "url": "https://twitter.com/binnuma_park/status/2029816900671394056",
+      "title": "びん沼自然公園 モルック体験会（3/8）",
+      "action": "skipped",
+      "source": "ifttt-x-search",
+      "reason": "体験会（モルック体験会@びん沼自然公園・埼玉県富士見市）。競技大会ではなく初心者向け体験イベント",
+      "timestamp": "2026-03-06T21:00:00+09:00"
+    }
   ]
 }
