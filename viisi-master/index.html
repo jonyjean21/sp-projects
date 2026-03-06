@@ -110,6 +110,16 @@
   .btn-copy { background: #10b98133; color: #34d399; border: 1px solid #10b98144; }
   .btn-copy:active { background: #10b98155; }
   .btn-copy.copied { background: #10b981; color: #fff; }
+  .btn-post { background: #1d9bf022; color: #1d9bf0; border: 1px solid #1d9bf044; }
+  .btn-post:active { background: #1d9bf055; }
+  .btn-post.posted { background: #1d9bf0; color: #fff; pointer-events: none; }
+  .keyword-input {
+    width: 100%; padding: 10px 14px; border-radius: 8px;
+    border: 1px solid #334155; background: #0f172a; color: #e2e8f0;
+    font-size: 13px;
+  }
+  .keyword-input:focus { outline: none; border-color: #fbbf24; }
+  .keyword-input::placeholder { color: #475569; }
   .btn-danger { background: #ef444422; color: #f87171; border: 1px solid #ef444444; }
 
   /* 出力プレビュー */
@@ -347,9 +357,14 @@
     <div class="card">
       <div class="output-box" id="x-output"></div>
       <div class="char-count" id="x-char-count">0 / 280</div>
-      <button class="btn-full btn-copy" onclick="copyText('x-output', this)" style="margin-top: 8px;">
-        X投稿をコピー
-      </button>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn-full btn-copy" onclick="copyText('x-output', this)" style="flex:1;">
+          コピー
+        </button>
+        <button class="btn-full btn-post" id="btn-post-x" onclick="postToX(this)" style="flex:1;">
+          𝕏 に投稿
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -484,6 +499,19 @@
       <button class="btn-full btn-danger" onclick="deleteEditMatch()" style="flex:1;">削除</button>
       <button class="btn-full btn-secondary" onclick="hideModal('edit-match-modal')" style="flex:1;">キャンセル</button>
       <button class="btn-full btn-primary" onclick="saveEditMatch()" style="flex:1;">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== IFTTT設定モーダル ===== -->
+<div class="modal-overlay" id="ifttt-modal">
+  <div class="modal">
+    <h3>𝕏 投稿設定</h3>
+    <div style="font-size:12px;color:#94a3b8;margin-bottom:12px;">IFTTT Webhookキーを入力（初回のみ・このデバイスに保存）</div>
+    <input class="input-field" id="ifttt-key-input" placeholder="IFTTT Webhook Key" autocomplete="off">
+    <div style="display: flex; gap: 8px; margin-top: 8px;">
+      <button class="btn-full btn-secondary" onclick="hideModal('ifttt-modal')" style="flex:1;">キャンセル</button>
+      <button class="btn-full btn-primary" onclick="saveIftttKey()" style="flex:1;">保存</button>
     </div>
   </div>
 </div>
@@ -1006,6 +1034,10 @@ function addEntry() {
         <option value="champion">👑 チャンピオン戦</option>
       </select>
     </div>
+    <div style="margin-bottom: 8px;">
+      <div class="section-label" style="margin-bottom: 4px;">キーワード <span style="font-size:10px;color:#475569;">(任意・Xポスト用)</span></div>
+      <input type="text" class="keyword-input" data-field="keywords" placeholder="例: 初挑戦, リベンジ, 関西遠征">
+    </div>
     <div class="score-input">
       <div class="score-side" id="entry-${id}-sc-side">
         <div class="label">挑戦者</div>
@@ -1140,7 +1172,9 @@ function saveOnly() {
     const defender = el.querySelector('[data-field="defender"]').value;
     const role = el.querySelector('[data-field="role"]').value;
     const winner = e.sc > e.sd ? challenger : defender;
-    matchesToSave.push({ date, challenger, defender, role, sc: e.sc, sd: e.sd, winner });
+    const kwRaw = el.querySelector('[data-field="keywords"]')?.value.trim() || '';
+    const keywords = kwRaw ? kwRaw.split(/[,、]/).map(k => k.trim()).filter(Boolean) : [];
+    matchesToSave.push({ date, challenger, defender, role, sc: e.sc, sd: e.sd, winner, keywords });
     count++;
   });
 
@@ -1320,7 +1354,9 @@ function genResults(ms) {
       ? (m.role === 'champion' ? `${m.challenger}が王者を撃破！` : `${m.challenger}が門番を撃破！`)
       : `${m.defender}が防衛！`;
     t += `⚔️ ${prefix}${withHandle(m.defender)} vs ${withHandle(m.challenger)}\n`;
-    t += `→ ${m.sd}-${m.sc}で${resultText}\n\n`;
+    t += `→ ${m.sd}-${m.sc}で${resultText}\n`;
+    if (m.keywords && m.keywords.length > 0) t += `📌 ${m.keywords.join(' / ')}\n`;
+    t += '\n';
   });
   t += '#5先王 #モルック';
   return t;
@@ -1335,6 +1371,7 @@ function genMatchDay(ms) {
     } else {
       t += `${prefix}${withHandle(m.defender)}が${withHandle(m.challenger)}を返り討ち⚠️`;
     }
+    if (m.keywords && m.keywords.length > 0) t += `\n📌 ${m.keywords.join(' / ')}`;
     if (i < ms.length - 1) t += '\n';
   });
   t += `\n\nチャンピオン・${withHandle(D.champion.name)}へ挑むのは誰だ！？\n\n`;
@@ -1359,8 +1396,9 @@ function genNewChamp(ms) {
   if (!champMatch) return '（チャンピオン戦で挑戦者が勝利した試合がありません）\n\n#5先王 #モルック';
   let t = 'ついに新チャンピオン誕生!🎉\n\n';
   t += `👑その名も${withHandle(champMatch.challenger)}!⚡\n`;
-  t += `チャンピオン・${withHandle(champMatch.defender)}を退け新たなチャンピオンに!🔥\n\n`;
-  t += '#5先王 #モルック';
+  t += `チャンピオン・${withHandle(champMatch.defender)}を退け新たなチャンピオンに!🔥\n`;
+  if (champMatch.keywords && champMatch.keywords.length > 0) t += `📌 ${champMatch.keywords.join(' / ')}\n`;
+  t += '\n#5先王 #モルック';
   return t;
 }
 
@@ -1436,6 +1474,67 @@ function copyText(elementId, btn) {
       btn.classList.remove('copied');
     }, 2000);
   });
+}
+
+// ============================================================
+// X投稿（IFTTT Webhook）
+// ============================================================
+function getIftttKey() {
+  return localStorage.getItem('viisi-ifttt-key');
+}
+
+function saveIftttKey() {
+  const key = document.getElementById('ifttt-key-input').value.trim();
+  if (!key) return;
+  localStorage.setItem('viisi-ifttt-key', key);
+  hideModal('ifttt-modal');
+  showToast('IFTTT キーを保存しました');
+  if (pendingPostBtn) {
+    doPostToX(pendingPostBtn);
+    pendingPostBtn = null;
+  }
+}
+
+let pendingPostBtn = null;
+
+function postToX(btn) {
+  const key = getIftttKey();
+  if (!key) {
+    pendingPostBtn = btn;
+    document.getElementById('ifttt-key-input').value = '';
+    document.getElementById('ifttt-modal').classList.add('show');
+    return;
+  }
+  if (!confirm('この内容をXに投稿しますか？')) return;
+  doPostToX(btn);
+}
+
+async function doPostToX(btn) {
+  const text = document.getElementById('x-output').textContent;
+  if (!text) return;
+  const key = getIftttKey();
+  if (!key) return;
+
+  btn.textContent = '投稿中...';
+  btn.classList.add('posted');
+
+  try {
+    await fetch(`https://maker.ifttt.com/trigger/post_tweet/with/key/${key}`, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: new URLSearchParams({ value1: text })
+    });
+    showToast('Xへの投稿リクエストを送信しました');
+    btn.textContent = '送信済 ✓';
+    setTimeout(() => {
+      btn.textContent = '𝕏 に投稿';
+      btn.classList.remove('posted');
+    }, 3000);
+  } catch (e) {
+    showToast('投稿エラー: ' + e.message);
+    btn.textContent = '𝕏 に投稿';
+    btn.classList.remove('posted');
+  }
 }
 
 // ============================================================
