@@ -445,37 +445,49 @@ function toggleBlock(el) {
 function renderQualified() {
   const section = document.getElementById('qualifiedSection');
   const grid = document.getElementById('qualifiedGrid');
-  const qualifiedAll = [];
 
-  for (const [bid, block] of Object.entries(allData.blocks)) {
+  // ブロック別にグループ化
+  const sorted = Object.entries(allData.blocks)
+    .sort((a, b) => (a[1].order || 0) - (b[1].order || 0));
+
+  const blockGroups = [];
+  for (const [bid, block] of sorted) {
     if (!block.venues) continue;
+    const qualified = [];
     for (const [vid, venue] of Object.entries(block.venues)) {
       if (!allData.results[vid]) continue;
-      const entries = Object.values(allData.results[vid])
+      Object.values(allData.results[vid])
         .filter(e => e.qualified)
-        .sort((a, b) => a.rank - b.rank);
-      entries.forEach(e => {
-        qualifiedAll.push({
-          ...e,
-          blockName: block.name,
-          venueName: venue.name
-        });
-      });
+        .sort((a, b) => a.rank - b.rank)
+        .forEach(e => qualified.push({ ...e, venueName: venue.name }));
+    }
+    if (qualified.length > 0) {
+      blockGroups.push({ name: block.name, icon: BLOCK_ICONS[bid] || '📍', qualified });
     }
   }
 
-  if (qualifiedAll.length === 0) {
+  if (blockGroups.length === 0) {
     section.style.display = 'none';
     return;
   }
 
   section.style.display = 'block';
-  grid.innerHTML = qualifiedAll.map(q => `
-    <div class="qualified-item">
-      <div class="qualified-rank">${q.rank}</div>
-      <div class="qualified-name">${esc(q.name)}</div>
-      <div class="qualified-from">${esc(q.venueName)}</div>
-      ${q.x_link ? `<a href="${esc(q.x_link)}" target="_blank" class="x-btn">𝕏</a>` : ''}
+  grid.innerHTML = blockGroups.map(g => `
+    <div style="margin-bottom:1rem">
+      <div style="font-size:0.85rem;font-weight:700;margin-bottom:0.4rem;display:flex;align-items:center;gap:6px">
+        <span>${g.icon}</span> ${esc(g.name)}
+        <span style="font-size:0.7rem;color:var(--dim);font-weight:400">${g.qualified.length}名</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0.4rem">
+        ${g.qualified.map(q => `
+          <div class="qualified-item">
+            <div class="qualified-rank">${q.rank}</div>
+            <div class="qualified-name">${esc(q.name)}</div>
+            <div class="qualified-from">${esc(q.venueName)}</div>
+            ${q.x_link ? `<a href="${esc(q.x_link)}" target="_blank" class="x-btn">𝕏</a>` : ''}
+          </div>
+        `).join('')}
+      </div>
     </div>
   `).join('');
 }
