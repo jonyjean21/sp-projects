@@ -285,6 +285,30 @@ body { padding-top: 56px; }
   border-top: 1px solid var(--border); font-size: 12px; color: var(--text-dim);
 }
 
+/* ===== Compare Table ===== */
+.compare-section { background: var(--bg); }
+.compare-table { width: 100%; border-collapse: collapse; max-width: 700px; margin: 0 auto; font-size: 14px; }
+.compare-table th, .compare-table td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+.compare-table th { font-weight: 700; font-size: 13px; color: var(--text-dim); }
+.compare-table td:first-child { font-weight: 700; color: var(--text); font-size: 13px; }
+.compare-table .col-machap { background: var(--accent-light); font-weight: 700; color: var(--accent); }
+.compare-table thead th.col-machap { background: var(--accent); color: #fff; border-radius: 8px 8px 0 0; }
+
+/* ===== Founder ===== */
+.founder-section { background: var(--bg); }
+.founder-inner { max-width: 620px; margin: 0 auto; text-align: center; }
+.founder-text { font-size: 15px; color: var(--text-sub); line-height: 2; }
+.founder-sig { margin-top: 20px; font-size: 13px; font-weight: 700; color: var(--text); }
+
+/* ===== Sticky Mobile CTA ===== */
+.sticky-cta {
+  display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 99;
+  background: rgba(253,252,249,0.95); backdrop-filter: blur(10px);
+  border-top: 1px solid var(--border-light); padding: 10px 16px;
+  text-align: center;
+}
+.sticky-cta .btn-primary { width: 100%; justify-content: center; padding: 14px; font-size: 16px; }
+
 /* ===== Responsive ===== */
 @media (max-width: 700px) {
   .hero { padding: 48px 16px 32px; }
@@ -298,6 +322,10 @@ body { padding-top: 56px; }
   .pc-nav { opacity: 0.8; }
   .nav-links a:not(.nav-cta) { display: none; }
   .case-result { gap: 16px; }
+  .compare-table { font-size: 12px; }
+  .compare-table th, .compare-table td { padding: 10px 8px; }
+  .sticky-cta { display: block; }
+  body { padding-bottom: 70px; }
 }
 
 @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
@@ -395,7 +423,7 @@ body { padding-top: 56px; }
         <button class="pc-nav pc-nav-prev">&#8249;</button><button class="pc-nav pc-nav-next">&#8250;</button></div>
         <div class="pc-body">
           <div class="pc-header"><div class="pc-name">5先王（ヴィーシマスター）</div><span class="pc-category cat-molkky">モルック</span></div>
-          <div class="pc-desc">試合結果をその場で記録→Xに自動投稿。チャンピオン戦モードも搭載。</div>
+          <div class="pc-desc">「試合のたびにスコアをメモしてX投稿…面倒」→ スコア入力だけで自動投稿。</div>
           <ul class="pc-features"><li>スコアをリアルタイム入力</li><li>試合結果をXに自動投稿</li><li>チャンピオン戦に対応</li></ul>
           <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/viisi-master/" target="_blank">実物を見る →</a>
         </div>
@@ -410,7 +438,7 @@ body { padding-top: 56px; }
         <button class="pc-nav pc-nav-prev">&#8249;</button><button class="pc-nav pc-nav-next">&#8250;</button></div>
         <div class="pc-body">
           <div class="pc-header"><div class="pc-name">日本選手権トラッカー</div><span class="pc-category cat-molkky">モルック</span></div>
-          <div class="pc-desc">全国6ブロック10会場の予選結果をリアルタイム表示。</div>
+          <div class="pc-desc">「10会場の結果を集めて整理するのが大変」→ 管理画面から入力だけで全会場リアルタイム表示。</div>
           <ul class="pc-features"><li>6ブロック10会場を一画面で</li><li>結果をリアルタイム反映</li><li>管理画面から簡単入力</li></ul>
           <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/championship/" target="_blank">実物を見る →</a>
         </div>
@@ -425,7 +453,7 @@ body { padding-top: 56px; }
         <button class="pc-nav pc-nav-prev">&#8249;</button><button class="pc-nav pc-nav-next">&#8250;</button></div>
         <div class="pc-body">
           <div class="pc-header"><div class="pc-name">ナイモル大会管理</div><span class="pc-category cat-molkky">モルック</span></div>
-          <div class="pc-desc">スプシ入力→結果ページ自動生成。写真付きで見栄え良し。</div>
+          <div class="pc-desc">「大会の結果ページを毎回作るのが手間」→ スプシに入力するだけで写真付き結果ページが完成。</div>
           <ul class="pc-features"><li>スプシ入力だけで結果ページ完成</li><li>写真付きで見栄えよく</li><li>過去大会の記録も一覧</li></ul>
           <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/naimol-admin/" target="_blank">実物を見る →</a>
         </div>
@@ -439,7 +467,7 @@ body { padding-top: 56px; }
         <button class="pc-nav pc-nav-prev">&#8249;</button><button class="pc-nav pc-nav-next">&#8250;</button></div>
         <div class="pc-body">
           <div class="pc-header"><div class="pc-name">チームライド</div><span class="pc-category cat-team">チーム運営</span></div>
-          <div class="pc-desc">出欠入力→自動配車。催促もLINE共有もワンタップ。</div>
+          <div class="pc-desc">「毎回LINEグループで送迎調整するのが負担」→ 出欠入れたら配車が自動で決定。</div>
           <ul class="pc-features"><li>出欠入力→自動配車</li><li>催促メッセージ自動生成</li><li>LINE共有ワンタップ</li></ul>
           <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/teamride/" target="_blank">実物を見る →</a>
         </div>
@@ -454,7 +482,7 @@ body { padding-top: 56px; }
         <button class="pc-nav pc-nav-prev">&#8249;</button><button class="pc-nav pc-nav-next">&#8250;</button></div>
         <div class="pc-body">
           <div class="pc-header"><div class="pc-name">パートナー循環ポータル</div><span class="pc-category cat-team">チーム運営</span></div>
-          <div class="pc-desc">応援品の流れを見える化。誰から届いてどこへ届いたかが全部わかる。</div>
+          <div class="pc-desc">「応援品が誰から届いて、どこに渡ったかわからない」→ 流れを全部見える化。</div>
           <ul class="pc-features"><li>応援品の流れをリアルタイム表示</li><li>パートナーへの感謝も見える化</li><li>信頼の循環を可視化</li></ul>
           <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/partner-portal/" target="_blank">実物を見る →</a>
         </div>
@@ -468,7 +496,7 @@ body { padding-top: 56px; }
         <button class="pc-nav pc-nav-prev">&#8249;</button><button class="pc-nav pc-nav-next">&#8250;</button></div>
         <div class="pc-body">
           <div class="pc-header"><div class="pc-name">YouTube分析ダッシュボード</div><span class="pc-category cat-life">くらし</span></div>
-          <div class="pc-desc">チャンネルの状態がひと目でわかる。動画の成績も全体の健康度も。</div>
+          <div class="pc-desc">「自分のチャンネル、調子いいのか悪いのかわからない」→ 数字とグラフでひと目で把握。</div>
           <ul class="pc-features"><li>動画ごとの再生数・エンゲージメント</li><li>チャンネル全体の健康度スコア</li><li>わかりやすいグラフで可視化</li></ul>
           <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/youtube/" target="_blank">実物を見る →</a>
         </div>
@@ -483,7 +511,7 @@ body { padding-top: 56px; }
         <button class="pc-nav pc-nav-prev">&#8249;</button><button class="pc-nav pc-nav-next">&#8250;</button></div>
         <div class="pc-body">
           <div class="pc-header"><div class="pc-name">めぐり帳</div><span class="pc-category cat-life">くらし</span></div>
-          <div class="pc-desc">人からもらった恩、約束、貸し借りを記録。忘れたくない「ありがとう」を残す。</div>
+          <div class="pc-desc">「あの人にお礼言いたかったのに忘れてた…」→ もらった恩・約束を記録して忘れない。</div>
           <ul class="pc-features"><li>もらった恩・約束を記録</li><li>返し忘れをリマインド</li><li>感謝のログが貯まっていく</li></ul>
           <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/meguri/" target="_blank">実物を見る →</a>
         </div>
@@ -497,7 +525,7 @@ body { padding-top: 56px; }
         <button class="pc-nav pc-nav-prev">&#8249;</button><button class="pc-nav pc-nav-next">&#8250;</button></div>
         <div class="pc-body">
           <div class="pc-header"><div class="pc-name">レシピBOX</div><span class="pc-category cat-life">くらし</span></div>
-          <div class="pc-desc">レシピをURLで保存。写真から材料を読み取り。家族で共有。</div>
+          <div class="pc-desc">「保存したレシピがブックマークに埋もれて見つからない」→ 整理して家族みんなで共有。</div>
           <ul class="pc-features"><li>URLでレシピを保存</li><li>写真→材料リスト自動抽出</li><li>家族みんなで共有</li></ul>
           <a class="pc-link" href="https://jonyjean21.github.io/sp-projects/recipe/" target="_blank">実物を見る →</a>
         </div>
@@ -509,7 +537,7 @@ body { padding-top: 56px; }
         </div></div>
         <div class="pc-body">
           <div class="pc-header"><div class="pc-name">マルタ村ポータル</div><span class="pc-category cat-team">チーム運営</span></div>
-          <div class="pc-desc">コミュニティの情報共有ポータル。お知らせ・スケジュール・メンバー管理を一箇所に。</div>
+          <div class="pc-desc">「お知らせはLINE、予定はGoogleカレンダー、名簿はスプシ…バラバラ」→ 全部一箇所に。</div>
           <ul class="pc-features"><li>お知らせ・スケジュール一元管理</li><li>メンバー情報の共有</li><li>Google SSO対応</li></ul>
           <a class="pc-link" href="https://marutaportal.manus.space/" target="_blank">実物を見る →</a>
         </div>
@@ -525,6 +553,24 @@ body { padding-top: 56px; }
   <a href="#contact" class="btn-primary">無料で相談する</a>
 </div>
 
+<!-- ===== Compare ===== -->
+<section class="section compare-section section-center fade-in">
+  <div class="container">
+    <p class="section-label">比較</p>
+    <h2 class="section-title">他の選択肢と比べてみてください。</h2>
+    <table class="compare-table">
+      <thead><tr><th></th><th class="col-machap">MACHAP</th><th>自分で作る</th><th>開発会社に外注</th></tr></thead>
+      <tbody>
+        <tr><td>費用</td><td class="col-machap">無料〜低コスト</td><td>無料（時間はかかる）</td><td>数十万〜数百万円</td></tr>
+        <tr><td>スピード</td><td class="col-machap">数日〜2週間</td><td>数ヶ月</td><td>1〜3ヶ月</td></tr>
+        <tr><td>運用サポート</td><td class="col-machap">ずっと面倒見る</td><td>全部自分</td><td>別途費用</td></tr>
+        <tr><td>コミュニティ理解</td><td class="col-machap">現場を知ってる</td><td>—</td><td>ヒアリングから</td></tr>
+        <tr><td>改善・追加</td><td class="col-machap">気軽にDMで</td><td>自力で頑張る</td><td>追加見積もり</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
 <!-- ===== Cases ===== -->
 <section class="section section-center" id="cases">
   <div class="container">
@@ -536,22 +582,36 @@ body { padding-top: 56px; }
       <div class="case-card fade-in">
         <div class="case-badge case-badge-team">チームライド</div>
         <div class="case-title">「子供の送迎の割り振りが毎回大変」→ 出欠入力だけで自動配車</div>
-        <div class="case-desc">モルックチームで子供の大会送迎が必要。毎回LINEで調整するのが負担だった。出欠を入れるだけで配車が決まり、LINE共有もワンタップに。</div>
+        <div class="case-desc">モルックチームで子供の大会送迎が必要。毎回LINEグループで「誰が乗れる？」「あと1席空いてます」のやりとり。出欠を入れるだけで配車が決まり、催促もLINE共有もワンタップに。</div>
         <div class="case-result">
-          <div class="case-stat"><div class="case-stat-num">10分→1分</div><div class="case-stat-label">配車調整時間</div></div>
-          <div class="case-stat"><div class="case-stat-num">0</div><div class="case-stat-label">調整の手間</div></div>
+          <div class="case-stat"><div class="case-stat-num">10分→1分</div><div class="case-stat-label">配車調整</div></div>
+          <div class="case-stat"><div class="case-stat-num">0回</div><div class="case-stat-label">LINEでの調整</div></div>
+          <div class="case-stat"><div class="case-stat-num">ワンタップ</div><div class="case-stat-label">LINE共有</div></div>
         </div>
       </div>
 
       <div class="case-card fade-in">
         <div class="case-badge case-badge-molkky">5先王</div>
         <div class="case-title">「試合結果を記録してSNSに投稿するのが面倒」→ 記録したら自動投稿</div>
-        <div class="case-desc">モルックの試合をするたびに結果をメモしてXに投稿していた。スコアを入力するだけで自動投稿。チャンピオン戦にも対応。</div>
+        <div class="case-desc">モルックの試合をするたびにスコアをメモ帳に書いて、終わったらXに投稿。毎回5分かかっていた作業が、スコア入力するだけで投稿まで全自動に。</div>
         <div class="case-result">
+          <div class="case-stat"><div class="case-stat-num">5分→0分</div><div class="case-stat-label">投稿作業</div></div>
+          <div class="case-stat"><div class="case-stat-num">全試合</div><div class="case-stat-label">自動で記録</div></div>
           <div class="case-stat"><div class="case-stat-num">ワンタップ</div><div class="case-stat-label">X投稿</div></div>
-          <div class="case-stat"><div class="case-stat-num">全試合</div><div class="case-stat-label">記録が残る</div></div>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Founder Story ===== -->
+<section class="section founder-section section-center fade-in">
+  <div class="container">
+    <div class="founder-inner">
+      <p class="section-label">MACHAPのはじまり</p>
+      <h2 class="section-title">自分たちの「困った」から始まった。</h2>
+      <p class="founder-text">モルックというスポーツのコミュニティ活動から生まれました。大会情報が散らばってる、試合結果を残せない、送迎の調整が面倒——。自分たちが困ったことを解決するために作り始めたツールが、気づけば10個以上に。今では他のコミュニティからも「うちにもほしい」と言ってもらえるようになりました。</p>
+      <div class="founder-sig">— MACHAP チーム</div>
     </div>
   </div>
 </section>
@@ -595,6 +655,11 @@ body { padding-top: 56px; }
 </section>
 
 <footer class="footer">MACHAP &copy; 2026</footer>
+
+<!-- Sticky Mobile CTA -->
+<div class="sticky-cta">
+  <a href="https://x.com/messages/compose?recipient_id=1721227068053479424" target="_blank" class="btn-primary">無料で相談する</a>
+</div>
 
 <script>
 // Fade-in
