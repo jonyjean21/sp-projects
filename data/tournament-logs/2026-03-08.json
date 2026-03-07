@@ -1,0 +1,518 @@
+{
+  "date": "2026-03-08",
+  "source": "queue",
+  "total_processed": 63,
+  "posted": 2,
+  "already_exists": 1,
+  "skipped": 60,
+  "errors": 0,
+  "entries": [
+    {
+      "firebase_key": "-On4d_l-Q8fTvq9F_4Nc",
+      "url": "https://twitter.com/yuusuikun1/status/2030074476638183786",
+      "user": "yuusuikun1",
+      "action": "skipped",
+      "reason": "個人の大会参加つぶやき",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On4jEnGSxgZBOpLt1sV",
+      "url": "https://twitter.com/masatomo_MCM/status/2030079253732262319",
+      "user": "masatomo_MCM",
+      "action": "skipped",
+      "reason": "個人の感想リプライ",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On4umc6BR2lIRLJW2tO",
+      "url": "https://twitter.com/tvo_bey/status/2030092923505889340",
+      "user": "tvo_bey",
+      "action": "skipped",
+      "reason": "当日のイベント実況",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On4umeulBeiaqOa2Hr5",
+      "url": "https://twitter.com/UrayasuKamidano/status/2030093036450107485",
+      "user": "UrayasuKamidano",
+      "action": "skipped",
+      "reason": "大会参加中の実況",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On4y79ojlGgbScybOH6",
+      "url": "https://twitter.com/molkkydome/status/2030096362369642957",
+      "user": "molkkydome",
+      "action": "skipped",
+      "reason": "大会当日の実況",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On4y7CZp387rRLsR47i",
+      "url": "https://twitter.com/Molkky_Japan/status/2030097073610314212",
+      "user": "Molkky_Japan",
+      "action": "skipped",
+      "reason": "選手権予選（選手権トラッカー管理）",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On51hVBOlhBtH9FJF29",
+      "url": "https://twitter.com/ikedashichou24/status/2030101003840925944",
+      "user": "ikedashichou24",
+      "action": "skipped",
+      "reason": "モルック大会の直接告知ではない",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On51hYx3_eiYT33dhWc",
+      "url": "https://twitter.com/DnZg3s/status/2030101123861020876",
+      "user": "DnZg3s",
+      "action": "skipped",
+      "reason": "テキスト空",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On52tlS4h9pqSiJ3Mi5",
+      "url": "https://twitter.com/molkky_mania/status/2030103121465331970",
+      "user": "molkky_mania",
+      "action": "skipped",
+      "reason": "大会当日の実況",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On55BamshXVaUkz98K1",
+      "url": "https://twitter.com/rnzhg4566/status/2030105745866510782",
+      "user": "rnzhg4566",
+      "action": "skipped",
+      "reason": "ニュース記事の共有",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On55Be1-0tGdeyhlg8s",
+      "url": "https://twitter.com/nomu_reddragon/status/2030106050003890564",
+      "user": "nomu_reddragon",
+      "action": "skipped",
+      "reason": "モルック大会ではない",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On59nU87mgk-sX4loZF",
+      "url": "https://twitter.com/Kokes_ubeMolkky/status/2030110708785107150",
+      "user": "Kokes_ubeMolkky",
+      "action": "already_exists",
+      "reason": "第4回山口モルック大会 WP ID:4324に既存",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00",
+      "existing_post_id": 4324
+    },
+    {
+      "firebase_key": "-On5Xl6u9N0fRxcZZxWW",
+      "url": "https://twitter.com/Ham__1013/status/2030135394285801708",
+      "user": "Ham__1013",
+      "action": "skipped",
+      "reason": "個人の感想リプライ",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On5aGTTDtL5Vt0hGkGc",
+      "url": "https://twitter.com/shibapapa_je/status/2030140245124190245",
+      "user": "shibapapa_je",
+      "action": "skipped",
+      "reason": "大会お手伝い報告",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On5h68-trk7dhG0wf8O",
+      "url": "https://twitter.com/takazawa/status/2030147744736989290",
+      "user": "takazawa",
+      "action": "skipped",
+      "reason": "個人の大会参加中つぶやき",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On5qBnvScurk3i_e0B9",
+      "url": "https://twitter.com/nbMBDPbppq18830/status/2030157904775630963",
+      "user": "nbMBDPbppq18830",
+      "action": "skipped",
+      "reason": "練習中のつぶやき",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On5rPb4vhRXDy4uZtNs",
+      "url": "https://twitter.com/wor_pre_nori/status/2030159313239675354",
+      "user": "wor_pre_nori",
+      "action": "skipped",
+      "reason": "大会結果報告",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On5zPNrgrLKwc4z457j",
+      "url": "https://twitter.com/Yuzu202139/status/2030166926425772268",
+      "user": "Yuzu202139",
+      "action": "skipped",
+      "reason": "個人の過去体験談",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On62sykUMc9ftBGkmO4",
+      "url": "https://twitter.com/shigamolkky/status/2030172929972183526",
+      "user": "shigamolkky",
+      "action": "skipped",
+      "reason": "大会結果報告",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On6C2bL4vNbou69B9b9",
+      "url": "https://twitter.com/namieuta/status/2030183300145574347",
+      "user": "namieuta",
+      "action": "skipped",
+      "reason": "大会お手伝い報告",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On6Hpkx5e8imub5G_Se",
+      "url": "https://twitter.com/vvhamalovevv/status/2030190314854699340",
+      "user": "vvhamalovevv",
+      "action": "skipped",
+      "reason": "テキスト空",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On6J3IwjfxcBM9xORrF",
+      "url": "https://twitter.com/Molkky_Japan/status/2030190853432693195",
+      "user": "Molkky_Japan",
+      "action": "skipped",
+      "reason": "選手権予選結果（選手権トラッカー管理）",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On6J3MpVKFBevi7oIiy",
+      "url": "https://twitter.com/vvhamalovevv/status/2030190856150602050",
+      "user": "vvhamalovevv",
+      "action": "posted",
+      "reason": "モルック体験会 in 横浜泉区中和田小学校",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00",
+      "post_id": 6561
+    },
+    {
+      "firebase_key": "-On6J3PyaORGNGuiRcnT",
+      "url": "https://twitter.com/qcOt89qXNJ77079/status/2030191044651012550",
+      "user": "qcOt89qXNJ77079",
+      "action": "skipped",
+      "reason": "大会結果報告",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On6KAsjvwI5kpQfsQpk",
+      "url": "https://twitter.com/molkkymotomans/status/2030193107657183530",
+      "user": "molkkymotomans",
+      "action": "skipped",
+      "reason": "大会結果報告",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On6NbHhPtsZ-x1TZeOl",
+      "url": "https://twitter.com/dai_daity/status/2030195880574472348",
+      "user": "dai_daity",
+      "action": "skipped",
+      "reason": "大会結果報告",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On6R1EDEpK9TLRW0YQj",
+      "url": "https://twitter.com/38NcuV0Jzi53826/status/2030199383023857688",
+      "user": "38NcuV0Jzi53826",
+      "action": "skipped",
+      "reason": "個人のつぶやき",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On6R1HvwY-dBYp_pHbi",
+      "url": "https://twitter.com/seki_molkky/status/2030199628625531328",
+      "user": "seki_molkky",
+      "action": "skipped",
+      "reason": "練習会の報告",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On6URChsMwqRIy36yQ1",
+      "url": "https://twitter.com/Y_3_0223/status/2030202395809235340",
+      "user": "Y_3_0223",
+      "action": "skipped",
+      "reason": "大会結果報告",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On6URFw9odQLOnNKli7",
+      "url": "https://twitter.com/EngVegas/status/2030204344935878847",
+      "user": "EngVegas",
+      "action": "skipped",
+      "reason": "個人の感想",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On6WrR4JuYE4I5GUdlc",
+      "url": "https://twitter.com/motshiroshima/status/2030206832950800831",
+      "user": "motshiroshima",
+      "action": "skipped",
+      "reason": "大会結果報告",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On6WrW-TvgOUVpQMwn0",
+      "url": "https://twitter.com/KyazB/status/2030207034394845400",
+      "user": "KyazB",
+      "action": "skipped",
+      "reason": "練習のつぶやき",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On6_7V79vOqmzMA5w-6",
+      "url": "https://twitter.com/yurimolcky0701/status/2030208799223783622",
+      "user": "yurimolcky0701",
+      "action": "skipped",
+      "reason": "大会企画の個人的な思い",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On6aJ2iXnkxv1_9xsi3",
+      "url": "https://twitter.com/molkkyotake/status/2030211574951195038",
+      "user": "molkkyotake",
+      "action": "skipped",
+      "reason": "大会参加報告",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On6dnPvA0qoi7cR1GNL",
+      "url": "https://twitter.com/biwaohashi/status/2030214587711394259",
+      "user": "biwaohashi",
+      "action": "skipped",
+      "reason": "大会結果報告",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On6epop5KvBm1IJ7JOX",
+      "url": "https://twitter.com/yuchi3935/status/2030216677133267247",
+      "user": "yuchi3935",
+      "action": "skipped",
+      "reason": "選手権予選の見学報告",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On6h8ltreU9A5ZnavTh",
+      "url": "https://twitter.com/okabe1314/status/2030219108315513200",
+      "user": "okabe1314",
+      "action": "skipped",
+      "reason": "大会結果報告",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On6lj7oghwc0Dd4JirM",
+      "url": "https://twitter.com/takazawa/status/2030223507381256665",
+      "user": "takazawa",
+      "action": "skipped",
+      "reason": "大会結果報告",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On6pDbYRMHeq6_2XrGL",
+      "url": "https://twitter.com/wildking3333/status/2030227986902098055",
+      "user": "wildking3333",
+      "action": "skipped",
+      "reason": "過去の大会動画共有",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On6tpOt3PR4LkxqQFqg",
+      "url": "https://twitter.com/nan_yaku_CH/status/2030231843099082796",
+      "user": "nan_yaku_CH",
+      "action": "skipped",
+      "reason": "大会周辺の個人つぶやき",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On70fjoHKTqwMQxM48y",
+      "url": "https://twitter.com/rio6712/status/2030240882663002228",
+      "user": "rio6712",
+      "action": "skipped",
+      "reason": "大会参加報告",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On70fpkyDSnghiC22Lt",
+      "url": "https://twitter.com/fujimishinohara/status/2030241339993211282",
+      "user": "fujimishinohara",
+      "action": "skipped",
+      "reason": "大会参加報告",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On737LFL-aoHfz197Ct",
+      "url": "https://twitter.com/crouton_camera/status/2030244724242886983",
+      "user": "crouton_camera",
+      "action": "skipped",
+      "reason": "個人的なメンバー募集",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On77bJXSAtX_uRtPs3r",
+      "url": "https://twitter.com/morits_hama/status/2030247984986984793",
+      "user": "morits_hama",
+      "action": "skipped",
+      "reason": "大会結果報告",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On7DHkOOqedmsp9bVPl",
+      "url": "https://twitter.com/nan_yaku_CH/status/2030253615697572343",
+      "user": "nan_yaku_CH",
+      "action": "skipped",
+      "reason": "大会周辺の個人つぶやき",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On7ET_c3CWiCk8kQndc",
+      "url": "https://twitter.com/polpoljp/status/2030256517094711425",
+      "user": "polpoljp",
+      "action": "skipped",
+      "reason": "大会参加感想",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On7FcuFlCSNtqY5Sbpo",
+      "url": "https://twitter.com/uqkhth8/status/2030258125732020505",
+      "user": "uqkhth8",
+      "action": "skipped",
+      "reason": "大会参加報告",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On7KGf981AYtGFiwxlh",
+      "url": "https://twitter.com/tokitokkin758/status/2030262435672932775",
+      "user": "tokitokkin758",
+      "action": "skipped",
+      "reason": "練習のつぶやき",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On7SChbYHPelt-qP6Dc",
+      "url": "https://twitter.com/yohe_molkkysurf/status/2030271933225603162",
+      "user": "yohe_molkkysurf",
+      "action": "skipped",
+      "reason": "大会結果報告",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On7TNCu2PfZmQlfFEYZ",
+      "url": "https://twitter.com/fmmolkky/status/2030272671594983472",
+      "user": "fmmolkky",
+      "action": "skipped",
+      "reason": "大会結果報告",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On7UVnGrQw9KkJXHC7z",
+      "url": "https://twitter.com/cocorowomuni/status/2030274646776668239",
+      "user": "cocorowomuni",
+      "action": "skipped",
+      "reason": "大会参加感想",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On7aP1wnWfM6EXHcYex",
+      "url": "https://twitter.com/yasutada_molkky/status/2030281606238478600",
+      "user": "yasutada_molkky",
+      "action": "skipped",
+      "reason": "モルック教室（大会ではない）",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On7luL-ZxZxpM8Vdbwd",
+      "url": "https://twitter.com/dabi_suke_zoo/status/2030293817237328082",
+      "user": "dabi_suke_zoo",
+      "action": "skipped",
+      "reason": "大会運営報告",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On7o9FwNlcos4GpGVZA",
+      "url": "https://twitter.com/mollabonoishida/status/2030296293185389047",
+      "user": "mollabonoishida",
+      "action": "skipped",
+      "reason": "大会結果報告",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On80v7fVruzb726kQtI",
+      "url": "https://twitter.com/kazuni_dot_com/status/2030311749220815185",
+      "user": "kazuni_dot_com",
+      "action": "skipped",
+      "reason": "大会参加感想",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On98pUkoE-dDT9qeCde",
+      "url": "https://twitter.com/omusubiman_mini/status/2030389724519813394",
+      "user": "omusubiman_mini",
+      "action": "skipped",
+      "reason": "大会結果報告",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On9FqE-1sS5_Q10XEWU",
+      "url": "https://twitter.com/KasamaMolkky/status/2030398838377480516",
+      "user": "KasamaMolkky",
+      "action": "skipped",
+      "reason": "練習会報告",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On9I6Sy0N4crar1HRzP",
+      "url": "https://twitter.com/molkkynosaito/status/2030401686439915999",
+      "user": "molkkynosaito",
+      "action": "skipped",
+      "reason": "個人のつぶやき",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On9NnAjuK7MwHdsZ8Ea",
+      "url": "https://twitter.com/tom_by_tom/status/2030406005088248132",
+      "user": "tom_by_tom",
+      "action": "posted",
+      "reason": "第2回青森モルック アポックダブルス 酸ヶ湯カップ",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00",
+      "post_id": 6562
+    },
+    {
+      "firebase_key": "-On9STJX5G66zpGAB7GR",
+      "url": "https://twitter.com/r_e_h_d_14/status/2030412150418936018",
+      "user": "r_e_h_d_14",
+      "action": "skipped",
+      "reason": "個人のつぶやき",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On9STOX6dZKPh1go-ce",
+      "url": "https://twitter.com/chacha_maru1006/status/2030412213375410383",
+      "user": "chacha_maru1006",
+      "action": "skipped",
+      "reason": "大会結果報告",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On9X1eBd9fZhrzytHBg",
+      "url": "https://twitter.com/cocciorino/status/2030417201275216070",
+      "user": "cocciorino",
+      "action": "skipped",
+      "reason": "個人の雑談リプライ",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    },
+    {
+      "firebase_key": "-On9Y8QftZQvpMvqQ67P",
+      "url": "https://twitter.com/morimori_molkky/status/2030419230173343906",
+      "user": "morimori_molkky",
+      "action": "skipped",
+      "reason": "大会後の個人つぶやき",
+      "processed_at": "2026-03-08T08:17:49.351150+09:00"
+    }
+  ]
+}
