@@ -1,26 +1,33 @@
 {
   "date": "2026-03-07",
-  "source": "ifttt-x-search",
-  "total": 19,
-  "results": [
-    {"key": "-On1RfhINrx8gF_fZAC0", "user": "zugakousakuka", "action": "skipped", "reason": "not_tournament: 未確定の大会企画話"},
-    {"key": "-On1SsZ9tRaJZPS43v6R", "user": "TN522", "action": "skipped", "reason": "not_tournament: 練習報告"},
-    {"key": "-On1VB6Kqor0ynfU6JgU", "user": "mirakuru_NFT2", "action": "skipped", "reason": "duplicate: WP6480 名古屋NFTモルック大会"},
-    {"key": "-On1eUhFAM9zn0z6aw0L", "user": "otaru_news", "action": "skipped", "reason": "not_tournament: ニュース記事"},
-    {"key": "-On1eUluyaZPu9HQCkys", "user": "Oisu3lthg4okkgy", "action": "skipped", "reason": "not_tournament: 児童館イベント告知"},
-    {"key": "-On1j1J4GDARLBrFgQBz", "user": "EngVegas", "action": "skipped", "reason": "not_tournament: 個人日記"},
-    {"key": "-On1nnwvN43acGZ67em4", "user": "sawadee_molkky", "action": "skipped", "reason": "not_tournament: 個人感想"},
-    {"key": "-On1r582on-5UnMZDGir", "user": "so_molkky", "action": "skipped", "reason": "not_tournament: 思い出話"},
-    {"key": "-On2-9g6IayeJdLElx5e", "user": "ototto17", "action": "skipped", "reason": "not_tournament: リプライ（締切連絡）"},
-    {"key": "-On2M3x_wMjLJpnOf-tP", "user": "Atsu_mol2025", "action": "skipped", "reason": "duplicate: WP6459 モルック厚木カップ"},
-    {"key": "-On2PTX2EzKJ8BzOikKb", "user": "Tj58N", "action": "skipped", "reason": "not_tournament: ネタツイート"},
-    {"key": "-On2U6c4dlS3oK0WxjDO", "user": "jicchan50", "action": "skipped", "reason": "not_tournament: 個人感想"},
-    {"key": "-On2ZpxUDagNd98uzAPf", "user": "dabi_suke_zoo", "action": "skipped", "reason": "not_tournament: 大会前日準備報告"},
-    {"key": "-On2eZbSVxnwghyu9Z1n", "user": "ryotanomo", "action": "skipped", "reason": "not_tournament: 思い出話"},
-    {"key": "-On2j5bcq44t88ojP-td", "user": "fukuimolkky007", "action": "skipped", "reason": "not_tournament: 個人報告"},
-    {"key": "-On2ncyr1bhJMUfiYOQf", "user": "molkkyclubjp", "action": "skipped", "reason": "not_tournament: ツール要望"},
-    {"key": "-On2nd3rY-nGzw098ivH", "user": "FUMOTO_YVT", "action": "skipped", "reason": "not_tournament: 活動報告"},
-    {"key": "-On4BzcRBXAdG5e-L9he", "user": "mayoi68", "action": "skipped", "reason": "not_tournament: 町内会のモルック大会（正式名称・場所不明、個人日常ツイート）"},
-    {"key": "-On4FNzos--FUdDWzW8Z", "user": "yuusuikun1", "action": "posted", "post_id": 6560, "title": "清水町長カップ モルック大会"}
+  "processed_at": "2026-03-07T00:16:07.435753Z",
+  "items": [
+    {
+      "key": "-On4cOZsLo8HwqwpUoJi",
+      "source": "ifttt-x-search",
+      "user": "okabe1314",
+      "action": "skipped",
+      "reason": "already_exists",
+      "existing_wp_id": 4488,
+      "existing_title": "第4回モルック岡山大会"
+    },
+    {
+      "key": "-On4cOcbFbLKNAsls_fz",
+      "source": "ifttt-x-search",
+      "user": "omusubiman_mini",
+      "action": "skipped",
+      "reason": "already_exists",
+      "existing_wp_id": 4488,
+      "existing_title": "第4回モルック岡山大会"
+    },
+    {
+      "key": "-On4cOfkgAWBCLgLEJyK",
+      "source": "ifttt-x-search",
+      "user": "PROKAI_molkky",
+      "action": "skipped",
+      "reason": "already_exists",
+      "existing_wp_id": 4488,
+      "existing_title": "第4回モルック岡山大会"
+    }
   ]
 }
