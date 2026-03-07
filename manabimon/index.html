@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>まなびモン — 小学生べんきょうアプリ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===== WELCOME ===== -->
+<div id="screen-welcome" class="screen active">
+  <div class="welcome-wrap">
+    <div class="app-logo-wrap">
+      <div class="app-logo">🌟</div>
+      <h1 class="app-title">まなびモン</h1>
+      <p class="app-subtitle">べんきょうして モンスターを そだてよう！</p>
+    </div>
+    <div class="grade-selector">
+      <h2 class="grade-select-title">なんねんせい？</h2>
+      <div class="grade-cards">
+        <div class="grade-card" data-grade="1">
+          <div class="grade-preview" id="gp1">🌱</div>
+          <span class="grade-label">1ねんせい</span>
+          <span class="grade-sub">もりのせかい</span>
+        </div>
+        <div class="grade-card" data-grade="2">
+          <div class="grade-preview" id="gp2">🐟</div>
+          <span class="grade-label">2ねんせい</span>
+          <span class="grade-sub">うみのせかい</span>
+        </div>
+        <div class="grade-card" data-grade="3">
+          <div class="grade-preview" id="gp3">✨</div>
+          <span class="grade-label">3ねんせい</span>
+          <span class="grade-sub">うちゅうのせかい</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== HOME ===== -->
+<div id="screen-home" class="screen">
+  <header class="top-bar">
+    <button class="icon-btn" id="btn-settings">⚙️</button>
+    <div class="top-stats">
+      <span class="stat-chip star-chip">⭐ <span id="stat-stars">0</span></span>
+      <span class="stat-chip streak-chip">🔥 <span id="stat-streak">0</span>日</span>
+    </div>
+  </header>
+
+  <section class="monster-sec">
+    <div class="monster-home" id="home-monster">🥚</div>
+    <div class="monster-name-row">
+      <span class="monster-name" id="home-name">タマゴン</span>
+      <span class="lv-badge">Lv.<span id="home-lv">1</span></span>
+    </div>
+    <div class="xp-wrap">
+      <div class="xp-bar" id="home-xp-bar" style="width:0%"></div>
+    </div>
+    <div class="xp-label"><span id="home-xp">0</span> / <span id="home-xp-max">50</span> XP</div>
+  </section>
+
+  <section class="missions-sec">
+    <h3 class="sec-title">📋 きょうのミッション</h3>
+    <div class="missions-row" id="missions-row"></div>
+  </section>
+
+  <section class="subjects-sec">
+    <h3 class="sec-title">📚 べんきょうする</h3>
+    <div class="subjects-grid" id="subjects-grid"></div>
+  </section>
+
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-nav="home"><span class="ni">🏠</span><span class="nl">ホーム</span></button>
+    <button class="nav-item" data-nav="monster-room"><span class="ni">👾</span><span class="nl">モンスター</span></button>
+    <button class="nav-item" data-nav="shop"><span class="ni">🛒</span><span class="nl">ショップ</span></button>
+    <button class="nav-item" data-nav="achievements"><span class="ni">🏆</span><span class="nl">バッジ</span></button>
+  </nav>
+</div>
+
+<!-- ===== QUIZ ===== -->
+<div id="screen-quiz" class="screen">
+  <div class="quiz-top">
+    <button class="back-btn" id="btn-quiz-quit">✕ やめる</button>
+    <div class="quiz-dots" id="quiz-dots"></div>
+    <div class="quiz-tag" id="quiz-tag">さんすう</div>
+  </div>
+
+  <div class="quiz-monster-area">
+    <div class="quiz-mon" id="quiz-mon">🥚</div>
+    <div class="quiz-bubble" id="quiz-bubble"></div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-num" id="q-num">もんだい 1/10</div>
+    <div class="q-text" id="q-text">3 ＋ 4 ＝ ?</div>
+    <div class="q-hint" id="q-hint"></div>
+  </div>
+
+  <div class="choices" id="choices"></div>
+
+  <div class="feedback-overlay" id="feedback-overlay">
+    <div class="feedback-box" id="feedback-box">
+      <div class="fb-icon" id="fb-icon"></div>
+      <div class="fb-msg" id="fb-msg"></div>
+      <div class="fb-exp" id="fb-exp"></div>
+      <div class="fb-xp" id="fb-xp"></div>
+      <button class="btn-next" id="btn-next">つぎへ →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RESULT ===== -->
+<div id="screen-result" class="screen">
+  <div class="result-wrap">
+    <div class="res-monster" id="res-monster">🥚</div>
+    <h2 class="res-title" id="res-title">よくできました！</h2>
+    <div class="res-scores">
+      <div class="score-card"><div class="score-num" id="res-correct">0/10</div><div class="score-lbl">せいかい</div></div>
+      <div class="score-card"><div class="score-num gold" id="res-stars">+0⭐</div><div class="score-lbl">スター</div></div>
+      <div class="score-card"><div class="score-num green" id="res-xp">+0XP</div><div class="score-lbl">けいけんち</div></div>
+    </div>
+    <div class="lv-up-card hidden" id="lv-up-card">
+      <div>🎉 レベルアップ！ 🎉</div>
+      <div class="lv-num">Lv.<span id="new-lv">2</span></div>
+    </div>
+    <div class="evolve-card hidden" id="evolve-card">
+      <div>✨ しんかした！ ✨</div>
+      <div class="evo-mon" id="evo-mon">🌱</div>
+      <div class="evo-name" id="evo-name">メバエン</div>
+    </div>
+    <div class="res-msg" id="res-msg"></div>
+    <div class="res-btns">
+      <button class="btn-p" id="btn-res-home">🏠 ホームへ</button>
+      <button class="btn-s" id="btn-res-retry">🔄 もういちど</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MONSTER ROOM ===== -->
+<div id="screen-monster-room" class="screen">
+  <div class="sub-header">
+    <button class="back-btn" data-back="home">← もどる</button>
+    <h2>👾 モンスタールーム</h2>
+  </div>
+  <div class="room-showcase" id="room-showcase"></div>
+  <div class="room-stats-grid" id="room-stats-grid"></div>
+  <div class="evo-tree-wrap">
+    <h3 class="sec-title">しんか ツリー</h3>
+    <div class="evo-tree" id="evo-tree"></div>
+  </div>
+  <div class="acc-wrap">
+    <h3 class="sec-title">アクセサリー</h3>
+    <div class="acc-list" id="acc-list"></div>
+  </div>
+</div>
+
+<!-- ===== SHOP ===== -->
+<div id="screen-shop" class="screen">
+  <div class="sub-header">
+    <button class="back-btn" data-back="home">← もどる</button>
+    <h2>🛒 ショップ</h2>
+    <span class="shop-bal">⭐ <span id="shop-bal">0</span></span>
+  </div>
+  <div class="shop-grid" id="shop-grid"></div>
+</div>
+
+<!-- ===== ACHIEVEMENTS ===== -->
+<div id="screen-achievements" class="screen">
+  <div class="sub-header">
+    <button class="back-btn" data-back="home">← もどる</button>
+    <h2>🏆 バッジコレクション</h2>
+  </div>
+  <div class="ach-bar" id="ach-bar"></div>
+  <div class="badges-grid" id="badges-grid"></div>
+</div>
+
+<!-- ===== SETTINGS MODAL ===== -->
+<div id="modal-settings" class="modal">
+  <div class="modal-inner">
+    <h3>⚙️ せってい</h3>
+    <div class="setting-row">
+      <span class="setting-lbl">なんねんせい：</span>
+      <div class="grade-sw" id="grade-sw"></div>
+    </div>
+    <div class="setting-row">
+      <span class="setting-lbl">おと：</span>
+      <button class="toggle-btn" id="btn-sound">🔊 オン</button>
+    </div>
+    <hr class="divider">
+    <button class="btn-danger" id="btn-reset">⚠️ データをリセット</button>
+    <button class="btn-close-modal" id="btn-settings-close">とじる ✕</button>
+  </div>
+</div>
+
+<!-- confetti container -->
+<div id="confetti-container"></div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
