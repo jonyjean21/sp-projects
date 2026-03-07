@@ -2403,6 +2403,7 @@ function generateNudgeText(eventId) {
 // ── Auto Assignment Algorithm ──
 let currentAssignment = null;
 let currentAssignEventId = null;
+let isEditingAssignment = false;
 
 function runAutoAssign(eventId) {
   const e = eventsData[eventId];
@@ -2593,10 +2594,17 @@ function showAssignmentResult() {
   });
 
   // Unassigned
+  const canEditTop = isEditingAssignment || !e?.assignments?.status;
   if (a.unassigned.length > 0) {
     html += `<div class="assign-unassigned">
       <div style="font-weight:700;margin-bottom:4px">❌ 未割り当て</div>
-      ${a.unassigned.map(r => `<div>${escapeHtml(r.name)}（${r.seats_needed}席必要）</div>`).join('')}
+      ${a.unassigned.map((r, ri) => `<div style="display:flex;align-items:center;justify-content:space-between">
+        <span>${escapeHtml(r.name)}（${r.seats_needed}席必要）</span>
+        <span style="display:flex;gap:6px">
+          ${canEditTop ? `<span onclick="promoteToDriver(${ri})" style="font-size:11px;color:var(--primary);cursor:pointer">車を出す</span>` : ''}
+          ${canEditTop ? `<span onclick="assignUnassignedToDriver(${ri})" style="font-size:11px;color:var(--primary);cursor:pointer">車に乗せる</span>` : ''}
+        </span>
+      </div>`).join('')}
     </div>`;
   }
 
@@ -2612,9 +2620,11 @@ function showAssignmentResult() {
     const myCarClass = isMyCar ? ' my-car' : '';
     const myCarBadge = isMyCar ? '<span class="my-car-badge">あなたの車</span>' : '';
 
+    const canEdit = isEditingAssignment || !e?.assignments?.status;
     html += `<div class="assign-card${myCarClass}">
       <div class="assign-driver">${zoneDot}🚗 ${escapeHtml(d.name)}家 ${zoneLabel}${myCarBadge}
         <span style="font-size:12px;font-weight:400;color:var(--text-sub)">${usedSeats}/${d.original_seats}席</span>
+        ${canEdit && a.drivers.length > 1 ? `<span onclick="demoteDriver(${di})" style="font-size:11px;color:var(--danger);cursor:pointer;margin-left:8px;font-weight:400">外す</span>` : ''}
       </div>`;
 
     if (d.passengers.length === 0) {
@@ -2652,9 +2662,16 @@ function showAssignmentResult() {
   let actions = '';
   const status = e?.assignments?.status;
   if (status === 'confirmed') {
-    actions = `<button class="btn btn-secondary" onclick="showLineText('${currentAssignEventId}')">📋 LINE用テキストをコピー</button>
-      <button class="btn btn-outline" onclick="resetAssignment('${currentAssignEventId}')" style="margin-top:8px">🔄 やり直す</button>
-      <button class="btn btn-outline" onclick="closeModal('assignModal')" style="margin-top:8px">閉じる</button>`;
+    if (isEditingAssignment) {
+      actions = `<button class="btn btn-primary" onclick="saveEditedAssignment('${currentAssignEventId}')">💾 変更を保存</button>
+        <button class="btn btn-secondary" onclick="showLineText('${currentAssignEventId}')" style="margin-top:8px">📋 LINE用テキスト（プレビュー）</button>
+        <button class="btn btn-outline" onclick="cancelEditAssignment()" style="margin-top:8px">キャンセル</button>`;
+    } else {
+      actions = `<button class="btn btn-secondary" onclick="startEditAssignment()">✏️ 配車を編集</button>
+        <button class="btn btn-secondary" onclick="showLineText('${currentAssignEventId}')" style="margin-top:8px">📋 LINE用テキストをコピー</button>
+        <button class="btn btn-outline" onclick="resetAssignment('${currentAssignEventId}')" style="margin-top:8px">🔄 やり直す</button>
+        <button class="btn btn-outline" onclick="closeModal('assignModal')" style="margin-top:8px">閉じる</button>`;
+    }
   } else {
     const hasUnassigned = a.unassigned && a.unassigned.length > 0;
     actions = hasUnassigned
@@ -2771,6 +2788,140 @@ async function resetAssignment(eventId) {
     showToast('エラー: ' + err.message, 'error');
     if (resetBtn) { resetBtn.disabled = false; resetBtn.textContent = '🔄 配車をリセット'; }
   }
+}
+
+// ── Edit Assignment (confirmed) ──
+function startEditAssignment() {
+  isEditingAssignment = true;
+  showAssignmentResult();
+}
+
+function cancelEditAssignment() {
+  isEditingAssignment = false;
+  // Reload from Firebase
+  viewAssignment(currentAssignEventId);
+}
+
+async function saveEditedAssignment(eventId) {
+  const a = currentAssignment;
+  if (!a) return;
+  const saveBtn = document.querySelector('#assignActions .btn-primary');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '保存中...'; }
+
+  const assignData = {
+    status: 'confirmed',
+    created_at: new Date().toISOString(),
+    warnings: a.warnings,
+    drivers: {},
+    direct: {},
+    unassigned: {}
+  };
+
+  a.drivers.forEach(d => {
+    assignData.drivers[d.id] = {
+      passengers: d.passengers.map(p => ({
+        id: p.id, name: p.name, with_parent: p.with_parent,
+        family_count: p.family_count, seats_needed: p.seats_needed
+      })),
+      equipment: d.assigned_equipment || []
+    };
+  });
+  a.directs.forEach(d => { assignData.direct[d.id] = true; });
+  a.unassigned.forEach(r => { assignData.unassigned[r.id] = true; });
+  assignData.line_text = generateLineText(eventId);
+
+  try {
+    await db.ref(ROOT + '/events/' + eventId).update({ assignments: assignData });
+    isEditingAssignment = false;
+    showToast('配車を更新しました');
+    closeModal('assignModal');
+  } catch (err) {
+    showToast('エラー: ' + err.message, 'error');
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '💾 変更を保存'; }
+  }
+}
+
+function demoteDriver(driverIdx) {
+  const a = currentAssignment;
+  if (!a || a.drivers.length <= 1) return;
+  const driver = a.drivers[driverIdx];
+
+  // Move all passengers to unassigned
+  driver.passengers.forEach(p => a.unassigned.push(p));
+
+  // Add driver themselves as unassigned rider
+  const e = eventsData[currentAssignEventId];
+  const rsvp = e?.rsvp?.[driver.id];
+  const fc = rsvp?.family_count || (rsvp?.parent_coming ? 2 : 1);
+  a.unassigned.push({
+    id: driver.id, name: driver.name, zone_id: driver.zone_id,
+    seats_needed: fc, with_parent: rsvp?.parent_coming || false, family_count: fc
+  });
+
+  // Remove from drivers
+  a.drivers.splice(driverIdx, 1);
+  a.warnings = a.warnings.filter(w => !w.includes('未割り当て'));
+  if (a.unassigned.length > 0) a.warnings.push(`⚠ ${a.unassigned.length}人が未割り当てです`);
+  showAssignmentResult();
+}
+
+function promoteToDriver(unassignedIdx) {
+  const a = currentAssignment;
+  if (!a) return;
+  const rider = a.unassigned[unassignedIdx];
+  const mem = membersData[rider.id];
+  const e = eventsData[currentAssignEventId];
+  const rsvp = e?.rsvp?.[rider.id];
+
+  // Get seat capacity from RSVP (if they originally offered to drive) or member profile
+  const seats = rsvp?.extra_seats || mem?.extra_seats || 3;
+
+  // Create new driver entry
+  a.drivers.push({
+    id: rider.id, name: rider.name, zone_id: rider.zone_id || mem?.zone_id || '',
+    address: mem?.address || '',
+    original_seats: seats, available_seats: seats,
+    assigned_equipment: [], passengers: []
+  });
+
+  // Remove from unassigned
+  a.unassigned.splice(unassignedIdx, 1);
+  a.warnings = a.warnings.filter(w => !w.includes('未割り当て'));
+  if (a.unassigned.length > 0) a.warnings.push(`⚠ ${a.unassigned.length}人が未割り当てです`);
+  showAssignmentResult();
+}
+
+function assignUnassignedToDriver(unassignedIdx) {
+  const a = currentAssignment;
+  if (!a) return;
+  const rider = a.unassigned[unassignedIdx];
+
+  let html = `<div style="font-size:15px;font-weight:700;margin-bottom:12px">${escapeHtml(rider.name)}（${rider.seats_needed}席）</div>`;
+  html += '<div style="font-size:14px;color:var(--text-sub);margin-bottom:12px">乗せる車を選んでください:</div>';
+
+  a.drivers.forEach((d, di) => {
+    const canFit = d.available_seats >= rider.seats_needed;
+    html += `<div class="list-item" style="${canFit ? '' : 'opacity:0.5;pointer-events:none'}"
+      onclick="moveUnassignedToDriver(${unassignedIdx},${di})">
+      <span>🚗 ${escapeHtml(d.name)}家</span>
+      <span style="font-size:13px;color:var(--text-sub);margin-left:auto">空き${d.available_seats}席</span>
+    </div>`;
+  });
+  html += `<button class="btn btn-outline" onclick="closeModal('moveRiderModal')" style="margin-top:12px">キャンセル</button>`;
+
+  document.getElementById('moveRiderContent').innerHTML = html;
+  openModal('moveRiderModal');
+}
+
+function moveUnassignedToDriver(unassignedIdx, driverIdx) {
+  const a = currentAssignment;
+  const rider = a.unassigned.splice(unassignedIdx, 1)[0];
+  a.drivers[driverIdx].passengers.push(rider);
+  a.drivers[driverIdx].available_seats -= rider.seats_needed;
+  a.warnings = a.warnings.filter(w => !w.includes('未割り当て'));
+  if (a.unassigned.length > 0) a.warnings.push(`⚠ ${a.unassigned.length}人が未割り当てです`);
+  closeModal('moveRiderModal');
+  showAssignmentResult();
 }
 
 // ── LINE Text Generation ──
