@@ -51,38 +51,38 @@ function xpForLevel(lv) {
 // SHOP ITEMS
 // ============================================================
 const SHOP_ITEMS = [
-  { id:'hat1',   icon:'🎩', name:'まほうのぼうし',   cost:30,  desc:'おしゃれなぼうし！' },
-  { id:'glasses',icon:'👓', name:'まなびメガネ',      cost:25,  desc:'よく みえるよ！' },
-  { id:'ribbon', icon:'🎀', name:'かわいいリボン',    cost:20,  desc:'ピンクのリボン！' },
-  { id:'crown',  icon:'👑', name:'おうじのかんむり',  cost:60,  desc:'きみがおうさまだ！' },
-  { id:'star',   icon:'⭐', name:'ゴールドスター',    cost:15,  desc:'かがやくスター！' },
-  { id:'sword',  icon:'⚔️', name:'べんきょうけん',    cost:45,  desc:'ちしきはちから！' },
-  { id:'bag',    icon:'🎒', name:'まほうのランドセル', cost:35,  desc:'なんでもはいる！' },
-  { id:'trophy', icon:'🏆', name:'チャンピオンカップ', cost:80,  desc:'いちばんのしょうこ！' },
-  { id:'cape',   icon:'🦸', name:'ヒーローマント',    cost:50,  desc:'ヒーローになれる！' },
-  { id:'wand',   icon:'🪄', name:'まほうのつえ',      cost:40,  desc:'ぼうけんにでかけよう！' },
+  { id:'sword',   icon:'⚔️', name:'フロストブレード',   cost:30,  desc:'こおりのきれあじ！てきをなぎはらえ！' },
+  { id:'shield',  icon:'🛡️', name:'アイスシールド',     cost:25,  desc:'つめたいよろいが まもってくれる！' },
+  { id:'crystal', icon:'💎', name:'ひょうけつクリスタル', cost:20,  desc:'きれいなこおりの ほうせき！ちからがわく！' },
+  { id:'crown',   icon:'👑', name:'カイザーズクラウン',  cost:80,  desc:'フロストカイザーの ていおうのかんむり！' },
+  { id:'claw',    icon:'🦷', name:'フロストクロウ',      cost:35,  desc:'てきをひっかく こおりのつめ！' },
+  { id:'orb',     icon:'🔮', name:'ひょうせつオーブ',    cost:45,  desc:'こおりのまほうを あつめたたま！' },
+  { id:'wing',    icon:'🦅', name:'ブリザードウィング',  cost:60,  desc:'ふぶきをよぶつばさ！そらをとべるぞ！' },
+  { id:'armor',   icon:'⛓️', name:'ドラゴンアーマー',    cost:70,  desc:'きょうりょうなよろい！どんなこうげきもはじく！' },
+  { id:'flag',    icon:'🏴', name:'ドラゴンフラッグ',    cost:15,  desc:'りゅうのしるし！ほこりたかくかかげろ！' },
+  { id:'frost',   icon:'🧊', name:'えいえんのひょうせつ', cost:100, desc:'でんせつのこおり。てきがすべてとまる…！' },
 ];
 
 // ============================================================
 // ACHIEVEMENTS
 // ============================================================
 const ACHIEVEMENTS = [
-  { id:'first',    icon:'🌟', name:'はじめのいっぽ',   desc:'はじめてのもんだいをとく',      check: s => s.totalQ >= 1 },
-  { id:'perfect',  icon:'💯', name:'パーフェクト！',    desc:'1かいで10もん全問せいかい',    check: s => s.perfectCount >= 1 },
-  { id:'streak3',  icon:'🔥', name:'3日れんぞく',      desc:'3日れんぞくでべんきょう',       check: s => s.maxStreak >= 3 },
-  { id:'streak7',  icon:'🏅', name:'1しゅうかんけんじ', desc:'7日れんぞくでべんきょう',      check: s => s.maxStreak >= 7 },
-  { id:'q50',      icon:'📚', name:'もんだいはかせ',    desc:'もんだいを50もんとく',          check: s => s.totalQ >= 50 },
-  { id:'q100',     icon:'📖', name:'まなびじん',        desc:'もんだいを100もんとく',         check: s => s.totalQ >= 100 },
-  { id:'q300',     icon:'🎓', name:'マスター',          desc:'もんだいを300もんとく',         check: s => s.totalQ >= 300 },
-  { id:'stars50',  icon:'⭐', name:'スターコレクター',   desc:'スターを50こためる',            check: s => s.totalStars >= 50 },
-  { id:'stars200', icon:'🌠', name:'スターキング',      desc:'スターを200こためる',           check: s => s.totalStars >= 200 },
-  { id:'lv5',      icon:'🔆', name:'そだてじょうず',    desc:'モンスターをレベル5に',         check: s => s.maxLv >= 5 },
-  { id:'lv10',     icon:'💫', name:'モンスターそだて士', desc:'モンスターをレベル10に',        check: s => s.maxLv >= 10 },
-  { id:'evo1',     icon:'🥚', name:'はじめてのしんか',  desc:'モンスターをはじめてしんかさせる', check: s => s.evoCount >= 1 },
-  { id:'evo4',     icon:'🌌', name:'しんかのつわもの',  desc:'モンスターを4かいしんかさせる',  check: s => s.evoCount >= 4 },
-  { id:'shop1',    icon:'🛍️', name:'かいものずき',      desc:'ショップでなにかをかう',         check: s => s.shopCount >= 1 },
-  { id:'math',     icon:'🔢', name:'さんすうはかせ',    desc:'さんすうを30もん正解',          check: s => (s.subjCorrect['たしざん']||0)+(s.subjCorrect['ひきざん']||0)+(s.subjCorrect['かけざん']||0)+(s.subjCorrect['わりざん']||0) >= 30 },
-  { id:'kana',     icon:'🈺', name:'ひらがなマスター',  desc:'ことばを20もん正解',            check: s => (s.subjCorrect['ひらがな']||0)+(s.subjCorrect['ことば']||0) >= 20 },
+  { id:'first',    icon:'🐣', name:'ドラゴンルーキー',    desc:'はじめてのもんだいをとく',              check: s => s.totalQ >= 1 },
+  { id:'perfect',  icon:'⚔️', name:'パーフェクトスレイヤー', desc:'1かいで10もん全問せいかい',           check: s => s.perfectCount >= 1 },
+  { id:'streak3',  icon:'❄️', name:'アイスウォリアー',    desc:'3日れんぞくでべんきょう',               check: s => s.maxStreak >= 3 },
+  { id:'streak7',  icon:'🌨️', name:'ブリザードナイト',    desc:'7日れんぞくでべんきょう',              check: s => s.maxStreak >= 7 },
+  { id:'q50',      icon:'🗡️', name:'バトルハーデンド',    desc:'もんだいを50もんとく',                 check: s => s.totalQ >= 50 },
+  { id:'q100',     icon:'🛡️', name:'センチュリーソルジャー', desc:'もんだいを100もんとく',              check: s => s.totalQ >= 100 },
+  { id:'q300',     icon:'🐉', name:'レジェンドスレイヤー', desc:'もんだいを300もんとく',               check: s => s.totalQ >= 300 },
+  { id:'stars50',  icon:'💎', name:'クリスタルハンター',  desc:'スターを50こためる',                    check: s => s.totalStars >= 50 },
+  { id:'stars200', icon:'🌟', name:'スターロード',        desc:'スターを200こためる',                   check: s => s.totalStars >= 200 },
+  { id:'lv5',      icon:'🦎', name:'グロウスドラゴン',    desc:'モンスターをレベル5に',                 check: s => s.maxLv >= 5 },
+  { id:'lv10',     icon:'🐲', name:'アセンダント',        desc:'モンスターをレベル10に',                check: s => s.maxLv >= 10 },
+  { id:'evo1',     icon:'✨', name:'ファーストエボリューション', desc:'モンスターをはじめてしんかさせる', check: s => s.evoCount >= 1 },
+  { id:'evo4',     icon:'🐉', name:'アルティメットドラゴン', desc:'モンスターを4かいしんかさせる',      check: s => s.evoCount >= 4 },
+  { id:'shop1',    icon:'⚔️', name:'アームドドラゴン',    desc:'ショップでそうびをかう',                check: s => s.shopCount >= 1 },
+  { id:'math',     icon:'🔢', name:'ナンバーズウォリアー', desc:'さんすうを30もん正解',                 check: s => (s.subjCorrect['たしざん']||0)+(s.subjCorrect['ひきざん']||0)+(s.subjCorrect['かけざん']||0)+(s.subjCorrect['わりざん']||0) >= 30 },
+  { id:'kana',     icon:'📜', name:'ルーンマスター',       desc:'ことばを20もん正解',                   check: s => (s.subjCorrect['ひらがな']||0)+(s.subjCorrect['ことば']||0)+(s.subjCorrect['かんじ']||0) >= 20 },
 ];
 
 // ============================================================

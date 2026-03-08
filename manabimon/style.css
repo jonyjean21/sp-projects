@@ -91,7 +91,8 @@ html, body {
 .streak-chip { background:#FFE0B2; color:#BF360C; }
 
 /* ===== MONSTER SECTION ===== */
-.monster-sec { text-align:center; padding:20px 16px 12px; flex-shrink:0; position:relative; background:linear-gradient(160deg,#001428,#002244); border-radius:0 0 24px 24px; margin-bottom:4px; }
+.monster-sec { text-align:center; padding:8px 16px 12px; flex-shrink:0; position:relative; background:linear-gradient(160deg,#001428,#002244); border-radius:0 0 24px 24px; margin-bottom:4px; }
+.app-title-bar { font-size:.85em; font-weight:700; color:rgba(79,195,247,.8); letter-spacing:.15em; padding-bottom:4px; }
 .monster-home { font-size:100px; line-height:1; display:inline-block; animation:dragon-glow 3s ease-in-out infinite; cursor:pointer; transition:transform .15s; }
 .monster-home:active { transform:scale(.85); }
 .monster-name-row { color:#fff; }
@@ -219,10 +220,13 @@ html, body {
 .lv-up-card { background:linear-gradient(45deg,#FFD700,#FF6B35); border-radius:16px; padding:14px 28px; text-align:center; width:100%; animation:pulse .8s ease infinite; }
 .lv-num { font-size:2.5em; font-weight:700; }
 @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.02)} }
-.evolve-card { background:linear-gradient(135deg,#9C27B0,#E91E63); border-radius:16px; padding:16px; text-align:center; width:100%; animation:glow 1.5s ease infinite alternate; }
-@keyframes glow { from{box-shadow:0 0 10px #9C27B0} to{box-shadow:0 0 30px #E91E63,0 0 50px #9C27B0} }
-.evo-mon { font-size:56px; margin:8px 0; animation:bounce .5s ease infinite; }
-.evo-name { font-size:1.1em; font-weight:700; }
+.evolve-card { background:linear-gradient(135deg,#001428,#003366); border:2px solid #4fc3f7; border-radius:20px; padding:20px 16px; text-align:center; width:100%; animation:ice-evo-glow 1.2s ease infinite alternate; }
+@keyframes ice-evo-glow { from{box-shadow:0 0 15px #0288d1,0 0 30px #01579b} to{box-shadow:0 0 30px #4fc3f7,0 0 60px #0288d1,0 0 80px #003366} }
+.evo-spark { font-size:1.4em; letter-spacing:.3em; animation:pulse .6s ease infinite; }
+.evo-headline { font-size:1.4em; font-weight:700; color:#4fc3f7; text-shadow:0 0 12px #0288d1; margin:4px 0; letter-spacing:.1em; }
+.evo-mon { font-size:72px; margin:12px 0; animation:dragon-glow 2s ease-in-out infinite; }
+.evo-name { font-size:1.3em; font-weight:700; color:#fff; text-shadow:0 0 8px #4fc3f7; }
+.evo-desc { font-size:.85em; color:rgba(255,255,255,.7); margin-top:6px; }
 .res-msg { font-size:.95em; text-align:center; opacity:.82; line-height:1.6; max-width:320px; }
 .res-btns { display:flex; gap:12px; width:100%; }
 .btn-p,.btn-s { flex:1; padding:14px; border-radius:16px; border:none; font-size:1em; font-weight:700; cursor:pointer; transition:all .2s; }

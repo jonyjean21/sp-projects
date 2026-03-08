@@ -359,13 +359,13 @@ function answerQuestion(btn, q) {
     quiz.starsEarned += 10;
     quiz.xpEarned += 10;
     mon.className = 'quiz-mon happy';
-    bubble.textContent = ['すごい！','やった！','正解！','えらい！','かんぺき！'][Math.floor(Math.random()*5)];
+    bubble.textContent = ['クリティカル！','げきは！','いちげき！','よし、やった！','てきをたおした！'][Math.floor(Math.random()*5)];
     bubble.className = 'quiz-bubble show';
     showXpPopup(btn, '+10XP');
   } else {
     playSoundWrong();
     mon.className = 'quiz-mon sad';
-    bubble.textContent = ['もう一度！','がんばれ！','おしい！'][Math.floor(Math.random()*3)];
+    bubble.textContent = ['まけないぞ！','つぎはやる！','くそ、あとで覚えとけ！'][Math.floor(Math.random()*3)];
     bubble.className = 'quiz-bubble show';
   }
 
@@ -375,11 +375,11 @@ function answerQuestion(btn, q) {
 
   // Show feedback
   const overlay = document.getElementById('feedback-overlay');
-  document.getElementById('fb-icon').textContent    = isCorrect ? '🎉' : '😢';
-  document.getElementById('fb-msg').textContent     = isCorrect ? 'せいかい！' : 'ざんねん…';
+  document.getElementById('fb-icon').textContent    = isCorrect ? '⚔️' : '🧊';
+  document.getElementById('fb-msg').textContent     = isCorrect ? 'とどめをさした！' : 'ダメージをうけた…';
   document.getElementById('fb-msg').className       = 'fb-msg ' + (isCorrect ? 'ok-txt' : 'ng-txt');
   document.getElementById('fb-exp').textContent     = q.exp || '';
-  document.getElementById('fb-xp').textContent      = isCorrect ? '＋10 XP ＋10⭐' : 'つぎはがんばろう！';
+  document.getElementById('fb-xp').textContent      = isCorrect ? '＋10 XP ＋10⭐' : 'まけるな！つぎはやり返せ！';
 
   setTimeout(() => overlay.classList.add('show'), 100);
 }
@@ -497,6 +497,7 @@ function renderResultScreen(leveledUp, evolved, newBadges) {
     evoCard.classList.remove('hidden');
     document.getElementById('evo-mon').textContent  = getMonsterEmoji();
     document.getElementById('evo-name').textContent = getMonsterName();
+    document.getElementById('evo-desc').textContent = getCurrentMonster().desc;
   } else {
     evoCard.classList.add('hidden');
   }
@@ -737,7 +738,7 @@ document.getElementById('home-monster').addEventListener('click', () => {
   const m = document.getElementById('home-monster');
   m.style.transform = 'scale(1.3) rotate(10deg)';
   setTimeout(() => m.style.transform = '', 300);
-  const phrases = ['わーい！','べんきょうしよう！','もっとそだてて！','がんばるよ！','うれしい！'];
+  const phrases = ['こおりにしてやる！','もっとつよくなるぞ！','たたかうぞ！','ぬくもりなどきらいだ！','ていおうへのみち！'];
   showXpPopupAt(phrases[Math.floor(Math.random()*phrases.length)],
     m.getBoundingClientRect().left + 50, m.getBoundingClientRect().top - 20);
 });
@@ -760,29 +761,6 @@ function checkDailyStreak() {
   S._todayQuizzes = 0;
 }
 
-// ============================================================
-// WELCOME / GRADE SELECT
-// ============================================================
-document.querySelectorAll('.grade-card').forEach(card => {
-  card.addEventListener('click', () => {
-    const grade = parseInt(card.dataset.grade);
-    playSoundClick();
-
-    if (S.grade && S.grade !== grade && (S.totalQ > 0)) {
-      if (!confirm(`${grade}ねんせいにかえる？いまのモンスターはリセットされるよ！`)) return;
-    }
-
-    const prevGrade = S.grade;
-    S.grade = grade;
-    if (prevGrade && prevGrade !== grade) {
-      S.monster = { stage:0, level:1, xp:0 };
-    }
-
-    applyGradeTheme(grade);
-    saveState();
-    showScreen('home');
-  });
-});
 
 // ============================================================
 // INIT
