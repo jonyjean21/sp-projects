@@ -180,32 +180,38 @@ body {
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
-/* ===== Recipe Card ===== */
+/* ===== Recipe List Grid (2-column) ===== */
+#recentList, #searchResultsList, #folderDetailList {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+
+/* ===== Recipe Card (vertical 2-col style) ===== */
 .recipe-card {
-  display: flex; gap: 12px; align-items: center;
+  display: flex; flex-direction: column;
   background: var(--bg-card); border-radius: var(--radius);
-  padding: 12px; margin-bottom: 8px; cursor: pointer;
+  overflow: hidden; cursor: pointer; position: relative;
   box-shadow: var(--shadow); transition: transform 0.15s;
 }
-.recipe-card:active { transform: scale(0.98); }
+.recipe-card:active { transform: scale(0.97); }
 .recipe-card-img {
-  width: 64px; height: 64px; border-radius: 10px;
+  width: 100%; height: 110px;
   object-fit: cover; flex-shrink: 0; background: var(--brown-light);
 }
 .recipe-card-placeholder {
-  width: 64px; height: 64px; border-radius: 10px;
+  width: 100%; height: 110px;
   background: var(--brown-light); display: flex;
   align-items: center; justify-content: center;
-  font-size: 24px; flex-shrink: 0;
+  font-size: 28px; flex-shrink: 0;
 }
-.recipe-card-body { flex: 1; min-width: 0; }
+.recipe-card-body { padding: 8px 10px 10px; flex: 1; min-width: 0; }
 .recipe-card-title {
-  font-size: 14px; font-weight: 600;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 12px; font-weight: 700; line-height: 1.3;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .recipe-card-meta {
-  font-size: 11px; color: var(--text-sub); margin-top: 2px;
-  display: flex; gap: 8px; flex-wrap: wrap;
+  font-size: 10px; color: var(--text-sub); margin-top: 4px;
+  display: flex; gap: 6px; flex-wrap: wrap;
 }
 .recipe-card-folders {
   display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap;
@@ -215,8 +221,11 @@ body {
   font-weight: 600;
 }
 .recipe-card-fav {
-  flex-shrink: 0; font-size: 18px; padding: 4px;
-  background: none; border: none; cursor: pointer;
+  position: absolute; top: 6px; right: 6px;
+  font-size: 15px; width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.88); border-radius: 50%;
+  border: none; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.15);
 }
 
 /* ===== Folder Grid ===== */
@@ -343,13 +352,27 @@ body {
 .ing-cart-btn:active { background: var(--green-light); }
 .ing-cart-btn.added { background: var(--green-light); color: var(--green); border-color: var(--green-light); }
 
-.timer-btn {
-  padding: 8px 16px; border-radius: 10px;
-  border: 1px solid var(--border); background: var(--bg-warm);
-  color: var(--text); font-size: 13px; font-weight: 600;
-  cursor: pointer; font-family: inherit;
+.btn-cooked { background: var(--green-light); color: var(--green); }
+.btn-cooked.has-count { font-size: 12px; }
+.meal-photo-area { padding: 12px 0 4px; }
+.meal-photo-thumbs { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.meal-photo-thumb { width: 72px; height: 72px; border-radius: 8px; object-fit: cover; }
+.meal-photo-upload-btn {
+  display: flex; align-items: center; gap: 6px; padding: 10px 16px;
+  background: var(--bg-warm); border: 2px dashed var(--border);
+  border-radius: 10px; cursor: pointer; font-size: 13px; color: var(--text-sub);
+  font-family: inherit; font-weight: 600; width: 100%;
 }
-.timer-btn:active { background: var(--accent-light); border-color: var(--accent); }
+.btn-confirm-cooked {
+  width: 100%; padding: 12px; border-radius: 12px; border: none;
+  background: var(--green); color: #fff; font-size: 15px; font-weight: 700;
+  cursor: pointer; font-family: inherit; margin-top: 10px;
+}
+.batch-result-list { display: flex; flex-direction: column; gap: 10px; margin: 12px 0; }
+.batch-result-item { background: var(--bg-warm); border-radius: 10px; padding: 12px; }
+.batch-result-title { font-size: 14px; font-weight: 700; }
+.batch-result-meta { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+.batch-save-btn { width: 100%; padding: 14px; border-radius: 12px; border: none; background: var(--accent); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
 
 .detail-section { margin-top: 20px; }
 .detail-section-title {
@@ -1130,13 +1153,18 @@ body {
     </div>
     <div id="aiImageSection" class="hidden">
       <div class="form-group">
-        <label class="form-label">レシピ画像をアップロード</label>
-        <input type="file" id="aiImageInput" accept="image/*" style="display:none" onchange="handleImageSelect(event)">
+        <label class="form-label">レシピ画像をアップロード（複数枚OK）</label>
+        <input type="file" id="aiImageInput" accept="image/*" multiple style="display:none" onchange="handleImageSelect(event)">
         <div id="aiImagePreviewArea">
           <div class="form-image-upload" onclick="document.getElementById('aiImageInput').click()">
-            📷 タップして画像を選択
+            📷 タップして画像を選択（複数枚選べます）
           </div>
         </div>
+      </div>
+      <div id="batchResultArea" class="hidden">
+        <div class="section-title" style="margin-top:12px">📋 読み取り結果</div>
+        <div class="batch-result-list" id="batchResultList"></div>
+        <button class="batch-save-btn" id="batchSaveBtn" onclick="saveAllBatchResults()">✅ 全て保存する</button>
       </div>
     </div>
     <div id="aiStatus" class="ai-status hidden"></div>
@@ -1165,6 +1193,7 @@ body {
     <div class="form-group">
       <label class="form-label">写真</label>
       <input type="file" id="entryImageInput" accept="image/*" style="display:none" onchange="handleEntryImage(event)">
+      <input type="file" id="cookedPhotoInput" accept="image/*" multiple style="display:none" onchange="handleCookedPhotos(event)">
       <div id="entryImageArea">
         <div class="form-image-upload" onclick="document.getElementById('entryImageInput').click()">
           📷 タップして写真を追加
@@ -1342,7 +1371,11 @@ let currentFolderViewId = null;
 let currentDetailId = null;
 let selectedEntryImage = null;
 let aiExtractMode = 'text';
-let selectedAIImage = null;
+let selectedAIImages = [];
+let batchResults = [];
+let pendingCookedId = null;
+let pendingCookedMeal = null;
+let selectedCookedImages = [];
 let currentSort = 'recent';
 let shoppingData = {};
 let searchDebounceTimer = null;
@@ -1606,7 +1639,6 @@ function recipeCardHTML(id, r) {
         <div class="recipe-card-title">${esc(r.title)}</div>
         <div class="recipe-card-meta">
           ${r.prepTime ? `<span>⏱ ${esc(r.prepTime)}</span>` : ''}
-          ${r.servings ? `<span>👤 ${esc(r.servings)}</span>` : ''}
           ${r.cookedCount ? `<span>🍳 ${r.cookedCount}回</span>` : ''}
         </div>
         ${folderNames ? `<div class="recipe-card-folders">${folderNames}</div>` : ''}
@@ -1895,27 +1927,28 @@ function renderDetail(id) {
       ${folderBadges ? `<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">${folderBadges}</div>` : ''}
       ${r.sourceUrl ? `<a class="detail-source" href="${esc(r.sourceUrl)}" target="_blank">🔗 元のレシピを見る</a>` : ''}
     </div>
-    <div style="margin:16px 0 8px;text-align:center">
-      <button onclick="showMealPicker('${id}')" style="padding:12px 28px;border-radius:50px;border:2px solid var(--green);background:var(--green-light);color:var(--green);font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.2s">
-        🍳 作った！${r.cookedCount ? `<span style="font-size:12px;font-weight:400;margin-left:4px">(${r.cookedCount}回)</span>` : ''}
-      </button>
-      <div id="mealPickerArea" class="hidden">
-        <div class="meal-picker">
-          <button class="meal-btn" data-meal="morning" onclick="markCooked('${id}','morning')"><span class="meal-btn-icon">🌅</span>朝</button>
-          <button class="meal-btn" data-meal="lunch" onclick="markCooked('${id}','lunch')"><span class="meal-btn-icon">☀️</span>昼</button>
-          <button class="meal-btn" data-meal="dinner" onclick="markCooked('${id}','dinner')"><span class="meal-btn-icon">🌙</span>晩</button>
-          <button class="meal-btn" data-meal="snack" onclick="markCooked('${id}','snack')"><span class="meal-btn-icon">🍰</span>おやつ</button>
-        </div>
-      </div>
-      ${r.lastCooked ? `<div style="font-size:11px;color:var(--text-light);margin-top:4px">最後に作った日: ${new Date(r.lastCooked).toLocaleDateString('ja-JP')}</div>` : ''}
-    </div>
     ${renderCookLog(id, r)}
     <div class="detail-actions">
       <button class="btn-fav ${r.favorite ? 'active' : ''}" onclick="toggleFav('${id}')">${r.favorite ? '★' : '☆'}</button>
       <button class="btn-edit" onclick="shareRecipe('${id}')">共有</button>
       <button class="btn-edit" onclick="editRecipe('${id}')">編集</button>
+      <button class="btn-cooked${r.cookedCount ? ' has-count' : ''}" onclick="showMealPicker('${id}')">🍳 作った！${r.cookedCount ? `<span style="font-size:11px;font-weight:400;margin-left:3px">(${r.cookedCount}回)</span>` : ''}</button>
       <button class="btn-delete" onclick="deleteRecipe('${id}')">削除</button>
     </div>
+    <div id="mealPickerArea" class="hidden" style="margin-top:8px">
+      <div class="meal-picker">
+        <button class="meal-btn" data-meal="morning" onclick="showCookedPhotoUpload('${id}','morning')"><span class="meal-btn-icon">🌅</span>朝</button>
+        <button class="meal-btn" data-meal="lunch" onclick="showCookedPhotoUpload('${id}','lunch')"><span class="meal-btn-icon">☀️</span>昼</button>
+        <button class="meal-btn" data-meal="dinner" onclick="showCookedPhotoUpload('${id}','dinner')"><span class="meal-btn-icon">🌙</span>晩</button>
+        <button class="meal-btn" data-meal="snack" onclick="showCookedPhotoUpload('${id}','snack')"><span class="meal-btn-icon">🍰</span>おやつ</button>
+      </div>
+      <div id="cookedPhotoArea" class="hidden meal-photo-area">
+        <div id="cookedPhotoThumbs" class="meal-photo-thumbs"></div>
+        <button class="meal-photo-upload-btn" onclick="document.getElementById('cookedPhotoInput').click()">📷 写真を追加（任意・複数枚OK）</button>
+        <button class="btn-confirm-cooked" id="btnConfirmCooked" onclick="confirmMarkCooked()">記録する</button>
+      </div>
+    </div>
+    ${r.lastCooked ? `<div style="font-size:11px;color:var(--text-light);margin-top:6px;text-align:center">最後に作った日: ${new Date(r.lastCooked).toLocaleDateString('ja-JP')}</div>` : ''}
   `;
 
   // Ingredients with portion scaling
@@ -1965,22 +1998,6 @@ function renderDetail(id) {
     </div>`;
   }
 
-  // Quick Timer
-  html += `<div class="detail-section">
-    <div class="detail-section-title">⏱ クイックタイマー</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-      <button onclick="startTimer(60)" class="timer-btn">1分</button>
-      <button onclick="startTimer(180)" class="timer-btn">3分</button>
-      <button onclick="startTimer(300)" class="timer-btn">5分</button>
-      <button onclick="startTimer(600)" class="timer-btn">10分</button>
-      <button onclick="startTimer(900)" class="timer-btn">15分</button>
-      <button onclick="startTimer(1800)" class="timer-btn">30分</button>
-    </div>
-    <div id="timerDisplay" class="hidden" style="margin-top:12px;text-align:center">
-      <div id="timerTime" style="font-size:32px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums"></div>
-      <button onclick="stopTimer()" style="margin-top:8px;padding:8px 20px;border-radius:8px;border:1px solid var(--red);background:none;color:var(--red);cursor:pointer;font-family:inherit;font-size:13px">停止</button>
-    </div>
-  </div>`;
 
   document.getElementById('detailContent').innerHTML = html;
 }
@@ -2079,36 +2096,6 @@ function scaleIngredients(factor, e) {
   });
 }
 
-let timerInterval = null;
-function startTimer(seconds) {
-  if (timerInterval) clearInterval(timerInterval);
-  let remaining = seconds;
-  const display = document.getElementById('timerDisplay');
-  const timeEl = document.getElementById('timerTime');
-  display.classList.remove('hidden');
-  const update = () => {
-    const m = Math.floor(remaining / 60);
-    const s = remaining % 60;
-    timeEl.textContent = `${m}:${s.toString().padStart(2, '0')}`;
-    if (remaining <= 0) {
-      clearInterval(timerInterval); timerInterval = null;
-      timeEl.textContent = '完了！';
-      timeEl.style.color = 'var(--green)';
-      if ('vibrate' in navigator) navigator.vibrate([200, 100, 200, 100, 200]);
-      try { new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=').play(); } catch(e) {}
-      showToast('タイマー完了！');
-      return;
-    }
-    remaining--;
-  };
-  timeEl.style.color = 'var(--accent)';
-  update();
-  timerInterval = setInterval(update, 1000);
-}
-function stopTimer() {
-  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
-  document.getElementById('timerDisplay').classList.add('hidden');
-}
 
 function shareRecipe(id) {
   const r = itemsData[id];
@@ -2312,7 +2299,8 @@ function saveRecipe() {
 // ===== AI Extract =====
 function openAIExtract(mode) {
   aiExtractMode = mode;
-  selectedAIImage = null;
+  selectedAIImages = [];
+  batchResults = [];
   document.getElementById('aiStatus').classList.add('hidden');
   document.getElementById('aiUrlSection').classList.add('hidden');
   document.getElementById('aiTextSection').classList.add('hidden');
@@ -2327,22 +2315,38 @@ function openAIExtract(mode) {
     document.getElementById('aiUrlInput').value = '';
     document.getElementById('aiTextInput').value = '';
   } else {
-    document.getElementById('aiExtractTitle').textContent = '写真から読み取り';
+    document.getElementById('aiExtractTitle').textContent = '写真から読み取り（複数枚一括OK）';
     document.getElementById('aiImageSection').classList.remove('hidden');
-    document.getElementById('aiImagePreviewArea').innerHTML = '<div class="form-image-upload" onclick="document.getElementById(\'aiImageInput\').click()">📷 タップして画像を選択</div>';
+    document.getElementById('batchResultArea').classList.add('hidden');
+    document.getElementById('aiImagePreviewArea').innerHTML = '<div class="form-image-upload" onclick="document.getElementById(\'aiImageInput\').click()">📷 タップして画像を選択（複数枚選べます）</div>';
   }
   openModal('aiExtractModal');
 }
 
 function handleImageSelect(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    selectedAIImage = { data: ev.target.result.split(',')[1], mimeType: file.type };
-    document.getElementById('aiImagePreviewArea').innerHTML = `<img class="form-image-preview" src="${ev.target.result}"><div class="form-image-upload" onclick="document.getElementById('aiImageInput').click()">📷 画像を変更</div>`;
-  };
-  reader.readAsDataURL(file);
+  const files = Array.from(e.target.files);
+  if (!files.length) return;
+  selectedAIImages = [];
+  const previewArea = document.getElementById('aiImagePreviewArea');
+  previewArea.innerHTML = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px" id="aiThumbsRow"></div><div class="form-image-upload" onclick="document.getElementById(\'aiImageInput\').click()">📷 追加・変更</div>';
+  const thumbsRow = document.getElementById('aiThumbsRow');
+  let loaded = 0;
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      selectedAIImages.push({ data: ev.target.result.split(',')[1], mimeType: file.type, dataUrl: ev.target.result });
+      const img = document.createElement('img');
+      img.src = ev.target.result;
+      img.style.cssText = 'width:70px;height:70px;object-fit:cover;border-radius:8px;flex-shrink:0';
+      thumbsRow.appendChild(img);
+      loaded++;
+      if (loaded === files.length && files.length > 1) {
+        document.getElementById('batchResultArea').classList.add('hidden');
+        batchResults = [];
+      }
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 async function runAIExtract() {
@@ -2370,10 +2374,15 @@ async function runAIExtract() {
       sourceUrl = document.getElementById('aiUrlInput')?.value || '';
       result = await extractFromText(text);
     } else {
-      if (!selectedAIImage) throw new Error('画像を選択してください');
-      result = await extractFromImage(selectedAIImage);
-      // Use the uploaded image as recipe thumbnail
-      result._imageDataUrl = `data:${selectedAIImage.mimeType};base64,${selectedAIImage.data}`;
+      if (!selectedAIImages.length) throw new Error('画像を選択してください');
+      if (selectedAIImages.length === 1) {
+        result = await extractFromImage(selectedAIImages[0]);
+        result._imageDataUrl = selectedAIImages[0].dataUrl;
+      } else {
+        // Batch mode: process all images
+        await runBatchExtract();
+        return;
+      }
     }
 
     // Fill entry form with extracted data
@@ -2515,6 +2524,143 @@ async function extractFromImage(imageData) {
     { text: prompt },
     { inlineData: { mimeType: imageData.mimeType, data: imageData.data } }
   ]);
+}
+
+async function runBatchExtract() {
+  const statusEl = document.getElementById('aiStatus');
+  const btn = document.getElementById('aiExtractBtn');
+  batchResults = [];
+  document.getElementById('batchResultArea').classList.add('hidden');
+
+  for (let i = 0; i < selectedAIImages.length; i++) {
+    statusEl.className = 'ai-status loading';
+    statusEl.textContent = `📷 ${i + 1}/${selectedAIImages.length} 枚目を解析中...`;
+    statusEl.classList.remove('hidden');
+    btn.disabled = true;
+    try {
+      const result = await extractFromImage(selectedAIImages[i]);
+      result._imageDataUrl = selectedAIImages[i].dataUrl;
+      batchResults.push(result);
+    } catch (e) {
+      batchResults.push({ title: `(読み取りエラー ${i+1}枚目)`, ingredients: [], steps: [] });
+    }
+  }
+
+  btn.disabled = false;
+  statusEl.textContent = `✅ ${batchResults.length}件を読み取りました！内容を確認して保存してください`;
+  statusEl.className = 'ai-status success';
+
+  const listEl = document.getElementById('batchResultList');
+  listEl.innerHTML = batchResults.map((r, i) => `
+    <div class="batch-result-item">
+      ${r._imageDataUrl ? `<img src="${r._imageDataUrl}" style="width:100%;height:80px;object-fit:cover;border-radius:8px;margin-bottom:8px">` : ''}
+      <input class="form-input" id="batchTitle${i}" value="${esc(r.title || '')}" placeholder="レシピ名" style="margin-bottom:4px">
+      <div class="batch-result-meta">${r.ingredients?.length || 0}材料 / ${r.steps?.length || 0}手順</div>
+    </div>
+  `).join('');
+
+  document.getElementById('batchResultArea').classList.remove('hidden');
+}
+
+function saveAllBatchResults() {
+  let saved = 0;
+  batchResults.forEach((r, i) => {
+    const titleEl = document.getElementById(`batchTitle${i}`);
+    const title = titleEl ? titleEl.value.trim() : (r.title || '');
+    if (!title) return;
+    const data = {
+      title,
+      sourceUrl: null,
+      image: r._imageDataUrl || null,
+      servings: r.servings || null,
+      prepTime: r.prepTime || null,
+      ingredients: r.ingredients || [],
+      steps: r.steps || [],
+      folders: {},
+      memo: null,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      favorite: false,
+    };
+    familyRef('items').push(data);
+    saved++;
+  });
+  showToast(`✅ ${saved}件のレシピを保存しました！`);
+  closeModal('aiExtractModal');
+  batchResults = [];
+}
+
+// ===== Cooked Photo Upload =====
+let _pendingCookedId = null, _pendingCookedMeal = null;
+
+function showCookedPhotoUpload(id, meal) {
+  _pendingCookedId = id;
+  _pendingCookedMeal = meal;
+  selectedCookedImages = [];
+  document.getElementById('cookedPhotoThumbs').innerHTML = '';
+  document.getElementById('cookedPhotoArea').classList.remove('hidden');
+  document.querySelectorAll('.meal-btn').forEach(b => {
+    b.style.opacity = b.dataset.meal === meal ? '1' : '0.45';
+  });
+}
+
+function handleCookedPhotos(e) {
+  const files = Array.from(e.target.files);
+  if (!files.length) return;
+  selectedCookedImages = [];
+  const thumbs = document.getElementById('cookedPhotoThumbs');
+  thumbs.innerHTML = '';
+  files.forEach(file => {
+    compressImage(file, 300, 0.65).then(dataUrl => {
+      selectedCookedImages.push(dataUrl);
+      const img = document.createElement('img');
+      img.src = dataUrl;
+      img.className = 'meal-photo-thumb';
+      thumbs.appendChild(img);
+    });
+  });
+}
+
+async function confirmMarkCooked() {
+  const id = _pendingCookedId;
+  const meal = _pendingCookedMeal;
+  if (!id || !meal) return;
+
+  const r = itemsData[id];
+  if (!r) return;
+
+  const btn = document.getElementById('btnConfirmCooked');
+  btn.disabled = true;
+  btn.textContent = '記録中...';
+
+  let aiComment = null;
+  if (selectedCookedImages.length > 0 && getGeminiKey()) {
+    try {
+      const parts = [
+        { text: '料理の写真です。「よく作れています！」のような一言日本語コメントを20字以内で返してください。JSONで {"comment": "..."} の形式で。' },
+        ...selectedCookedImages.map(d => ({ inlineData: { mimeType: 'image/jpeg', data: d.split(',')[1] } }))
+      ];
+      const res = await callGemini(parts);
+      aiComment = res.comment || null;
+    } catch (e) { /* skip */ }
+  }
+
+  const count = (r.cookedCount || 0) + 1;
+  const ts = Date.now();
+  const logEntry = { ts, meal, ...(selectedCookedImages.length ? { photos: selectedCookedImages } : {}), ...(aiComment ? { aiComment } : {}) };
+  const updates = { cookedCount: count, lastCooked: ts };
+
+  familyRef(`items/${id}`).update(updates);
+  familyRef(`items/${id}/cookedLog`).push(logEntry);
+
+  const icon = MEAL_ICONS[meal];
+  const label = MEAL_LABELS[meal];
+  showToast(`${icon} ${label}に記録！（${count}回目）${aiComment ? ' ' + aiComment : ''}`);
+
+  document.getElementById('mealPickerArea')?.classList.add('hidden');
+  btn.disabled = false;
+  btn.textContent = '記録する';
+  renderDetail(id);
 }
 
 async function callGemini(parts) {
