@@ -8,36 +8,36 @@
 // ============================================================
 const MONSTERS = {
   1: {
-    theme: 'forest',
-    color: '#4CAF50',
+    theme: 'fire',
+    color: '#E53935',
     stages: [
-      { name:'タマゴン',  emoji:'🥚',  minLv:0,  desc:'もりのたまご。きみがよぶのをまってたよ！' },
-      { name:'メバエン',  emoji:'🌱',  minLv:1,  desc:'めがでてきた！べんきょうがすきなんだ。' },
-      { name:'ハナモン',  emoji:'🌸',  minLv:5,  desc:'はながさいた！もっとおしえて！' },
-      { name:'キノミン',  emoji:'🍀',  minLv:10, desc:'よつばのクローバー！まほうつかいみたい。' },
-      { name:'モリオウ',  emoji:'🌳',  minLv:20, desc:'もりのだいおう！すごいりょくがあるよ！' },
+      { name:'ドラゴンエッグ', emoji:'🥚',  minLv:0,  desc:'ほのおのちからをひめたたまご。ひびがはいってる！' },
+      { name:'ベビードラゴン', emoji:'🦎',  minLv:1,  desc:'うまれたて！ちいさいけどもえてる！' },
+      { name:'ヤングドラゴン', emoji:'🐲',  minLv:5,  desc:'つよくなってきた！ほのおがでるぞ！' },
+      { name:'えんりゅう',     emoji:'🐉',  minLv:10, desc:'もえさかるほのおのりゅう！かっこいい！' },
+      { name:'まかいのりゅう', emoji:'🌋',  minLv:20, desc:'でんせつのドラゴン！だれにもまけない！' },
     ]
   },
   2: {
-    theme: 'ocean',
-    color: '#2196F3',
+    theme: 'ice',
+    color: '#0288D1',
     stages: [
-      { name:'アワゴン',   emoji:'🫧',  minLv:0,  desc:'うみのあわのたまご。ぷかぷかしてるよ。' },
-      { name:'チビウオ',   emoji:'🐟',  minLv:1,  desc:'ちいさなさかな。うみをおよぎたい！' },
-      { name:'イロウオ',   emoji:'🐠',  minLv:5,  desc:'カラフルになった！とてもきれい。' },
-      { name:'ウミガメン', emoji:'🐢',  minLv:10, desc:'かしこいうみがめ。ゆっくりたしかめる。' },
-      { name:'クジラオウ', emoji:'🐋',  minLv:20, desc:'うみのえんじゃ！ちしきがいっぱい！' },
+      { name:'ひょうけつエッグ', emoji:'🥚',  minLv:0,  desc:'こおりにとじこめられたたまご。つめたい！' },
+      { name:'アイスリザード',   emoji:'🦎',  minLv:1,  desc:'こおりのなかからうまれた！さむい！' },
+      { name:'アーマードラゴン', emoji:'🦕',  minLv:5,  desc:'よろいをまとったながくびのりゅう！' },
+      { name:'ひょうりゅう',     emoji:'🐲',  minLv:10, desc:'すべてをこおらせるつめたいりゅう！' },
+      { name:'フロストロード',   emoji:'❄️',  minLv:20, desc:'こおりのていおう！てんかむてき！' },
     ]
   },
   3: {
-    theme: 'space',
-    color: '#9C27B0',
+    theme: 'thunder',
+    color: '#7B1FA2',
     stages: [
-      { name:'ホシゴン',   emoji:'🌟',  minLv:0,  desc:'ほしのたまご。うちゅうのなぞをひめてる。' },
-      { name:'キラリン',   emoji:'✨',  minLv:1,  desc:'きらきらほしのこ。うちゅうをとびたい！' },
-      { name:'ロケムン',   emoji:'🚀',  minLv:5,  desc:'ロケットにのった！どこまでもとぶよ！' },
-      { name:'ツキマモン', emoji:'🌙',  minLv:10, desc:'つきのまもりびと。しずかにみまもる。' },
-      { name:'ギャラモン', emoji:'🌌',  minLv:20, desc:'ぎんがのおう！すべてをしっている。' },
+      { name:'かみなりエッグ',   emoji:'🥚',  minLv:0,  desc:'でんきをはなつかがやくたまご。びりびり！' },
+      { name:'デンキリザード',   emoji:'🦎',  minLv:1,  desc:'かみなりにのってうまれた！びびびっ！' },
+      { name:'サンダークロウ',   emoji:'🦖',  minLv:5,  desc:'でんげきのつめをもつきょうりゅう！' },
+      { name:'かみなりりゅう',   emoji:'🐉',  minLv:10, desc:'そらをかける！かみなりをよぶりゅう！' },
+      { name:'ストームロード',   emoji:'⚡',  minLv:20, desc:'あらしのていおう！うちゅうにとどくちから！' },
     ]
   }
 };

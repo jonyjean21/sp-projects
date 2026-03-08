@@ -3,11 +3,11 @@
    ============================================ */
 
 :root {
-  --gc: #4CAF50;
-  --gd: #2E7D32;
-  --gl: #C8E6C9;
-  --acc: #FF9800;
-  --bg: #F1F8E9;
+  --gc: #E53935;
+  --gd: #B71C1C;
+  --gl: #FFCDD2;
+  --acc: #FF6F00;
+  --bg: #FFF8F8;
   --card: #FFFFFF;
   --txt: #2d2d2d;
   --txt2: #757575;
@@ -15,8 +15,8 @@
   --sh: 0 4px 16px rgba(0,0,0,.10);
   --tr: .3s cubic-bezier(.175,.885,.32,1.275);
 }
-.grade-2 { --gc: #2196F3; --gd: #1565C0; --gl: #BBDEFB; --bg: #E3F2FD; }
-.grade-3 { --gc: #9C27B0; --gd: #6A1B9A; --gl: #E1BEE7; --bg: #F3E5F5; }
+.grade-2 { --gc: #0288D1; --gd: #01579B; --gl: #B3E5FC; --acc: #00BCD4; --bg: #F0F8FF; }
+.grade-3 { --gc: #7B1FA2; --gd: #4A148C; --gl: #E1BEE7; --acc: #FFC107; --bg: #FAF0FF; }
 
 *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
 
