@@ -533,21 +533,7 @@ function renderMonsterRoom() {
     <div class="rst-card"><span class="rst-val">${S.evoCount}</span><span class="rst-lbl">しんかかいすう✨</span></div>
   `;
 
-  // Evolution tree
-  const tree = document.getElementById('evo-tree');
-  const stages = MONSTERS[S.grade].stages;
-  tree.innerHTML = stages.map((stage, i) => {
-    const status = i < S.monster.stage ? 'done' : i === S.monster.stage ? 'cur' : 'locked';
-    const arrow = i < stages.length - 1 ? '<span class="evo-arrow">→</span>' : '';
-    return `
-      <div class="evo-stage ${status}">
-        <span class="es-icon">${stage.emoji}</span>
-        <span class="es-name">${stage.name}</span>
-        <span class="es-lv">Lv.${stage.minLv}〜</span>
-      </div>
-      ${arrow}
-    `;
-  }).join('');
+  // Evolution tree hidden — keep it a surprise!
 
   // Accessories
   const accList = document.getElementById('acc-list');
@@ -678,33 +664,11 @@ function showXpPopupAt(text, x, y) {
 // ============================================================
 function openSettings() {
   document.getElementById('modal-settings').classList.add('open');
-  renderGradeSwitcher();
   document.getElementById('btn-sound').textContent = soundOn ? '🔊 オン' : '🔇 オフ';
   document.getElementById('btn-sound').classList.toggle('off', !soundOn);
 }
 function closeSettings() {
   document.getElementById('modal-settings').classList.remove('open');
-}
-function renderGradeSwitcher() {
-  const sw = document.getElementById('grade-sw');
-  sw.innerHTML = [1,2,3].map(g =>
-    `<button class="gsw-btn ${S.grade===g?'on':''}" data-g="${g}">${g}ねん</button>`
-  ).join('');
-  sw.querySelectorAll('.gsw-btn').forEach(b => {
-    b.addEventListener('click', () => {
-      const g = parseInt(b.dataset.g);
-      if (g !== S.grade) {
-        if (confirm(`${g}ねんせいに変えるよ。モンスターもリセットされる！いい？`)) {
-          S.grade = g;
-          S.monster = { stage:0, level:1, xp:0 };
-          applyGradeTheme(g);
-          saveState();
-          closeSettings();
-          renderHome();
-        }
-      }
-    });
-  });
 }
 
 document.getElementById('btn-settings').addEventListener('click', () => {
@@ -723,11 +687,10 @@ document.getElementById('btn-sound').addEventListener('click', () => {
 document.getElementById('btn-reset').addEventListener('click', () => {
   if (confirm('全部のデータがきえるよ！本当にリセットする？')) {
     resetState();
+    S.grade = 2;
+    saveState();
     closeSettings();
-    showScreen('welcome');
-    setTimeout(() => {
-      document.querySelector('#screen-welcome').classList.add('active');
-    }, 100);
+    renderHome();
   }
 });
 
@@ -826,18 +789,15 @@ document.querySelectorAll('.grade-card').forEach(card => {
 // ============================================================
 function init() {
   loadState();
+  // Grade 2 fixed
+  S.grade = 2;
   checkDailyStreak();
   checkAchievements();
-
-  if (S.grade) {
-    applyGradeTheme(S.grade);
-    // Skip animation for returning users
-    document.getElementById('screen-welcome').classList.remove('active');
-    const homeScreen = document.getElementById('screen-home');
-    homeScreen.classList.add('active');
-    renderHome();
-  }
-  // else: welcome screen already active via HTML class
+  applyGradeTheme(2);
+  document.getElementById('screen-welcome').classList.remove('active');
+  const homeScreen = document.getElementById('screen-home');
+  homeScreen.classList.add('active');
+  renderHome();
 }
 
 init();
