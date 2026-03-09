@@ -2568,7 +2568,7 @@ function toggleDriverCandidate(memberId, eventId) {
   showDriverSelection(eventId);
 }
 
-// ── Step 2: Assign Riders to Selected Drivers ──
+// ── Step 2: Manual Rider Assignment ──
 function runAssignmentWithSelected(eventId) {
   const e = eventsData[eventId];
   if (!e) return;
@@ -2578,7 +2578,6 @@ function runAssignmentWithSelected(eventId) {
 
   const drivers = [];
   const riders = [];
-  const warnings = [];
 
   candidates.forEach(c => {
     const mem = membersData[c.id];
@@ -2609,49 +2608,115 @@ function runAssignmentWithSelected(eventId) {
     return;
   }
 
-  // Equipment allocation
-  const eqNeeded = e.equipment_needed ? { ...e.equipment_needed } : {};
-  Object.entries(eqNeeded).forEach(([eid, qty]) => {
-    let remaining = qty;
-    const eqType = equipmentTypesData[eid];
-    if (!eqType) return;
-    const seatsUsed = eqType.seats_used || 0;
-    const cands = drivers.filter(d => d.equipment[eid]).sort((a, b) => b.available_seats - a.available_seats);
-    cands.forEach(d => {
-      if (remaining <= 0) return;
-      d.assigned_equipment.push(eid);
-      d.available_seats = Math.max(0, d.available_seats - seatsUsed);
-      remaining--;
-    });
-    if (remaining > 0) warnings.push(`⚠ ${eqType.name}${qty}つ必要ですが${qty - remaining}つしか確保できません`);
+  showManualAssignUI(eventId, drivers, riders, directs);
+}
+
+function showManualAssignUI(eventId, drivers, riders, directs) {
+  window._manualDrivers = drivers;
+  window._manualRiders = riders;
+  window._manualDirects = directs;
+  window._manualAssign = {};
+  renderManualAssignUI(eventId);
+}
+
+function renderManualAssignUI(eventId) {
+  const drivers = window._manualDrivers;
+  const riders = window._manualRiders;
+  const assign = window._manualAssign;
+
+  // Calculate seat usage per driver
+  const seatUsed = {};
+  drivers.forEach(d => { seatUsed[d.id] = 0; });
+  riders.forEach(r => {
+    const dId = assign[r.id];
+    if (dId && seatUsed[dId] !== undefined) seatUsed[dId] += (r.family_count || 1);
   });
 
-  // Rider assignment (greedy scoring)
-  const unassigned = [...riders];
-  while (unassigned.length > 0) {
-    let bestScore = -Infinity, bestDriver = null, bestRiderIdx = -1;
-    for (let ri = 0; ri < unassigned.length; ri++) {
-      const rider = unassigned[ri];
-      for (const driver of drivers) {
-        const s = calcPairScore(driver, rider);
-        if (s > bestScore) { bestScore = s; bestDriver = driver; bestRiderIdx = ri; }
-      }
-    }
-    if (bestScore === -Infinity || !bestDriver) break;
-    const rider = unassigned[bestRiderIdx];
-    bestDriver.passengers.push(rider);
-    bestDriver.available_seats -= rider.seats_needed;
-    unassigned.splice(bestRiderIdx, 1);
+  let html = '';
+
+  // Driver seat summary
+  html += '<div style="margin-bottom:16px">';
+  html += '<div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">🚗 車の空き席状況</div>';
+  html += '<div style="display:flex;flex-wrap:wrap;gap:8px">';
+  drivers.forEach(d => {
+    const avail = d.available_seats - seatUsed[d.id];
+    const color = avail < 0 ? 'var(--danger)' : avail === 0 ? 'var(--text-sub)' : 'var(--success)';
+    html += `<div style="background:var(--bg);border-radius:var(--radius);padding:6px 12px;font-size:13px">
+      🚗 <strong>${escapeHtml(d.name)}</strong>
+      <span style="color:${color};margin-left:6px">空き${avail}席</span>
+    </div>`;
+  });
+  html += '</div></div>';
+
+  // Rider assignment dropdowns
+  html += '<div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">🧑 どの車に乗るか選んでください</div>';
+  riders.forEach(r => {
+    const selected = assign[r.id] || '';
+    html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:14px">${escapeHtml(r.name)}${r.family_count > 1 ? `<span style="font-size:11px;color:var(--text-sub);margin-left:4px">(${r.family_count}人)</span>` : ''}</span>
+      <select onchange="setManualAssign('${r.id}', this.value, '${eventId}')"
+        style="background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:13px">
+        <option value="">-- 車を選択 --</option>
+        ${drivers.map(d => {
+          const avail = d.available_seats - seatUsed[d.id];
+          return `<option value="${d.id}" ${selected === d.id ? 'selected' : ''}>${escapeHtml(d.name)}（空き${avail}席）</option>`;
+        }).join('')}
+      </select>
+    </div>`;
+  });
+
+  if (window._manualDirects && window._manualDirects.length > 0) {
+    html += `<div style="margin-top:12px;font-size:12px;color:var(--text-sub)">🚶 直接現地: ${window._manualDirects.map(d => escapeHtml(d.name)).join('、')}</div>`;
   }
 
-  if (unassigned.length > 0) warnings.push(`⚠ 席が足りません: ${unassigned.length}人が未割り当て`);
-  const riderZones = new Set(riders.map(r => r.zone_id).filter(Boolean));
-  const driverZones = new Set(drivers.map(d => d.zone_id).filter(Boolean));
-  riderZones.forEach(zid => {
-    if (!driverZones.has(zid) && zonesData[zid]) warnings.push(`⚠ ${zonesData[zid].name}エリアにドライバーがいません`);
+  document.getElementById('assignContent').innerHTML = html;
+
+  const unassignedCount = riders.filter(r => !assign[r.id]).length;
+  document.getElementById('assignActions').innerHTML = `
+    <button class="btn btn-primary" onclick="confirmManualAssign('${eventId}')" ${unassignedCount > 0 ? 'disabled' : ''}>
+      🚗 配車を確定する${unassignedCount > 0 ? `（${unassignedCount}人未割り当て）` : ''}
+    </button>
+    <button class="btn btn-outline" onclick="showDriverSelection('${eventId}')" style="margin-top:8px">← ドライバー選択に戻る</button>`;
+}
+
+function setManualAssign(riderId, driverId, eventId) {
+  if (driverId) {
+    window._manualAssign[riderId] = driverId;
+  } else {
+    delete window._manualAssign[riderId];
+  }
+  renderManualAssignUI(eventId);
+}
+
+function confirmManualAssign(eventId) {
+  const drivers = window._manualDrivers;
+  const riders = window._manualRiders;
+  const directs = window._manualDirects || [];
+  const assign = window._manualAssign;
+
+  const driverMap = {};
+  drivers.forEach(d => { driverMap[d.id] = { ...d, passengers: [] }; });
+
+  const unassigned = [];
+  riders.forEach(r => {
+    const dId = assign[r.id];
+    if (dId && driverMap[dId]) {
+      driverMap[dId].passengers.push(r);
+    } else {
+      unassigned.push(r);
+    }
   });
 
-  currentAssignment = { drivers, directs, unassigned, warnings };
+  Object.values(driverMap).forEach(d => {
+    d.available_seats = d.original_seats - d.passengers.reduce((s, p) => s + (p.family_count || 1), 0);
+  });
+
+  currentAssignment = {
+    drivers: Object.values(driverMap),
+    directs,
+    unassigned,
+    warnings: unassigned.length > 0 ? [`⚠ ${unassigned.length}人が未割り当て`] : []
+  };
   currentAssignEventId = eventId;
   showAssignmentResult();
 }
