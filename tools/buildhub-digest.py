@@ -408,9 +408,15 @@ def main(dry_run=False):
     post_id = post_to_wp(title, content, excerpt, tag_ids, wp_user, wp_pass)
     print(f"WP投稿完了: ID={post_id}")
 
-    # アイキャッチ画像（Pexels）
+    # アイキャッチ画像（Pexels）— メイン記事のソースに応じたクエリ
     if pexels_key:
-        queries = ['AI coding terminal dark', 'developer programming computer', 'artificial intelligence code']
+        main_source = top[0].get('source', '') if top else ''
+        if main_source == 'github-releases':
+            queries = ['software release code dark', 'AI coding terminal dark', 'developer programming']
+        elif main_source in ('hn', 'reddit-claudeai', 'reddit-claudecode'):
+            queries = ['AI developer programming dark', 'coding screen terminal', 'artificial intelligence code']
+        else:
+            queries = ['programming code japanese', 'AI coding terminal dark', 'developer computer screen']
         image_info = None
         for q in queries:
             image_info = fetch_pexels_image(q, pexels_key)
