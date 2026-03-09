@@ -33,3 +33,6 @@ deploy/
 
 # curl cookie files
 3
+
+# Claude Code worktrees
+.claude/worktrees/
