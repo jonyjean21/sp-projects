@@ -16,7 +16,7 @@ const SOURCES = [
   { name: 'hn', url: 'https://hnrss.org/newest?q=claude+code&points=5' },
   { name: 'zenn', url: 'https://zenn.dev/topics/claudecode/feed' },
   { name: 'qiita', url: 'https://qiita.com/tags/claude-code/feed' },
-  { name: 'anthropic-blog', url: 'https://www.anthropic.com/rss.xml' }
+  { name: 'dev-to', url: 'https://dev.to/feed/tag/claudecode' }
 ];
 
 /**
