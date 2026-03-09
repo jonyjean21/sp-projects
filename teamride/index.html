@@ -1646,25 +1646,6 @@ function renderTeamStats(active, past) {
     <div class="stat-card"><div class="stat-value">${totalEvents}</div><div class="stat-label">イベント</div></div>
   </div>`;
 
-  if (past.length > 0) {
-    html += `<div class="stats-row-2">
-      <div class="stat-bar">
-        <div class="stat-bar-label">参加率</div>
-        <div class="stat-bar-track"><div class="stat-bar-fill" style="width:${participationRate}%;background:var(--accent)"></div></div>
-        <div class="stat-bar-value">${participationRate}%</div>
-      </div>
-      <div class="stat-bar">
-        <div class="stat-bar-label">車出し貢献TOP</div>
-        ${Object.entries(driverStats).length > 0 ?
-          Object.entries(driverStats)
-            .sort((a,b) => b[1] - a[1])
-            .slice(0, 2)
-            .map(([mid, cnt]) => `<div class="stat-bar-value" style="font-size:12px">${escapeHtml(membersData[mid]?.name || '?')} ${cnt}回</div>`)
-            .join('')
-          : '<div class="stat-bar-value" style="font-size:12px;color:var(--text-light)">データなし</div>'}
-      </div>
-    </div>`;
-  }
 
   return html;
 }
@@ -1722,40 +1703,42 @@ function renderEventCard(id, e, isPast) {
     if (eqNames.length) html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">📦 ${eqNames.join('、')}</div>`;
   }
 
+  // Progress bar (active only)
   if (!isPast) {
-    // Progress bar
     const pct = totalMembers > 0 ? Math.round(answeredCount / totalMembers * 100) : 0;
     html += `<div style="font-size:13px;color:var(--text-sub)">回答: ${answeredCount}/${totalMembers}</div>
       <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>`;
+  }
 
-    // Seat dashboard (visible to all)
-    {
-      const maxCars = e.max_cars || 0;
-      const overCars = maxCars > 0 && drivers > maxCars;
-      const seatBalance = driverSeats - riderSeats;
-      const seatStatus = seatBalance >= 0
-        ? `<span style="color:var(--success)">✅ 席OK (${seatBalance}席余裕)</span>`
-        : `<span style="color:var(--danger)">⚠ ${Math.abs(seatBalance)}席不足</span>`;
-      const carLimit = maxCars > 0 ? ` <span style="font-size:11px;color:${overCars?'var(--danger)':'var(--text-light)'}">/ 上限${maxCars}台</span>` : '';
-      html += `<div style="font-size:13px;margin:8px 0;display:flex;flex-wrap:wrap;gap:8px">
-        <span>🚗 ${drivers}台(${driverSeats}席)${carLimit}</span>
-        <span>🙋 ${riders}人(${riderSeats}席必要)</span>
-        <span>🏃 ${directs}人</span>
-        ${seatStatus}
-      </div>`;
-      if (overCars) {
-        html += `<div style="font-size:12px;color:var(--danger);margin-bottom:6px">⚠ 台数制限${maxCars}台に対し${drivers}台回答（自動配車で${maxCars}台に絞り込みます）</div>`;
-      }
+  // Seat dashboard
+  {
+    const maxCars = e.max_cars || 0;
+    const overCars = maxCars > 0 && drivers > maxCars;
+    const seatBalance = driverSeats - riderSeats;
+    const seatStatus = !isPast ? (seatBalance >= 0
+      ? `<span style="color:var(--success)">✅ 席OK (${seatBalance}席余裕)</span>`
+      : `<span style="color:var(--danger)">⚠ ${Math.abs(seatBalance)}席不足</span>`) : '';
+    const carLimit = maxCars > 0 ? ` <span style="font-size:11px;color:${overCars?'var(--danger)':'var(--text-light)'}">/ 上限${maxCars}台</span>` : '';
+    html += `<div style="font-size:13px;margin:8px 0;display:flex;flex-wrap:wrap;gap:8px">
+      <span>🚗 ${drivers}台(${driverSeats}席)${carLimit}</span>
+      <span>🙋 ${riders}人</span>
+      <span>🏃 ${directs}人</span>
+      ${seatStatus}
+    </div>`;
+    if (!isPast && overCars) {
+      html += `<div style="font-size:12px;color:var(--danger);margin-bottom:6px">⚠ 台数制限${maxCars}台に対し${drivers}台回答（自動配車で${maxCars}台に絞り込みます）</div>`;
     }
+  }
 
-    // Nudge button for unanswered members
-    if (answeredCount < totalMembers && e.status === 'open') {
-      html += `<button class="btn btn-outline btn-small" onclick="generateNudgeText('${id}')" style="margin-top:6px;font-size:13px">📢 未回答に催促（${totalMembers - answeredCount}人）</button>`;
-    }
+  // Nudge button (active only)
+  if (!isPast && answeredCount < totalMembers && e.status === 'open') {
+    html += `<button class="btn btn-outline btn-small" onclick="generateNudgeText('${id}')" style="margin-top:6px;font-size:13px">📢 未回答に催促（${totalMembers - answeredCount}人）</button>`;
+  }
 
-    // RSVP status list
-    html += renderRsvpList(id, e);
+  // RSVP status list (always show)
+  html += renderRsvpList(id, e);
 
+  if (!isPast) {
     // My RSVP action
     if (selectedMemberId && e.status === 'open') {
       if (myRsvp) {
@@ -1772,11 +1755,10 @@ function renderEventCard(id, e, isPast) {
         <button class="btn btn-outline btn-small" onclick="showLineText('${id}')">📋 LINE共有</button>
       </div>
       <button class="btn btn-line btn-small" onclick="shareLineDirect('${id}')" style="margin-top:8px">💬 LINEで共有</button>`;
-
       html += `<button class="btn btn-outline btn-small" onclick="startRsvp('${id}')" style="margin-top:8px">回答を変更 ⚠</button>`;
     }
 
-    // Auto-assign button (visible to all)
+    // Auto-assign button
     if (e.status === 'open' && drivers > 0) {
       html += `<button class="btn btn-secondary" onclick="runAutoAssign('${id}')" style="margin-top:12px">🚗 配車を決める</button>`;
     }
