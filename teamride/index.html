@@ -2511,28 +2511,34 @@ function showDriverSelection(eventId) {
   // Sort by priority (highest first)
   candidates.sort((a, b) => b.priority - a.priority);
 
-  // Pre-select members who said 'drive'
-  selectedDriverIds = new Set(candidates.filter(c => c.transport === 'drive').map(c => c.id));
+  const maxCars = e.max_cars || 0;
+
+  // Pre-select members who said 'drive' (up to max_cars)
+  const driveWillers = candidates.filter(c => c.transport === 'drive');
+  selectedDriverIds = new Set(driveWillers.slice(0, maxCars || driveWillers.length).map(c => c.id));
 
   // Render driver selection UI
-  let html = '<div style="font-size:14px;color:var(--text-sub);margin-bottom:12px">車を出すメンバーを選んでください（推奨順）</div>';
+  const maxLabel = maxCars ? `（上限${maxCars}台）` : '';
+  let html = `<div style="font-size:14px;color:var(--text-sub);margin-bottom:12px">車を出すメンバーを選んでください${maxLabel}</div>`;
 
   const totalRiders = candidates.filter(c => !selectedDriverIds.has(c.id)).reduce((s, c) => s + c.family_count, 0);
   const totalSeats = candidates.filter(c => selectedDriverIds.has(c.id)).reduce((s, c) => s + c.seats, 0);
+  const overLimit = maxCars > 0 && selectedDriverIds.size > maxCars;
   html += `<div id="driverSelectionStats" style="background:var(--bg);border-radius:var(--radius);padding:10px 14px;margin-bottom:12px;font-size:13px">
-    🚗 <strong>${selectedDriverIds.size}台</strong>（${totalSeats}席）← 🧑 <strong>${totalRiders}人</strong>が乗車希望
-    ${totalSeats < totalRiders ? `<span style="color:var(--danger)"> ⚠ ${totalRiders - totalSeats}席不足</span>` : `<span style="color:var(--success)"> ✅ 席は足りています</span>`}
+    🚗 <strong>${selectedDriverIds.size}台</strong>${maxCars ? `<span style="color:${overLimit ? 'var(--danger)' : 'var(--text-sub)'}"> / 上限${maxCars}台</span>` : ''}（${totalSeats}席）← 🧑 <strong>${totalRiders}人</strong>が乗車希望
+    ${overLimit ? `<span style="color:var(--danger)"> ⚠ ${selectedDriverIds.size - maxCars}台超過</span>` : totalSeats < totalRiders ? `<span style="color:var(--danger)"> ⚠ ${totalRiders - totalSeats}席不足</span>` : `<span style="color:var(--success)"> ✅ 席は足りています</span>`}
   </div>`;
 
   html += '<div id="driverCandidateList">';
   candidates.forEach(c => {
     const isSelected = selectedDriverIds.has(c.id);
+    const atLimit = maxCars > 0 && !isSelected && selectedDriverIds.size >= maxCars;
     const zone = c.zone_id && zonesData[c.zone_id] ? zonesData[c.zone_id] : null;
     const eqBadge = c.hasNeededEquip ? '<span style="font-size:11px;background:#FEF3C7;color:#B45309;padding:1px 6px;border-radius:6px;margin-left:4px">📦機材</span>' : '';
     const recBadge = c.priority >= 50 ? '<span style="font-size:11px;background:#ECFDF5;color:#059669;padding:1px 6px;border-radius:6px;margin-left:4px">おすすめ</span>' : '';
 
-    html += `<div class="list-item" style="cursor:pointer;${isSelected ? 'background:var(--primary-light);border:1.5px solid var(--primary)' : 'border:1.5px solid transparent'};border-radius:var(--radius);padding:10px 12px;margin-bottom:6px"
-      onclick="toggleDriverCandidate('${c.id}','${eventId}')">
+    html += `<div class="list-item" style="cursor:${atLimit ? 'not-allowed' : 'pointer'};opacity:${atLimit ? '0.4' : '1'};${isSelected ? 'background:var(--primary-light);border:1.5px solid var(--primary)' : 'border:1.5px solid transparent'};border-radius:var(--radius);padding:10px 12px;margin-bottom:6px"
+      onclick="${atLimit ? '' : `toggleDriverCandidate('${c.id}','${eventId}')`}">
       <div style="display:flex;align-items:center;gap:8px;width:100%">
         <span style="font-size:18px">${isSelected ? '☑️' : '⬜'}</span>
         <div style="flex:1">
@@ -2548,8 +2554,9 @@ function showDriverSelection(eventId) {
   html += '</div>';
 
   document.getElementById('assignContent').innerHTML = html;
+  const overLimitNow = maxCars > 0 && selectedDriverIds.size > maxCars;
   document.getElementById('assignActions').innerHTML = `
-    <button class="btn btn-primary" onclick="runAssignmentWithSelected('${eventId}')" ${selectedDriverIds.size === 0 ? 'disabled' : ''}>🚗 乗客を割り振る（${selectedDriverIds.size}台）</button>
+    <button class="btn btn-primary" onclick="runAssignmentWithSelected('${eventId}')" ${selectedDriverIds.size === 0 || overLimitNow ? 'disabled' : ''}>🚗 乗客を割り振る（${selectedDriverIds.size}台）</button>
     <button class="btn btn-outline" onclick="closeModal('assignModal')" style="margin-top:8px">キャンセル</button>`;
 
   // Store candidates & directs for later
