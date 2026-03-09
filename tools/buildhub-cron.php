@@ -14,7 +14,6 @@
  *   - BuildHub編集部より（今日の総評）
  */
 
-define('GEMINI_API_KEY', 'AIzaSyBWDUJxO0aANmm1KUM3cDtNHIqg2BPOJXg');
 define('FIREBASE_URL',   'https://viisi-master-app-default-rtdb.firebaseio.com');
 define('QUEUE_PATH',     '/claude-tips-queue');
 define('DIGEST_LOG',     '/claude-tips-digest-log');
@@ -23,6 +22,16 @@ define('CATEGORY_ID',    2);
 // WordPress を読み込む
 define('SHORTINIT', false);
 require_once __DIR__ . '/wp-load.php';
+
+// APIキーをwp-config.php で定義 (BUILDHUB_GEMINI_KEY) またはwp_optionsから取得
+if (!defined('GEMINI_API_KEY')) {
+    $gemini_key = defined('BUILDHUB_GEMINI_KEY') ? BUILDHUB_GEMINI_KEY : get_option('buildhub_gemini_key', '');
+    if (empty($gemini_key)) {
+        echo "ERROR: GEMINI_API_KEY未設定。wp-config.phpに define('BUILDHUB_GEMINI_KEY', 'your-key'); を追加してください。\n";
+        exit(1);
+    }
+    define('GEMINI_API_KEY', $gemini_key);
+}
 
 date_default_timezone_set('Asia/Tokyo');
 $today = date('Y/m/d');
@@ -204,7 +213,7 @@ function summarize_with_gemini($items) {
       "index": 1,
       "title_ja": "自然な日本語タイトル（英語は翻訳、日本語はそのまま）",
       "is_main": true,
-      "summary": "詳しい日本語解説（記事[1]は500文字以上。背景・技術的ポイント・実装方法・コードの概要・日本のエンジニアへの示唆を含める。GitHubリポジトリがある場合はどんな実装かを具体的に説明）",
+      "summary": "詳しい日本語解説（記事[1]は500文字以上）。以下の構成で書くこと：\n①何が問題で何を解決しているか（150字）\n②どう動くか・核心の実装アプローチ（コードがある場合は核心部分10〜20行をコードブロックで示し、直後に「このコードでやっていること」を3〜5文で日本語解説）\n③日本のエンジニアへの示唆・応用アイデア（150字）\nGitHubリポジトリがある場合は「何ができるか」を1文で必ず明記。",
       "score_label": "HN 234 points" または "Reddit 456 upvotes" または "",
       "url": "元のURL",
       "source": "ソース名"
