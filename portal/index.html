@@ -148,15 +148,33 @@ tr:hover { background: rgba(255,255,255,0.02); }
 .link-icon { font-size: 18px; }
 
 /* Product cards */
-.product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.product-grid { display: flex; flex-direction: column; gap: 8px; }
 .product-card {
-  background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px;
+  display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text);
   transition: all 0.15s; cursor: pointer;
 }
-.product-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-.product-card .product-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
-.product-card .product-desc { font-size: 12px; color: var(--sub); line-height: 1.5; margin-bottom: 10px; }
-.product-card .product-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+.product-card:hover { border-color: var(--accent); }
+.product-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.product-body { flex: 1; min-width: 0; }
+.product-name { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.product-desc { font-size: 12px; color: var(--sub); line-height: 1.5; margin-top: 2px; }
+.product-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+.product-arrow { color: var(--dim); font-size: 18px; flex-shrink: 0; }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+.status-live { background: var(--green); }
+.status-dev { background: var(--orange); }
+.status-archive { background: var(--sub); }
+.sub-links { display: flex; gap: 6px; margin: -2px 0 8px 52px; flex-wrap: wrap; }
+.sub-link { font-size: 11px; color: var(--accent); text-decoration: none; padding: 3px 10px; border-radius: 8px; background: var(--accent-dim); border: 1px solid rgba(99,102,241,0.2); transition: background 0.2s; }
+.sub-link:hover { background: rgba(99,102,241,0.2); }
+.auto-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; color: var(--text); margin-bottom: 8px; }
+.cat-section { margin-bottom: 24px; }
+.cat-header-label { font-size: 12px; font-weight: 600; color: var(--sub); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+.cat-header-label .cat-count { font-size: 10px; background: var(--card); padding: 2px 8px; border-radius: 10px; }
+.cat-header-label .cat-toggle { font-size: 12px; color: var(--dim); transition: transform 0.2s; }
+.cat-header-label.collapsed .cat-toggle { transform: rotate(-90deg); }
+.cat-header-label.collapsed + .product-grid { display: none; }
 
 /* Project timeline */
 .project-phase { padding: 14px 0; border-bottom: 1px solid var(--border); }
@@ -349,7 +367,7 @@ tr:hover { background: rgba(255,255,255,0.02); }
             <div class="stat-label">INBOX Pending</div>
           </div>
           <div class="stat-card">
-            <div class="stat-value" style="color:var(--purple)" id="dProducts">20</div>
+            <div class="stat-value" style="color:var(--purple)" id="dProducts">29</div>
             <div class="stat-label">プロダクト数</div>
           </div>
         </div>
@@ -379,11 +397,11 @@ tr:hover { background: rgba(255,255,255,0.02); }
                 <div style="font-size:11px;color:var(--sub)">チャンネル分析・管理</div>
               </div>
             </a>
-            <a class="link-card" href="https://jonyjean21.github.io/sp-projects/apps/" target="_blank">
-              <span class="link-icon">&#9881;</span>
+            <a class="link-card" href="https://jonyjean21.github.io/sp-projects/side-project-plan/" target="_blank">
+              <span class="link-icon">&#128176;</span>
               <div>
-                <div>Apps Catalog</div>
-                <div style="font-size:11px;color:var(--sub)">全プロダクト一覧</div>
+                <div>副業ロードマップ</div>
+                <div style="font-size:11px;color:var(--sub)">2026年計画</div>
               </div>
             </a>
           </div>
@@ -407,15 +425,18 @@ tr:hover { background: rgba(255,255,255,0.02); }
         <div class="card">
           <h3>ビルド履歴</h3>
           <div style="font-size:12px;color:var(--sub)">
-            <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>モルハブ独立ポータル + YouTubeダッシュボード + SP Portal軽量化</div><div class="activity-time">2026.03.05</div></div></div>
-            <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>MACHAP独立ポータル構築 + 大会データビューア + ポータル充実化</div><div class="activity-time">2026.03.05</div></div></div>
+            <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>副業ロードマップ2026作成、appsカタログをSP Portalに統合</div><div class="activity-time">2026.03.09</div></div></div>
+            <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>MACHAPプロダクト一覧ページ構築、パートナー記事修正・公開、大会キュー17件処理</div><div class="activity-time">2026.03.07</div></div></div>
+            <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>寄稿自動投稿システム、選手権トラッカー色調整、5先王Xポスト連動、Maxプラン節約体制</div><div class="activity-time">2026.03.06</div></div></div>
+            <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>MACHAP P0-P1完了（Firebase同期・INBOX PWA・STEP充実・Chart.jsグラフ）</div><div class="activity-time">2026.03.05</div></div></div>
             <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>SP Portal統合管理ポータル構築、大会キュー69件自動処理、モルハブTOP改修提案書</div><div class="activity-time">2026.03.04</div></div></div>
-            <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>シーズン大会 & 新人年間王ページ分割、appsカタログ棚卸し</div><div class="activity-time">2026.03.04</div></div></div>
             <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>チームライド配車アプリ構築（RSVP・自動配車・QA 4ラウンド完了）</div><div class="activity-time">2026.03.03</div></div></div>
             <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>日本選手権トラッカー構築、IFTTT動作確認、molkky-admin統合管理パネル</div><div class="activity-time">2026.03.02</div></div></div>
             <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>セキュリティ修正（APIキー非公開化）、大会RSS自動収集GAS</div><div class="activity-time">2026.03.01</div></div></div>
             <div class="activity-item"><div class="activity-dot" style="background:var(--blue)"></div><div style="flex:1"><div>パートナーLP、向上委員会ダッシュボード、ナイモル結果HTML生成ツール構築</div><div class="activity-time">2026.02.28</div></div></div>
-            <div class="activity-item"><div class="activity-dot" style="background:var(--blue)"></div><div style="flex:1"><div>レシピBOX URL取込機能、ダークテーマスライド、パートナー記事投稿</div><div class="activity-time">2026.02.27</div></div></div>
+            <div class="activity-item"><div class="activity-dot" style="background:var(--blue)"></div><div style="flex:1"><div>レシピBOX URL取込、パートナー循環ポータル、大会自動化スキル構築</div><div class="activity-time">2026.02.27</div></div></div>
+            <div class="activity-item"><div class="activity-dot" style="background:var(--blue)"></div><div style="flex:1"><div>promote/repost/tournament-submit 各ツール構築</div><div class="activity-time">2026.02</div></div></div>
+            <div class="activity-item"><div class="activity-dot" style="background:var(--dim)"></div><div style="flex:1"><div>5先王アプリ、めぐり帳、marutamura-bot、MOLKKY HUB開設</div><div class="activity-time">2025</div></div></div>
           </div>
         </div>
 
@@ -463,25 +484,13 @@ tr:hover { background: rgba(255,255,255,0.02); }
 
       <!-- ===== PRODUCTS ===== -->
       <div class="section" id="sec-products">
-        <div class="card" style="border:none;background:none;padding:0">
-          <div class="card-header" style="margin-bottom:16px">
-            <h3 style="font-size:16px">プロダクト一覧</h3>
-            <span class="pill pill-green">20 公開中</span>
-            <span class="pill pill-accent">4 自動化</span>
-          </div>
+        <div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <h3 style="font-size:16px;font-weight:600">プロダクト一覧</h3>
+          <span class="pill pill-green" id="prodCountLive">29 公開中</span>
+          <span class="pill pill-accent" id="prodCountAuto">6 自動化</span>
+          <span class="pill pill-dim" id="prodCountArchive">1 倉庫</span>
         </div>
-
-        <div style="font-size:12px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">MOLKKY HUB メディア</div>
-        <div class="product-grid" style="margin-bottom:24px" id="prodMedia"></div>
-
-        <div style="font-size:12px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">モルック コミュニティ</div>
-        <div class="product-grid" style="margin-bottom:24px" id="prodCommunity"></div>
-
-        <div style="font-size:12px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">ツール・個人</div>
-        <div class="product-grid" style="margin-bottom:24px" id="prodTools"></div>
-
-        <div style="font-size:12px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">自動化パイプライン</div>
-        <div class="product-grid" id="prodAuto"></div>
+        <div id="productsContainer"></div>
       </div>
 
       <!-- ===== AUTOMATION ===== -->
@@ -581,38 +590,66 @@ tr:hover { background: rgba(255,255,255,0.02); }
 const FB = 'https://viisi-master-app-default-rtdb.firebaseio.com';
 const PAGES_BASE = 'https://jonyjean21.github.io/sp-projects';
 
-// Products data
-const PRODUCTS = {
-  media: [
-    { name: 'MOLKKY HUB', desc: 'モルック専門メディア（WordPress）', url: 'https://molkky-hub.com', tags: ['WP','Live'], color: 'blue' },
-    { name: 'MOLKKY HUB Portal', desc: '記事・大会・Xポスト統合管理', url: PAGES_BASE+'/molkky-portal/', tags: ['Pages','Live'], color: 'accent' },
-    { name: '向上委員会', desc: 'モルハブKPIダッシュボード', url: PAGES_BASE+'/hub-dashboard/', tags: ['Pages','Live'], color: 'accent' },
-    { name: 'パートナーLP', desc: 'パートナー制度の営業用LP', url: PAGES_BASE+'/partner/', tags: ['Pages','Live'], color: 'green' },
-    { name: 'パートナーポータル', desc: 'パートナー循環の可視化', url: PAGES_BASE+'/partner-portal/', tags: ['Pages','Firebase'], color: 'green' },
-  ],
-  community: [
-    { name: '5先王アプリ', desc: 'リアルタイム対戦スコア管理', url: PAGES_BASE+'/viisi-master/', tags: ['Pages','Firebase'], color: 'orange' },
-    { name: '選手権トラッカー', desc: '日本選手権2026出場枠管理', url: PAGES_BASE+'/championship/', tags: ['Pages','Firebase'], color: 'orange' },
-    { name: '選手権トラッカー管理', desc: '選手権結果の入力・管理画面', url: PAGES_BASE+'/championship-admin/', tags: ['Pages','Firebase'], color: 'orange' },
-    { name: 'ナイモル管理', desc: '大会結果→WP自動投稿', url: PAGES_BASE+'/naimol-admin/', tags: ['Pages','Live'], color: 'accent' },
-    { name: 'めぐり帳', desc: 'お金の貸し借り・恩の記録', url: PAGES_BASE+'/meguri/', tags: ['Pages','Firebase'], color: 'purple' },
-    { name: 'ランキング企画書', desc: 'シーズン大会＋新人年間王', url: PAGES_BASE+'/projects/molkky-dome/ranking/', tags: ['Pages'], color: 'cyan' },
-  ],
-  tools: [
-    { name: 'レシピBOX', desc: '料理レシピ管理+カレンダー', url: PAGES_BASE+'/recipe/', tags: ['Pages','Live'], color: 'green' },
-    { name: 'CC Monitor', desc: 'Claude Codeトークン使用量', url: '', tags: ['Python','CLI'], color: 'dim' },
-    { name: 'MACHAP Portal', desc: 'マチャップ独立管理ポータル', url: PAGES_BASE+'/machap-portal/', tags: ['Pages','Live'], color: 'blue' },
-    { name: 'YouTube Dashboard', desc: 'チャンネル分析・管理', url: PAGES_BASE+'/youtube/', tags: ['Pages','Live'], color: 'red' },
-    { name: 'チームライド', desc: '少年サッカー配車アプリ（RSVP・自動配車）', url: PAGES_BASE+'/teamride/', tags: ['Pages','Firebase'], color: 'green' },
-    { name: 'SP INBOX', desc: 'GTD的クイック入力→AI分類→振り分け', url: PAGES_BASE+'/inbox/', tags: ['Pages','Firebase'], color: 'cyan' },
-  ],
-  auto: [
-    { name: 'GAS 大会収集', desc: 'RSS自動取得（JMA+こくちーず）', url: '', tags: ['GAS','毎日9時'], color: 'blue' },
-    { name: 'GAS 議事録', desc: 'Driveメモ自動検知→Notion', url: '', tags: ['GAS','1時間'], color: 'purple' },
-    { name: 'IFTTT X監視', desc: 'モルック大会キーワード検索', url: 'https://ifttt.com/my_applets', tags: ['IFTTT','5分'], color: 'accent' },
-    { name: 'Claude Skills', desc: '5スキル（tournament/promote等）', url: '', tags: ['CLI'], color: 'dim' },
-  ]
-};
+// Products data — full catalog (migrated from apps/index.html)
+const P = PAGES_BASE;
+const PRODUCTS = [
+  { cat: 'MOLKKY HUB メディア', icon: '📰', items: [
+    { name: 'MOLKKY HUB', desc: 'モルック総合情報メディア（月間3Kセッション）', url: 'https://molkky-hub.com', icon: '📰', bg: '#2a2117', tags: [['WP','orange'],['2024〜','dim']], subs: [
+      { label: '大会情報（545件）', url: 'https://molkky-hub.com/event/tournament/' },
+      { label: 'パートナー記事', url: 'https://molkky-hub.com/hubpartner/' },
+      { label: '管理画面', url: 'https://molkky-hub.com/wp-admin/' },
+    ]},
+    { name: 'Xポスト生成ツール', desc: '記事URLからXポスト案を自動生成（Gemini AI）', url: P+'/promote/', icon: '📱', bg: '#101a2a', tags: [['Pages','accent'],['2026.02','dim']] },
+    { name: '引用リポスト生成ツール', desc: 'モルハブ宛ポストへの引用リポスト案を自動生成', url: P+'/repost/', icon: '💬', bg: '#1a1530', tags: [['Pages','accent'],['2026.02','dim']] },
+    { name: 'モルハブ向上委員会', desc: 'KPIダッシュボード（GA4・SC・WP・Firebase連携）', url: P+'/hub-dashboard/', icon: '📊', bg: '#1a1530', tags: [['Pages','accent'],['WP API','orange'],['Firebase','purple'],['2026.02','dim']] },
+    { name: 'パートナーLP', desc: 'パートナー制度の営業用ランディングページ', url: P+'/partner/', icon: '📄', bg: '#1a3a0a', tags: [['Pages','accent'],['2026.02','dim']] },
+    { name: 'SP Portal', desc: 'プロダクト一覧・INBOX・自動化パイプライン・ビルド履歴の統合管理ハブ', url: P+'/portal/', icon: '🏢', bg: 'linear-gradient(135deg,#1a1a3a,#0a2a3a)', tags: [['Pages','accent'],['Firebase','purple'],['2026.03','dim']] },
+    { name: 'MOLKKY HUB Portal', desc: 'モルハブ全機能統合: ダッシュボード・記事管理・大会管理・Xポスト・アナリティクス・SC・パートナー', url: P+'/molkky-portal/', icon: '🌐', bg: 'linear-gradient(135deg,#0a1a2a,#06B6D4)', tags: [['Pages','accent'],['WP REST API','orange'],['Firebase','purple'],['2026.03','dim']], subs: [
+      { label: '旧統合管理', url: P+'/molkky-admin/' },
+    ]},
+    { name: 'パートナー循環ポータル', desc: 'パートナー制度の提供品の流れを可視化', url: P+'/partner-portal/', icon: '🤝', bg: '#2a2117', tags: [['Pages','accent'],['Firebase RTDB','purple'],['2026.02','dim']], subs: [
+      { label: '管理画面', url: P+'/partner-portal/admin.html' },
+    ]},
+  ]},
+  { cat: 'モルック コミュニティ', icon: '🪵', items: [
+    { name: '5先王（ヴィーシマスター）', desc: 'モルック試合結果の記録 & X自動投稿ツール', url: P+'/viisi-master/', icon: '👑', bg: '#1f2a3d', tags: [['Pages','accent'],['Firebase RTDB','purple'],['2025〜','dim']], subs: [
+      { label: '門番ガイド', url: P+'/viisi-master/manual-gatekeeper.html' },
+    ]},
+    { name: 'シーズン大会 企画書', desc: '川西モルックの会 3ヶ月ポイントレース → 上位12名の頂上決戦', url: P+'/projects/molkky-dome/ranking/', icon: '🔥', bg: '#2a1a10', tags: [['Pages','accent'],['2026.03','dim']] },
+    { name: '新人年間王 企画書', desc: '川西モルックの会 毎月の新人戦から年間最強新人を決定', url: P+'/projects/molkky-dome/ranking/rookie.html', icon: '🌱', bg: '#0a2a18', tags: [['Pages','accent'],['2026.03','dim']] },
+    { name: '日本選手権トラッカー', desc: '2026年モルック日本選手権 予選結果・通過者を自動追跡', url: P+'/championship/', icon: '🏅', bg: '#2a2010', tags: [['Pages','accent'],['Firebase RTDB','purple'],['2026.03','dim']], subs: [
+      { label: '管理画面', url: P+'/championship-admin/' },
+    ]},
+    { name: '大会情報投稿ツール', desc: 'URLを貼るだけでMOLKKY HUBに大会情報を投稿', url: P+'/tournament-submit/', icon: '📣', bg: '#1f2a3d', tags: [['Pages','accent'],['Firebase RTDB','purple'],['2026.02','dim']] },
+    { name: 'ナイモル大会管理', desc: 'スプシ連動で結果ページ自動生成・写真管理・ギャラリー・公開まで一括', url: P+'/naimol-admin/', icon: '🏆', bg: '#2a2117', tags: [['Pages','accent'],['WP REST API','orange'],['2026.02','dim']] },
+  ]},
+  { cat: 'ライフツール', icon: '🛠', items: [
+    { name: 'まなびモン', desc: '小学1〜3年生向けキャラ育成型べんきょうアプリ（300問・モンスター進化・ショップ）', url: P+'/manabimon/', icon: '🌟', bg: '#1a2a2e', tags: [['Pages','accent'],['2026.03','dim']] },
+    { name: 'チームライド', desc: '少年サッカー配車アプリ（RSVP・自動配車・催促テキスト生成）', url: P+'/teamride/', icon: '🚗', bg: '#1a2a1a', tags: [['Pages','accent'],['Firebase RTDB','purple'],['2026.03','dim']] },
+    { name: 'めぐり帳', desc: '恩・約束・貸し借りの記録アプリ', url: P+'/meguri/', icon: '🍃', bg: '#1a2417', tags: [['Pages','accent'],['Firebase Auth + RTDB','purple'],['2026.02','dim']] },
+    { name: 'レシピBOX', desc: 'レシピ保存・管理（URL取込・写真OCR・家族共有）', url: P+'/recipe/', icon: '🍳', bg: '#2a2117', tags: [['Pages','accent'],['Firebase Auth + RTDB','purple'],['2026.02','dim']] },
+  ]},
+  { cat: '自動化基盤', icon: '⚡', items: [
+    { name: 'チャプ会議事録 自動化', desc: 'Google Meet文字起こし → 議事録変換 → Notion投稿（全自動）', url: '', icon: '📝', bg: '#1a2a2a', tags: [['GAS','cyan'],['Firebase','purple'],['Claude Code','red'],['2026.02','dim']], auto: true },
+    { name: '大会情報 RSS自動収集', desc: 'JMA公式 + こくちーずを毎日自動巡回 → Firebase キューに登録', url: '', icon: '📡', bg: '#1a2a2a', tags: [['GAS','cyan'],['Firebase','purple'],['2026.03','dim']], auto: true },
+    { name: '大会情報 自動投稿', desc: 'X/Web URL → 大会情報抽出 → WordPress直接投稿', url: '', icon: '🏆', bg: '#1a2a2a', tags: [['Claude Code /tournament','red'],['WP REST API','orange'],['2026.02','dim']], auto: true },
+    { name: '月次マネー振り分け', desc: '家計口座11個+カード7枚の月次振り分け指示を自動生成', url: '', icon: '💰', bg: '#1a2a2a', tags: [['Claude Code /mm','red'],['2026.02','dim']], auto: true },
+    { name: '日報自動生成', desc: '毎朝4時にgitコミットからAI日報を自動生成。カレンダー・統計・note/Xエクスポート', url: P+'/report-admin/', icon: '📝', bg: '#1a2a2a', tags: [['GAS','cyan'],['Firebase','purple'],['Pages','accent'],['2026.03','dim']] },
+    { name: 'marutamura-bot', desc: 'マルタ村 LINE Bot（Claude AI応答）', url: '', icon: '🤖', bg: '#1a2a2a', tags: [['Vercel','green'],['2025〜','dim']], auto: true },
+  ]},
+  { cat: 'MACHAP — マチャップ', icon: '🚀', items: [
+    { name: 'MACHAP Portal', desc: '5STEPサイクル管理ポータル v3.0。Firebase同期、INBOX取り込み、STEP充実（金額/期限/進捗%）、Chart.jsグラフ、Line強化。', url: P+'/machap-portal/', icon: '⚡', bg: '#0F2A4A', tags: [['Pages','accent'],['Firebase','purple'],['2026.03','dim']], subs: [
+      { label: 'MACHAP LP', url: P+'/apps/machap/' },
+      { label: '事業計画 HTML版', url: P+'/apps/machap/plan.html' },
+    ]},
+    { name: 'SP INBOX (PWA)', desc: 'GTD的クイック入力。Gemini AI分類→Firebase→MACHAPポータル取り込み。オフライン対応PWA。', url: P+'/inbox/', icon: '📥', bg: 'linear-gradient(135deg,#1A56DB,#06B6D4)', tags: [['Pages','accent'],['Firebase','purple'],['2026.03','dim']] },
+    { name: '副業ロードマップ 2026', desc: 'AI×既存資産で月10-20万の仕組みを作る。開業届→即金→資産蓄積→自動化の3フェーズ計画。', url: P+'/side-project-plan/', icon: '💰', bg: 'linear-gradient(135deg,#F97316,#FBBF24)', tags: [['Pages','accent'],['2026.03','dim']] },
+    { name: 'YouTube Analytics Dashboard', desc: 'チャンネル分析ダッシュボード v1.5。ヘルスチェック・動画フィルタ・6軸レーダー。デモモード付き', url: P+'/youtube/', icon: '📊', bg: 'linear-gradient(135deg,#0a0a1f,#d4ff47)', tags: [['Pages','accent'],['Chart.js','green'],['2026.03','dim']] },
+  ]},
+  { cat: '倉庫（Archive）', icon: '📦', collapsed: true, items: [
+    { name: 'シーズン大会 スライド版', desc: '横型16:9プレゼンテーション（20スライド）', url: P+'/projects/molkky-dome/ranking/slides.html', icon: '📊', bg: '#1e1e2e', tags: [['Pages','accent'],['2026.02','dim']], status: 'archive' },
+  ]},
+];
 
 // ===== Init =====
 document.addEventListener('DOMContentLoaded', () => {
@@ -694,18 +731,65 @@ async function loadAutomationStatus() {
 
 // ===== Products =====
 function renderProducts() {
-  for (const [cat, items] of Object.entries(PRODUCTS)) {
-    const boxId = { media:'prodMedia', community:'prodCommunity', tools:'prodTools', auto:'prodAuto' }[cat];
-    const box = document.getElementById(boxId);
-    if (!box) continue;
-    box.innerHTML = items.map(p => `
-      <div class="product-card" ${p.url ? `onclick="window.open('${p.url}','_blank')"` : ''}>
-        <div class="product-name">${escapeHtml(p.name)}</div>
-        <div class="product-desc">${escapeHtml(p.desc)}</div>
-        <div class="product-tags">${p.tags.map(t => `<span class="pill pill-${p.color}">${t}</span>`).join('')}</div>
-      </div>
-    `).join('');
+  const container = document.getElementById('productsContainer');
+  if (!container) return;
+  let html = '';
+  for (const group of PRODUCTS) {
+    const collapseClass = group.collapsed ? ' collapsed' : '';
+    html += `<div class="cat-section">`;
+    html += `<div class="cat-header-label${collapseClass}" onclick="this.classList.toggle('collapsed')">
+      <span>${group.icon}</span> <span>${escapeHtml(group.cat)}</span>
+      <span class="cat-count">${group.items.length}</span>
+      <span class="cat-toggle">▾</span>
+    </div>`;
+    html += `<div class="product-grid"${group.collapsed ? ' style="display:none"' : ''}>`;
+    for (const item of group.items) {
+      const statusClass = item.status === 'archive' ? 'status-archive' : 'status-live';
+      const bgStyle = item.bg.startsWith('linear') ? `background:${item.bg}` : `background:${item.bg}`;
+      const tagsHtml = (item.tags || []).map(([label, color]) => `<span class="pill pill-${color}">${label}</span>`).join('');
+
+      if (item.auto && !item.url) {
+        // Non-clickable automation card
+        html += `<div class="auto-card">
+          <div class="product-icon" style="${bgStyle}">${item.icon}</div>
+          <div class="product-body">
+            <div class="product-name"><span class="status-dot ${statusClass}"></span>${escapeHtml(item.name)}</div>
+            <div class="product-desc">${escapeHtml(item.desc)}</div>
+            <div class="product-tags">${tagsHtml}</div>
+          </div>
+        </div>`;
+      } else {
+        html += `<a class="product-card" href="${item.url || '#'}" target="_blank">
+          <div class="product-icon" style="${bgStyle}">${item.icon}</div>
+          <div class="product-body">
+            <div class="product-name"><span class="status-dot ${statusClass}"></span>${escapeHtml(item.name)}</div>
+            <div class="product-desc">${escapeHtml(item.desc)}</div>
+            <div class="product-tags">${tagsHtml}</div>
+          </div>
+          <span class="product-arrow">›</span>
+        </a>`;
+      }
+
+      // Sub-links
+      if (item.subs && item.subs.length) {
+        html += `<div class="sub-links">`;
+        for (const sub of item.subs) {
+          html += `<a class="sub-link" href="${sub.url}" target="_blank">${escapeHtml(sub.label)}</a>`;
+        }
+        html += `</div>`;
+      }
+    }
+    html += `</div></div>`;
   }
+  container.innerHTML = html;
+
+  // Fix collapse toggle for dynamically rendered sections
+  container.querySelectorAll('.cat-header-label').forEach(header => {
+    header.addEventListener('click', () => {
+      const grid = header.nextElementSibling;
+      if (grid) grid.style.display = header.classList.contains('collapsed') ? 'none' : '';
+    });
+  });
 }
 
 function exportSettings() {

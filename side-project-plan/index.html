@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>SP 副業ロードマップ 2026</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0B1628; --card: #132240; --card2: #1A2D52;
+  --blue: #1A56DB; --cyan: #06B6D4; --orange: #F97316;
+  --green: #10B981; --purple: #A78BFA; --red: #F43F5E;
+  --yellow: #FBBF24;
+  --white: #F0F4FF; --sub: #7FAACC; --border: #1A56DB33;
+}
+html, body {
+  height: 100%; overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', sans-serif;
+  background: var(--bg); color: var(--white);
+  -webkit-font-smoothing: antialiased;
+  touch-action: pan-y;
+}
+
+/* Slide container */
+.deck { width: 100%; height: 100%; }
+.slide {
+  display: none; flex-direction: column; justify-content: center; align-items: center;
+  width: 100%; height: 100%;
+  padding: 48px 24px 80px; overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.slide.active { display: flex; }
+.slide-inner { width: 100%; max-width: 520px; }
+
+/* Nav */
+.nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; background: rgba(11,22,40,0.95);
+  border-top: 1px solid var(--border); z-index: 100;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.nav-btn {
+  width: 44px; height: 44px; border-radius: 10px;
+  background: var(--card); border: 1px solid var(--border);
+  color: var(--white); font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s, border-color 0.2s;
+}
+.nav-btn:hover { background: var(--card2); border-color: var(--cyan); }
+.nav-btn:disabled { opacity: 0.3; cursor: default; }
+.nav-btn:disabled:hover { background: var(--card); border-color: var(--border); }
+.nav-center { text-align: center; }
+.nav-counter { font-size: 13px; font-weight: 700; color: var(--white); }
+.nav-progress { width: 120px; height: 3px; background: var(--card); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+.nav-bar { height: 100%; background: var(--cyan); border-radius: 2px; transition: width 0.35s ease; }
+
+/* Common */
+.s-label {
+  font-size: 11px; letter-spacing: 0.2em; color: var(--cyan);
+  font-weight: 600; text-transform: uppercase; margin-bottom: 8px;
+}
+.s-title {
+  font-size: clamp(24px, 6vw, 36px); font-weight: 800; letter-spacing: -0.02em;
+  margin-bottom: 12px; line-height: 1.3;
+}
+.s-title-gradient {
+  background: linear-gradient(135deg, var(--white) 40%, var(--cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.s-sub { font-size: 14px; color: var(--sub); line-height: 1.7; margin-bottom: 16px; }
+.s-num {
+  font-size: 11px; font-weight: 800; color: var(--cyan);
+  background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.2);
+  padding: 4px 10px; border-radius: 6px; letter-spacing: 0.1em;
+  display: inline-block; margin-bottom: 12px;
+}
+
+/* Cards */
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px; margin-bottom: 8px;
+}
+.card-icon { font-size: 24px; margin-bottom: 8px; }
+.card-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.card-desc { font-size: 12px; color: var(--sub); line-height: 1.6; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+@media (max-width: 380px) { .grid-2 { grid-template-columns: 1fr; } }
+
+/* Phase cards */
+.phase-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px; margin-bottom: 8px;
+}
+.phase-label {
+  font-size: 11px; font-weight: 800; padding: 3px 8px;
+  border-radius: 6px; display: inline-block; margin-bottom: 4px;
+}
+.phase-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.phase-desc { font-size: 12px; color: var(--sub); line-height: 1.6; }
+
+/* Step flow */
+.step-flow { display: flex; flex-direction: column; }
+.step-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; }
+.step-badge {
+  width: 36px; height: 36px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 800; flex-shrink: 0;
+}
+.step-content { flex: 1; }
+.step-name { font-size: 10px; font-weight: 800; letter-spacing: 0.1em; margin-bottom: 1px; }
+.step-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+.step-desc { font-size: 11px; color: var(--sub); line-height: 1.5; }
+.step-connector { width: 2px; height: 8px; margin-left: 17px; background: linear-gradient(180deg, var(--cyan), transparent); }
+
+/* Checklist */
+.checklist { list-style: none; padding: 0; }
+.checklist li {
+  font-size: 13px; padding: 8px 0 8px 28px; position: relative;
+  border-bottom: 1px solid rgba(26,86,219,0.15);
+  color: var(--white); line-height: 1.5;
+}
+.checklist li::before {
+  content: ''; position: absolute; left: 0; top: 10px;
+  width: 16px; height: 16px; border-radius: 4px;
+  border: 2px solid var(--cyan); background: transparent;
+}
+.checklist li.done { color: var(--sub); text-decoration: line-through; }
+.checklist li.done::before {
+  background: var(--green); border-color: var(--green);
+}
+.checklist li.done::after {
+  content: ''; position: absolute; left: 3px; top: 14px;
+  width: 10px; height: 5px; border-left: 2px solid var(--white);
+  border-bottom: 2px solid var(--white); transform: rotate(-45deg);
+}
+.checklist li .note {
+  display: block; font-size: 11px; color: var(--sub); margin-top: 2px;
+}
+
+/* Timeline */
+.tl { display: flex; flex-direction: column; gap: 0; }
+.tl-item { display: flex; gap: 12px; min-height: 60px; }
+.tl-line {
+  display: flex; flex-direction: column; align-items: center; width: 20px; flex-shrink: 0;
+}
+.tl-dot {
+  width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
+  border: 2px solid var(--cyan); background: var(--bg);
+}
+.tl-dot.active { background: var(--cyan); }
+.tl-stem { flex: 1; width: 2px; background: var(--border); }
+.tl-body { padding-bottom: 16px; flex: 1; }
+.tl-date { font-size: 11px; font-weight: 700; color: var(--cyan); margin-bottom: 2px; }
+.tl-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+.tl-desc { font-size: 11px; color: var(--sub); line-height: 1.5; }
+
+/* Revenue table */
+.rev-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+.rev-table th {
+  font-size: 10px; font-weight: 700; color: var(--cyan); text-align: left;
+  padding: 8px 6px; border-bottom: 2px solid var(--border);
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+.rev-table td {
+  font-size: 12px; padding: 8px 6px; border-bottom: 1px solid rgba(26,86,219,0.12);
+  color: var(--sub);
+}
+.rev-table td:first-child { color: var(--white); font-weight: 600; }
+.rev-table .amt { color: var(--orange); font-weight: 700; font-family: monospace; }
+
+/* Highlight badge */
+.hl {
+  display: inline-block; font-size: 11px; font-weight: 700;
+  padding: 2px 8px; border-radius: 4px; margin-left: 4px;
+}
+.hl-green { background: rgba(16,185,129,0.15); color: var(--green); }
+.hl-orange { background: rgba(249,115,22,0.15); color: var(--orange); }
+.hl-cyan { background: rgba(6,182,212,0.15); color: var(--cyan); }
+.hl-purple { background: rgba(167,139,250,0.15); color: var(--purple); }
+.hl-red { background: rgba(244,63,94,0.15); color: var(--red); }
+
+/* Big number */
+.big-num {
+  font-size: clamp(40px, 12vw, 64px); font-weight: 900;
+  letter-spacing: -0.03em; line-height: 1;
+  background: linear-gradient(135deg, var(--orange), var(--yellow));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+
+/* Tax card */
+.tax-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px; margin-bottom: 8px;
+  border-left: 3px solid var(--green);
+}
+.tax-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.tax-amount { font-size: 18px; font-weight: 800; color: var(--green); margin-bottom: 4px; }
+.tax-desc { font-size: 11px; color: var(--sub); line-height: 1.5; }
+
+/* Action button */
+.action-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.action-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 700;
+  text-decoration: none; transition: transform 0.15s, box-shadow 0.15s;
+}
+.action-btn:active { transform: scale(0.97); }
+.action-primary {
+  background: linear-gradient(135deg, var(--cyan), var(--blue));
+  color: var(--white); border: none;
+}
+.action-secondary {
+  background: var(--card); color: var(--white);
+  border: 1px solid var(--border);
+}
+
+/* Separator */
+.sep { height: 1px; background: var(--border); margin: 16px 0; }
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+<!-- ===== Slide 1: Cover ===== -->
+<div class="slide active">
+<div class="slide-inner" style="text-align:center;">
+  <div class="s-label">SP SIDE PROJECT ROADMAP</div>
+  <div class="s-title"><span class="s-title-gradient">副業ロードマップ<br>2026</span></div>
+  <p class="s-sub" style="margin-bottom:24px;">
+    AI × 既存資産で月10-20万の仕組みを作る<br>
+    <span style="font-size:12px;">開業届 → 即金 → 資産蓄積 → 自動化</span>
+  </p>
+  <div class="grid-2">
+    <div class="card" style="text-align:center;">
+      <div class="card-icon">🎯</div>
+      <div class="card-title">目標</div>
+      <div class="card-desc">月10-20万の自動収入</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div class="card-icon">⏱</div>
+      <div class="card-title">期間</div>
+      <div class="card-desc">2026年4月〜9月</div>
+    </div>
+  </div>
+  <div style="margin-top:12px;" class="grid-2">
+    <div class="card" style="text-align:center;">
+      <div class="card-icon">💡</div>
+      <div class="card-title">武器</div>
+      <div class="card-desc">Claude Code + 既存アプリ群</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div class="card-icon">📊</div>
+      <div class="card-title">投資上限</div>
+      <div class="card-desc">月5,000円以下</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===== Slide 2: Why Now ===== -->
+<div class="slide">
+<div class="slide-inner">
+  <div class="s-num">01</div>
+  <div class="s-title"><span class="s-title-gradient">なぜ今やるのか</span></div>
+  <p class="s-sub">2026年はAI副業が「一般化」する年。先行者優位は今だけ。</p>
+
+  <div class="card" style="border-left:3px solid var(--orange);">
+    <div class="card-title">🔥 AI副業の窓が閉まりつつある</div>
+    <div class="card-desc">
+      日本のAI市場は年32%成長中。2027年には競合が増え単価が下がる。<br>
+      Claude Codeを実務で使える人材は今が最も希少価値が高い。
+    </div>
+  </div>
+  <div class="card" style="border-left:3px solid var(--green);">
+    <div class="card-title">🏗 SPの資産は揃ってる</div>
+    <div class="card-desc">
+      23個のアプリ / MOLKKY HUBメディア / AI自動化基盤 / コミュニティ影響力。<br>
+      足りないのは「収益導線」だけ。
+    </div>
+  </div>
+  <div class="card" style="border-left:3px solid var(--cyan);">
+    <div class="card-title">📈 日本の副業トレンド</div>
+    <div class="card-desc">
+      社会人の4人に1人が副業実施。ミレニアル世代の平均副業月収は約17.6万円。<br>
+      個人開発×AIは最もレバレッジが効く組み合わせ。
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===== Slide 3: 全体マップ ===== -->
+<div class="slide">
+<div class="slide-inner">
+  <div class="s-num">02</div>
+  <div class="s-title"><span class="s-title-gradient">3フェーズ全体マップ</span></div>
+  <p class="s-sub">最短ルートで「自動で回る仕組み」を構築する。</p>
+
+  <div class="phase-card" style="border-left:3px solid var(--green);">
+    <div class="phase-label" style="background:rgba(16,185,129,0.15);color:var(--green);">PHASE 1 / 4月</div>
+    <div class="phase-title">即金 — 基盤整備</div>
+    <div class="phase-desc">
+      開業届提出 / AdSense配置最適化 / アフィリエイトリンク設置<br>
+      <span class="hl hl-green">目標: 月2-4万</span> <span class="hl hl-cyan">労力: 小</span>
+    </div>
+  </div>
+
+  <div class="phase-card" style="border-left:3px solid var(--orange);">
+    <div class="phase-label" style="background:rgba(249,115,22,0.15);color:var(--orange);">PHASE 2 / 5-6月</div>
+    <div class="phase-title">資産蓄積 — 商品化</div>
+    <div class="phase-desc">
+      Claude Code活用ノウハウ商品化 / MACHAP B2B営業 / ブログ開設（経費箱）<br>
+      <span class="hl hl-orange">目標: 月5-10万</span> <span class="hl hl-cyan">労力: 中</span>
+    </div>
+  </div>
+
+  <div class="phase-card" style="border-left:3px solid var(--purple);">
+    <div class="phase-label" style="background:rgba(167,139,250,0.15);color:var(--purple);">PHASE 3 / 7月〜</div>
+    <div class="phase-title">仕組み化 — 自動収入</div>
+    <div class="phase-desc">
+      X自動投稿 / MOLKKY HUBスポンサー / CW/Lancers案件<br>
+      <span class="hl hl-purple">目標: 月10-20万</span> <span class="hl hl-cyan">労力: 小（自動化済）</span>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===== Slide 4: 開業届 チェックリスト ===== -->
+<div class="slide">
+<div class="slide-inner">
+  <div class="s-num">03</div>
+  <div class="s-title"><span class="s-title-gradient">開業届チェックリスト</span></div>
+  <p class="s-sub">4月中に完了。freeeかマネーフォワードで自宅から全部できる。</p>
+
+  <ul class="checklist">
+    <li>
+      freee開業 or マネーフォワード開業にアカウント登録
+      <span class="note">無料。質問に答えるだけで書類が自動生成される</span>
+    </li>
+    <li>
+      開業届（個人事業の開業届出書）を作成
+      <span class="note">屋号は任意（後から変更可）。職業欄は「情報サービス業」or「ソフトウェア開発業」</span>
+    </li>
+    <li>
+      青色申告承認申請書を同時に作成
+      <span class="note">開業日から2ヶ月以内に提出が必須。これで65万円控除が使える</span>
+    </li>
+    <li>
+      e-Tax（マイナンバーカード）で電子提出
+      <span class="note">マイナンバーカード + スマホでOK。紙の場合は税務署に郵送でも可</span>
+    </li>
+    <li>
+      会計ソフト（freee/マネーフォワード）で帳簿開始
+      <span class="note">月額1,000円程度。これも経費。レシートはスマホ撮影で取り込み</span>
+    </li>
+    <li>
+      事業用の銀行口座を開設（推奨）
+      <span class="note">個人口座と分けると確定申告が楽。住信SBIネット銀行 or 楽天銀行がおすすめ</span>
+    </li>
+  </ul>
+
+  <div style="margin-top:12px; padding:12px; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); border-radius:10px;">
+    <div style="font-size:12px; font-weight:700; color:var(--green); margin-bottom:4px;">
+      📅 デッドライン
+    </div>
+    <div style="font-size:11px; color:var(--sub); line-height:1.6;">
+      4月中に開業届を提出 → 2026年分（2027年2-3月の確定申告）から青色申告65万円控除が適用
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===== Slide 5: Phase 1 詳細 ===== -->
+<div class="slide">
+<div class="slide-inner">
+  <div class="s-num">04</div>
+  <div class="s-title"><span style="color:var(--green);">Phase 1</span> 即金</div>
+  <p class="s-sub">4月中にやること。低労力で収益の土台を作る。</p>
+
+  <div class="step-flow">
+    <div class="step-item">
+      <div class="step-badge" style="background:rgba(16,185,129,0.15);color:var(--green);">1</div>
+      <div class="step-content">
+        <div class="step-name" style="color:var(--green);">ADSENSE 最適化</div>
+        <div class="step-title">記事ページに広告を戦略配置</div>
+        <div class="step-desc">
+          記事冒頭・記事中・記事末の3箇所。ツール系ページは最小限。<br>
+          自動広告はOFF → 手動配置でUXを維持。
+        </div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-badge" style="background:rgba(16,185,129,0.15);color:var(--green);">2</div>
+      <div class="step-content">
+        <div class="step-name" style="color:var(--green);">AFFILIATE リンク設置</div>
+        <div class="step-title">モルック用品のアフィリエイト</div>
+        <div class="step-desc">
+          Amazon/楽天のモルックセット・関連用品。MOLKKY HUB記事に自然に組み込む。<br>
+          AIツール系アフィ（30%recurring）もブログ記事に設置。
+        </div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-badge" style="background:rgba(16,185,129,0.15);color:var(--green);">3</div>
+      <div class="step-content">
+        <div class="step-name" style="color:var(--green);">開業届 & 経費管理</div>
+        <div class="step-title">個人事業主として正式にスタート</div>
+        <div class="step-desc">
+          freee開業で書類作成 → e-Tax提出。<br>
+          PC・サーバー・ドメイン代を全て経費計上開始。
+        </div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-badge" style="background:rgba(16,185,129,0.15);color:var(--green);">4</div>
+      <div class="step-content">
+        <div class="step-name" style="color:var(--green);">既存サイト収益化</div>
+        <div class="step-title">MOLKKY HUBの導線整理</div>
+        <div class="step-desc">
+          記事→商品・ツール→リピート訪問の導線を設計。<br>
+          内部リンク強化でPV/セッションを改善。
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===== Slide 6: Phase 2 詳細 ===== -->
+<div class="slide">
+<div class="slide-inner">
+  <div class="s-num">05</div>
+  <div class="s-title"><span style="color:var(--orange);">Phase 2</span> 資産蓄積</div>
+  <p class="s-sub">5-6月。商品を作って「売れる状態」にする。</p>
+
+  <div class="step-flow">
+    <div class="step-item">
+      <div class="step-badge" style="background:rgba(249,115,22,0.15);color:var(--orange);">1</div>
+      <div class="step-content">
+        <div class="step-name" style="color:var(--orange);">CLAUDE CODE 商品化</div>
+        <div class="step-title">ノウハウをコンテンツに変換</div>
+        <div class="step-desc">
+          実際の開発フロー・プロンプト集・自動化テンプレをnoteやBrain等で販売。<br>
+          価格帯: 1,980〜4,980円。実例ベースで「AI臭くない」のが差別化。
+        </div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-badge" style="background:rgba(249,115,22,0.15);color:var(--orange);">2</div>
+      <div class="step-content">
+        <div class="step-name" style="color:var(--orange);">MACHAP B2B</div>
+        <div class="step-title">MACHAPフレームワークを法人向けに提案</div>
+        <div class="step-desc">
+          5STEPサイクルをチーム向けSaaSとして提案。<br>
+          まず知り合い経由で2-3社にパイロット導入。月額制。
+        </div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-badge" style="background:rgba(249,115,22,0.15);color:var(--orange);">3</div>
+      <div class="step-content">
+        <div class="step-name" style="color:var(--orange);">テックブログ開設</div>
+        <div class="step-title">個人開発×AI の情報発信基地</div>
+        <div class="step-desc">
+          WordPress or はてなブログPro。AI開発・Claude Code活用記事を週1投稿。<br>
+          SEO+アフィリエイト+権威構築の三役。ブログ運営費も経費。
+        </div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-badge" style="background:rgba(249,115,22,0.15);color:var(--orange);">4</div>
+      <div class="step-content">
+        <div class="step-name" style="color:var(--orange);">MOLKKY HUB 強化</div>
+        <div class="step-title">記事量産 + コンテンツSEO</div>
+        <div class="step-desc">
+          Claude Codeで下書き生成→SP確認→公開のフローを確立。<br>
+          月10記事ペースで検索流入を積み上げ。100記事で月1,000PVの壁突破。
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===== Slide 7: Phase 3 詳細 ===== -->
+<div class="slide">
+<div class="slide-inner">
+  <div class="s-num">06</div>
+  <div class="s-title"><span style="color:var(--purple);">Phase 3</span> 仕組み化</div>
+  <p class="s-sub">7月〜。自動で回る収益源を確立する。</p>
+
+  <div class="step-flow">
+    <div class="step-item">
+      <div class="step-badge" style="background:rgba(167,139,250,0.15);color:var(--purple);">1</div>
+      <div class="step-content">
+        <div class="step-name" style="color:var(--purple);">X 自動投稿</div>
+        <div class="step-title">コンテンツ配信を完全自動化</div>
+        <div class="step-desc">
+          既存のXポスト生成ツールを拡張。記事公開→X投稿→ブログ流入を自動化。<br>
+          MOLKKY HUB・テックブログ両方に対応。
+        </div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-badge" style="background:rgba(167,139,250,0.15);color:var(--purple);">2</div>
+      <div class="step-content">
+        <div class="step-name" style="color:var(--purple);">SPONSOR</div>
+        <div class="step-title">MOLKKY HUBにスポンサー枠</div>
+        <div class="step-desc">
+          月間PVが安定したらスポンサーバナー枠を設置。<br>
+          モルック用品メーカー・スポーツブランド等に営業。月3-5万/枠。
+        </div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-badge" style="background:rgba(167,139,250,0.15);color:var(--purple);">3</div>
+      <div class="step-content">
+        <div class="step-name" style="color:var(--purple);">FREELANCE</div>
+        <div class="step-title">CrowdWorks / Lancersで案件獲得</div>
+        <div class="step-desc">
+          「Claude Code活用」をウリにしたWeb開発案件。<br>
+          ポートフォリオ=23個のアプリ。単価交渉力あり。月1-2件で十分。
+        </div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-badge" style="background:rgba(167,139,250,0.15);color:var(--purple);">4</div>
+      <div class="step-content">
+        <div class="step-name" style="color:var(--purple);">SAAS</div>
+        <div class="step-title">ニッチSaaS展開（将来）</div>
+        <div class="step-desc">
+          MOLKKY HUBの機能を月額制ツールに切り出し。<br>
+          大会運営ツール / チームスコア管理 / メディア分析。年内に検討。
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===== Slide 8: 税金対策 ===== -->
+<div class="slide">
+<div class="slide-inner">
+  <div class="s-num">07</div>
+  <div class="s-title"><span class="s-title-gradient">税金対策まとめ</span></div>
+  <p class="s-sub">個人事業主になったら使える節税テクニック。</p>
+
+  <div class="tax-card">
+    <div class="tax-title">青色申告特別控除</div>
+    <div class="tax-amount">-65万円</div>
+    <div class="tax-desc">e-Taxで電子申告 + 複式簿記。freee/マネーフォワードが自動でやってくれる。</div>
+  </div>
+
+  <div class="tax-card" style="border-left-color:var(--cyan);">
+    <div class="tax-title">経費計上できるもの</div>
+    <div class="tax-amount" style="color:var(--cyan); font-size:14px;">PC / サーバー / ドメイン / 通信費 / 電気代（按分）</div>
+    <div class="tax-desc">
+      Anthropic API代・Vercel Pro・ドメイン代・クラウド費用は100%経費。<br>
+      自宅の家賃/電気代は事業使用割合で按分して計上。30%程度が目安。
+    </div>
+  </div>
+
+  <div class="tax-card" style="border-left-color:var(--orange);">
+    <div class="tax-title">少額減価償却資産の特例</div>
+    <div class="tax-amount" style="color:var(--orange); font-size:14px;">30万円未満のPC・機材 → 一括経費</div>
+    <div class="tax-desc">通常は数年かけて減価償却するが、青色申告なら一括で経費にできる。</div>
+  </div>
+
+  <div class="tax-card" style="border-left-color:var(--purple);">
+    <div class="tax-title">損益通算</div>
+    <div class="tax-amount" style="color:var(--purple); font-size:14px;">事業の赤字 → 給与所得と相殺</div>
+    <div class="tax-desc">
+      初年度は経費が多く赤字になりやすい。<br>
+      事業所得として認められれば、本業の給与から天引きされた税金が戻る。
+    </div>
+  </div>
+
+  <div style="margin-top:8px; padding:10px; background:rgba(244,63,94,0.08); border:1px solid rgba(244,63,94,0.2); border-radius:10px;">
+    <div style="font-size:11px; font-weight:700; color:var(--red); margin-bottom:4px;">
+      ⚠ インボイス制度（2割特例）
+    </div>
+    <div style="font-size:11px; color:var(--sub); line-height:1.6;">
+      2026年9月まで消費税を売上税額の20%に軽減できる特例あり。登録するかは売上規模で判断。
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===== Slide 9: 収益シミュレーション ===== -->
+<div class="slide">
+<div class="slide-inner">
+  <div class="s-num">08</div>
+  <div class="s-title"><span class="s-title-gradient">収益シミュレーション</span></div>
+  <p class="s-sub">現実的な見積もり。夢を語らない。</p>
+
+  <table class="rev-table">
+    <thead>
+      <tr><th>収益源</th><th>4月</th><th>6月</th><th>9月</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>AdSense</td>
+        <td class="amt">¥3,000</td>
+        <td class="amt">¥5,000</td>
+        <td class="amt">¥10,000</td>
+      </tr>
+      <tr>
+        <td>アフィリエイト</td>
+        <td class="amt">¥2,000</td>
+        <td class="amt">¥8,000</td>
+        <td class="amt">¥15,000</td>
+      </tr>
+      <tr>
+        <td>コンテンツ販売</td>
+        <td class="amt">—</td>
+        <td class="amt">¥15,000</td>
+        <td class="amt">¥30,000</td>
+      </tr>
+      <tr>
+        <td>スポンサー</td>
+        <td class="amt">—</td>
+        <td class="amt">—</td>
+        <td class="amt">¥30,000</td>
+      </tr>
+      <tr>
+        <td>受託/案件</td>
+        <td class="amt">—</td>
+        <td class="amt">¥30,000</td>
+        <td class="amt">¥50,000</td>
+      </tr>
+      <tr>
+        <td>MACHAP B2B</td>
+        <td class="amt">—</td>
+        <td class="amt">¥10,000</td>
+        <td class="amt">¥30,000</td>
+      </tr>
+      <tr style="border-top:2px solid var(--border);">
+        <td style="font-weight:800; color:var(--orange);">合計</td>
+        <td class="amt" style="font-size:14px;">¥5,000</td>
+        <td class="amt" style="font-size:14px;">¥68,000</td>
+        <td class="amt" style="font-size:14px;">¥165,000</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="padding:12px; background:rgba(249,115,22,0.08); border:1px solid rgba(249,115,22,0.2); border-radius:10px;">
+    <div style="font-size:12px; font-weight:700; color:var(--orange); margin-bottom:4px;">
+      💰 税金対策の効果（初年度）
+    </div>
+    <div style="font-size:11px; color:var(--sub); line-height:1.8;">
+      青色申告65万円控除 + 経費（PC/通信/サーバー等）で<br>
+      実質的に<span style="color:var(--green); font-weight:700;">初年度は税金ほぼゼロ</span>（赤字 or 控除内に収まる可能性大）
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===== Slide 10: タイムライン ===== -->
+<div class="slide">
+<div class="slide-inner">
+  <div class="s-num">09</div>
+  <div class="s-title"><span class="s-title-gradient">月次タイムライン</span></div>
+
+  <div class="tl">
+    <div class="tl-item">
+      <div class="tl-line"><div class="tl-dot active"></div><div class="tl-stem"></div></div>
+      <div class="tl-body">
+        <div class="tl-date">2026年4月 <span class="hl hl-green">NOW</span></div>
+        <div class="tl-title">開業届提出 / AdSense最適化 / アフィ設置</div>
+        <div class="tl-desc">freee開業で書類作成→e-Tax提出。記事ページにAdSense配置。モルック用品アフィリンク設置。</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-line"><div class="tl-dot"></div><div class="tl-stem"></div></div>
+      <div class="tl-body">
+        <div class="tl-date">2026年5月</div>
+        <div class="tl-title">Claude Code商品作成 / テックブログ開設</div>
+        <div class="tl-desc">noteでClaude Code活用記事を有料公開。テックブログ（WP or はてな）を開設し週1投稿開始。</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-line"><div class="tl-dot"></div><div class="tl-stem"></div></div>
+      <div class="tl-body">
+        <div class="tl-date">2026年6月</div>
+        <div class="tl-title">MACHAP B2Bパイロット / 記事量産</div>
+        <div class="tl-desc">知り合い2-3社にMACHAP導入提案。MOLKKY HUB記事を月10本ペースに。CW/Lancersにプロフィール登録。</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-line"><div class="tl-dot"></div><div class="tl-stem"></div></div>
+      <div class="tl-body">
+        <div class="tl-date">2026年7月</div>
+        <div class="tl-title">X自動投稿 / 初案件</div>
+        <div class="tl-desc">記事公開→X自動投稿の仕組み完成。CW/Lancersで初案件受注。</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-line"><div class="tl-dot"></div><div class="tl-stem"></div></div>
+      <div class="tl-body">
+        <div class="tl-date">2026年8月</div>
+        <div class="tl-title">スポンサー営業 / コンテンツ拡充</div>
+        <div class="tl-desc">MOLKKY HUBにスポンサーバナー枠を設置。有料コンテンツの第2弾リリース。</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-line"><div class="tl-dot"></div><div class="tl-stem" style="background:transparent;"></div></div>
+      <div class="tl-body">
+        <div class="tl-date">2026年9月 <span class="hl hl-orange">目標達成</span></div>
+        <div class="tl-title">月16.5万円の収益体制確立</div>
+        <div class="tl-desc">複数収益源が安定稼働。自動化済みで月間作業は10-15時間に。SaaS展開を検討開始。</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===== Slide 11: リスクと対策 ===== -->
+<div class="slide">
+<div class="slide-inner">
+  <div class="s-num">10</div>
+  <div class="s-title"><span class="s-title-gradient">リスクと対策</span></div>
+  <p class="s-sub">楽観は禁物。現実的なリスクに備える。</p>
+
+  <div class="card" style="border-left:3px solid var(--red);">
+    <div class="card-title">😑 コンテンツが売れない</div>
+    <div class="card-desc">
+      <strong>確率: 中</strong> — SaaS/コンテンツの70%は月$1K以下。<br>
+      <strong>対策:</strong> 最小単位で出す（1記事1,980円）。売れなければ無料に切り替えて集客に使う。損失は時間だけ。
+    </div>
+  </div>
+  <div class="card" style="border-left:3px solid var(--yellow);">
+    <div class="card-title">📉 Google アルゴリズム変動</div>
+    <div class="card-desc">
+      <strong>確率: 高</strong> — AI Overviewsでクリック率低下中。<br>
+      <strong>対策:</strong> SEO依存しすぎない。X/コミュニティからの直接流入を育てる。ニッチ（モルック）は影響受けにくい。
+    </div>
+  </div>
+  <div class="card" style="border-left:3px solid var(--orange);">
+    <div class="card-title">⏰ 時間が取れない</div>
+    <div class="card-desc">
+      <strong>確率: 高</strong> — 本業+モルック活動で忙しい。<br>
+      <strong>対策:</strong> Claude Codeで自動化できる作業は全部自動化。最悪Phase 3は後ろ倒し。Phase 1だけでも年間数万円の経費節約効果あり。
+    </div>
+  </div>
+  <div class="card" style="border-left:3px solid var(--purple);">
+    <div class="card-title">🏢 副業バレ</div>
+    <div class="card-desc">
+      <strong>確率: 低</strong> — 住民税を普通徴収にすれば会社にはバレない。<br>
+      <strong>対策:</strong> 確定申告時に「自分で納付」を選択。ふるさと納税も普通徴収で。
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===== Slide 12: まとめ ===== -->
+<div class="slide">
+<div class="slide-inner" style="text-align:center;">
+  <div class="s-label">SUMMARY</div>
+  <div class="s-title"><span class="s-title-gradient">まず4月にやること</span></div>
+  <p class="s-sub" style="margin-bottom:24px;">シンプルに3つだけ。</p>
+
+  <div class="card" style="border-left:3px solid var(--green); text-align:left;">
+    <div class="card-title">1. 開業届を出す</div>
+    <div class="card-desc">
+      freee開業でサクッと作成 → e-Taxで提出。<br>
+      これだけで65万円控除 + 経費計上が使えるようになる。
+    </div>
+  </div>
+  <div class="card" style="border-left:3px solid var(--cyan); text-align:left;">
+    <div class="card-title">2. AdSense配置を最適化する</div>
+    <div class="card-desc">
+      MOLKKY HUBの記事ページに広告を3箇所配置。<br>
+      ツールページはそのまま。UX最優先。
+    </div>
+  </div>
+  <div class="card" style="border-left:3px solid var(--orange); text-align:left;">
+    <div class="card-title">3. モルック用品アフィリンクを貼る</div>
+    <div class="card-desc">
+      Amazon/楽天のモルックセット商品リンクを記事に設置。<br>
+      自然な文脈で。押し売り感ゼロ。
+    </div>
+  </div>
+
+  <div style="margin-top:24px;">
+    <div class="big-num">¥165K</div>
+    <div style="font-size:13px; color:var(--sub); margin-top:4px;">9月の目標月収</div>
+  </div>
+
+  <div style="margin-top:16px; font-size:12px; color:var(--sub);">
+    70点で出して改善。自動化できないなら後回し。
+  </div>
+</div>
+</div>
+
+</div><!-- /deck -->
+
+<!-- Navigation -->
+<div class="nav">
+  <button class="nav-btn" id="prev" disabled>&#8592;</button>
+  <div class="nav-center">
+    <div class="nav-counter"><span id="cur">1</span> / <span id="tot">12</span></div>
+    <div class="nav-progress"><div class="nav-bar" id="bar"></div></div>
+  </div>
+  <button class="nav-btn" id="next">&#8594;</button>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let idx = 0;
+
+function go(i) {
+  if (i < 0 || i >= total) return;
+  slides[idx].classList.remove('active');
+  idx = i;
+  slides[idx].classList.add('active');
+  document.getElementById('cur').textContent = idx + 1;
+  document.getElementById('tot').textContent = total;
+  document.getElementById('bar').style.width = ((idx + 1) / total * 100) + '%';
+  document.getElementById('prev').disabled = idx === 0;
+  document.getElementById('next').disabled = idx === total - 1;
+}
+
+document.getElementById('prev').addEventListener('click', () => go(idx - 1));
+document.getElementById('next').addEventListener('click', () => go(idx + 1));
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(idx + 1); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); go(idx - 1); }
+});
+
+// Swipe
+let sx = 0;
+document.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - sx;
+  if (Math.abs(dx) > 50) dx > 0 ? go(idx - 1) : go(idx + 1);
+});
+
+go(0);
+</script>
+</body>
+</html>
