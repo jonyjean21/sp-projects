@@ -208,6 +208,26 @@ ${articleList}`;
 }
 
 /**
+ * MarkdownをHTML変換（コードブロック・太字・インラインコード）
+ */
+function mdToHtml_(text) {
+  if (!text) return '';
+  // コードブロック: ```lang\n...\n``` → <pre><code>
+  text = text.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
+    const escaped = code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const langClass = lang ? ` class="language-${lang}"` : '';
+    return `<pre style="background:#1e1e1e;color:#d4d4d4;padding:16px;overflow-x:auto;border-radius:6px;margin:16px 0;"><code${langClass}>${escaped}</code></pre>`;
+  });
+  // 太字
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // インラインコード
+  text = text.replace(/`([^`\n]+)`/g, '<code style="background:#f4f4f4;padding:2px 6px;border-radius:3px;">$1</code>');
+  // ①②③ の前に改行
+  text = text.replace(/\n([①②③④⑤])/g, '<br>$1');
+  return text;
+}
+
+/**
  * WP記事HTMLを生成（バズ翻訳メディア構成）
  */
 function buildHtml_(result, today, rawItems) {
@@ -233,6 +253,8 @@ function buildHtml_(result, today, rawItems) {
     const rawItem = rawItems.find(r => r.url === item.url) || {};
     const githubUrl = rawItem.github_url || null;
 
+    const summaryHtml = mdToHtml_(item.summary || '');
+
     if (item.is_main) {
       html += `<div style="border-left:4px solid #0073aa;padding:12px 16px;margin:24px 0;background:#f0f7ff;">\n`;
       html += `<p style="margin:0 0 4px;"><strong>📌 今日のメイン</strong></p>\n`;
@@ -240,7 +262,7 @@ function buildHtml_(result, today, rawItems) {
       html += `<h2>${item.title_ja}${scorePart}</h2>\n`;
       html += `<p><strong>ソース:</strong> ${label}</p>\n`;
       if (githubUrl) html += `<p>🔗 <a href="${githubUrl}" target="_blank" rel="noopener"><strong>GitHubリポジトリを見る</strong></a></p>\n`;
-      html += `<div style="line-height:1.8;">${item.summary}</div>\n`;
+      html += `<div style="line-height:1.8;">${summaryHtml}</div>\n`;
       html += `<p><a href="${url}" target="_blank" rel="noopener">元記事を読む（英語）→</a></p>\n`;
       html += `<hr style="margin:32px 0;">\n\n`;
       html += `<h2>その他の注目記事</h2>\n\n`;
@@ -248,7 +270,7 @@ function buildHtml_(result, today, rawItems) {
       html += `<h3>${item.title_ja}${scorePart}</h3>\n`;
       html += `<p><strong>ソース:</strong> ${label}</p>\n`;
       if (githubUrl) html += `<p>🔗 <a href="${githubUrl}" target="_blank" rel="noopener">GitHubリポジトリ</a></p>\n`;
-      html += `<p>${item.summary}</p>\n`;
+      html += `<p>${summaryHtml}</p>\n`;
       html += `<p><a href="${url}" target="_blank" rel="noopener">記事を読む →</a></p>\n\n`;
     }
   }

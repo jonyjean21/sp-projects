@@ -9,7 +9,7 @@ Firebase /claude-tips-queue → Gemini要約 → BuildHub WP投稿
   - BuildHub編集部より（今日の総評）
 """
 
-import os, json, re, base64, urllib.request
+import os, json, re, base64, urllib.request, urllib.error, urllib.parse
 from datetime import datetime, timezone, timedelta
 
 FIREBASE_URL = "https://viisi-master-app-default-rtdb.firebaseio.com"
@@ -139,6 +139,24 @@ def summarize(items, api_key):
     return json.loads(match.group())
 
 
+def md_to_html(text):
+    """Gemini返却markdownの最低限HTML変換（コードブロック・太字・インラインコード）"""
+    import html as html_mod
+    # コードブロック: ```lang\n...\n``` → <pre><code>
+    def replace_codeblock(m):
+        lang = m.group(1).strip() or 'text'
+        code = html_mod.escape(m.group(2))
+        return f'<pre style="background:#1e1e1e;color:#d4d4d4;padding:16px;overflow-x:auto;border-radius:6px;margin:16px 0;"><code class="language-{lang}">{code}</code></pre>'
+    text = re.sub(r'```(\w*)\n([\s\S]*?)```', replace_codeblock, text)
+    # 太字: **text** → <strong>
+    text = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', text)
+    # インラインコード: `code` → <code>
+    text = re.sub(r'`([^`\n]+)`', r'<code style="background:#f4f4f4;padding:2px 6px;border-radius:3px;">\1</code>', text)
+    # 段落区切り（①②③ などの箇条書き行）
+    text = re.sub(r'\n([①②③④⑤])', r'<br>\1', text)
+    return text
+
+
 def build_html(result, date_str, raw_items):
     items          = result.get('items', [])
     editor_comment = result.get('editor_comment', '')
@@ -161,6 +179,8 @@ def build_html(result, date_str, raw_items):
         raw = next((r for r in raw_items if r.get('url') == item.get('url')), {})
         github_url = raw.get('github_url')
 
+        summary_html = md_to_html(item.get('summary', ''))
+
         if item.get('is_main'):
             html += '<div style="border-left:4px solid #0073aa;padding:12px 16px;margin:24px 0;background:#f0f7ff;">\n'
             html += '<p style="margin:0 0 4px;"><strong>📌 今日のメイン</strong></p>\n'
@@ -169,7 +189,7 @@ def build_html(result, date_str, raw_items):
             html += f'<p><strong>ソース:</strong> {label}</p>\n'
             if github_url:
                 html += f'<p>🔗 <a href="{github_url}" target="_blank" rel="noopener"><strong>GitHubリポジトリを見る</strong></a></p>\n'
-            html += f'<div style="line-height:1.8;">{item["summary"]}</div>\n'
+            html += f'<div style="line-height:1.8;">{summary_html}</div>\n'
             html += f'<p><a href="{url}" target="_blank" rel="noopener">元記事を読む（英語）→</a></p>\n'
             html += '<hr style="margin:32px 0;">\n\n'
             html += '<h2>その他の注目記事</h2>\n\n'
@@ -178,7 +198,7 @@ def build_html(result, date_str, raw_items):
             html += f'<p><strong>ソース:</strong> {label}</p>\n'
             if github_url:
                 html += f'<p>🔗 <a href="{github_url}" target="_blank" rel="noopener">GitHubリポジトリ</a></p>\n'
-            html += f'<p>{item["summary"]}</p>\n'
+            html += f'<p>{summary_html}</p>\n'
             html += f'<p><a href="{url}" target="_blank" rel="noopener">記事を読む →</a></p>\n\n'
 
     if editor_comment:
@@ -213,6 +233,84 @@ def post_to_wp(title, content, excerpt, tag_ids, user, password):
         raise RuntimeError(f"WP投稿失敗 {e.code}: {body}")
 
 
+def fetch_pexels_image(query, api_key):
+    """Pexels APIで画像URLとカメラマン情報を取得"""
+    q = urllib.parse.quote(query)
+    req = urllib.request.Request(
+        f"https://api.pexels.com/v1/search?query={q}&per_page=3&orientation=landscape",
+        headers={
+            "Authorization": api_key,
+            "User-Agent": "BuildHub/1.0 (+https://www.buildhub.jp)",
+        }
+    )
+    try:
+        with urllib.request.urlopen(req) as res:
+            data = json.loads(res.read())
+        photos = data.get('photos', [])
+        if not photos:
+            return None
+        photo = photos[0]
+        return {
+            'url':           photo['src']['large'],
+            'photographer':  photo.get('photographer', ''),
+            'pexels_url':    photo.get('url', ''),
+        }
+    except Exception as e:
+        print(f"Pexels取得失敗: {e}")
+        return None
+
+
+def upload_featured_image(post_id, image_info, wp_user, wp_pass):
+    """画像をWPメディアにアップロードしてアイキャッチに設定"""
+    import urllib.request as _ur
+    creds = base64.b64encode(f"{wp_user}:{wp_pass}".encode()).decode()
+    auth_header = {"Authorization": f"Basic {creds}"}
+
+    # 画像ダウンロード（User-Agent付き）
+    try:
+        dl_req = _ur.Request(image_info['url'], headers={"User-Agent": "BuildHub/1.0"})
+        with _ur.urlopen(dl_req) as res:
+            img_data = res.read()
+    except Exception as e:
+        print(f"画像DL失敗: {e}")
+        return False
+
+    # WPメディアにアップロード
+    upload_req = _ur.Request(
+        f"{BUILDHUB_URL}/wp-json/wp/v2/media",
+        data=img_data,
+        headers={
+            **auth_header,
+            "Content-Disposition": f"attachment; filename=buildhub-{post_id}.jpg",
+            "Content-Type": "image/jpeg",
+        }
+    )
+    try:
+        with _ur.urlopen(upload_req) as res:
+            media = json.loads(res.read())
+        media_id = media['id']
+    except Exception as e:
+        print(f"メディアアップロード失敗: {e}")
+        return False
+
+    # アイキャッチ設定（WP REST API: POST to posts/{id}）
+    patch_payload = json.dumps({"featured_media": media_id}).encode()
+    patch_req = _ur.Request(
+        f"{BUILDHUB_URL}/wp-json/wp/v2/posts/{post_id}",
+        data=patch_payload,
+        headers={**auth_header, "Content-Type": "application/json"},
+        method="POST"
+    )
+    try:
+        with _ur.urlopen(patch_req) as res:
+            pass
+        print(f"アイキャッチ設定完了: media_id={media_id}")
+        return True
+    except Exception as e:
+        print(f"アイキャッチ設定失敗: {e}")
+        return False
+
+
 def mark_published(items, post_id):
     for item in items:
         payload = json.dumps({"status": "published", "post_id": post_id}).encode()
@@ -233,9 +331,10 @@ def write_log(date_str, post_id, count):
 
 
 def main():
-    gemini_key = os.environ.get('GEMINI_API_KEY')
-    wp_user    = os.environ.get('BUILDHUB_WP_USER')
-    wp_pass    = os.environ.get('BUILDHUB_WP_APP_PASS')
+    gemini_key  = os.environ.get('GEMINI_API_KEY')
+    wp_user     = os.environ.get('BUILDHUB_WP_USER')
+    wp_pass     = os.environ.get('BUILDHUB_WP_APP_PASS')
+    pexels_key  = os.environ.get('PEXELS_API_KEY')
 
     if not all([gemini_key, wp_user, wp_pass]):
         print("ERROR: 環境変数未設定 (GEMINI_API_KEY / BUILDHUB_WP_USER / BUILDHUB_WP_APP_PASS)")
@@ -263,6 +362,23 @@ def main():
 
     post_id = post_to_wp(title, content, excerpt, tag_ids, wp_user, wp_pass)
     print(f"WP投稿完了: ID={post_id}")
+
+    # アイキャッチ画像（Pexels）
+    if pexels_key:
+        main_title = result.get('items', [{}])[0].get('title_ja', 'AI coding terminal')
+        # タイトルから英語キーワードを生成（汎用クエリをフォールバック）
+        queries = ['AI coding terminal dark', 'developer programming computer', 'artificial intelligence code']
+        image_info = None
+        for q in queries:
+            image_info = fetch_pexels_image(q, pexels_key)
+            if image_info:
+                break
+        if image_info:
+            upload_featured_image(post_id, image_info, wp_user, wp_pass)
+        else:
+            print("Pexels画像取得失敗。アイキャッチなしで続行。")
+    else:
+        print("PEXELS_API_KEY未設定。アイキャッチスキップ。")
 
     mark_published(top, post_id)
     write_log(date_str, post_id, len(top))
