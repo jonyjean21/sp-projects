@@ -5,11 +5,10 @@
  * セットアップ:
  *   1. createTrigger() を1回実行してトリガー登録（6時間おき）
  *
- * 収集データ拡張（v2）:
- *   - content_preview: 800文字（コード含有記事は価値高いため増量）
- *   - has_code: コードブロックを含むか（true/false）
- *   - github_url: GitHubリポジトリURLがあれば抽出
- *   - score: HN points / Reddit upvotes / Zenn liked_count / dev.to reactions
+ * v3: 閾値引き上げ（バズ記事のみ通過）+ 48h超expired自動クリーンアップ
+ *   - Reddit: score >= 50 / HN: points >= 50 / Zenn: liked >= 20
+ *   - Qiita: JSON API + likes >= 10 / dev.to: reactions >= 20
+ *   - GitHub Releases: 全件（公式リリースは常に価値あり）
  */
 
 const FIREBASE_URL = 'https://viisi-master-app-default-rtdb.firebaseio.com';
@@ -64,9 +63,12 @@ function collectAll() {
     }
   }
 
+  // 48h超のpendingを自動期限切れ処理
+  const expiredCount = cleanupExpired_();
+
   const durationSec = Math.round((new Date() - startTime) / 1000);
-  writeLog_({ timestamp: startTime.toISOString(), durationSec, newCount: totalNew, skipped: totalSkipped });
-  Logger.log(`完了: ${totalNew}件追加, ${totalSkipped}件スキップ (${durationSec}秒)`);
+  writeLog_({ timestamp: startTime.toISOString(), durationSec, newCount: totalNew, skipped: totalSkipped, expired: expiredCount });
+  Logger.log(`完了: ${totalNew}件追加, ${totalSkipped}件スキップ, ${expiredCount}件期限切れ (${durationSec}秒)`);
 }
 
 /**
@@ -95,7 +97,7 @@ function collectReddit_(subreddit) {
   const data = JSON.parse(res.getContentText());
   return data.data.children
     .map(c => c.data)
-    .filter(p => p.score >= 10 && !p.stickied)
+    .filter(p => p.score >= 50 && !p.stickied)
     .map(p => {
       const selftext = (p.selftext || '').substring(0, 800);
       const { has_code, github_url } = detectCode_(selftext);
@@ -116,12 +118,12 @@ function collectReddit_(subreddit) {
 }
 
 /**
- * Hacker News (hnrss.org - points >= 10)
+ * Hacker News (hnrss.org - points >= 50)
  * Show HNなどコード系が多いため github_url 検出を重視
  */
 function collectHN_() {
   const res = UrlFetchApp.fetch(
-    'https://hnrss.org/newest?q=claude+code&points=10',
+    'https://hnrss.org/newest?q=claude+code&points=50',
     { muteHttpExceptions: true }
   );
   if (res.getResponseCode() !== 200) throw new Error(`HTTP ${res.getResponseCode()}`);
@@ -129,7 +131,7 @@ function collectHN_() {
 }
 
 /**
- * Zenn JSON API (liked_count >= 5)
+ * Zenn JSON API (liked_count >= 20)
  * タイトルから「実装」「作ってみた」「コード」を含む記事はスコアボーナス
  */
 function collectZenn_() {
@@ -143,15 +145,15 @@ function collectZenn_() {
   const techKeywords = /実装|作って|コード|試して|使って|ツール|自動化|スクリプト|設定|CLAUDE\.md|hook|MCP|エージェント|agentic|関数呼び出し|プロンプト|function.call|ワークフロー|パイプライン|API|CLI|拡張|カスタム|テンプレート|権限|許可/i;
 
   return (data.articles || [])
-    .filter(a => a.liked_count >= 5)
+    .filter(a => a.liked_count >= 20)
     .map(a => {
       const isTech = techKeywords.test(a.title);
       return {
         url: `https://zenn.dev${a.path}`,
         title: a.title,
         content_preview: '',
-        score: a.liked_count + (isTech ? 10 : 0), // 技術系はボーナス
-        has_code: isTech, // タイトルから推定
+        score: a.liked_count + (isTech ? 10 : 0),
+        has_code: isTech,
         github_url: null,
         published_at: a.published_at
       };
@@ -159,19 +161,35 @@ function collectZenn_() {
 }
 
 /**
- * Qiita RSS
+ * Qiita JSON API (likes_count >= 10)
  */
 function collectQiita_() {
   const res = UrlFetchApp.fetch(
-    'https://qiita.com/tags/claude-code/feed',
+    'https://qiita.com/api/v2/tags/claude-code/items?page=1&per_page=20',
     { muteHttpExceptions: true }
   );
   if (res.getResponseCode() !== 200) throw new Error(`HTTP ${res.getResponseCode()}`);
-  return parseRss_(res.getContentText(), 'qiita');
+
+  const articles = JSON.parse(res.getContentText());
+  return articles
+    .filter(a => a.likes_count >= 10)
+    .map(a => {
+      const preview = (a.body || '').substring(0, 800);
+      const { has_code, github_url } = detectCode_(preview);
+      return {
+        url: a.url,
+        title: a.title,
+        content_preview: preview,
+        score: a.likes_count,
+        has_code,
+        github_url,
+        published_at: a.created_at
+      };
+    });
 }
 
 /**
- * dev.to JSON API (reactions >= 5)
+ * dev.to JSON API (reactions >= 20)
  * claudecode と claude-code の両タグから収集して重複を排除
  */
 function collectDevTo_() {
@@ -195,7 +213,7 @@ function collectDevTo_() {
   }
 
   return allArticles
-    .filter(a => a.positive_reactions_count >= 5)
+    .filter(a => a.positive_reactions_count >= 20)
     .map(a => {
       const preview = (a.description || '').substring(0, 800);
       const { has_code, github_url } = detectCode_(preview);
@@ -336,6 +354,33 @@ function writeLog_(logEntry) {
     payload: JSON.stringify(logEntry),
     muteHttpExceptions: true
   });
+}
+
+/**
+ * 48h超のpendingアイテムをexpiredに更新
+ */
+function cleanupExpired_() {
+  const res = UrlFetchApp.fetch(`${FIREBASE_URL}${QUEUE_PATH}.json`, { muteHttpExceptions: true });
+  if (res.getResponseCode() !== 200) return 0;
+  const data = JSON.parse(res.getContentText());
+  if (!data) return 0;
+
+  const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+  let count = 0;
+
+  for (const [id, item] of Object.entries(data)) {
+    if (!item || item.status !== 'pending') continue;
+    if (item.collected_at && item.collected_at < cutoff) {
+      UrlFetchApp.fetch(`${FIREBASE_URL}${QUEUE_PATH}/${id}.json`, {
+        method: 'patch',
+        contentType: 'application/json',
+        payload: JSON.stringify({ status: 'expired' }),
+        muteHttpExceptions: true
+      });
+      count++;
+    }
+  }
+  return count;
 }
 
 // === トリガー管理 ===
