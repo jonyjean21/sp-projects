@@ -1,0 +1,23 @@
+name: BuildHub Daily Digest
+
+on:
+  schedule:
+    - cron: '0 22 * * *'  # 22:00 UTC = 7:00 JST
+  workflow_dispatch:       # 手動実行も可能
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run BuildHub Digest
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          BUILDHUB_WP_USER: buildhub260309
+          BUILDHUB_WP_APP_PASS: ${{ secrets.BUILDHUB_WP_APP_PASS }}
+        run: python3 tools/buildhub-digest.py
