@@ -17,6 +17,7 @@ QUEUE_PATH = "/claude-tips-queue"
 DIGEST_LOG_PATH = "/claude-tips-digest-log"
 BUILDHUB_URL = "https://www.buildhub.jp"
 CLAUDE_CODE_CATEGORY_ID = 2
+DIGEST_CATEGORY_ID = 1  # まとめ記事
 JST = timezone(timedelta(hours=9))
 
 SOURCE_LABELS = {
@@ -230,7 +231,7 @@ def post_to_wp(title, content, excerpt, tag_ids, user, password):
     payload = json.dumps({
         "title": title, "content": content, "excerpt": excerpt,
         "status": "publish", "slug": slug,
-        "categories": [CLAUDE_CODE_CATEGORY_ID],
+        "categories": [CLAUDE_CODE_CATEGORY_ID, DIGEST_CATEGORY_ID],
         "tags": tag_ids,
     }).encode()
     req = urllib.request.Request(

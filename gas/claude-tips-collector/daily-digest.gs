@@ -18,6 +18,7 @@
 const DIGEST_LOG_PATH = '/claude-tips-digest-log';
 const BUILDHUB_URL = 'https://www.buildhub.jp';
 const CLAUDE_CODE_CATEGORY_ID = 2;
+const DIGEST_CATEGORY_ID = 1; // まとめ記事
 
 const SOURCE_LABELS = {
   'reddit-claudeai':   'Reddit r/ClaudeAI',
@@ -333,7 +334,7 @@ function postToWordPress_(title, content, excerpt, tagIds, user, pass) {
       title, content, excerpt,
       status: 'publish',
       slug: `claude-code-${getJstDateSlug_()}`,
-      categories: [CLAUDE_CODE_CATEGORY_ID],
+      categories: [CLAUDE_CODE_CATEGORY_ID, DIGEST_CATEGORY_ID],
       tags: tagIds,
     }),
     muteHttpExceptions: true
