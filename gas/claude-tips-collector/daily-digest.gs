@@ -5,13 +5,14 @@
  * セットアップ（Script Propertiesに設定）:
  *   GEMINI_API_KEY  : Google AI Studio で取得
  *   BUILDHUB_WP_USER: buildhub260309
- *   BUILDHUB_WP_PASS: WPのパスワード
+ *   BUILDHUB_WP_PASS: アプリケーションパスワード（スペース含む）
  *
  * 初回: createDailyTrigger() を1回実行
  */
 
 const DIGEST_LOG_PATH = '/claude-tips-digest-log';
-const BUILDHUB_URL = 'https://buildhub.jp';
+const BUILDHUB_URL = 'https://www.buildhub.jp';
+const CLAUDE_CODE_CATEGORY_ID = 2;
 
 /**
  * メイン: 日次ダイジェスト生成・投稿
@@ -66,11 +67,11 @@ function runDailyDigest() {
 }
 
 /**
- * Firebase から過去48hのpendingアイテムを取得
+ * Firebase から過去48hのpendingアイテムを取得（全件取得してGAS側でフィルタ）
  */
 function fetchPendingItems_() {
   const res = UrlFetchApp.fetch(
-    `${FIREBASE_URL}${QUEUE_PATH}.json?orderBy="status"&equalTo="pending"`,
+    `${FIREBASE_URL}${QUEUE_PATH}.json`,
     { muteHttpExceptions: true }
   );
   if (res.getResponseCode() !== 200) return [];
@@ -80,7 +81,7 @@ function fetchPendingItems_() {
 
   const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
   return Object.entries(data)
-    .filter(([, v]) => v && v.collected_at >= cutoff)
+    .filter(([, v]) => v && v.status === 'pending' && (!v.collected_at || v.collected_at >= cutoff))
     .map(([id, v]) => ({ id, ...v }));
 }
 
@@ -125,7 +126,7 @@ ${articleList}
 - JSONのみ返すこと（説明文不要）`;
 
   const res = UrlFetchApp.fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
     {
       method: 'post',
       contentType: 'application/json',
@@ -198,7 +199,8 @@ function postToWordPress_(title, content, user, pass) {
       title,
       content,
       status: 'publish',
-      slug: `claude-code-${getJstDateSlug_()}`
+      slug: `claude-code-${getJstDateSlug_()}`,
+      categories: [CLAUDE_CODE_CATEGORY_ID]
     }),
     muteHttpExceptions: true
   });

@@ -9,19 +9,16 @@ Usage:
 """
 
 import json
-import urllib.request
-import base64
 import sys
 import os
 import argparse
 from datetime import datetime
 
-# ============================================================
-# WP Config (from .env)
-# ============================================================
-WP_USER = os.environ.get("WP_USER", "molkkyhub250211")
-WP_PASS = os.environ.get("WP_APP_PASSWORD", "tDFg BmMI Eotd dYTc UMBY IZgs")
-WP_SITE = os.environ.get("WP_SITE", "https://molkky-hub.com")
+# 共通ライブラリ
+sys.path.insert(0, os.path.dirname(__file__))
+from lib.wp_api import load_env, wp_get, wp_post, WP_SITE
+
+_env = load_env()
 
 CATEGORY_TOURNAMENT = 8  # 大会情報カテゴリ
 
@@ -43,14 +40,9 @@ SLUG_MERGE = {
 }
 
 def wp_request(endpoint, data=None, method="GET"):
-    url = f"{WP_SITE}/wp-json/wp/v2/{endpoint}"
-    body = json.dumps(data).encode('utf-8') if data else None
-    req = urllib.request.Request(url, data=body, method=method if not data else "POST")
-    credentials = base64.b64encode(f"{WP_USER}:{WP_PASS}".encode()).decode()
-    req.add_header("Authorization", f"Basic {credentials}")
-    req.add_header("Content-Type", "application/json")
-    with urllib.request.urlopen(req) as response:
-        return json.loads(response.read().decode('utf-8'))
+    if data:
+        return wp_post(_env, endpoint, data)
+    return wp_get(_env, endpoint)
 
 
 def get_areas():

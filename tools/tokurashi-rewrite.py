@@ -113,7 +113,23 @@ def call_gemini(prompt):
     if text.startswith('```'):
         text = re.sub(r'^```(?:html)?\s*', '', text)
         text = re.sub(r'\s*```$', '', text)
-    return text
+        text = text.strip()
+    # Handle JSON-wrapped responses (e.g. {"rewritten_html": "..."})
+    if text.startswith('{') and '"' in text[:50]:
+        try:
+            parsed = json.loads(text)
+            for key in ('rewritten_html', 'html', 'html_body', 'content', 'body'):
+                if key in parsed:
+                    text = parsed[key]
+                    break
+        except (json.JSONDecodeError, ValueError):
+            pass
+    # Clean literal \n that Gemini sometimes returns
+    text = text.replace('\\n', '\n')
+    # Remove empty lines/tags
+    text = re.sub(r'<p>\s*</p>', '', text)
+    text = re.sub(r'\n{3,}', '\n\n', text)
+    return text.strip()
 
 
 def pexels_search(query, per_page=3):

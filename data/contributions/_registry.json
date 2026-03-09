@@ -1,0 +1,39 @@
+{
+  "contributors": {
+    "老師": {
+      "display_name": "老師",
+      "x_handle": "@Molkky_6464",
+      "category_id": 140,
+      "series_type": "special",
+      "series_title": "老師盃",
+      "current_vol": 1,
+      "total_vols": 4,
+      "profile": {
+        "role": "老師盃 主催",
+        "desc": "モルック歴5年。茨城から京都へ移住し、関西を拠点に活動中。2026年2月、兵庫県川西市のモルックドームにて初の自主大会「老師盃」を開催。プレイヤーファーストを掲げた大会運営で注目を集める。",
+        "location": "京都（関西）",
+        "x_url": "https://x.com/Molkky_6464"
+      }
+    },
+    "いとゆう": {
+      "display_name": "いとゆう",
+      "category_id": 126,
+      "series_type": "serial"
+    },
+    "ソウタ": {
+      "display_name": "ソウタ",
+      "category_id": 123,
+      "series_type": "serial"
+    },
+    "かずえ": {
+      "display_name": "かずえ",
+      "category_id": 125,
+      "series_type": "serial"
+    },
+    "ナイモル": {
+      "display_name": "ナイモルジャパン",
+      "category_id": 127,
+      "series_type": "single"
+    }
+  }
+}

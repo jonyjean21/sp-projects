@@ -1,0 +1,638 @@
+[
+  {
+    "key": "-On9aZBY57v4-bvAchYn",
+    "action": "skip",
+    "reason": "結果報告（第4回モルック岡山大会参加・優勝報告）",
+    "url": "https://twitter.com/NoraMol2Tsutti/status/2030422856430235679"
+  },
+  {
+    "key": "-On9blIzDT7Zj6YWi_f8",
+    "action": "skip",
+    "reason": "結果報告（第4回モルック岡山大会参加感想）",
+    "url": "https://twitter.com/T_Mitsuhata/status/2030423562893525029"
+  },
+  {
+    "key": "-On9cnQyb_NXELKgKtll",
+    "action": "skip",
+    "reason": "結果報告（第4回モルック岡山大会訪問報告）",
+    "url": "https://twitter.com/omk_molkky/status/2030425130015613074"
+  },
+  {
+    "key": "-On9gJyf5Kb3d5BLGHjA",
+    "action": "skip",
+    "reason": "体験会告知だが日時・場所が不明確",
+    "url": "https://twitter.com/tairafutoshi42/status/2030429115636191630"
+  },
+  {
+    "key": "-On9lykKFX1dOcurtgzE",
+    "action": "skip",
+    "reason": "CrawlOwlボット投稿。具体的な日程・場所情報が不足",
+    "url": "https://twitter.com/CrawlOwl/status/2030434262575661341"
+  },
+  {
+    "key": "-On9qd1VAiS2Ox7RUjLW",
+    "action": "skip",
+    "reason": "ボートレース佐賀のファン交流イベント（チーム対抗モルック）- 一般公募でない",
+    "url": "https://twitter.com/boatrace_karaat/status/2030440821632479638"
+  },
+  {
+    "key": "-On9vgkVwMOlH1wWJI8S",
+    "action": "post",
+    "wp_id": 6568,
+    "wp_link": "https://molkky-hub.com/event/tournament/%e7%ac%ac%ef%bc%92%e5%9b%9e%e3%83%a2%e3%83%ab%e3%83%83%e3%82%af%e8%88%9e%e9%b6%b4%e3%82%aa%e3%83%bc%e3%83%97%e3%83%b32026/",
+    "title": "第２回モルック舞鶴オープン2026",
+    "event_date": "20260504",
+    "location": "京都府"
+  },
+  {
+    "key": "-On9zmn20H1kC7dRckdR",
+    "action": "skip",
+    "reason": "エンジョイ大会に関する意見ツイート（告知なし）",
+    "url": "https://twitter.com/T_Mitsuhata/status/2030450663713587691"
+  },
+  {
+    "key": "-OnA-oKoe-x5JLPTMFDr",
+    "action": "skip",
+    "reason": "告知言及あるが日程・場所・エントリー情報が不明確",
+    "url": "https://twitter.com/T_Mitsuhata/status/2030451719092810158"
+  },
+  {
+    "key": "-OnA4P2HktpcjFeRtuDW",
+    "action": "skip",
+    "reason": "結果報告（第4回モルックビギナーズ大会inちば参加中の応援ツイート）",
+    "url": "https://twitter.com/UrayasuKamidano/status/2030455649914753217"
+  },
+  {
+    "key": "-OnA4P66a_n07C99zcE-",
+    "action": "skip",
+    "reason": "日常ツイート（犬の話題）",
+    "url": "https://twitter.com/OrganicMother10/status/2030456819873907051"
+  },
+  {
+    "key": "-OnA7odCNJFJK3Hr80D0",
+    "action": "skip",
+    "reason": "日本モルック選手権大会2026愛知会場の開催中ツイート（予選進行中）",
+    "url": "https://twitter.com/Molkky_Japan/status/2030459173851611546"
+  },
+  {
+    "key": "-OnAAAeHEZDuFykdeXbZ",
+    "action": "skip",
+    "reason": "参加ツイート（第4回モルックビギナーズ大会inちば参加者のつぶやき）",
+    "url": "https://twitter.com/No45_Iwayaji/status/2030463176668844334"
+  },
+  {
+    "key": "-OnAEoQuvFhOW289ROq9",
+    "action": "skip",
+    "reason": "意見ツイート（モルックへの思い）",
+    "url": "https://twitter.com/ko_dai_Molkky50/status/2030468266897134053"
+  },
+  {
+    "key": "-OnAH52w1S-NRHQy4swg",
+    "action": "skip",
+    "reason": "結果報告（第1回ダビスケ杯S-mölチーム戦inとうべつ）",
+    "url": "https://twitter.com/dabi_suke_zoo/status/2030471175009370272"
+  },
+  {
+    "key": "-OnAO0Ta1PT5_NkjEDFH",
+    "action": "skip",
+    "reason": "参加中・応援ツイート（第4回モルック岡山大会）",
+    "url": "https://twitter.com/tagatchi178/status/2030478728535711862"
+  },
+  {
+    "key": "-OnAWzKtRNUe-A_8dyZJ",
+    "action": "skip",
+    "reason": "体験会（マッシゲートマルシェ）- 当日開催中ツイート",
+    "url": "https://twitter.com/deravecov/status/2030486400089702573"
+  },
+  {
+    "key": "-OnAWzOVOYwOPiaE-BRe",
+    "action": "skip",
+    "reason": "当日開催中（スパサウナ常総・モルック大会）- 2026-03-08開催済み",
+    "url": "https://twitter.com/spasauna_joso/status/2030487741260255392"
+  },
+  {
+    "key": "-OnA_Safak9HumBe778q",
+    "action": "skip",
+    "reason": "結果報告（宗像モルック大会）",
+    "url": "https://twitter.com/kuitarankomatu/status/2030492323642266099"
+  },
+  {
+    "key": "-OnAu7RBU6HM8sfkT1WA",
+    "action": "skip",
+    "reason": "当日開催中ツイート（お湯むすび杯）- 2026-03-08開催済み",
+    "url": "https://twitter.com/otoru_sauna37/status/2030514234657026440"
+  },
+  {
+    "key": "-OnB-zxc4rCJnSujCdQh",
+    "action": "skip",
+    "reason": "企画リスト（YouTubeチャンネル内容）- モルック大会告知ではない",
+    "url": "https://twitter.com/Orvud_67/status/2030522525940396176"
+  },
+  {
+    "key": "-OnB1D1v0eYt7bdMVkpN",
+    "action": "post",
+    "wp_id": 6569,
+    "wp_link": "https://molkky-hub.com/event/tournament/%e4%bc%9a%e7%a4%be%e5%af%be%e6%8a%97%e3%83%a2%e3%83%ab%e3%83%83%e3%82%af2026%e6%98%a5-%e6%9d%b1%e6%97%a5%e6%9c%ac%e5%a4%a7%e4%bc%9a/",
+    "title": "会社対抗モルック2026春 東日本大会",
+    "event_date": "20260516",
+    "location": "東京都"
+  },
+  {
+    "key": "-OnBH7fqLzhCtTm7WIXL",
+    "action": "skip",
+    "reason": "結果報告（第4回モルック＆ピザを楽しむ会 - 開催済み）",
+    "url": "https://twitter.com/kawasemigirl/status/2030541198658883863"
+  },
+  {
+    "key": "-OnBNxUx7fHr2ji_WKe_",
+    "action": "skip",
+    "reason": "日常ツイート（エンタメイベント感想）",
+    "url": "https://twitter.com/tribal_mezzo/status/2030547962074694011"
+  },
+  {
+    "key": "-OnBQGKyfdFAzTRAh3mN",
+    "action": "skip",
+    "reason": "当日参加ツイート（石垣島モルック大会）- 内容不明瞭",
+    "url": "https://twitter.com/Molkkyishigaki/status/2030550373895897170"
+  },
+  {
+    "key": "-OnBQGP6MA-jD0MYlYC6",
+    "action": "skip",
+    "reason": "結果報告（第4回滋賀県民モルック大会 団体戦）",
+    "url": "https://twitter.com/shigamolkky/status/2030550657514766350"
+  },
+  {
+    "key": "-OnBRVM1QwY6y5QdlHHF",
+    "action": "skip",
+    "reason": "空ツイート",
+    "url": "https://twitter.com/Yuzu202139/status/2030552675495067930"
+  },
+  {
+    "key": "-OnBTjuXgCtDHOButPlw",
+    "action": "skip",
+    "reason": "結果報告（日本モルック選手権大会2026愛知会場2日目）",
+    "url": "https://twitter.com/Molkky_Japan/status/2030554440219185544"
+  },
+  {
+    "key": "-OnBTjycoWbDTphh3Tm0",
+    "action": "skip",
+    "reason": "空ツイート",
+    "url": "https://twitter.com/ngng_fnfn/status/2030554922870346025"
+  },
+  {
+    "key": "-OnBTk1uvrBcNBWMiaQ3",
+    "action": "skip",
+    "reason": "結果報告（宗像大会参加結果）",
+    "url": "https://twitter.com/atmolkky/status/2030555345752588610"
+  },
+  {
+    "key": "-OnBW4FayaNcSTU_dEPQ",
+    "action": "skip",
+    "reason": "結果報告（第4回滋賀県民モルック大会 団体戦 優勝発表）",
+    "url": "https://twitter.com/biwamolX/status/2030557837169217652"
+  },
+  {
+    "key": "-OnBW4L7Z9UhNJJVrWsD",
+    "action": "skip",
+    "reason": "日常ツイート（家族でモルック大会 - 詳細不明）",
+    "url": "https://twitter.com/fu_obaka/status/2030557960536264953"
+  },
+  {
+    "key": "-OnBZR5_TylJa47TfkLP",
+    "action": "skip",
+    "reason": "結果報告（第一回有明大会@MÖL）",
+    "url": "https://twitter.com/atmolkky/status/2030560948449354217"
+  },
+  {
+    "key": "-OnBZR92e4Cdy2xKMj1-",
+    "action": "skip",
+    "reason": "結果報告（第4回モルックビギナーズ大会inちば）",
+    "url": "https://twitter.com/UrayasuKamidano/status/2030561060080726067"
+  },
+  {
+    "key": "-OnBd37JpxL77Kpx0vBg",
+    "action": "skip",
+    "reason": "日常ツイート（大会参加への思い）",
+    "url": "https://twitter.com/molkky_23/status/2030564817745084426"
+  },
+  {
+    "key": "-OnBd3BUsbP8P241tuQF",
+    "action": "skip",
+    "reason": "結果報告（岡山大会参加）",
+    "url": "https://twitter.com/TOMY83057073/status/2030566570024739257"
+  },
+  {
+    "key": "-OnBnNo-ja9RcjoTZanA",
+    "action": "skip",
+    "reason": "結果報告（第4回滋賀県民モルック大会 団体戦参加）",
+    "url": "https://twitter.com/happys555/status/2030576468464648615"
+  },
+  {
+    "key": "-OnBoTT432Zo7JYeZElk",
+    "action": "skip",
+    "reason": "結果報告（プレミアムウエスト参加）",
+    "url": "https://twitter.com/okabe1314/status/2030578924128977336"
+  },
+  {
+    "key": "-OnBpdHkLwqgqZCwZiTb",
+    "action": "skip",
+    "reason": "エンタメイベント（べっけんです）の感想ツイート",
+    "url": "https://twitter.com/Honeytoast0324/status/2030579929461760260"
+  },
+  {
+    "key": "-OnBpdLv1_7DkzDBLkOC",
+    "action": "skip",
+    "reason": "エンタメイベント（べっけんです）の感想ツイート",
+    "url": "https://twitter.com/Honeytoast0324/status/2030580060860887540"
+  },
+  {
+    "key": "-OnBqnswTswVz-_VVu6n",
+    "action": "skip",
+    "reason": "エンタメイベント（べっけんです）の感想ツイート",
+    "url": "https://twitter.com/Honeytoast0324/status/2030580865856929951"
+  },
+  {
+    "key": "-OnBt5kGwTPFUsEHE3xI",
+    "action": "skip",
+    "reason": "エンタメイベント（べっけんです）の感想ツイート",
+    "url": "https://twitter.com/poitto75/status/2030583581224075626"
+  },
+  {
+    "key": "-OnBwU_j7N_PTAwch__D",
+    "action": "skip",
+    "reason": "結果報告（第4回滋賀県民モルック大会 ベスト8）",
+    "url": "https://twitter.com/niwako_molkky/status/2030586434374217847"
+  },
+  {
+    "key": "-OnBwUeBW4FTiN0x5qE-",
+    "action": "skip",
+    "reason": "エンタメイベント（べっけんです）の感想ツイート",
+    "url": "https://twitter.com/_bixi_/status/2030586685227180363"
+  },
+  {
+    "key": "-OnBwUgpK4bTsN3QBwjK",
+    "action": "skip",
+    "reason": "エンタメイベント（べっけんです）の感想ツイート",
+    "url": "https://twitter.com/niishiro_iii/status/2030586935132168347"
+  },
+  {
+    "key": "-OnBwUjKZWAU-ZrncTz1",
+    "action": "skip",
+    "reason": "エンタメイベント（べっけんです）の感想ツイート",
+    "url": "https://twitter.com/ace073073/status/2030587287378231424"
+  },
+  {
+    "key": "-OnBwUmhW3IqPXlrDFtM",
+    "action": "skip",
+    "reason": "結果報告（第4回滋賀県民モルック大会）",
+    "url": "https://twitter.com/niwako_molkky/status/2030587357431578912"
+  },
+  {
+    "key": "-OnBx_RmEybs0GuhfY6D",
+    "action": "skip",
+    "reason": "日常ツイート（佐渡ヶ島大会への言及 - 告知情報なし）",
+    "url": "https://twitter.com/WING20170130/status/2030589111019749493"
+  },
+  {
+    "key": "-OnC00cXmYMpZfXFlhvW",
+    "action": "skip",
+    "reason": "エンタメイベント（べっけんです）の感想ツイート",
+    "url": "https://twitter.com/pappyrikulove/status/2030591682945991005"
+  },
+  {
+    "key": "-OnC00hqQtV2BrtcIbKT",
+    "action": "skip",
+    "reason": "日常ツイート（犬・モルック大会への言及）",
+    "url": "https://twitter.com/OrganicMother10/status/2030592533202616680"
+  },
+  {
+    "key": "-OnC2PWYPclPo2nGaLqg",
+    "action": "skip",
+    "reason": "結果報告（プレミアムウエスト参加）",
+    "url": "https://twitter.com/TeamKOTKA_Syuu/status/2030594812785881119"
+  },
+  {
+    "key": "-OnC2P_iY7m5RWYi8Yaq",
+    "action": "skip",
+    "reason": "エンタメイベント（べっけんです）の感想ツイート",
+    "url": "https://twitter.com/lambda08/status/2030594866988884315"
+  },
+  {
+    "key": "-OnC2PcSAdR30kYpsobC",
+    "action": "skip",
+    "reason": "結果報告（ふれあいモルック大会 主催者側参加 - 2026-03-08開催済み）",
+    "url": "https://twitter.com/tagagag28/status/2030595103790977316"
+  },
+  {
+    "key": "-OnC3YgvZKXYd1-HinhJ",
+    "action": "skip",
+    "reason": "結果報告（ふじさわボッチャ競技大会 - モルック大会でない）",
+    "url": "https://twitter.com/Molkkykleinbleu/status/2030596202237198695"
+  },
+  {
+    "key": "-OnC3YjWe9dVSBI3a3RC",
+    "action": "skip",
+    "reason": "エンタメイベント（べっけんです）の感想ツイート",
+    "url": "https://twitter.com/Honeytoast0324/status/2030596459058663709"
+  },
+  {
+    "key": "-OnC3Ylk5K47G4MkQ5uu",
+    "action": "post",
+    "wp_id": 6570,
+    "wp_link": "https://molkky-hub.com/event/tournament/%e3%83%a2%e3%83%ab%e3%83%83%e3%82%af%e7%94%b2%e5%ad%90%e5%9c%92%e3%83%aa%e3%83%bc%e3%82%b02026-in-%e5%a5%88%e8%89%af/",
+    "title": "モルック甲子園リーグ2026 in 奈良",
+    "event_date": "20260310",
+    "location": "奈良県"
+  },
+  {
+    "key": "-OnC3YnqJ6TcAXhcOiMv",
+    "action": "skip",
+    "reason": "結果報告（日本モルック選手権大会2026中部ブロック予選 13位）",
+    "url": "https://twitter.com/NakaiKsk/status/2030596581272289305"
+  },
+  {
+    "key": "-OnC3YptgVTKMVO9AEzS",
+    "action": "skip",
+    "reason": "結果報告（第4回滋賀県民モルック大会 優勝）",
+    "url": "https://twitter.com/negamol49/status/2030596637186519313"
+  },
+  {
+    "key": "-OnC3Yro53WOB8F2Y5hY",
+    "action": "skip",
+    "reason": "結果報告（第4回滋賀県民モルック大会）",
+    "url": "https://twitter.com/mukogawa_molkky/status/2030597037130203532"
+  },
+  {
+    "key": "-OnC60bjgZTcNsqBr3Yy",
+    "action": "skip",
+    "reason": "結果報告（プレミアムウエスト参加）",
+    "url": "https://twitter.com/musu_1G/status/2030598240945779178"
+  },
+  {
+    "key": "-OnC6yEIp3HrJfYpa8uk",
+    "action": "skip",
+    "reason": "結果報告（大阪カップ参加）",
+    "url": "https://twitter.com/TomattyM61533/status/2030600369815044578"
+  },
+  {
+    "key": "-OnCCglgKt2XosWXJaeQ",
+    "action": "skip",
+    "reason": "日常ツイート（西日本36vs36への言及）",
+    "url": "https://twitter.com/miyake_molkky/status/2030605201955291269"
+  },
+  {
+    "key": "-OnCDiEdgBq36jkSeoom",
+    "action": "skip",
+    "reason": "結果報告（8ヶ月ぶりのOsaka Cup参加）",
+    "url": "https://twitter.com/mickuro3/status/2030608091696582810"
+  },
+  {
+    "key": "-OnCG95jThDU6kg9gJOe",
+    "action": "skip",
+    "reason": "結果報告（第4回モルックビギナーズ大会inちば参加）",
+    "url": "https://twitter.com/tbird63975816/status/2030610405916287254"
+  },
+  {
+    "key": "-OnCJSjPMjiNuvqUX79T",
+    "action": "skip",
+    "reason": "日常ツイート（モルック大会への言及のみ）",
+    "url": "https://twitter.com/renn_sa10/status/2030612945714167881"
+  },
+  {
+    "key": "-OnCJSnyDDEC0H7ONngT",
+    "action": "skip",
+    "reason": "結果報告（滋賀県民モルック大会2日間参加）",
+    "url": "https://twitter.com/MOU__NTAI/status/2030613079898419290"
+  },
+  {
+    "key": "-OnCKaTsld8Ch5uRduwA",
+    "action": "skip",
+    "reason": "結果報告（日本モルック選手権大会2026 北信越・東海地区ブロック予選）",
+    "url": "https://twitter.com/WING20170130/status/2030614615063982122"
+  },
+  {
+    "key": "-OnCKaYlJUY1rjD8b_pK",
+    "action": "skip",
+    "reason": "結果報告（日本モルック選手権大会2026 北信越・東海地区ブロック予選）重複",
+    "url": "https://twitter.com/WING20170130/status/2030614716259995776"
+  },
+  {
+    "key": "-OnCKai9yVwSOwIhJuBR",
+    "action": "skip",
+    "reason": "結果報告（日本モルック選手権大会2026 北信越・東海地区ブロック予選）重複",
+    "url": "https://twitter.com/WING20170130/status/2030614821742489936"
+  },
+  {
+    "key": "-OnCKalrKn9Fp0HaNnQg",
+    "action": "skip",
+    "reason": "結果報告（日本モルック選手権大会2026 北信越・東海地区ブロック予選）重複",
+    "url": "https://twitter.com/WING20170130/status/2030614906773631220"
+  },
+  {
+    "key": "-OnCKapl4OB5NTeKtByf",
+    "action": "skip",
+    "reason": "結果報告（第2回所沢モルック10番最強トーナメント大会 シルバートーナメント優勝）",
+    "url": "https://twitter.com/bks__official/status/2030615745907019830"
+  },
+  {
+    "key": "-OnCLmbtB5dV1ELptSIe",
+    "action": "skip",
+    "reason": "返信ツイート（岡山大会優勝へのお祝い）",
+    "url": "https://twitter.com/T_Mitsuhata/status/2030616543743398291"
+  },
+  {
+    "key": "-OnCLmfcFiNoALyhbSkR",
+    "action": "skip",
+    "reason": "日常ツイート（モルック世界大会への言及のみ）",
+    "url": "https://twitter.com/norunumei/status/2030617094921101651"
+  },
+  {
+    "key": "-OnCMubs5-dihUSeVYRo",
+    "action": "skip",
+    "reason": "結果報告（第20回葛飾モルック大会参加）",
+    "url": "https://twitter.com/molkky46/status/2030617511583232106"
+  },
+  {
+    "key": "-OnCSb1aNFwdudWK48Cw",
+    "action": "skip",
+    "reason": "結果報告（第2回所沢モルック10番大会 詳細スコア）",
+    "url": "https://twitter.com/so_molkky/status/2030622458278264850"
+  },
+  {
+    "key": "-OnCSb7WHe1mmCeYn7JA",
+    "action": "skip",
+    "reason": "日常ツイート（モルック世界大会目指すという抱負）",
+    "url": "https://twitter.com/nanamirona/status/2030622980989165754"
+  },
+  {
+    "key": "-OnCTqqLc6FOcUfikdmb",
+    "action": "skip",
+    "reason": "日常ツイート（投資・ランニング自己紹介）",
+    "url": "https://twitter.com/egggginvestor/status/2030625126254035432"
+  },
+  {
+    "key": "-OnCUx2Kb2e8RPxbXWlc",
+    "action": "skip",
+    "reason": "結果報告（お湯むすび杯 ミッキー・達也チーム優勝）",
+    "url": "https://twitter.com/otoru_sauna37/status/2030626718550290825"
+  },
+  {
+    "key": "-OnCUx5cMbIUxiBxHUu7",
+    "action": "skip",
+    "reason": "結果報告（お湯むすび杯）",
+    "url": "https://twitter.com/yucco_sauna37/status/2030626760266842621"
+  },
+  {
+    "key": "-OnCW5hAY3zWt1dTBx8G",
+    "action": "skip",
+    "reason": "結果報告（鉄モルin白河 参加）",
+    "url": "https://twitter.com/taro_kmcm/status/2030627179894292725"
+  },
+  {
+    "key": "-OnCW5kX0Q5e4mQW7ztF",
+    "action": "skip",
+    "reason": "返信ツイート（4th参加希望）",
+    "url": "https://twitter.com/Nastucafe/status/2030627574943252496"
+  },
+  {
+    "key": "-OnCW5nZhVPtQyPsIW9v",
+    "action": "skip",
+    "reason": "結果報告（ルピナス大会参加感想）",
+    "url": "https://twitter.com/molukiko/status/2030627878363410583"
+  },
+  {
+    "key": "-OnCYQXxwVhLMGl7h0jA",
+    "action": "skip",
+    "reason": "日常ツイート（町民集会でモルック大会への言及）",
+    "url": "https://twitter.com/tinotaro1995/status/2030630526055559571"
+  },
+  {
+    "key": "-OnCbwRv9Noc4KxVRGly",
+    "action": "skip",
+    "reason": "結果報告（第4回滋賀県モルック大会 優勝者へのお祝い）",
+    "url": "https://twitter.com/kunirin88/status/2030633966299168783"
+  },
+  {
+    "key": "-OnCeJAx0EkZogTclg0c",
+    "action": "skip",
+    "reason": "結果報告（第4回滋賀県民モルック大会 団体戦 参加）",
+    "url": "https://twitter.com/morits_hama/status/2030637753130684747"
+  },
+  {
+    "key": "-OnCfIg-EOOtDcwACsnw",
+    "action": "skip",
+    "reason": "日常ツイート（初モルック大会参加したという一言）",
+    "url": "https://twitter.com/metayama301/status/2030638719548772663"
+  },
+  {
+    "key": "-OnCg_agUkBDTDc_fn3r",
+    "action": "skip",
+    "reason": "結果報告（西岡モルック大会参加）",
+    "url": "https://twitter.com/kai_kitaguni/status/2030639671827657061"
+  },
+  {
+    "key": "-OnCg_elGi9hlbcQu-k8",
+    "action": "skip",
+    "reason": "結果報告（嵯峨・広沢・嵐山学区モルック大会 100名超参加 - 2026-03-08開催済み）",
+    "url": "https://twitter.com/ookouchi_akira/status/2030640161231679685"
+  },
+  {
+    "key": "-OnCg_i1oRV3AEkimbHW",
+    "action": "skip",
+    "reason": "結果報告（息子と大会参加）",
+    "url": "https://twitter.com/TOMCAT19720407/status/2030640510885642685"
+  },
+  {
+    "key": "-OnCiosIyjjZVHq0nYxA",
+    "action": "skip",
+    "reason": "日常ツイート（議員の活動報告 - モルック大会に言及しているが告知ではない）",
+    "url": "https://twitter.com/MunekiyoOffice/status/2030642964301824287"
+  },
+  {
+    "key": "-OnCiovsFFqr4c96Cppr",
+    "action": "skip",
+    "reason": "エンタメイベント（べっけんです）の感想ツイート",
+    "url": "https://twitter.com/OnpuFree/status/2030643109072457747"
+  },
+  {
+    "key": "-OnCioz7rn7dn6BgPTtP",
+    "action": "skip",
+    "reason": "日常ツイート（地域モルック大会お手伝い - 開催済み）",
+    "url": "https://twitter.com/lovepeco/status/2030643478796059081"
+  },
+  {
+    "key": "-OnCmKdclV2CFsgv4z5l",
+    "action": "skip",
+    "reason": "エンタメイベント（べっけんです）の感想ツイート",
+    "url": "https://twitter.com/danieru_4/status/2030646832674808185"
+  },
+  {
+    "key": "-OnCnNkFVmpenzRzSE6F",
+    "action": "post",
+    "wp_id": 6571,
+    "wp_link": "https://molkky-hub.com/event/tournament/%e7%ac%ac1%e5%9b%9e-nakahie-molkky-battle-cup/",
+    "title": "第1回 Nakahie Mölkky Battle CUP",
+    "event_date": "20260322",
+    "location": "福岡県"
+  },
+  {
+    "key": "-OnCqpRYScU_HM3aT2sm",
+    "action": "skip",
+    "reason": "結果報告（宗像カップ参加）",
+    "url": "https://twitter.com/OMUSUBIBOYS/status/2030651080779112547"
+  },
+  {
+    "key": "-OnD1Dy3p_EeYU59gv1a",
+    "action": "skip",
+    "reason": "日常ツイート（エンジョイ大会に関する意見）",
+    "url": "https://twitter.com/C7009532528378/status/2030662522035159264"
+  },
+  {
+    "key": "-OnD1E-koh4VeIV9iZ2E",
+    "action": "skip",
+    "reason": "エンタメイベント（べっけんです）の感想ツイート",
+    "url": "https://twitter.com/zoochanlife1018/status/2030663038127481092"
+  },
+  {
+    "key": "-OnD1E2drD-1nFPjP_a1",
+    "action": "skip",
+    "reason": "結果報告（お湯むすび モルック大会 2026-03-08開催済み）",
+    "url": "https://twitter.com/e2ko37/status/2030663721375465684"
+  },
+  {
+    "key": "-OnDHIHxUHeutB8k5pXu",
+    "action": "skip",
+    "reason": "結果報告（嵐山・嵯峨・広沢3学区合同モルック大会 食事提供 - 開催済み）",
+    "url": "https://twitter.com/satoko_ikeda/status/2030681465252655130"
+  },
+  {
+    "key": "-OnDb-ke_pic-eMEtqoK",
+    "action": "skip",
+    "reason": "結果報告（お湯むすびモルック大会 サウナイベント - 2026-03-08開催済み）",
+    "url": "https://twitter.com/spasauna_joso/status/2030704718604091700"
+  },
+  {
+    "key": "-OnEJcoWmh7EBAT3kbSF",
+    "action": "skip",
+    "reason": "ニュース記事リンク（京都府北部モルック大会 秋の舞鶴全国大会 - 日程不明）",
+    "url": "https://twitter.com/JF3CEC/status/2030755086482416014"
+  },
+  {
+    "key": "-OnEM04CZn2UCo6EC73b",
+    "action": "skip",
+    "reason": "結果報告（FMルピナス モルックペア10番最強トーナメント大会 - 前日開催済み）",
+    "url": "https://twitter.com/datti_gogen/status/2030756942025818193"
+  },
+  {
+    "key": "-OnESubyhSFBZoz9E2S3",
+    "action": "skip",
+    "reason": "結果報告（第2回南高麗モルック大会 参加 - 過去開催済み）",
+    "url": "https://twitter.com/sugimura_shinji/status/2030764487910047898"
+  },
+  {
+    "key": "-OnEflmNiKGQcK--GkbT",
+    "action": "skip",
+    "reason": "CrawlOwlボット投稿（重複 -On9lykKFX1dOcurtgzE と同内容）",
+    "url": "https://twitter.com/CrawlOwl/status/2030780796009889909"
+  }
+]
