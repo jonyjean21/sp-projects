@@ -140,7 +140,7 @@ function collectZenn_() {
   if (res.getResponseCode() !== 200) throw new Error(`HTTP ${res.getResponseCode()}`);
 
   const data = JSON.parse(res.getContentText());
-  const techKeywords = /実装|作って|コード|試して|使って|ツール|自動化|スクリプト|設定|CLAUDE\.md|hook/i;
+  const techKeywords = /実装|作って|コード|試して|使って|ツール|自動化|スクリプト|設定|CLAUDE\.md|hook|MCP|エージェント|agentic|関数呼び出し|プロンプト|function.call|ワークフロー|パイプライン|API|CLI|拡張|カスタム|テンプレート|権限|許可/i;
 
   return (data.articles || [])
     .filter(a => a.liked_count >= 5)
