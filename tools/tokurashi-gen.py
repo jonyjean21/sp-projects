@@ -166,7 +166,10 @@ def pexels_search(query, per_page=5):
     if not PEXELS_KEY:
         return []
     url = f'https://api.pexels.com/v1/search?query={quote(query)}&per_page={per_page}&orientation=landscape'
-    req = Request(url, headers={'Authorization': PEXELS_KEY})
+    req = Request(url, headers={
+        'Authorization': PEXELS_KEY,
+        'User-Agent': 'TokurashiGen/1.0',
+    })
     try:
         with urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read())
@@ -194,12 +197,12 @@ def fetch_and_upload_images(category, count=3):
 
     uploaded = []
     for i, photo in enumerate(photos[:count]):
-        img_url = photo.get('src', {}).get('large', '')
+        img_url = photo.get('src', {}).get('medium', '') or photo.get('src', {}).get('large', '')
         if not img_url:
             continue
         photographer = photo.get('photographer', 'Pexels')
         photo_url = photo.get('url', '')
-        filename = f'tokurashi-{category}-{photo["id"]}.jpg'
+        filename = f'tokurashi-{photo["id"]}.jpg'
 
         print(f'  Downloading image {i+1}: {photographer}')
         try:
