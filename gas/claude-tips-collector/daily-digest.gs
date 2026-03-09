@@ -26,6 +26,7 @@ const SOURCE_LABELS = {
   'zenn':              'Zenn',
   'qiita':             'Qiita',
   'dev-to':            'dev.to',
+  'x-twitter':         'X (Twitter)',
 };
 
 // ソース → WPタグID
@@ -36,6 +37,7 @@ const SOURCE_TAG_MAP = {
   'zenn':              9,
   'qiita':             10,
   'dev-to':            11,
+  'x-twitter':         15,
 };
 const BASE_TAGS = [6, 12]; // Claude Code, AI開発
 

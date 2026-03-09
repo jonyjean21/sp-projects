@@ -16,6 +16,14 @@ const FIREBASE_URL = 'https://viisi-master-app-default-rtdb.firebaseio.com';
 const QUEUE_PATH = '/claude-tips-queue';
 const LOG_PATH = '/claude-tips-collector-log';
 
+// === IFTTT受け口 ===
+// IFTTTから「X Claude Code バズ投稿」が POST されてきたときの受け口
+// IFTTT Webhook Action: POST https://viisi-master-app-default-rtdb.firebaseio.com/claude-tips-queue.json
+// Body: {"url":"{{LinkToTweet}}","title":"{{Text}}","source":"x-twitter","score":{{FavoriteCount}},
+//        "content_preview":"{{Text}}","status":"pending","collected_at":"{{CreatedAt}}"}
+// → Firebaseに直接pushされるためGAS処理不要。ただし重複チェックはない。
+// IFTTT設定手順: data/buildhub/IFTTT_X_SETUP.md を参照
+
 /**
  * メイン処理: 全ソースから収集してキューに追加
  */
