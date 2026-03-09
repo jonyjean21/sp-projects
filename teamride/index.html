@@ -1758,9 +1758,9 @@ function renderEventCard(id, e, isPast) {
       html += `<button class="btn btn-outline btn-small" onclick="startRsvp('${id}')" style="margin-top:8px">回答を変更 ⚠</button>`;
     }
 
-    // Auto-assign button
+    // Assign button
     if (e.status === 'open' && drivers > 0) {
-      html += `<button class="btn btn-secondary" onclick="runAutoAssign('${id}')" style="margin-top:12px">🚗 配車を決める</button>`;
+      html += `<button class="btn btn-secondary" onclick="showDriverSelection('${id}')" style="margin-top:12px">🚗 配車を決める</button>`;
     }
   } else {
     // 過去イベント: 配車ボタン
@@ -1770,7 +1770,7 @@ function renderEventCard(id, e, isPast) {
         <button class="btn btn-outline btn-small" onclick="showLineText('${id}')">📋 LINE共有</button>
       </div>`;
     } else if (drivers > 0) {
-      html += `<button class="btn btn-secondary" onclick="runAutoAssign('${id}')" style="margin-top:12px">🚗 配車を決める</button>`;
+      html += `<button class="btn btn-secondary" onclick="showDriverSelection('${id}')" style="margin-top:12px">🚗 配車を決める</button>`;
     }
   }
 
