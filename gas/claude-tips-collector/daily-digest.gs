@@ -18,6 +18,7 @@
 const DIGEST_LOG_PATH = '/claude-tips-digest-log';
 const BUILDHUB_URL = 'https://www.buildhub.jp';
 const CLAUDE_CODE_CATEGORY_ID = 2;
+const DIGEST_CATEGORY_ID = 1; // まとめ記事
 
 const SOURCE_LABELS = {
   'reddit-claudeai':   'Reddit r/ClaudeAI',
@@ -26,6 +27,8 @@ const SOURCE_LABELS = {
   'zenn':              'Zenn',
   'qiita':             'Qiita',
   'dev-to':            'dev.to',
+  'x-twitter':         'X (Twitter)',
+  'github-releases':   'GitHub Releases',
 };
 
 // ソース → WPタグID
@@ -36,6 +39,8 @@ const SOURCE_TAG_MAP = {
   'zenn':              9,
   'qiita':             10,
   'dev-to':            11,
+  'x-twitter':         15,
+  'github-releases':   16,
 };
 const BASE_TAGS = [6, 12]; // Claude Code, AI開発
 
@@ -51,6 +56,20 @@ function runDailyDigest() {
   if (!GEMINI_KEY || !WP_USER || !WP_PASS) {
     Logger.log('Script Propertiesが未設定です（GEMINI_API_KEY / BUILDHUB_WP_USER / BUILDHUB_WP_PASS）');
     return;
+  }
+
+  // 重複投稿防止: 今日のスラッグが既にある場合はスキップ
+  const todaySlug = `claude-code-${getJstDateSlug_()}`;
+  const slugCheckRes = UrlFetchApp.fetch(
+    `${BUILDHUB_URL}/wp-json/wp/v2/posts?slug=${todaySlug}`,
+    { muteHttpExceptions: true }
+  );
+  if (slugCheckRes.getResponseCode() === 200) {
+    const existing = JSON.parse(slugCheckRes.getContentText());
+    if (existing.length > 0) {
+      Logger.log(`本日の記事（${todaySlug}）は既に投稿済みです。スキップ。`);
+      return;
+    }
   }
 
   const items = fetchPendingItems_();
@@ -137,27 +156,39 @@ function summarizeWithGemini_(items, apiKey) {
 
   const mainSource = items[0]?.source || '';
   const isOverseas = ['hn', 'reddit-claudeai', 'reddit-claudecode'].includes(mainSource);
-  const mainHint = isOverseas
-    ? '記事[1]は海外で最もバズった記事です。500文字以上の詳しい日本語解説を書いてください。'
-    : '記事[1]は本日の注目記事です。400文字程度の詳しい日本語解説を書いてください。';
+  const isRelease = mainSource === 'github-releases';
+
+  let mainHint;
+  if (isRelease) {
+    mainHint = '記事[1]はClaude Codeの公式リリースノートです。主な変更点を3〜5点の箇条書きでまとめ、「エンジニアが今すぐ試せること」を1文で添えてください。';
+  } else if (isOverseas) {
+    mainHint = '記事[1]は海外で最もバズった記事です。500文字以上の詳しい日本語解説を書いてください。';
+  } else {
+    mainHint = '記事[1]は本日の注目記事です。400文字程度の詳しい日本語解説を書いてください。';
+  }
 
   const prompt = `あなたはClaude Code・AI開発ツール専門の日本語メディア「BuildHub」の編集者です。
 以下の記事リストを読んで、日本のエンジニア向けにまとめてください。
 
+【タイトル生成のルール】
+- バージョン番号のみのタイトル（例：v2.1.71）は「Claude Code v2.1.71 — [主な追加機能の一言]」形式で日本語タイトルを生成
+- 英語タイトルは自然な日本語に意訳（直訳ではなく内容を反映した日本語）
+- 既に日本語のタイトルはそのまま使用可（微調整は可）
+
 ${mainHint}
-記事[2]以降は2〜3文の要約で構いません。
+記事[2]以降は要点を2〜3文で（github-releases の場合は主な変更点を2〜3点箇条書きで）。
 
 以下のJSON形式で返してください（JSONのみ、説明文不要）:
 
 {
   "excerpt": "記事全体の1文要約（100文字以内、SEO用）",
-  "editor_comment": "BuildHub編集部として今日の注目ポイントを2〜3文でコメント。エンジニアが実際に使える視点で。",
+  "editor_comment": "BuildHub編集部として今日の注目ポイントを2〜3文でコメント。「〜という問題に悩んでいるエンジニアには特に参考になる」「〜を試してみる価値あり」など実際に使える視点で。AI臭い定型文（〜を一歩踏み込んで等）はNG。",
   "items": [
     {
       "index": 1,
       "title_ja": "自然な日本語タイトル",
       "is_main": true,
-      "summary": "詳しい日本語解説（記事[1]は500文字以上）。以下の構成で書くこと：\\n①何が問題で何を解決しているか（150字）\\n②どう動くか・核心の実装アプローチ（コードがある場合は核心部分10〜20行をコードブロックで示し、直後に「このコードでやっていること」を3〜5文で日本語解説）\\n③日本のエンジニアへの示唆・応用アイデア（150字）\\nGitHubリポジトリがある場合は「何ができるか」を1文で必ず明記。",
+      "summary": "詳しい日本語解説（記事[1]は500文字以上）。以下の構成で書くこと：\\n①何が問題で何を解決しているか（150字）\\n②どう動くか・核心の実装アプローチ（コードがある場合は核心部分10〜20行をコードブロックで示し、直後に「このコードでやっていること」を3〜5文で日本語解説）\\n③日本のエンジニアへの示唆・応用アイデア（150字）\\nGitHubリポジトリがある場合は「何ができるか」を1文で必ず明記。\\ngithub-releases の場合は主な変更点を<ul><li>形式の箇条書きで列挙。",
       "score_label": "HN 234 points または Reddit 456 upvotes または空文字",
       "url": "元のURL",
       "source": "ソース名"
@@ -166,7 +197,7 @@ ${mainHint}
       "index": 2,
       "title_ja": "日本語タイトル",
       "is_main": false,
-      "summary": "要点を2〜3文で日本語説明",
+      "summary": "要点を2〜3文で日本語説明（github-releasesなら主な変更点を2〜3点箇条書き）",
       "score_label": "",
       "url": "元のURL",
       "source": "ソース名"
@@ -208,6 +239,26 @@ ${articleList}`;
 }
 
 /**
+ * MarkdownをHTML変換（コードブロック・太字・インラインコード）
+ */
+function mdToHtml_(text) {
+  if (!text) return '';
+  // コードブロック: ```lang\n...\n``` → <pre><code>
+  text = text.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
+    const escaped = code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const langClass = lang ? ` class="language-${lang}"` : '';
+    return `<pre style="background:#1e1e1e;color:#d4d4d4;padding:16px;overflow-x:auto;border-radius:6px;margin:16px 0;"><code${langClass}>${escaped}</code></pre>`;
+  });
+  // 太字
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // インラインコード
+  text = text.replace(/`([^`\n]+)`/g, '<code style="background:#f4f4f4;padding:2px 6px;border-radius:3px;">$1</code>');
+  // ①②③ の前に改行
+  text = text.replace(/\n([①②③④⑤])/g, '<br>$1');
+  return text;
+}
+
+/**
  * WP記事HTMLを生成（バズ翻訳メディア構成）
  */
 function buildHtml_(result, today, rawItems) {
@@ -233,6 +284,8 @@ function buildHtml_(result, today, rawItems) {
     const rawItem = rawItems.find(r => r.url === item.url) || {};
     const githubUrl = rawItem.github_url || null;
 
+    const summaryHtml = mdToHtml_(item.summary || '');
+
     if (item.is_main) {
       html += `<div style="border-left:4px solid #0073aa;padding:12px 16px;margin:24px 0;background:#f0f7ff;">\n`;
       html += `<p style="margin:0 0 4px;"><strong>📌 今日のメイン</strong></p>\n`;
@@ -240,7 +293,7 @@ function buildHtml_(result, today, rawItems) {
       html += `<h2>${item.title_ja}${scorePart}</h2>\n`;
       html += `<p><strong>ソース:</strong> ${label}</p>\n`;
       if (githubUrl) html += `<p>🔗 <a href="${githubUrl}" target="_blank" rel="noopener"><strong>GitHubリポジトリを見る</strong></a></p>\n`;
-      html += `<div style="line-height:1.8;">${item.summary}</div>\n`;
+      html += `<div style="line-height:1.8;">${summaryHtml}</div>\n`;
       html += `<p><a href="${url}" target="_blank" rel="noopener">元記事を読む（英語）→</a></p>\n`;
       html += `<hr style="margin:32px 0;">\n\n`;
       html += `<h2>その他の注目記事</h2>\n\n`;
@@ -248,7 +301,7 @@ function buildHtml_(result, today, rawItems) {
       html += `<h3>${item.title_ja}${scorePart}</h3>\n`;
       html += `<p><strong>ソース:</strong> ${label}</p>\n`;
       if (githubUrl) html += `<p>🔗 <a href="${githubUrl}" target="_blank" rel="noopener">GitHubリポジトリ</a></p>\n`;
-      html += `<p>${item.summary}</p>\n`;
+      html += `<p>${summaryHtml}</p>\n`;
       html += `<p><a href="${url}" target="_blank" rel="noopener">記事を読む →</a></p>\n\n`;
     }
   }
@@ -281,7 +334,7 @@ function postToWordPress_(title, content, excerpt, tagIds, user, pass) {
       title, content, excerpt,
       status: 'publish',
       slug: `claude-code-${getJstDateSlug_()}`,
-      categories: [CLAUDE_CODE_CATEGORY_ID],
+      categories: [CLAUDE_CODE_CATEGORY_ID, DIGEST_CATEGORY_ID],
       tags: tagIds,
     }),
     muteHttpExceptions: true

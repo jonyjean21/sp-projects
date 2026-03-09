@@ -1,0 +1,34 @@
+[
+  {
+    "firebase_key": "-OnI9gyf6XZLeb7DgiCi",
+    "action": "posted",
+    "post_id": 6573,
+    "title": "松本市モルック大会（20チーム出場）",
+    "event_date": "20260215",
+    "area": "nagano",
+    "source_url": "https://twitter.com/jicoco3144/status/2031025070580347303",
+    "processed_at": "2026-03-10"
+  },
+  {
+    "firebase_key": "-OnIItlOAjwfrGXOH4LA",
+    "action": "posted",
+    "post_id": 6574,
+    "title": "山形市モルック競技大会（小学生・23チーム）",
+    "event_date": "20260222",
+    "area": "yamagata",
+    "source_url": "https://twitter.com/NVawrYW8Ke24826/status/2031034834035060904",
+    "processed_at": "2026-03-10"
+  },
+  {
+    "firebase_key": "-OnIMOay9ZgrcxlWCOrw",
+    "action": "skipped",
+    "reason": "山形市記事の重複（NVawrYW8Ke24826と同一URL）",
+    "processed_at": "2026-03-10"
+  },
+  {
+    "firebase_key": "-OnJdjF0kr52tR56hsbO",
+    "action": "skipped",
+    "reason": "練習会のため対象外",
+    "processed_at": "2026-03-10"
+  }
+]

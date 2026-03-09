@@ -9,7 +9,7 @@ Firebase /claude-tips-queue → Gemini要約 → BuildHub WP投稿
   - BuildHub編集部より（今日の総評）
 """
 
-import os, json, re, base64, urllib.request
+import os, json, re, base64, urllib.request, urllib.error, urllib.parse
 from datetime import datetime, timezone, timedelta
 
 FIREBASE_URL = "https://viisi-master-app-default-rtdb.firebaseio.com"
@@ -17,6 +17,7 @@ QUEUE_PATH = "/claude-tips-queue"
 DIGEST_LOG_PATH = "/claude-tips-digest-log"
 BUILDHUB_URL = "https://www.buildhub.jp"
 CLAUDE_CODE_CATEGORY_ID = 2
+DIGEST_CATEGORY_ID = 1  # まとめ記事
 JST = timezone(timedelta(hours=9))
 
 SOURCE_LABELS = {
@@ -26,6 +27,8 @@ SOURCE_LABELS = {
     'zenn':              'Zenn',
     'qiita':             'Qiita',
     'dev-to':            'dev.to',
+    'x-twitter':         'X (Twitter)',
+    'github-releases':   'GitHub Releases',
 }
 
 # ソース → WPタグID（buildhub.jp上のタグ）
@@ -36,6 +39,8 @@ SOURCE_TAG_MAP = {
     'zenn':              9,
     'qiita':             10,
     'dev-to':            11,
+    'x-twitter':         15,
+    'github-releases':   16,
 }
 BASE_TAGS = [6, 12]  # Claude Code, AI開発 は常に付与
 
@@ -78,29 +83,37 @@ def summarize(items, api_key):
 
     main_source = items[0].get('source', '') if items else ''
     is_overseas = main_source in ('hn', 'reddit-claudeai', 'reddit-claudecode')
-    main_hint = (
-        "記事[1]は海外で最もバズった記事です。500文字以上の詳しい日本語解説を書いてください。"
-        if is_overseas else
-        "記事[1]は本日の注目記事です。400文字程度の詳しい日本語解説を書いてください。"
-    )
+    is_release = main_source == 'github-releases'
+
+    if is_release:
+        main_hint = "記事[1]はClaude Codeの公式リリースノートです。主な変更点を3〜5点の箇条書きでまとめ、「エンジニアが今すぐ試せること」を1文で添えてください。"
+    elif is_overseas:
+        main_hint = "記事[1]は海外で最もバズった記事です。500文字以上の詳しい日本語解説を書いてください。"
+    else:
+        main_hint = "記事[1]は本日の注目記事です。400文字程度の詳しい日本語解説を書いてください。"
 
     prompt = f"""あなたはClaude Code・AI開発ツール専門の日本語メディア「BuildHub」の編集者です。
 以下の記事リストを読んで、日本のエンジニア向けにまとめてください。
 
+【タイトル生成のルール】
+- バージョン番号のみのタイトル（例：v2.1.71）は「Claude Code v2.1.71 — [主な追加機能の一言]」形式で日本語タイトルを生成
+- 英語タイトルは自然な日本語に意訳（直訳ではなく内容を反映した日本語）
+- 既に日本語のタイトルはそのまま使用可（微調整は可）
+
 {main_hint}
-記事[2]以降は2〜3文の要約で構いません。
+記事[2]以降は要点を2〜3文で（github-releases の場合は主な変更点を2〜3点箇条書きで）。
 
 以下のJSON形式で返してください（JSONのみ、説明文不要）:
 
 {{
   "excerpt": "記事全体の1文要約（100文字以内、SEO用）",
-  "editor_comment": "BuildHub編集部として今日の注目ポイントを2〜3文でコメント。エンジニアが実際に使える視点で。",
+  "editor_comment": "BuildHub編集部として今日の注目ポイントを2〜3文でコメント。「〜という問題に悩んでいるエンジニアには特に参考になる」「〜を試してみる価値あり」など実際に使える視点で。AI臭い定型文（〜を一歩踏み込んで等）はNG。",
   "items": [
     {{
       "index": 1,
       "title_ja": "自然な日本語タイトル",
       "is_main": true,
-      "summary": "詳しい日本語解説（記事[1]は500文字以上）。以下の構成で書くこと：\n①何が問題で何を解決しているか（150字）\n②どう動くか・核心の実装アプローチ（コードがある場合は核心部分10〜20行をコードブロックで示し、直後に「このコードでやっていること」を3〜5文で日本語解説）\n③日本のエンジニアへの示唆・応用アイデア（150字）\nGitHubリポジトリがある場合は「何ができるか」を1文で必ず明記。",
+      "summary": "詳しい日本語解説（記事[1]は500文字以上）。以下の構成で書くこと：\n①何が問題で何を解決しているか（150字）\n②どう動くか・核心の実装アプローチ（コードがある場合は核心部分10〜20行をコードブロックで示し、直後に「このコードでやっていること」を3〜5文で日本語解説）\n③日本のエンジニアへの示唆・応用アイデア（150字）\nGitHubリポジトリがある場合は「何ができるか」を1文で必ず明記。\ngithub-releases の場合は主な変更点を<ul><li>形式の箇条書きで列挙。",
       "score_label": "HN 234 points または Reddit 456 upvotes または 空文字",
       "url": "元のURL",
       "source": "ソース名"
@@ -109,7 +122,7 @@ def summarize(items, api_key):
       "index": 2,
       "title_ja": "日本語タイトル",
       "is_main": false,
-      "summary": "要点を2〜3文で日本語説明",
+      "summary": "要点を2〜3文で日本語説明（github-releasesなら主な変更点を2〜3点箇条書き）",
       "score_label": "",
       "url": "元のURL",
       "source": "ソース名"
@@ -139,6 +152,24 @@ def summarize(items, api_key):
     return json.loads(match.group())
 
 
+def md_to_html(text):
+    """Gemini返却markdownの最低限HTML変換（コードブロック・太字・インラインコード）"""
+    import html as html_mod
+    # コードブロック: ```lang\n...\n``` → <pre><code>
+    def replace_codeblock(m):
+        lang = m.group(1).strip() or 'text'
+        code = html_mod.escape(m.group(2))
+        return f'<pre style="background:#1e1e1e;color:#d4d4d4;padding:16px;overflow-x:auto;border-radius:6px;margin:16px 0;"><code class="language-{lang}">{code}</code></pre>'
+    text = re.sub(r'```(\w*)\n([\s\S]*?)```', replace_codeblock, text)
+    # 太字: **text** → <strong>
+    text = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', text)
+    # インラインコード: `code` → <code>
+    text = re.sub(r'`([^`\n]+)`', r'<code style="background:#f4f4f4;padding:2px 6px;border-radius:3px;">\1</code>', text)
+    # 段落区切り（①②③ などの箇条書き行）
+    text = re.sub(r'\n([①②③④⑤])', r'<br>\1', text)
+    return text
+
+
 def build_html(result, date_str, raw_items):
     items          = result.get('items', [])
     editor_comment = result.get('editor_comment', '')
@@ -161,6 +192,8 @@ def build_html(result, date_str, raw_items):
         raw = next((r for r in raw_items if r.get('url') == item.get('url')), {})
         github_url = raw.get('github_url')
 
+        summary_html = md_to_html(item.get('summary', ''))
+
         if item.get('is_main'):
             html += '<div style="border-left:4px solid #0073aa;padding:12px 16px;margin:24px 0;background:#f0f7ff;">\n'
             html += '<p style="margin:0 0 4px;"><strong>📌 今日のメイン</strong></p>\n'
@@ -169,7 +202,7 @@ def build_html(result, date_str, raw_items):
             html += f'<p><strong>ソース:</strong> {label}</p>\n'
             if github_url:
                 html += f'<p>🔗 <a href="{github_url}" target="_blank" rel="noopener"><strong>GitHubリポジトリを見る</strong></a></p>\n'
-            html += f'<div style="line-height:1.8;">{item["summary"]}</div>\n'
+            html += f'<div style="line-height:1.8;">{summary_html}</div>\n'
             html += f'<p><a href="{url}" target="_blank" rel="noopener">元記事を読む（英語）→</a></p>\n'
             html += '<hr style="margin:32px 0;">\n\n'
             html += '<h2>その他の注目記事</h2>\n\n'
@@ -178,7 +211,7 @@ def build_html(result, date_str, raw_items):
             html += f'<p><strong>ソース:</strong> {label}</p>\n'
             if github_url:
                 html += f'<p>🔗 <a href="{github_url}" target="_blank" rel="noopener">GitHubリポジトリ</a></p>\n'
-            html += f'<p>{item["summary"]}</p>\n'
+            html += f'<p>{summary_html}</p>\n'
             html += f'<p><a href="{url}" target="_blank" rel="noopener">記事を読む →</a></p>\n\n'
 
     if editor_comment:
@@ -198,7 +231,7 @@ def post_to_wp(title, content, excerpt, tag_ids, user, password):
     payload = json.dumps({
         "title": title, "content": content, "excerpt": excerpt,
         "status": "publish", "slug": slug,
-        "categories": [CLAUDE_CODE_CATEGORY_ID],
+        "categories": [CLAUDE_CODE_CATEGORY_ID, DIGEST_CATEGORY_ID],
         "tags": tag_ids,
     }).encode()
     req = urllib.request.Request(
@@ -211,6 +244,84 @@ def post_to_wp(title, content, excerpt, tag_ids, user, password):
     except urllib.error.HTTPError as e:
         body = e.read().decode('utf-8', errors='replace')[:500]
         raise RuntimeError(f"WP投稿失敗 {e.code}: {body}")
+
+
+def fetch_pexels_image(query, api_key):
+    """Pexels APIで画像URLとカメラマン情報を取得"""
+    q = urllib.parse.quote(query)
+    req = urllib.request.Request(
+        f"https://api.pexels.com/v1/search?query={q}&per_page=3&orientation=landscape",
+        headers={
+            "Authorization": api_key,
+            "User-Agent": "BuildHub/1.0 (+https://www.buildhub.jp)",
+        }
+    )
+    try:
+        with urllib.request.urlopen(req) as res:
+            data = json.loads(res.read())
+        photos = data.get('photos', [])
+        if not photos:
+            return None
+        photo = photos[0]
+        return {
+            'url':           photo['src']['large'],
+            'photographer':  photo.get('photographer', ''),
+            'pexels_url':    photo.get('url', ''),
+        }
+    except Exception as e:
+        print(f"Pexels取得失敗: {e}")
+        return None
+
+
+def upload_featured_image(post_id, image_info, wp_user, wp_pass):
+    """画像をWPメディアにアップロードしてアイキャッチに設定"""
+    import urllib.request as _ur
+    creds = base64.b64encode(f"{wp_user}:{wp_pass}".encode()).decode()
+    auth_header = {"Authorization": f"Basic {creds}"}
+
+    # 画像ダウンロード（User-Agent付き）
+    try:
+        dl_req = _ur.Request(image_info['url'], headers={"User-Agent": "BuildHub/1.0"})
+        with _ur.urlopen(dl_req) as res:
+            img_data = res.read()
+    except Exception as e:
+        print(f"画像DL失敗: {e}")
+        return False
+
+    # WPメディアにアップロード
+    upload_req = _ur.Request(
+        f"{BUILDHUB_URL}/wp-json/wp/v2/media",
+        data=img_data,
+        headers={
+            **auth_header,
+            "Content-Disposition": f"attachment; filename=buildhub-{post_id}.jpg",
+            "Content-Type": "image/jpeg",
+        }
+    )
+    try:
+        with _ur.urlopen(upload_req) as res:
+            media = json.loads(res.read())
+        media_id = media['id']
+    except Exception as e:
+        print(f"メディアアップロード失敗: {e}")
+        return False
+
+    # アイキャッチ設定（WP REST API: POST to posts/{id}）
+    patch_payload = json.dumps({"featured_media": media_id}).encode()
+    patch_req = _ur.Request(
+        f"{BUILDHUB_URL}/wp-json/wp/v2/posts/{post_id}",
+        data=patch_payload,
+        headers={**auth_header, "Content-Type": "application/json"},
+        method="POST"
+    )
+    try:
+        with _ur.urlopen(patch_req) as res:
+            pass
+        print(f"アイキャッチ設定完了: media_id={media_id}")
+        return True
+    except Exception as e:
+        print(f"アイキャッチ設定失敗: {e}")
+        return False
 
 
 def mark_published(items, post_id):
@@ -232,14 +343,21 @@ def write_log(date_str, post_id, count):
     urllib.request.urlopen(req)
 
 
-def main():
-    gemini_key = os.environ.get('GEMINI_API_KEY')
-    wp_user    = os.environ.get('BUILDHUB_WP_USER')
-    wp_pass    = os.environ.get('BUILDHUB_WP_APP_PASS')
+def main(dry_run=False):
+    gemini_key  = os.environ.get('GEMINI_API_KEY')
+    wp_user     = os.environ.get('BUILDHUB_WP_USER')
+    wp_pass     = os.environ.get('BUILDHUB_WP_APP_PASS')
+    pexels_key  = os.environ.get('PEXELS_API_KEY')
 
-    if not all([gemini_key, wp_user, wp_pass]):
-        print("ERROR: 環境変数未設定 (GEMINI_API_KEY / BUILDHUB_WP_USER / BUILDHUB_WP_APP_PASS)")
+    if not gemini_key:
+        print("ERROR: GEMINI_API_KEY 未設定")
         return
+    if not dry_run and not all([wp_user, wp_pass]):
+        print("ERROR: 環境変数未設定 (BUILDHUB_WP_USER / BUILDHUB_WP_APP_PASS)")
+        return
+
+    if dry_run:
+        print("[DRY RUN] Firebase更新・WP投稿はスキップします")
 
     items = fetch_pending_items()
     if not items:
@@ -249,6 +367,10 @@ def main():
 
     top = select_top(items)
     print(f"選択: {len(top)}件")
+    for i, t in enumerate(top):
+        src = SOURCE_LABELS.get(t.get('source',''), t.get('source',''))
+        score = t.get('score', 0)
+        print(f"  [{i+1}] {src} score={score} | {t['title'][:60]}")
 
     result = summarize(top, gemini_key)
     print("Gemini要約完了")
@@ -258,11 +380,54 @@ def main():
     content  = build_html(result, date_str, top)
     excerpt  = result.get('excerpt', '')
 
+    print(f"\n--- タイトル ---\n{title}")
+    print(f"\n--- excerpt ---\n{excerpt}")
+    print(f"\n--- editor_comment ---\n{result.get('editor_comment','')}")
+    print(f"\n--- コンテンツ先頭500字 ---\n{content[:500]}")
+
+    if dry_run:
+        print("\n[DRY RUN] 以上。WP投稿・Firebase更新はスキップしました。")
+        return
+
     # タグID
     tag_ids = list(set(BASE_TAGS + [SOURCE_TAG_MAP[i.get('source', '')] for i in top if i.get('source') in SOURCE_TAG_MAP]))
 
+    # 重複チェック
+    slug = f"claude-code-{datetime.now(JST).strftime('%Y%m%d')}"
+    creds_check = base64.b64encode(f"{wp_user}:{wp_pass}".encode()).decode()
+    check_req = urllib.request.Request(
+        f"{BUILDHUB_URL}/wp-json/wp/v2/posts?slug={slug}",
+        headers={"Authorization": f"Basic {creds_check}"}
+    )
+    with urllib.request.urlopen(check_req) as res:
+        existing = json.loads(res.read())
+    if existing:
+        print(f"本日の記事（{slug}）は既に投稿済みです。スキップ。")
+        return
+
     post_id = post_to_wp(title, content, excerpt, tag_ids, wp_user, wp_pass)
     print(f"WP投稿完了: ID={post_id}")
+
+    # アイキャッチ画像（Pexels）— メイン記事のソースに応じたクエリ
+    if pexels_key:
+        main_source = top[0].get('source', '') if top else ''
+        if main_source == 'github-releases':
+            queries = ['software release code dark', 'AI coding terminal dark', 'developer programming']
+        elif main_source in ('hn', 'reddit-claudeai', 'reddit-claudecode'):
+            queries = ['AI developer programming dark', 'coding screen terminal', 'artificial intelligence code']
+        else:
+            queries = ['programming code japanese', 'AI coding terminal dark', 'developer computer screen']
+        image_info = None
+        for q in queries:
+            image_info = fetch_pexels_image(q, pexels_key)
+            if image_info:
+                break
+        if image_info:
+            upload_featured_image(post_id, image_info, wp_user, wp_pass)
+        else:
+            print("Pexels画像取得失敗。アイキャッチなしで続行。")
+    else:
+        print("PEXELS_API_KEY未設定。アイキャッチスキップ。")
 
     mark_published(top, post_id)
     write_log(date_str, post_id, len(top))
@@ -270,4 +435,6 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    import sys
+    dry_run = '--dry-run' in sys.argv
+    main(dry_run=dry_run)

@@ -16,6 +16,14 @@ const FIREBASE_URL = 'https://viisi-master-app-default-rtdb.firebaseio.com';
 const QUEUE_PATH = '/claude-tips-queue';
 const LOG_PATH = '/claude-tips-collector-log';
 
+// === IFTTT受け口 ===
+// IFTTTから「X Claude Code バズ投稿」が POST されてきたときの受け口
+// IFTTT Webhook Action: POST https://viisi-master-app-default-rtdb.firebaseio.com/claude-tips-queue.json
+// Body: {"url":"{{LinkToTweet}}","title":"{{Text}}","source":"x-twitter","score":{{FavoriteCount}},
+//        "content_preview":"{{Text}}","status":"pending","collected_at":"{{CreatedAt}}"}
+// → Firebaseに直接pushされるためGAS処理不要。ただし重複チェックはない。
+// IFTTT設定手順: data/buildhub/IFTTT_X_SETUP.md を参照
+
 /**
  * メイン処理: 全ソースから収集してキューに追加
  */
@@ -27,12 +35,13 @@ function collectAll() {
   const existingUrls = getExistingUrls_();
 
   const collectors = [
-    { fn: collectReddit_, name: 'reddit-claudeai',   sub: 'ClaudeAI' },
-    { fn: collectReddit_, name: 'reddit-claudecode', sub: 'ClaudeCode' },
-    { fn: collectHN_,     name: 'hn' },
-    { fn: collectZenn_,   name: 'zenn' },
-    { fn: collectQiita_,  name: 'qiita' },
-    { fn: collectDevTo_,  name: 'dev-to' }
+    { fn: collectReddit_,        name: 'reddit-claudeai',   sub: 'ClaudeAI' },
+    { fn: collectReddit_,        name: 'reddit-claudecode', sub: 'ClaudeCode' },
+    { fn: collectHN_,            name: 'hn' },
+    { fn: collectZenn_,          name: 'zenn' },
+    { fn: collectQiita_,         name: 'qiita' },
+    { fn: collectDevTo_,         name: 'dev-to' },
+    { fn: collectGithubReleases_, name: 'github-releases' }
   ];
 
   for (const c of collectors) {
@@ -131,7 +140,7 @@ function collectZenn_() {
   if (res.getResponseCode() !== 200) throw new Error(`HTTP ${res.getResponseCode()}`);
 
   const data = JSON.parse(res.getContentText());
-  const techKeywords = /実装|作って|コード|試して|使って|ツール|自動化|スクリプト|設定|CLAUDE\.md|hook/i;
+  const techKeywords = /実装|作って|コード|試して|使って|ツール|自動化|スクリプト|設定|CLAUDE\.md|hook|MCP|エージェント|agentic|関数呼び出し|プロンプト|function.call|ワークフロー|パイプライン|API|CLI|拡張|カスタム|テンプレート|権限|許可/i;
 
   return (data.articles || [])
     .filter(a => a.liked_count >= 5)
@@ -163,16 +172,29 @@ function collectQiita_() {
 
 /**
  * dev.to JSON API (reactions >= 5)
+ * claudecode と claude-code の両タグから収集して重複を排除
  */
 function collectDevTo_() {
-  const res = UrlFetchApp.fetch(
-    'https://dev.to/api/articles?tag=claudecode&top=7',
-    { muteHttpExceptions: true }
-  );
-  if (res.getResponseCode() !== 200) throw new Error(`HTTP ${res.getResponseCode()}`);
+  const tags = ['claudecode', 'claude-code'];
+  const allArticles = [];
+  const seenUrls = new Set();
 
-  const articles = JSON.parse(res.getContentText());
-  return articles
+  for (const tag of tags) {
+    const res = UrlFetchApp.fetch(
+      `https://dev.to/api/articles?tag=${tag}&top=10`,
+      { muteHttpExceptions: true }
+    );
+    if (res.getResponseCode() !== 200) continue;
+    const articles = JSON.parse(res.getContentText());
+    for (const a of articles) {
+      if (!seenUrls.has(a.url)) {
+        seenUrls.add(a.url);
+        allArticles.push(a);
+      }
+    }
+  }
+
+  return allArticles
     .filter(a => a.positive_reactions_count >= 5)
     .map(a => {
       const preview = (a.description || '').substring(0, 800);
@@ -187,6 +209,22 @@ function collectDevTo_() {
         published_at: a.published_at
       };
     });
+}
+
+/**
+ * GitHub anthropics/claude-code releases (Atom)
+ * 公式リリースノートを収集。バージョン更新情報はBuildhubの差別化コンテンツ
+ */
+function collectGithubReleases_() {
+  const res = UrlFetchApp.fetch(
+    'https://github.com/anthropics/claude-code/releases.atom',
+    { muteHttpExceptions: true, headers: { 'User-Agent': 'claude-tips-collector/1.0' } }
+  );
+  if (res.getResponseCode() !== 200) throw new Error(`HTTP ${res.getResponseCode()}`);
+
+  const entries = parseRss_(res.getContentText(), 'github-releases');
+  // リリースノートはコード記事として扱う。score=60固定（HN/Redditの高スコア記事より下位、低スコア記事より上位）
+  return entries.map(e => ({ ...e, score: 60, has_code: true }));
 }
 
 /**
