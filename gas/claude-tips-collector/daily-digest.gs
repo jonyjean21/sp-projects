@@ -184,7 +184,7 @@ ${articleList}`;
       contentType: 'application/json',
       payload: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.4, maxOutputTokens: 4096 }
+        generationConfig: { temperature: 0.4, maxOutputTokens: 8192 }
       }),
       muteHttpExceptions: true
     }

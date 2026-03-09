@@ -236,7 +236,7 @@ PROMPT;
 
     $payload = json_encode([
         'contents'         => [['parts' => [['text' => $prompt]]]],
-        'generationConfig' => ['temperature' => 0.4, 'maxOutputTokens' => 4096],
+        'generationConfig' => ['temperature' => 0.4, 'maxOutputTokens' => 8192],
     ]);
 
     $ctx = stream_context_create(['http' => [

@@ -122,7 +122,7 @@ def summarize(items, api_key):
 
     payload = json.dumps({
         "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {"temperature": 0.4, "maxOutputTokens": 4096}
+        "generationConfig": {"temperature": 0.4, "maxOutputTokens": 8192}
     }).encode()
 
     req = urllib.request.Request(
