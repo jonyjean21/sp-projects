@@ -100,8 +100,12 @@ def post_to_wp(title, content, user, password):
         f"{BUILDHUB_URL}/wp-json/wp/v2/posts", data=payload,
         headers={"Authorization": f"Basic {creds}", "Content-Type": "application/json"}
     )
-    with urllib.request.urlopen(req) as res:
-        return json.loads(res.read())['id']
+    try:
+        with urllib.request.urlopen(req) as res:
+            return json.loads(res.read())['id']
+    except urllib.error.HTTPError as e:
+        body = e.read().decode('utf-8', errors='replace')[:500]
+        raise RuntimeError(f"WP投稿失敗 {e.code}: {body}")
 
 
 def mark_published(items, post_id):
