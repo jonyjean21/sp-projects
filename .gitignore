@@ -28,3 +28,8 @@ __pycache__/
 
 # OS
 .DS_Store
+tools/buildhub-cron-deploy.php
+deploy/
+
+# curl cookie files
+3
