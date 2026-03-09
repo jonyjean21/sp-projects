@@ -1,6 +1,11 @@
 /**
  * Claude Code Tips 日次ダイジェスト生成
- * 毎朝7時JST: Firebase pending取得 → Gemini日本語要約 → BuildHub WP投稿
+ * 毎朝7時JST: Firebase pending取得 → Gemini翻訳・要約 → BuildHub WP投稿
+ *
+ * 記事構成:
+ *   - 今日のメイン（海外バズ記事を1本フル翻訳・詳細解説）
+ *   - その他の注目（残り記事を要約）
+ *   - BuildHub編集部より（今日の総評）
  *
  * セットアップ（Script Propertiesに設定）:
  *   GEMINI_API_KEY  : Google AI Studio で取得
@@ -13,6 +18,26 @@
 const DIGEST_LOG_PATH = '/claude-tips-digest-log';
 const BUILDHUB_URL = 'https://www.buildhub.jp';
 const CLAUDE_CODE_CATEGORY_ID = 2;
+
+const SOURCE_LABELS = {
+  'reddit-claudeai':   'Reddit r/ClaudeAI',
+  'reddit-claudecode': 'Reddit r/ClaudeCode',
+  'hn':                'Hacker News',
+  'zenn':              'Zenn',
+  'qiita':             'Qiita',
+  'dev-to':            'dev.to',
+};
+
+// ソース → WPタグID
+const SOURCE_TAG_MAP = {
+  'hn':                7,
+  'reddit-claudeai':   8,
+  'reddit-claudecode': 8,
+  'zenn':              9,
+  'qiita':             10,
+  'dev-to':            11,
+};
+const BASE_TAGS = [6, 12]; // Claude Code, AI開発
 
 /**
  * メイン: 日次ダイジェスト生成・投稿
@@ -28,46 +53,46 @@ function runDailyDigest() {
     return;
   }
 
-  // 1. Firebase から過去48hのpendingを取得
   const items = fetchPendingItems_();
   if (items.length === 0) {
     Logger.log('pendingアイテムなし。スキップ。');
     return;
   }
+  Logger.log(`取得: ${items.length}件`);
 
-  // 2. スコアでソートして上位7件を選択
   const top = selectTopItems_(items, 7);
-  Logger.log(`選択: ${top.length}件 (全${items.length}件中)`);
+  Logger.log(`選択: ${top.length}件`);
 
-  // 3. Geminiで日本語要約
-  const summaries = summarizeWithGemini_(top, GEMINI_KEY);
-  if (!summaries) {
+  const result = summarizeWithGemini_(top, GEMINI_KEY);
+  if (!result) {
     Logger.log('Gemini要約失敗。スキップ。');
     return;
   }
 
-  // 4. WP記事HTML生成
   const today = getJstDateString_();
-  const title = `Claude Code 最新情報まとめ【${today}】`;
-  const content = buildHtml_(summaries, today);
+  const title = `Claude Code 海外バズ翻訳まとめ【${today}】`;
+  const content = buildHtml_(result, today, top);
+  const excerpt = result.excerpt || '';
 
-  // 5. BuildHub WPに投稿
-  const postId = postToWordPress_(title, content, WP_USER, WP_PASS);
+  // タグID（重複除去）
+  const tagIds = [...new Set([
+    ...BASE_TAGS,
+    ...top.map(i => SOURCE_TAG_MAP[i.source]).filter(Boolean)
+  ])];
+
+  const postId = postToWordPress_(title, content, excerpt, tagIds, WP_USER, WP_PASS);
   if (!postId) {
     Logger.log('WP投稿失敗。');
     return;
   }
 
-  // 6. 処理済みアイテムのstatusを更新
   markAsPublished_(top, postId);
-
-  // 7. ログ記録
   writeDigestLog_({ date: today, postId, itemCount: top.length });
   Logger.log(`完了: 投稿ID=${postId}, ${top.length}件`);
 }
 
 /**
- * Firebase から過去48hのpendingアイテムを取得（全件取得してGAS側でフィルタ）
+ * Firebase から過去48hのpendingアイテムを取得
  */
 function fetchPendingItems_() {
   const res = UrlFetchApp.fetch(
@@ -86,31 +111,63 @@ function fetchPendingItems_() {
 }
 
 /**
- * スコア順で上位N件を選択
+ * 海外ソース優遇 + コード含有ボーナスでソートして上位N件を選択
  */
 function selectTopItems_(items, n) {
+  const overseas = new Set(['hn', 'reddit-claudeai', 'reddit-claudecode']);
   return items
-    .sort((a, b) => (b.score || 0) - (a.score || 0))
+    .sort((a, b) => {
+      const scoreA = (a.score || 0) + (overseas.has(a.source) ? 50 : 0) + (a.has_code ? 20 : 0) + (a.github_url ? 15 : 0);
+      const scoreB = (b.score || 0) + (overseas.has(b.source) ? 50 : 0) + (b.has_code ? 20 : 0) + (b.github_url ? 15 : 0);
+      return scoreB - scoreA;
+    })
     .slice(0, n);
 }
 
 /**
- * Gemini APIで日本語要約
+ * Gemini APIで翻訳・要約・編集部コメントを一括生成
  */
 function summarizeWithGemini_(items, apiKey) {
   const articleList = items.map((item, i) =>
-    `[${i + 1}] タイトル: ${item.title}\nURL: ${item.url}\nソース: ${item.source}\n概要: ${item.content_preview || '(なし)'}`
+    `[${i + 1}] タイトル: ${item.title}\nURL: ${item.url}\nソース: ${item.source} (スコア:${item.score || 0})` +
+    (item.github_url ? `\n補足: GitHubリポジトリあり: ${item.github_url}` : '') +
+    (item.has_code && !item.github_url ? '\n補足: コード例あり' : '') +
+    `\n本文: ${(item.content_preview || '').substring(0, 400)}`
   ).join('\n\n');
 
-  const prompt = `以下のClaude Code関連記事を日本語でまとめてください。
-各記事について以下のJSONを返してください。配列形式で全件返すこと。
+  const mainSource = items[0]?.source || '';
+  const isOverseas = ['hn', 'reddit-claudeai', 'reddit-claudecode'].includes(mainSource);
+  const mainHint = isOverseas
+    ? '記事[1]は海外で最もバズった記事です。500文字以上の詳しい日本語解説を書いてください。'
+    : '記事[1]は本日の注目記事です。400文字程度の詳しい日本語解説を書いてください。';
+
+  const prompt = `あなたはClaude Code・AI開発ツール専門の日本語メディア「BuildHub」の編集者です。
+以下の記事リストを読んで、日本のエンジニア向けにまとめてください。
+
+${mainHint}
+記事[2]以降は2〜3文の要約で構いません。
+
+以下のJSON形式で返してください（JSONのみ、説明文不要）:
 
 {
+  "excerpt": "記事全体の1文要約（100文字以内、SEO用）",
+  "editor_comment": "BuildHub編集部として今日の注目ポイントを2〜3文でコメント。エンジニアが実際に使える視点で。",
   "items": [
     {
       "index": 1,
+      "title_ja": "自然な日本語タイトル",
+      "is_main": true,
+      "summary": "詳しい日本語解説（500文字以上。背景・技術的ポイント・実装方法・コードの概要・日本のエンジニアへの示唆を含める。GitHubリポジトリがある場合はどんな実装かを具体的に説明）",
+      "score_label": "HN 234 points または Reddit 456 upvotes または空文字",
+      "url": "元のURL",
+      "source": "ソース名"
+    },
+    {
+      "index": 2,
       "title_ja": "日本語タイトル",
-      "summary": "記事の要点を2〜3文で日本語で説明",
+      "is_main": false,
+      "summary": "要点を2〜3文で日本語説明",
+      "score_label": "",
       "url": "元のURL",
       "source": "ソース名"
     }
@@ -118,12 +175,7 @@ function summarizeWithGemini_(items, apiKey) {
 }
 
 記事リスト:
-${articleList}
-
-注意:
-- title_jaは自然な日本語に翻訳（英語タイトルは翻訳、日本語はそのまま）
-- summaryはエンジニア向けに実用的な情報を含めること
-- JSONのみ返すこと（説明文不要）`;
+${articleList}`;
 
   const res = UrlFetchApp.fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
@@ -132,7 +184,7 @@ ${articleList}
       contentType: 'application/json',
       payload: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.3 }
+        generationConfig: { temperature: 0.4, maxOutputTokens: 4096 }
       }),
       muteHttpExceptions: true
     }
@@ -148,7 +200,7 @@ ${articleList}
     const text = result.candidates[0].content.parts[0].text;
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) return null;
-    return JSON.parse(jsonMatch[0]).items;
+    return JSON.parse(jsonMatch[0]);
   } catch (e) {
     Logger.log(`Geminiレスポンスパースエラー: ${e.message}`);
     return null;
@@ -156,27 +208,57 @@ ${articleList}
 }
 
 /**
- * WP記事HTMLを生成
+ * WP記事HTMLを生成（バズ翻訳メディア構成）
  */
-function buildHtml_(summaries, today) {
-  const sourceLabels = {
-    'reddit-claudeai': 'Reddit r/ClaudeAI',
-    'reddit-claudecode': 'Reddit r/ClaudeCode',
-    'hn': 'Hacker News',
-    'zenn': 'Zenn',
-    'qiita': 'Qiita',
-    'dev-to': 'dev.to'
-  };
+function buildHtml_(result, today, rawItems) {
+  const items         = result.items || [];
+  const editorComment = result.editor_comment || '';
 
-  let html = `<p>Claude Codeに関する本日の注目記事をまとめました。海外・国内の最新情報をお届けします。</p>\n\n`;
+  // ソース内訳
+  const sourceCounts = {};
+  for (const ri of rawItems) {
+    const label = SOURCE_LABELS[ri.source] || ri.source;
+    sourceCounts[label] = (sourceCounts[label] || 0) + 1;
+  }
+  const sourceSummary = Object.entries(sourceCounts).map(([s, c]) => `${s} ${c}件`).join(' / ');
 
-  for (const item of summaries) {
-    const sourceLabel = sourceLabels[item.source] || item.source;
-    html += `<h2>${item.title_ja}</h2>\n`;
-    html += `<p><strong>ソース:</strong> ${sourceLabel}</p>\n`;
-    html += `<p>${item.summary}</p>\n`;
-    html += `<p><a href="${item.url}" target="_blank" rel="noopener">記事を読む →</a></p>\n`;
-    html += `<hr>\n\n`;
+  let html = `<p>本日の注目記事 ${items.length}本をお届けします。（${sourceSummary}）</p>\n\n`;
+
+  for (const item of items) {
+    const label      = SOURCE_LABELS[item.source] || item.source;
+    const url        = item.url;
+    const scorePart  = item.score_label ? ` <small>(${item.score_label})</small>` : '';
+
+    // GitHubバナー用URLをrawItemsから取得
+    const rawItem = rawItems.find(r => r.url === item.url) || {};
+    const githubUrl = rawItem.github_url || null;
+
+    if (item.is_main) {
+      html += `<div style="border-left:4px solid #0073aa;padding:12px 16px;margin:24px 0;background:#f0f7ff;">\n`;
+      html += `<p style="margin:0 0 4px;"><strong>📌 今日のメイン</strong></p>\n`;
+      html += `</div>\n\n`;
+      html += `<h2>${item.title_ja}${scorePart}</h2>\n`;
+      html += `<p><strong>ソース:</strong> ${label}</p>\n`;
+      if (githubUrl) html += `<p>🔗 <a href="${githubUrl}" target="_blank" rel="noopener"><strong>GitHubリポジトリを見る</strong></a></p>\n`;
+      html += `<div style="line-height:1.8;">${item.summary}</div>\n`;
+      html += `<p><a href="${url}" target="_blank" rel="noopener">元記事を読む（英語）→</a></p>\n`;
+      html += `<hr style="margin:32px 0;">\n\n`;
+      html += `<h2>その他の注目記事</h2>\n\n`;
+    } else {
+      html += `<h3>${item.title_ja}${scorePart}</h3>\n`;
+      html += `<p><strong>ソース:</strong> ${label}</p>\n`;
+      if (githubUrl) html += `<p>🔗 <a href="${githubUrl}" target="_blank" rel="noopener">GitHubリポジトリ</a></p>\n`;
+      html += `<p>${item.summary}</p>\n`;
+      html += `<p><a href="${url}" target="_blank" rel="noopener">記事を読む →</a></p>\n\n`;
+    }
+  }
+
+  if (editorComment) {
+    html += `<hr style="margin:32px 0;">\n\n`;
+    html += `<div style="background:#f9f9f9;border:1px solid #ddd;padding:16px;border-radius:4px;">\n`;
+    html += `<p style="margin:0 0 8px;"><strong>💬 BuildHub編集部より</strong></p>\n`;
+    html += `<p style="margin:0;">${editorComment}</p>\n`;
+    html += `</div>\n\n`;
   }
 
   html += `<p><small>このまとめはAIが自動生成しています。${today}時点の情報です。</small></p>`;
@@ -186,7 +268,7 @@ function buildHtml_(summaries, today) {
 /**
  * WordPress REST API に記事を投稿
  */
-function postToWordPress_(title, content, user, pass) {
+function postToWordPress_(title, content, excerpt, tagIds, user, pass) {
   const credentials = Utilities.base64Encode(`${user}:${pass}`);
 
   const res = UrlFetchApp.fetch(`${BUILDHUB_URL}/wp-json/wp/v2/posts`, {
@@ -196,11 +278,11 @@ function postToWordPress_(title, content, user, pass) {
       'Content-Type': 'application/json'
     },
     payload: JSON.stringify({
-      title,
-      content,
+      title, content, excerpt,
       status: 'publish',
       slug: `claude-code-${getJstDateSlug_()}`,
-      categories: [CLAUDE_CODE_CATEGORY_ID]
+      categories: [CLAUDE_CODE_CATEGORY_ID],
+      tags: tagIds,
     }),
     muteHttpExceptions: true
   });
@@ -228,24 +310,15 @@ function markAsPublished_(items, postId) {
   }
 }
 
-/**
- * JST日付文字列を返す（例: 2026/03/09）
- */
 function getJstDateString_() {
   const jst = new Date(Date.now() + 9 * 60 * 60 * 1000);
   return `${jst.getUTCFullYear()}/${String(jst.getUTCMonth() + 1).padStart(2, '0')}/${String(jst.getUTCDate()).padStart(2, '0')}`;
 }
 
-/**
- * スラッグ用JST日付文字列（例: 20260309）
- */
 function getJstDateSlug_() {
   return getJstDateString_().replace(/\//g, '');
 }
 
-/**
- * ダイジェストログをFirebaseに記録
- */
 function writeDigestLog_(entry) {
   UrlFetchApp.fetch(`${FIREBASE_URL}${DIGEST_LOG_PATH}.json`, {
     method: 'post',
@@ -257,10 +330,6 @@ function writeDigestLog_(entry) {
 
 // === トリガー管理 ===
 
-/**
- * 毎朝7時JSTのトリガーを作成（1回だけ実行）
- * GASのタイムゾーンはAmerica/New_Yorkのため22:00 UTC前日 = 7:00 JST
- */
 function createDailyTrigger() {
   ScriptApp.getProjectTriggers().forEach(t => {
     if (t.getHandlerFunction() === 'runDailyDigest') ScriptApp.deleteTrigger(t);
@@ -273,9 +342,6 @@ function createDailyTrigger() {
   Logger.log('トリガー作成完了: 毎朝7時JSTに runDailyDigest を実行');
 }
 
-/**
- * テスト実行（実際にWP投稿する）
- */
 function testDigest() {
   Logger.log('=== ダイジェストテスト開始 ===');
   runDailyDigest();

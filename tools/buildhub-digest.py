@@ -2,6 +2,11 @@
 """
 BuildHub 日次ダイジェスト生成・投稿
 Firebase /claude-tips-queue → Gemini要約 → BuildHub WP投稿
+
+記事構成:
+  - 今日のメイン（海外バズ記事を1本フル翻訳・詳細解説）
+  - その他の注目（残り記事を要約）
+  - BuildHub編集部より（今日の総評）
 """
 
 import os, json, re, base64, urllib.request
@@ -15,13 +20,24 @@ CLAUDE_CODE_CATEGORY_ID = 2
 JST = timezone(timedelta(hours=9))
 
 SOURCE_LABELS = {
-    'reddit-claudeai': 'Reddit r/ClaudeAI',
+    'reddit-claudeai':   'Reddit r/ClaudeAI',
     'reddit-claudecode': 'Reddit r/ClaudeCode',
-    'hn': 'Hacker News',
-    'zenn': 'Zenn',
-    'qiita': 'Qiita',
-    'dev-to': 'dev.to'
+    'hn':                'Hacker News',
+    'zenn':              'Zenn',
+    'qiita':             'Qiita',
+    'dev-to':            'dev.to',
 }
+
+# ソース → WPタグID（buildhub.jp上のタグ）
+SOURCE_TAG_MAP = {
+    'hn':                7,
+    'reddit-claudeai':   8,
+    'reddit-claudecode': 8,
+    'zenn':              9,
+    'qiita':             10,
+    'dev-to':            11,
+}
+BASE_TAGS = [6, 12]  # Claude Code, AI開発 は常に付与
 
 
 def fetch_pending_items():
@@ -38,28 +54,75 @@ def fetch_pending_items():
 
 
 def select_top(items, n=7):
-    return sorted(items, key=lambda x: x.get('score') or 0, reverse=True)[:n]
+    """海外ソース優遇 + コード含有ボーナスでスコアソート"""
+    overseas = {'hn', 'reddit-claudeai', 'reddit-claudecode'}
+    def score(x):
+        base  = x.get('score') or 0
+        bonus = 50 if x.get('source') in overseas else 0
+        bonus += 20 if x.get('has_code') else 0
+        bonus += 15 if x.get('github_url') else 0
+        return base + bonus
+    return sorted(items, key=score, reverse=True)[:n]
 
 
 def summarize(items, api_key):
     article_list = "\n\n".join([
-        f"[{i+1}] タイトル: {item['title']}\nURL: {item['url']}\nソース: {item.get('source','')}\n概要: {(item.get('content_preview') or '')[:300]}"
+        f"[{i+1}] タイトル: {item['title']}\n"
+        f"URL: {item['url']}\n"
+        f"ソース: {item.get('source','')} (スコア:{item.get('score',0)})\n"
+        f"本文: {(item.get('content_preview') or '')[:400]}"
+        + (f"\n補足: GitHubリポジトリあり: {item['github_url']}" if item.get('github_url') else "")
+        + ("\n補足: コード例あり" if item.get('has_code') and not item.get('github_url') else "")
         for i, item in enumerate(items)
     ])
 
-    prompt = f"""以下のClaude Code関連記事を日本語でまとめてください。
-各記事について以下のJSONを返してください。配列形式で全件返すこと。
+    main_source = items[0].get('source', '') if items else ''
+    is_overseas = main_source in ('hn', 'reddit-claudeai', 'reddit-claudecode')
+    main_hint = (
+        "記事[1]は海外で最もバズった記事です。500文字以上の詳しい日本語解説を書いてください。"
+        if is_overseas else
+        "記事[1]は本日の注目記事です。400文字程度の詳しい日本語解説を書いてください。"
+    )
 
-{{"items": [{{"index": 1, "title_ja": "日本語タイトル", "summary": "要点を2〜3文で日本語説明", "url": "元のURL", "source": "ソース名"}}]}}
+    prompt = f"""あなたはClaude Code・AI開発ツール専門の日本語メディア「BuildHub」の編集者です。
+以下の記事リストを読んで、日本のエンジニア向けにまとめてください。
+
+{main_hint}
+記事[2]以降は2〜3文の要約で構いません。
+
+以下のJSON形式で返してください（JSONのみ、説明文不要）:
+
+{{
+  "excerpt": "記事全体の1文要約（100文字以内、SEO用）",
+  "editor_comment": "BuildHub編集部として今日の注目ポイントを2〜3文でコメント。エンジニアが実際に使える視点で。",
+  "items": [
+    {{
+      "index": 1,
+      "title_ja": "自然な日本語タイトル",
+      "is_main": true,
+      "summary": "詳しい日本語解説（記事[1]は500文字以上。背景・技術的ポイント・実装方法・コードの概要・日本のエンジニアへの示唆を含める。GitHubリポジトリがある場合はどんな実装かを具体的に説明）",
+      "score_label": "HN 234 points または Reddit 456 upvotes または 空文字",
+      "url": "元のURL",
+      "source": "ソース名"
+    }},
+    {{
+      "index": 2,
+      "title_ja": "日本語タイトル",
+      "is_main": false,
+      "summary": "要点を2〜3文で日本語説明",
+      "score_label": "",
+      "url": "元のURL",
+      "source": "ソース名"
+    }}
+  ]
+}}
 
 記事リスト:
-{article_list}
-
-注意: title_jaは自然な日本語に翻訳。summaryはエンジニア向けに実用的に。JSONのみ返すこと。"""
+{article_list}"""
 
     payload = json.dumps({
         "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {"temperature": 0.3}
+        "generationConfig": {"temperature": 0.4, "maxOutputTokens": 4096}
     }).encode()
 
     req = urllib.request.Request(
@@ -73,28 +136,70 @@ def summarize(items, api_key):
     match = re.search(r'\{[\s\S]*\}', text)
     if not match:
         raise ValueError("GeminiレスポンスにJSONなし")
-    return json.loads(match.group())['items']
+    return json.loads(match.group())
 
 
-def build_html(summaries, date_str):
-    html = "<p>Claude Codeに関する本日の注目記事をまとめました。海外・国内の最新情報をお届けします。</p>\n\n"
-    for item in summaries:
-        label = SOURCE_LABELS.get(item.get('source', ''), item.get('source', ''))
-        html += f"<h2>{item['title_ja']}</h2>\n"
-        html += f"<p><strong>ソース:</strong> {label}</p>\n"
-        html += f"<p>{item['summary']}</p>\n"
-        html += f'<p><a href="{item["url"]}" target="_blank" rel="noopener">記事を読む →</a></p>\n'
-        html += "<hr>\n\n"
+def build_html(result, date_str, raw_items):
+    items          = result.get('items', [])
+    editor_comment = result.get('editor_comment', '')
+
+    # ソース内訳
+    source_counts = {}
+    for ri in raw_items:
+        label = SOURCE_LABELS.get(ri.get('source', ''), ri.get('source', ''))
+        source_counts[label] = source_counts.get(label, 0) + 1
+    source_summary = ' / '.join(f"{s} {c}件" for s, c in source_counts.items())
+
+    html = f"<p>本日の注目記事 {len(items)}本をお届けします。（{source_summary}）</p>\n\n"
+
+    for item in items:
+        label       = SOURCE_LABELS.get(item.get('source', ''), item.get('source', ''))
+        url         = item['url']
+        score_label = f" <small>({item['score_label']})</small>" if item.get('score_label') else ''
+
+        # GitHubバナー（raw_itemsからgithub_urlを参照）
+        raw = next((r for r in raw_items if r.get('url') == item.get('url')), {})
+        github_url = raw.get('github_url')
+
+        if item.get('is_main'):
+            html += '<div style="border-left:4px solid #0073aa;padding:12px 16px;margin:24px 0;background:#f0f7ff;">\n'
+            html += '<p style="margin:0 0 4px;"><strong>📌 今日のメイン</strong></p>\n'
+            html += '</div>\n\n'
+            html += f'<h2>{item["title_ja"]}{score_label}</h2>\n'
+            html += f'<p><strong>ソース:</strong> {label}</p>\n'
+            if github_url:
+                html += f'<p>🔗 <a href="{github_url}" target="_blank" rel="noopener"><strong>GitHubリポジトリを見る</strong></a></p>\n'
+            html += f'<div style="line-height:1.8;">{item["summary"]}</div>\n'
+            html += f'<p><a href="{url}" target="_blank" rel="noopener">元記事を読む（英語）→</a></p>\n'
+            html += '<hr style="margin:32px 0;">\n\n'
+            html += '<h2>その他の注目記事</h2>\n\n'
+        else:
+            html += f'<h3>{item["title_ja"]}{score_label}</h3>\n'
+            html += f'<p><strong>ソース:</strong> {label}</p>\n'
+            if github_url:
+                html += f'<p>🔗 <a href="{github_url}" target="_blank" rel="noopener">GitHubリポジトリ</a></p>\n'
+            html += f'<p>{item["summary"]}</p>\n'
+            html += f'<p><a href="{url}" target="_blank" rel="noopener">記事を読む →</a></p>\n\n'
+
+    if editor_comment:
+        html += '<hr style="margin:32px 0;">\n\n'
+        html += '<div style="background:#f9f9f9;border:1px solid #ddd;padding:16px;border-radius:4px;">\n'
+        html += '<p style="margin:0 0 8px;"><strong>💬 BuildHub編集部より</strong></p>\n'
+        html += f'<p style="margin:0;">{editor_comment}</p>\n'
+        html += '</div>\n\n'
+
     html += f"<p><small>このまとめはAIが自動生成しています。{date_str}時点の情報です。</small></p>"
     return html
 
 
-def post_to_wp(title, content, user, password):
+def post_to_wp(title, content, excerpt, tag_ids, user, password):
     creds = base64.b64encode(f"{user}:{password}".encode()).decode()
-    slug = f"claude-code-{datetime.now(JST).strftime('%Y%m%d')}"
+    slug  = f"claude-code-{datetime.now(JST).strftime('%Y%m%d')}"
     payload = json.dumps({
-        "title": title, "content": content, "status": "publish",
-        "slug": slug, "categories": [CLAUDE_CODE_CATEGORY_ID]
+        "title": title, "content": content, "excerpt": excerpt,
+        "status": "publish", "slug": slug,
+        "categories": [CLAUDE_CODE_CATEGORY_ID],
+        "tags": tag_ids,
     }).encode()
     req = urllib.request.Request(
         f"{BUILDHUB_URL}/wp-json/wp/v2/posts", data=payload,
@@ -145,14 +250,18 @@ def main():
     top = select_top(items)
     print(f"選択: {len(top)}件")
 
-    summaries = summarize(top, gemini_key)
+    result = summarize(top, gemini_key)
     print("Gemini要約完了")
 
     date_str = datetime.now(JST).strftime('%Y/%m/%d')
-    title = f"Claude Code 最新情報まとめ【{date_str}】"
-    content = build_html(summaries, date_str)
+    title    = f"Claude Code 海外バズ翻訳まとめ【{date_str}】"
+    content  = build_html(result, date_str, top)
+    excerpt  = result.get('excerpt', '')
 
-    post_id = post_to_wp(title, content, wp_user, wp_pass)
+    # タグID
+    tag_ids = list(set(BASE_TAGS + [SOURCE_TAG_MAP[i.get('source', '')] for i in top if i.get('source') in SOURCE_TAG_MAP]))
+
+    post_id = post_to_wp(title, content, excerpt, tag_ids, wp_user, wp_pass)
     print(f"WP投稿完了: ID={post_id}")
 
     mark_published(top, post_id)
