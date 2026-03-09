@@ -8,77 +8,62 @@ if [ "${CLAUDE_CODE_REMOTE:-}" = "true" ]; then
   fi
 fi
 
-# ===== チャプ会議事録キューの自動チェック =====
 FIREBASE_URL="https://viisi-master-app-default-rtdb.firebaseio.com"
-QUEUE=$(curl -sf "${FIREBASE_URL}/chapche-queue.json?orderBy=%22status%22&equalTo=%22pending%22" 2>/dev/null || echo "{}")
 
-if [ "$QUEUE" != "{}" ] && [ "$QUEUE" != "null" ]; then
-  # pending な項目を抽出
-  PENDING=$(echo "$QUEUE" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-if data:
-    for key, val in data.items():
-        y = val.get('year','')
-        m = val.get('month','')
-        d = val.get('day','')
-        print(f'  - {y}/{m}/{d} ({key})')
-" 2>/dev/null)
+# --- 汎用キューチェック関数 ---
+check_queue() {
+  local path="$1" name="$2" python_fmt="$3" instructions="$4"
+  local queue
+  queue=$(curl -sf "${FIREBASE_URL}/${path}.json?orderBy=%22status%22&equalTo=%22pending%22" 2>/dev/null || echo "{}")
 
-  if [ -n "$PENDING" ]; then
+  { [ "$queue" = "{}" ] || [ "$queue" = "null" ]; } && return 0
+
+  local items count
+  items=$(echo "$queue" | python3 -c "$python_fmt" 2>/dev/null)
+  count=$(echo "$queue" | python3 -c "import sys,json; print(len(json.load(sys.stdin)))" 2>/dev/null)
+
+  if [ -n "$items" ]; then
     echo ""
-    echo "===== AUTO-PROCESS: チャプ会議事録 ====="
-    echo "未処理の議事録が検出されました。自動で処理してください:"
-    echo "$PENDING"
+    echo "===== AUTO-PROCESS: ${name} (${count}件) ====="
+    echo "$items"
     echo ""
-    echo "処理内容: Firebaseキューからpending取得 → テキストDL → 議事録変換 → Notion投稿 → ローカル保存 → git push"
-    echo "スキル: /chapche-minutes queue の手順に従って、ユーザーに確認せず自動実行すること"
-    echo "========================================"
+    echo "$instructions"
+    echo "$(printf '=%.0s' {1..40})"
     echo ""
   fi
-fi
+}
 
-# ===== 大会情報キューの自動チェック =====
-T_QUEUE=$(curl -sf "${FIREBASE_URL}/tournament-queue.json?orderBy=%22status%22&equalTo=%22pending%22" 2>/dev/null || echo "{}")
-
-if [ "$T_QUEUE" != "{}" ] && [ "$T_QUEUE" != "null" ]; then
-  T_PENDING=$(echo "$T_QUEUE" | python3 -c "
+# --- 3キュー一括チェック ---
+check_queue "chapche-queue" "チャプ会議事録" "
 import sys, json
-data = json.load(sys.stdin)
-if data:
-    for key, val in data.items():
-        title = val.get('title','(不明)')[:40]
-        src = val.get('source','')
-        print(f'  - {title} [{src}]')
-" 2>/dev/null)
+for k,v in json.load(sys.stdin).items():
+    print(f'  - {v.get(\"year\",\"\")}/{v.get(\"month\",\"\")}/{v.get(\"day\",\"\")} ({k})')
+" "スキル: /chapche-minutes queue を自動実行"
 
-  if [ -n "$T_PENDING" ]; then
-    T_COUNT=$(echo "$T_QUEUE" | python3 -c "import sys,json; print(len(json.load(sys.stdin)))" 2>/dev/null)
-    echo ""
-    echo "===== AUTO-PROCESS: 大会情報 ====="
-    echo "未処理の大会情報が ${T_COUNT}件 検出されました。自動で処理してください:"
-    echo "$T_PENDING"
-    echo ""
-    echo "処理内容: /tournament queue の手順に従って一括処理"
-    echo "スキル: /tournament queue を実行すること"
-    echo "=================================="
-    echo ""
-  fi
-fi
+check_queue "tournament-queue" "大会情報" "
+import sys, json
+for k,v in json.load(sys.stdin).items():
+    print(f'  - {v.get(\"title\",\"(不明)\")[:40]} [{v.get(\"source\",\"\")}]')
+" "スキル: /tournament queue を実行"
 
-# ===== 週間大会まとめ記事の水曜リマインド =====
-# 日本時間(JST = UTC+9)で水曜日かチェック
-JST_DOW=$(TZ=Asia/Tokyo date +%u)  # 1=Mon ... 7=Sun
-if [ "$JST_DOW" = "3" ]; then
+check_queue "contribution-queue" "寄稿原稿" "
+import sys, json
+for k,v in json.load(sys.stdin).items():
+    vol = f' Vol.{v[\"vol\"]}' if v.get('vol') else ''
+    print(f'  - {v.get(\"filename\",\"(不明)\")[:40]} (著者: {v.get(\"author\",\"不明\")}{vol}) [{k}]')
+" "原稿DL → 画像抽出 → WPメディアアップ → 記事HTML → 下書き投稿（公開はSP確認後）"
+
+check_queue "claude-tips-queue" "Claude Code Tips" "
+import sys, json
+for k,v in json.load(sys.stdin).items():
+    print(f'  - {v.get(\"title\",\"(不明)\")[:50]} ({v.get(\"source\",\"\")})')
+" "/claude-tips-queue を確認してください"
+
+# --- 月曜: 週間大会まとめ自動公開 ---
+if [ "$(TZ=Asia/Tokyo date +%u)" = "1" ]; then
   echo ""
   echo "===== AUTO-PROCESS: 週間大会まとめ ====="
-  echo "今日は水曜日です。今週末のモルック大会まとめ記事を作成・公開してください。"
-  echo ""
-  echo "処理内容: /weekly-roundup の手順に従って実行"
-  echo "  1. tournament CPTから今週末(土日)の大会を取得"
-  echo "  2. 記事生成 + アイキャッチ生成(tools/eyecatch-gen.py)"
-  echo "  3. 下書き作成 → SP確認 → 公開"
-  echo "  4. Xポスト案を生成"
-  echo "========================================="
+  echo "実行: python3 tools/weekly-roundup-gen.py"
+  echo "$(printf '=%.0s' {1..40})"
   echo ""
 fi
