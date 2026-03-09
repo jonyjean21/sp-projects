@@ -1762,6 +1762,16 @@ function renderEventCard(id, e, isPast) {
     if (e.status === 'open' && drivers > 0) {
       html += `<button class="btn btn-secondary" onclick="runAutoAssign('${id}')" style="margin-top:12px">🚗 配車を決める</button>`;
     }
+  } else {
+    // 過去イベント: 配車ボタン
+    if (e.assignments) {
+      html += `<div class="btn-row" style="margin-top:10px">
+        <button class="btn btn-secondary btn-small" onclick="viewAssignment('${id}')">🚗 配車表</button>
+        <button class="btn btn-outline btn-small" onclick="showLineText('${id}')">📋 LINE共有</button>
+      </div>`;
+    } else if (drivers > 0) {
+      html += `<button class="btn btn-secondary" onclick="runAutoAssign('${id}')" style="margin-top:12px">🚗 配車を決める</button>`;
+    }
   }
 
   html += '</div>';
