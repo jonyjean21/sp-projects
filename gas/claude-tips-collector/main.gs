@@ -210,8 +210,8 @@ function collectGithubReleases_() {
   if (res.getResponseCode() !== 200) throw new Error(`HTTP ${res.getResponseCode()}`);
 
   const entries = parseRss_(res.getContentText(), 'github-releases');
-  // リリースノートは全て高価値 → score=100 固定
-  return entries.map(e => ({ ...e, score: 100, has_code: true }));
+  // リリースノートはコード記事として扱う。score=60固定（HN/Redditの高スコア記事より下位、低スコア記事より上位）
+  return entries.map(e => ({ ...e, score: 60, has_code: true }));
 }
 
 /**
