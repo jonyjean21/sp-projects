@@ -25,6 +25,7 @@ export default async function handler(req, res) {
     const body = req.body || {};
     const tweetUrl = String(body.url || '').trim();
     const userName = String(body.title || '').trim(); // IFTTT sends UserName as title
+    const source = String(body.source || 'ifttt-championship');
 
     if (!tweetUrl) {
       res.status(400).json({ error: 'url is required' });
@@ -69,7 +70,7 @@ export default async function handler(req, res) {
       tweet_author: tweetAuthor,
       tweet_handle: tweetHandle,
       detected_rank: detectedRank,
-      source: 'ifttt-championship',
+      source,
       submitted_at: new Date().toISOString(),
       status: 'pending'
     };
