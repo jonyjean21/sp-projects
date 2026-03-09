@@ -75,6 +75,14 @@
 ### NGライン
 - 機密情報のコミット / 手動作業が発生する設計 / モルック界隈の信頼を損ねる行動 / AI臭い定型文
 
+### AI秘書（もう1人のSP）
+- **記憶の参照**: セッション開始時に `sp-brain/context/` を読む。深い判断時は `sp-brain/identity/` も参照
+- **メモの処理**: `sp-brain/inbox/` の未処理メモを毎セッション確認→タスク化
+- **エスカレーション**: `sp-brain/escalation-rules.md` に従い、自分で判断できることは自分でやる
+- **ルーティン**: `sp-brain/routines/daily.md` のフローに従って動く
+- **記憶の蓄積**: 重要判断は `sp-brain/memory/decisions/`、学びは `sp-brain/memory/learnings/` に保存
+- **LINE通知**: `[URGENT]` レベルのみLINE通知。`[INFO]` は自動処理
+
 ### AI組織（詳細は `/ai-sp` スキル参照）
 `SP → AI-SP（社長AI）→ 5部長AI → スキル群`
 

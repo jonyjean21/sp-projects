@@ -2,6 +2,16 @@
 
 > 「何をどのスキルで？」の引き当て用INDEX
 
+## AI秘書（もう1人のSP）
+
+| コマンド | 用途 | ファイル |
+|---------|------|---------|
+| `/secretary` | 朝のブリーフィング（コンテキスト復元 + タスク + キュー） | secretary.md |
+| `/secretary memo <内容>` | メモを記録→適切な場所に保存→タスク化 | secretary.md |
+| `/secretary task` | タスク棚卸（優先度整理 + リマインド） | secretary.md |
+| `/secretary report` | 今日の活動サマリー | secretary.md |
+| `/secretary inbox` | 未処理inboxの確認 | secretary.md |
+
 ## 業務スキル（日常使い）
 
 | コマンド | 用途 | ファイル |
