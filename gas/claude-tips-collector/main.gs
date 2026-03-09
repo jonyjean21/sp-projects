@@ -35,12 +35,13 @@ function collectAll() {
   const existingUrls = getExistingUrls_();
 
   const collectors = [
-    { fn: collectReddit_, name: 'reddit-claudeai',   sub: 'ClaudeAI' },
-    { fn: collectReddit_, name: 'reddit-claudecode', sub: 'ClaudeCode' },
-    { fn: collectHN_,     name: 'hn' },
-    { fn: collectZenn_,   name: 'zenn' },
-    { fn: collectQiita_,  name: 'qiita' },
-    { fn: collectDevTo_,  name: 'dev-to' }
+    { fn: collectReddit_,        name: 'reddit-claudeai',   sub: 'ClaudeAI' },
+    { fn: collectReddit_,        name: 'reddit-claudecode', sub: 'ClaudeCode' },
+    { fn: collectHN_,            name: 'hn' },
+    { fn: collectZenn_,          name: 'zenn' },
+    { fn: collectQiita_,         name: 'qiita' },
+    { fn: collectDevTo_,         name: 'dev-to' },
+    { fn: collectGithubReleases_, name: 'github-releases' }
   ];
 
   for (const c of collectors) {
@@ -195,6 +196,22 @@ function collectDevTo_() {
         published_at: a.published_at
       };
     });
+}
+
+/**
+ * GitHub anthropics/claude-code releases (Atom)
+ * 公式リリースノートを収集。バージョン更新情報はBuildhubの差別化コンテンツ
+ */
+function collectGithubReleases_() {
+  const res = UrlFetchApp.fetch(
+    'https://github.com/anthropics/claude-code/releases.atom',
+    { muteHttpExceptions: true, headers: { 'User-Agent': 'claude-tips-collector/1.0' } }
+  );
+  if (res.getResponseCode() !== 200) throw new Error(`HTTP ${res.getResponseCode()}`);
+
+  const entries = parseRss_(res.getContentText(), 'github-releases');
+  // リリースノートは全て高価値 → score=100 固定
+  return entries.map(e => ({ ...e, score: 100, has_code: true }));
 }
 
 /**

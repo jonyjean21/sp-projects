@@ -27,6 +27,7 @@ SOURCE_LABELS = {
     'qiita':             'Qiita',
     'dev-to':            'dev.to',
     'x-twitter':         'X (Twitter)',
+    'github-releases':   'GitHub Releases',
 }
 
 # ソース → WPタグID（buildhub.jp上のタグ）
@@ -38,6 +39,7 @@ SOURCE_TAG_MAP = {
     'qiita':             10,
     'dev-to':            11,
     'x-twitter':         15,
+    'github-releases':   16,
 }
 BASE_TAGS = [6, 12]  # Claude Code, AI開発 は常に付与
 
