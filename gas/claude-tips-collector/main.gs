@@ -172,16 +172,29 @@ function collectQiita_() {
 
 /**
  * dev.to JSON API (reactions >= 5)
+ * claudecode と claude-code の両タグから収集して重複を排除
  */
 function collectDevTo_() {
-  const res = UrlFetchApp.fetch(
-    'https://dev.to/api/articles?tag=claudecode&top=7',
-    { muteHttpExceptions: true }
-  );
-  if (res.getResponseCode() !== 200) throw new Error(`HTTP ${res.getResponseCode()}`);
+  const tags = ['claudecode', 'claude-code'];
+  const allArticles = [];
+  const seenUrls = new Set();
 
-  const articles = JSON.parse(res.getContentText());
-  return articles
+  for (const tag of tags) {
+    const res = UrlFetchApp.fetch(
+      `https://dev.to/api/articles?tag=${tag}&top=10`,
+      { muteHttpExceptions: true }
+    );
+    if (res.getResponseCode() !== 200) continue;
+    const articles = JSON.parse(res.getContentText());
+    for (const a of articles) {
+      if (!seenUrls.has(a.url)) {
+        seenUrls.add(a.url);
+        allArticles.push(a);
+      }
+    }
+  }
+
+  return allArticles
     .filter(a => a.positive_reactions_count >= 5)
     .map(a => {
       const preview = (a.description || '').substring(0, 800);
