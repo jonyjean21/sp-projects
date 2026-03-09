@@ -1,4 +1,4 @@
-const CACHE_NAME = 'teamride-v2';
+const CACHE_NAME = 'teamride-v3';
 const ASSETS = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', e => {
@@ -16,9 +16,17 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  if (e.request.url.includes('firebaseio.com') || e.request.url.includes('gstatic.com')) {
-    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
-  } else {
-    e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
-  }
+  // Network-first for everything: always try to get latest, fallback to cache for offline
+  e.respondWith(
+    fetch(e.request)
+      .then(res => {
+        // Cache successful responses for offline use
+        if (res.ok && e.request.method === 'GET') {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+        }
+        return res;
+      })
+      .catch(() => caches.match(e.request))
+  );
 });
