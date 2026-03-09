@@ -907,7 +907,10 @@ function showPage(page) {
 
 // ── Modal helpers ──
 function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  if (id === 'assignModal') _driverSelectionInitialized = false;
+}
 
 // Close modal on overlay click (skip fullscreen event modal)
 document.querySelectorAll('.modal-overlay').forEach(ov => {
@@ -1673,7 +1676,7 @@ function renderHome() {
       <div class="next-event-badge">${isMatch ? '🟠 試合' : '🟢 練習'}${nextE.status === 'assigned' ? ' · 配車確定' : ''}</div>
       <div class="next-event-title">${escapeHtml(nextE.title) || 'イベント'}</div>
       <div class="next-event-meta">📅 ${formatEventDate(nextE.date)} ${nextE.meet_time ? '🕗 '+nextE.meet_time : ''} ${nextE.location ? '📍 '+escapeHtml(nextE.location) : ''}</div>
-      ${!myRsvp && nextE.status === 'open' ? `<button class="next-event-cta" onclick="startRsvp('${nextId}')">出欠を回答する</button>` : ''}
+      ${!myRsvp && nextE.status === 'open' && !isRsvpPastDeadline(nextE) ? `<button class="next-event-cta" onclick="startRsvp('${nextId}')">出欠を回答する</button>` : ''}
       ${myRsvp && myRsvp.attending === true ? `<div style="margin-top:8px;font-size:13px;opacity:.85">✅ 回答済み（${myRsvp.transport === 'drive' ? '車出し' : myRsvp.transport === 'ride' ? '乗せて' : '現地集合'}）</div>` : ''}
       ${myRsvp && myRsvp.attending === 'maybe' ? `<div style="margin-top:8px;font-size:13px;opacity:.85">△ 検討中</div>` : ''}
       ${myRsvp && myRsvp.attending === false ? `<div style="margin-top:8px;font-size:13px;opacity:.85">❌ 不参加</div>` : ''}
@@ -1825,7 +1828,7 @@ function renderEventCard(id, e, isPast) {
   // Compute stats (exclude inactive members)
   let drivers = 0, driverSeats = 0, riders = 0, riderSeats = 0, directs = 0;
   Object.entries(rsvp).forEach(([mid, r]) => {
-    if (!r.attending) return;
+    if (r.attending !== true) return;
     const mem = membersData[mid];
     if (!mem || mem.active === false) return;
     if (r.transport === 'drive') { drivers++; driverSeats += (r.extra_seats || 0); }
@@ -1851,7 +1854,7 @@ function renderEventCard(id, e, isPast) {
       // Find who is bringing what from RSVPs
       const eqAssignees = {};
       Object.entries(rsvp).forEach(([mid, r]) => {
-        if (!r.attending || !r.bring_equipment) return;
+        if (r.attending !== true || !r.bring_equipment) return;
         Object.keys(r.bring_equipment).forEach(eid => {
           if (r.bring_equipment[eid]) {
             if (!eqAssignees[eid]) eqAssignees[eid] = [];
@@ -1925,9 +1928,15 @@ function renderEventCard(id, e, isPast) {
     if (selectedMemberId && e.status === 'open') {
       if (myRsvp) {
         html += renderMyRsvpSummary(myRsvp);
-        html += `<button class="btn btn-secondary btn-small" onclick="startRsvp('${id}')" style="margin-top:8px">回答を変更</button>`;
-      } else {
+        if (!isRsvpPastDeadline(e)) {
+          html += `<button class="btn btn-secondary btn-small" onclick="startRsvp('${id}')" style="margin-top:8px">回答を変更</button>`;
+        } else {
+          html += `<div style="font-size:13px;color:var(--danger);margin-top:8px">🔒 回答締切済み（変更はLINEで配車担当者へ）</div>`;
+        }
+      } else if (!isRsvpPastDeadline(e)) {
         html += `<button class="btn btn-primary" onclick="startRsvp('${id}')" style="margin-top:12px">出欠を回答する</button>`;
+      } else {
+        html += `<div style="font-size:13px;color:var(--danger);margin-top:8px">🔒 回答締切済み</div>`;
       }
     }
     if (selectedMemberId && e.status === 'assigned') {
@@ -2041,6 +2050,7 @@ function renderRsvpList(eventId, e) {
   groups.riders.sort((a, b) => calcSeatsNeeded(b[0], b[2]) - calcSeatsNeeded(a[0], a[2]));
   const alpha = (a, b) => a[1].name.localeCompare(b[1].name);
   groups.directs.sort(alpha);
+  groups.maybe.sort(alpha);
   groups.unanswered.sort(alpha);
   groups.declined.sort(alpha);
 
@@ -2339,7 +2349,7 @@ async function deleteEvent() {
 function isRsvpPastDeadline(e) {
   if (!e.rsvp_deadline) return false;
   const today = new Date().toISOString().slice(0, 10);
-  return today > e.rsvp_deadline;
+  return today >= e.rsvp_deadline;
 }
 
 // ── RSVP Flow (1画面フォーム) ──
@@ -2625,7 +2635,8 @@ async function rsvpSubmit() {
 
     // 参加
     const adultCount = parseInt(c.dataset.adultCount) || 0;
-    const childCount = parseInt(c.dataset.childCount) || 1;
+    const rawChild = parseInt(c.dataset.childCount);
+    const childCount = isNaN(rawChild) ? 1 : rawChild;
     const preschoolCount = parseInt(c.dataset.preschoolCount) || 0;
     const totalFamily = adultCount + childCount + preschoolCount;
     const parentComing = adultCount > 0;
@@ -2699,7 +2710,7 @@ function generateEquipNudgeText(eventId) {
   const rsvp = e.rsvp || {};
   const eqAssigned = {};
   Object.entries(rsvp).forEach(([mid, r]) => {
-    if (!r.attending || !r.bring_equipment) return;
+    if (r.attending !== true || !r.bring_equipment) return;
     Object.keys(r.bring_equipment).forEach(eid => {
       if (r.bring_equipment[eid]) eqAssigned[eid] = (eqAssigned[eid] || 0) + 1;
     });
@@ -2742,7 +2753,7 @@ function runAutoAssign(eventId) {
   const drivers = [], riders = [], directs = [], warnings = [];
 
   Object.entries(rsvp).forEach(([mid, r]) => {
-    if (!r.attending) return;
+    if (r.attending !== true) return;
     const mem = membersData[mid];
     if (!mem || mem.active === false) return;
     if (r.transport === 'drive') {
@@ -2806,6 +2817,8 @@ function runAutoAssign(eventId) {
 }
 
 // ── Driver Selection Screen (manual override) ──
+let _driverSelectionInitialized = false;
+
 function showDriverSelection(eventId) {
   const e = eventsData[eventId];
   if (!e) return;
@@ -2817,7 +2830,7 @@ function showDriverSelection(eventId) {
   const directs = [];
 
   Object.entries(rsvp).forEach(([mid, r]) => {
-    if (!r.attending) return;
+    if (r.attending !== true) return; // skip false, 'maybe', undefined
     const mem = membersData[mid];
     if (!mem || mem.active === false) return;
 
@@ -2826,10 +2839,10 @@ function showDriverSelection(eventId) {
       return;
     }
 
-    const seats = r.transport === 'drive' ? (r.extra_seats || 0) : (mem.extra_seats || 0);
+    const seats = r.transport === 'drive' ? (r.extra_seats || 0) : (mem.car_max_passengers || 0);
     const eqNeeded = e.equipment_needed ? Object.keys(e.equipment_needed) : [];
-    const hasNeededEquip = eqNeeded.some(eid => r.bring_equipment?.[eid] || mem.owns_equipment?.[eid]);
-    const fc = r.family_count || (r.parent_coming ? 2 : 1);
+    const hasNeededEquip = eqNeeded.some(eid => r.bring_equipment?.[eid] || mem.equipment?.[eid]);
+    const fc = calcSeatsNeeded(mid, r);
 
     // Priority score (for sorting)
     let priority = 0;
@@ -2851,9 +2864,15 @@ function showDriverSelection(eventId) {
 
   const maxCars = e.max_cars || 0;
 
-  // Pre-select members who said 'drive' (up to max_cars)
-  const driveWillers = candidates.filter(c => c.transport === 'drive');
-  selectedDriverIds = new Set(driveWillers.slice(0, maxCars || driveWillers.length).map(c => c.id));
+  // Only pre-select on first open, preserve manual changes on re-render
+  if (!_driverSelectionInitialized || currentAssignEventId !== eventId) {
+    const driveWillers = candidates.filter(c => c.transport === 'drive');
+    selectedDriverIds = new Set(driveWillers.slice(0, maxCars || driveWillers.length).map(c => c.id));
+    _driverSelectionInitialized = true;
+  }
+  // Remove any IDs that are no longer in candidates
+  const candidateIds = new Set(candidates.map(c => c.id));
+  selectedDriverIds.forEach(id => { if (!candidateIds.has(id)) selectedDriverIds.delete(id); });
 
   // Render driver selection UI
   const maxLabel = maxCars ? `（上限${maxCars}台）` : '';
@@ -2909,8 +2928,13 @@ function toggleDriverCandidate(memberId, eventId) {
   } else {
     selectedDriverIds.add(memberId);
   }
-  // Re-render the selection UI
+  // Re-render without resetting selection
   showDriverSelection(eventId);
+}
+
+// Reset the driver selection state when modal is closed
+function resetDriverSelectionState() {
+  _driverSelectionInitialized = false;
 }
 
 // ── Step 2: Manual Rider Assignment ──
@@ -2974,7 +2998,7 @@ function renderManualAssignUI(eventId) {
   drivers.forEach(d => { seatUsed[d.id] = 0; });
   riders.forEach(r => {
     const dId = assign[r.id];
-    if (dId && seatUsed[dId] !== undefined) seatUsed[dId] += (r.family_count || 1);
+    if (dId && seatUsed[dId] !== undefined) seatUsed[dId] += (r.seats_needed || r.family_count || 1);
   });
 
   let html = '';
@@ -3004,7 +3028,10 @@ function renderManualAssignUI(eventId) {
         <option value="">-- 車を選択 --</option>
         ${drivers.map(d => {
           const avail = d.available_seats - seatUsed[d.id];
-          return `<option value="${d.id}" ${selected === d.id ? 'selected' : ''}>${escapeHtml(d.name)}（空き${avail}席）</option>`;
+          const isCurrent = selected === d.id;
+          const riderSeats = r.family_count || 1;
+          const wouldOverflow = !isCurrent && avail < riderSeats;
+          return `<option value="${d.id}" ${isCurrent ? 'selected' : ''} ${wouldOverflow ? 'disabled' : ''}>${escapeHtml(d.name)}（空き${avail}席）${wouldOverflow ? '※満席' : ''}</option>`;
         }).join('')}
       </select>
     </div>`;
@@ -3386,7 +3413,7 @@ function promoteToDriver(unassignedIdx) {
   const rsvp = e?.rsvp?.[rider.id];
 
   // Get seat capacity from RSVP (if they originally offered to drive) or member profile
-  const seats = rsvp?.extra_seats || mem?.extra_seats || 3;
+  const seats = rsvp?.extra_seats || mem?.car_max_passengers || 3;
 
   // Create new driver entry
   a.drivers.push({
@@ -3461,8 +3488,7 @@ function generateLineTemplateAssign(eventId) {
   if (e.max_cars > 0) text += `🅿️ 会場駐車場: ${e.max_cars}台まで\n`;
   text += '\n【配車表】\n\n';
 
-  const assignSrc = a || (e.assignments ? { drivers: [], directs: [], unassigned: [] } : null);
-  if (!assignSrc && !a) return text + '(配車未確定)';
+  if (!a && !e.assignments) return text + '(配車未確定)';
 
   // Use currentAssignment or reconstruct from stored assignments
   const driversToRender = a ? a.drivers : [];
@@ -3600,19 +3626,7 @@ function switchLineTemplate(type) {
 
 function showLineText(eventId) {
   _lineTextEventId = eventId;
-  const e = eventsData[eventId];
-  let text = '';
-
-  if (e?.assignments?.line_text) {
-    text = e.assignments.line_text;
-  } else if (currentAssignment) {
-    text = generateLineText(eventId);
-  } else {
-    text = generateLineTemplateAssign(eventId);
-  }
-
-  document.getElementById('lineTextPreview').textContent = text;
-  // Reset template selector to first
+  // switchLineTemplate('assign') generates and sets the text
   switchLineTemplate('assign');
   openModal('lineTextModal');
 }
