@@ -362,6 +362,19 @@ def main():
     # タグID
     tag_ids = list(set(BASE_TAGS + [SOURCE_TAG_MAP[i.get('source', '')] for i in top if i.get('source') in SOURCE_TAG_MAP]))
 
+    # 重複チェック: 今日のスラッグが既に存在すれば上書き
+    slug = f"claude-code-{datetime.now(JST).strftime('%Y%m%d')}"
+    creds_check = base64.b64encode(f"{wp_user}:{wp_pass}".encode()).decode()
+    check_req = urllib.request.Request(
+        f"{BUILDHUB_URL}/wp-json/wp/v2/posts?slug={slug}",
+        headers={"Authorization": f"Basic {creds_check}"}
+    )
+    with urllib.request.urlopen(check_req) as res:
+        existing = json.loads(res.read())
+    if existing:
+        print(f"本日の記事（{slug}）は既に投稿済みです。スキップ。")
+        return
+
     post_id = post_to_wp(title, content, excerpt, tag_ids, wp_user, wp_pass)
     print(f"WP投稿完了: ID={post_id}")
 

@@ -55,6 +55,20 @@ function runDailyDigest() {
     return;
   }
 
+  // 重複投稿防止: 今日のスラッグが既にある場合はスキップ
+  const todaySlug = `claude-code-${getJstDateSlug_()}`;
+  const slugCheckRes = UrlFetchApp.fetch(
+    `${BUILDHUB_URL}/wp-json/wp/v2/posts?slug=${todaySlug}`,
+    { muteHttpExceptions: true }
+  );
+  if (slugCheckRes.getResponseCode() === 200) {
+    const existing = JSON.parse(slugCheckRes.getContentText());
+    if (existing.length > 0) {
+      Logger.log(`本日の記事（${todaySlug}）は既に投稿済みです。スキップ。`);
+      return;
+    }
+  }
+
   const items = fetchPendingItems_();
   if (items.length === 0) {
     Logger.log('pendingアイテムなし。スキップ。');
