@@ -1,0 +1,87 @@
+name: SP Clone - Daily Auto Tasks
+
+# 「もう1人のSP」自律稼働 — 日次タスク
+# Phase 3で有効化する。今は設計のみ。
+
+on:
+  # schedule:
+  #   - cron: '0 23 * * *'   # 23:00 UTC = 8:00 JST — 朝のタスク棚卸
+  #   - cron: '0 3 * * *'    # 03:00 UTC = 12:00 JST — 昼のX投稿候補生成
+  #   - cron: '0 9 * * *'    # 09:00 UTC = 18:00 JST — 日次サマリー
+  #   - cron: '0 22 * * 1'   # 22:00 UTC 月曜 = 7:00 JST — 週次レポート
+  workflow_dispatch:
+    inputs:
+      task:
+        description: '実行するタスク'
+        required: true
+        type: choice
+        options:
+          - morning-review
+          - queue-process
+          - daily-summary
+          - weekly-report
+
+jobs:
+  sp-clone-task:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # --- 朝のタスク棚卸 ---
+      - name: Morning Review
+        if: github.event.inputs.task == 'morning-review'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          FIREBASE_URL: ${{ secrets.FIREBASE_URL }}
+        run: |
+          echo "=== SP Clone: Morning Review ==="
+          echo "1. sp-brain/context/ を読み込み"
+          echo "2. Firebase キューをチェック"
+          echo "3. tasks/current.md を更新"
+          echo "4. LINE通知で今日のサマリーを送信"
+          echo "--- Phase 3で実装 ---"
+
+      # --- キュー処理 ---
+      - name: Queue Process
+        if: github.event.inputs.task == 'queue-process'
+        env:
+          FIREBASE_URL: ${{ secrets.FIREBASE_URL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          echo "=== SP Clone: Queue Process ==="
+          echo "1. /chapche-queue の pending を処理"
+          echo "2. /tournament-queue の pending を処理"
+          echo "3. /contribution-queue の pending を処理"
+          echo "--- 既存GASと統合予定 ---"
+
+      # --- 日次サマリー ---
+      - name: Daily Summary
+        if: github.event.inputs.task == 'daily-summary'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          FIREBASE_URL: ${{ secrets.FIREBASE_URL }}
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+        run: |
+          echo "=== SP Clone: Daily Summary ==="
+          echo "1. 今日のGitHubコミットを集計"
+          echo "2. Firebase処理ログを確認"
+          echo "3. サマリーをLINEに送信"
+          echo "--- Phase 3で実装 ---"
+
+      # --- 週次レポート ---
+      - name: Weekly Report
+        if: github.event.inputs.task == 'weekly-report'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          FIREBASE_URL: ${{ secrets.FIREBASE_URL }}
+        run: |
+          echo "=== SP Clone: Weekly Report ==="
+          echo "1. 週間のコミット・アクティビティ集計"
+          echo "2. 収益データ集計"
+          echo "3. sp-brain/context/weekly-state.md を更新"
+          echo "4. 来週のアクションアイテム生成"
+          echo "--- Phase 3で実装 ---"

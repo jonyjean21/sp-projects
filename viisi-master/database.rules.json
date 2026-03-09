@@ -49,6 +49,18 @@
     "championship-2026": {
       ".read": true,
       ".write": true
+    },
+    "line-logs": {
+      ".read": true,
+      ".write": true,
+      "$userId": {
+        ".indexOn": ["timestamp"]
+      }
+    },
+    "line-memories": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": ["timestamp", "userId"]
     }
   }
 }
