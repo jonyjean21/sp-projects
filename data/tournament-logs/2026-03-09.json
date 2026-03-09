@@ -634,5 +634,190 @@
     "action": "skip",
     "reason": "CrawlOwlボット投稿（重複 -On9lykKFX1dOcurtgzE と同内容）",
     "url": "https://twitter.com/CrawlOwl/status/2030780796009889909"
+  },
+  {
+    "key": "-OnHOYQwq48kKXhv2REe",
+    "action": "post",
+    "wp_id": 6572,
+    "wp_link": "https://molkky-hub.com/event/tournament/%e3%83%a2%e3%83%ab%e3%83%83%e3%82%af%e6%a0%97%e5%b1%b1cup/",
+    "title": "モルック栗山CUP",
+    "event_date": "20260510",
+    "location": "北海道",
+    "processed_at": "2026-03-09T23:37:33.171271+09:00",
+    "url": "https://twitter.com/wataraseconsa/status/2030969525500547583"
+  },
+  {
+    "key": "-OnFgruQhHvIz450_MTj",
+    "action": "skip",
+    "reason": "結果報告（9事業所合同モルック大会 - 過去開催済み）",
+    "url": "https://twitter.com/bingoyokohama/status/2030852424244891701"
+  },
+  {
+    "key": "-OnFz9Hazvw6ALR-I1iC",
+    "action": "skip",
+    "reason": "日常ツイート（モルック大会参加結果への言及のみ、告知なし）",
+    "url": "https://twitter.com/38NcuV0Jzi53826/status/2030871416787402978"
+  },
+  {
+    "key": "-OnHrCpnT432R6QeAQKk",
+    "action": "skip",
+    "reason": "日常ツイート（アルツバ放送局関連 - 大会告知なし）",
+    "url": "https://twitter.com/WtrBall/status/2031004138671349902"
+  },
+  {
+    "key": "-OnH3xV8iA-loQrByXV_",
+    "action": "skip",
+    "reason": "日常ツイート（大会告知なし）",
+    "url": "https://twitter.com/o1o8_SI/status/2030948560796373325"
+  },
+  {
+    "key": "-OnFYfQZuF8jVZGZixws",
+    "action": "skip",
+    "reason": "重複スキップ（第3回モルックYONAGO CUP - WP ID:6471 として登録済み）",
+    "url": "https://twitter.com/molkkyYONAGO/status/2030841503732658501"
+  },
+  {
+    "key": "-OnEuT6ckw9BmnVTOa8i",
+    "action": "skip",
+    "reason": "MOLKKY HUB記事更新の告知ツイート（大会告知ではない）",
+    "url": "https://twitter.com/molkkyhub/status/2030796139469885925"
+  },
+  {
+    "key": "-OnFy1SC-CyI6Bhlg4m3",
+    "action": "skip",
+    "reason": "体験会（モルック含む複合スポーツ体験会 - 競技大会ではない）",
+    "url": "https://twitter.com/koku_kurasi/status/2030870307901432094"
+  },
+  {
+    "key": "-OnGJpQ0HkIoeA9u4RC_",
+    "action": "skip",
+    "reason": "結果報告（WMG2027関西PRブース + モルック体験会 - 2026/3/7開催済み）",
+    "url": "https://twitter.com/wmg2021hyogo/status/2030895852840272176"
+  },
+  {
+    "key": "-OnGhxfh48MYikh7uSj3",
+    "action": "skip",
+    "reason": "結果報告（第4回滋賀県民モルック大会 - 開催済み）",
+    "url": "https://twitter.com/Yasuhiko_Minai/status/2030923984641126896"
+  },
+  {
+    "key": "-OnHq3u1MKhXpSz89awW",
+    "action": "skip",
+    "reason": "日常ツイート（確定申告完了・岡山大会参加感想）",
+    "url": "https://twitter.com/n_hirokuni/status/2031002478242890151"
+  },
+  {
+    "key": "-OnHjCMYhMfgvwQfzYzE",
+    "action": "skip",
+    "reason": "感謝ツイート（横浜モルフェス/畳モルック - 開催済み）",
+    "url": "https://twitter.com/Chicken_N2020/status/2030994728028913847"
+  },
+  {
+    "key": "-OnBRVQn7n53YskksLR0",
+    "action": "skip",
+    "reason": "空ツイート",
+    "url": "https://twitter.com/Molkky_Japan/status/2030552899462517066"
+  },
+  {
+    "key": "-OnFCvQQmEmg6Ydo772C",
+    "action": "skip",
+    "reason": "大会結果動画投稿（第4回岡山大会 - 開催済み）",
+    "url": "https://twitter.com/TOMY83057073/status/2030818270388048192"
+  },
+  {
+    "key": "-OnBRVOL3AYOraQed8-M",
+    "action": "skip",
+    "reason": "結果報告（足利ライオンズクラブ モルック交流会 2026/3/8 開催済み）",
+    "url": "https://twitter.com/6_gatu_b_gata/status/2030552689722241170"
+  },
+  {
+    "key": "-OnH3xZMyWDVbW12ezx5",
+    "action": "skip",
+    "reason": "ポイントランキングサイトの宣伝ツイート（大会告知ではない）",
+    "url": "https://twitter.com/molkkycalendar/status/2030948633424896431"
+  },
+  {
+    "key": "-OnEuT3-Wy7JlDQEUzBx",
+    "action": "skip",
+    "reason": "CrawlOwlボット投稿（ニュース要約）",
+    "url": "https://twitter.com/CrawlOwl/status/2030795900390686720"
+  },
+  {
+    "key": "-OnHi6eRUjaDg-pFJqwS",
+    "action": "skip",
+    "reason": "日常ツイート（新潟の大会への言及のみ、具体的告知なし）",
+    "url": "https://twitter.com/ike92700376/status/2030993548070560252"
+  },
+  {
+    "key": "-OnHrCmiRa6xm3PqTPA6",
+    "action": "skip",
+    "reason": "日常ツイート（アルツバ放送局 - 大会参加希望のみ）",
+    "url": "https://twitter.com/artemis_karen/status/2031004105095954842"
+  },
+  {
+    "key": "-OnHZzFdkVVKA5pQ_1dm",
+    "action": "skip",
+    "reason": "運営連絡ツイート（福モル月の陣 賞品変更お詫び - 日程・場所不明）",
+    "url": "https://twitter.com/fukuimolkky007/status/2030982521475981621"
+  },
+  {
+    "key": "-OnHefRz04b_NFw2sbtL",
+    "action": "skip",
+    "reason": "重複スキップ（ビワモル星奪杯Vol.4 - WP ID:4301 として登録済み）",
+    "url": "https://twitter.com/biwaohashi/status/2030989696277622988"
+  },
+  {
+    "key": "-OnFXaKmSKUk5kgPys0b",
+    "action": "skip",
+    "reason": "空ツイート（@finnish_infoアカウント）",
+    "url": "https://twitter.com/finnish_info/status/2030841031046869060"
+  },
+  {
+    "key": "-OnHHj19x5cBXbO9LJIv",
+    "action": "skip",
+    "reason": "感想ツイート（べっけんですイベント参加感想 - 開催済み）",
+    "url": "https://twitter.com/sushizu_26/status/2030962893311877538"
+  },
+  {
+    "key": "-OnF62-FelZMX6eMnwgQ",
+    "action": "skip",
+    "reason": "空ツイート（@finnish_infoアカウント）",
+    "url": "https://twitter.com/finnish_info/status/2030810827666665708"
+  },
+  {
+    "key": "-OnHx4iAQPT2hy6VrQWW",
+    "action": "skip",
+    "reason": "返信ツイート（大会結果感想 - 告知なし）",
+    "url": "https://twitter.com/cd34_hit/status/2031008865064755670"
+  },
+  {
+    "key": "-OnHZzJu3KJltAAbHb4L",
+    "action": "skip",
+    "reason": "日常ツイート（4月25日モルック大会への言及のみ、詳細不明）",
+    "url": "https://twitter.com/mikurire/status/2030983512522908113"
+  },
+  {
+    "key": "-OnGgxY3wLgZAXUJ3NsK",
+    "action": "skip",
+    "reason": "結果報告（岡山2days参加 - 開催済み）",
+    "url": "https://twitter.com/6vRKIDrxfO3Jqa6/status/2030922945057710446"
+  },
+  {
+    "key": "-OnEwo-OvI8tWK45k7ZN",
+    "action": "skip",
+    "reason": "MOLKKY HUB記事更新告知（老師塾Vol.1 - 大会告知ではない）",
+    "url": "https://twitter.com/molkkyhub/status/2030798931567821027"
+  },
+  {
+    "key": "-OnHa80cV9inYbbU1pIS",
+    "action": "skip",
+    "reason": "CrawlOwlボット投稿（ジャパンオープン枠増設ニュース要約）",
+    "url": "https://twitter.com/CrawlOwl/status/2030985398604935312"
+  },
+  {
+    "key": "-OnFZiG54oVhqHt-Lme1",
+    "action": "skip",
+    "reason": "体験会（ふれあいスポ・レク体験会 - モルック含む複合スポーツ体験会）",
+    "url": "https://twitter.com/suginami_koho/status/2030843516486619313"
   }
 ]
