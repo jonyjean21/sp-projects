@@ -343,15 +343,21 @@ def write_log(date_str, post_id, count):
     urllib.request.urlopen(req)
 
 
-def main():
+def main(dry_run=False):
     gemini_key  = os.environ.get('GEMINI_API_KEY')
     wp_user     = os.environ.get('BUILDHUB_WP_USER')
     wp_pass     = os.environ.get('BUILDHUB_WP_APP_PASS')
     pexels_key  = os.environ.get('PEXELS_API_KEY')
 
-    if not all([gemini_key, wp_user, wp_pass]):
-        print("ERROR: 環境変数未設定 (GEMINI_API_KEY / BUILDHUB_WP_USER / BUILDHUB_WP_APP_PASS)")
+    if not gemini_key:
+        print("ERROR: GEMINI_API_KEY 未設定")
         return
+    if not dry_run and not all([wp_user, wp_pass]):
+        print("ERROR: 環境変数未設定 (BUILDHUB_WP_USER / BUILDHUB_WP_APP_PASS)")
+        return
+
+    if dry_run:
+        print("[DRY RUN] Firebase更新・WP投稿はスキップします")
 
     items = fetch_pending_items()
     if not items:
@@ -361,6 +367,10 @@ def main():
 
     top = select_top(items)
     print(f"選択: {len(top)}件")
+    for i, t in enumerate(top):
+        src = SOURCE_LABELS.get(t.get('source',''), t.get('source',''))
+        score = t.get('score', 0)
+        print(f"  [{i+1}] {src} score={score} | {t['title'][:60]}")
 
     result = summarize(top, gemini_key)
     print("Gemini要約完了")
@@ -370,10 +380,19 @@ def main():
     content  = build_html(result, date_str, top)
     excerpt  = result.get('excerpt', '')
 
+    print(f"\n--- タイトル ---\n{title}")
+    print(f"\n--- excerpt ---\n{excerpt}")
+    print(f"\n--- editor_comment ---\n{result.get('editor_comment','')}")
+    print(f"\n--- コンテンツ先頭500字 ---\n{content[:500]}")
+
+    if dry_run:
+        print("\n[DRY RUN] 以上。WP投稿・Firebase更新はスキップしました。")
+        return
+
     # タグID
     tag_ids = list(set(BASE_TAGS + [SOURCE_TAG_MAP[i.get('source', '')] for i in top if i.get('source') in SOURCE_TAG_MAP]))
 
-    # 重複チェック: 今日のスラッグが既に存在すれば上書き
+    # 重複チェック
     slug = f"claude-code-{datetime.now(JST).strftime('%Y%m%d')}"
     creds_check = base64.b64encode(f"{wp_user}:{wp_pass}".encode()).decode()
     check_req = urllib.request.Request(
@@ -391,8 +410,6 @@ def main():
 
     # アイキャッチ画像（Pexels）
     if pexels_key:
-        main_title = result.get('items', [{}])[0].get('title_ja', 'AI coding terminal')
-        # タイトルから英語キーワードを生成（汎用クエリをフォールバック）
         queries = ['AI coding terminal dark', 'developer programming computer', 'artificial intelligence code']
         image_info = None
         for q in queries:
@@ -412,4 +429,6 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    import sys
+    dry_run = '--dry-run' in sys.argv
+    main(dry_run=dry_run)
