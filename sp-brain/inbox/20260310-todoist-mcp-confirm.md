@@ -4,5 +4,7 @@
 - **内容**: 家に帰ったらローカルMacでTodoist MCP接続の最終確認をする
   - `/secretary inbox` でTodoistからタスク取得できるか確認
   - `.claude.json` にtodoist MCPが正しく登録されているか確認
+  - Apple WatchのTodoistアプリ導入・同期確認
+  - Claude Code→Todoist→Apple Watchの一気通貫テスト
 - **優先度**: 中
 - **ステータス**: pending
