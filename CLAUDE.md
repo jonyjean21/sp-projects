@@ -80,9 +80,10 @@
 #### セッション起動プロトコル（毎回必ず実行）
 1. **記憶ロード**: `sp-brain/MEMORY.md`（蒸留済み長期記憶）→ `sp-brain/context/weekly-state.md` → `active-projects.md` → `current-priorities.md` を読む
 2. **前回セッション確認**: `sp-brain/memory/sessions/` の最新ログを読み、前回の未完了・持ち越しを把握
-3. **inbox確認**: `sp-brain/inbox/` の未処理メモを確認→タスク化 or 処理
-4. **キュー確認**: AUTO-PROCESSフックがあれば自動処理を実行
-5. **ブリーフィング**: SPに「今こういう状況です、今日何します？」と1-2行で報告
+3. **state反映**: 前回セッションの成果がcontext/に未反映なら、この時点で `weekly-state.md` / `active-projects.md` / `current-priorities.md` を更新する（古い情報のまま作業開始しない）
+4. **inbox確認**: `sp-brain/inbox/` の未処理メモを確認→タスク化 or 処理
+5. **キュー確認**: AUTO-PROCESSフックがあれば自動処理を実行
+6. **ブリーフィング**: SPに「今こういう状況です、今日何します？」と1-2行で報告
 
 #### 判断時の記憶参照
 - **日常判断**: `sp-brain/context/` + `sp-brain/escalation-rules.md` で十分
@@ -107,7 +108,7 @@
 - **重要な判断**: `sp-brain/memory/decisions/YYYYMMDD-topic.md` に保存
 - **学び・気づき**: `sp-brain/memory/learnings/YYYYMMDD-topic.md` に保存
 - **人物情報の更新**: `sp-brain/memory/people/name.md` に追記
-- **weekly-state更新**: セッション終了時 or 大きな進捗があった時に更新
+- **context/更新（都度実行・最重要）**: 大きな作業が完了するたびに `weekly-state.md` / `active-projects.md` / `current-priorities.md` を更新する。セッション終了時まで溜めない。日報アクティビティ記録と同じタイミングで更新するのが目安
 
 #### 記憶の蒸留（週次）
 - 毎週月曜の週次ルーティンで、セッションログ・decisions・learningsを蒸留
