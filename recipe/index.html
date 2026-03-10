@@ -224,45 +224,47 @@ body {
 
 /* ===== Folder Grid ===== */
 .folder-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
   margin-bottom: 16px;
 }
-.folder-name { font-size: 13px; font-weight: 600; }
+.folder-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .folder-count { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
 .folder-add-btn {
   display: flex; align-items: center; justify-content: center; gap: 6px;
-  width: 100%; padding: 14px; margin-top: 12px;
+  width: 100%; padding: 14px; margin-top: 4px;
   background: var(--bg-warm); border: 2px dashed var(--border);
   border-radius: var(--radius); cursor: pointer;
   color: var(--accent); font-weight: 600; font-size: 13px;
   font-family: inherit; transition: background 0.15s;
+  grid-column: 1 / -1;
 }
 .folder-add-btn:active { background: var(--accent-light); }
 
 /* Folder drag & drop */
-.folder-list { list-style: none; }
+.folder-list { list-style: none; display: contents; }
 .folder-list-item {
-  display: flex; align-items: center; gap: 10px;
+  display: flex; flex-direction: column; justify-content: space-between;
   background: var(--bg-card); border-radius: var(--radius);
-  padding: 14px 12px; margin-bottom: 8px;
-  box-shadow: var(--shadow); cursor: pointer;
+  padding: 12px; cursor: pointer;
+  box-shadow: var(--shadow);
   transition: transform 0.15s, box-shadow 0.15s;
   touch-action: manipulation; position: relative;
+  min-height: 72px;
 }
-.folder-list-item:active { transform: scale(0.98); }
+.folder-list-item:active { transform: scale(0.97); }
 .folder-list-item.dragging {
   opacity: 0.9; box-shadow: 0 8px 24px rgba(60,40,10,0.15);
   z-index: 10; transform: scale(1.03);
 }
 .folder-drag-handle {
-  display: flex; align-items: center; justify-content: center;
-  width: 28px; height: 28px; flex-shrink: 0;
-  color: var(--text-light); font-size: 16px;
+  display: flex; align-items: center; justify-content: flex-end;
+  color: var(--text-light); font-size: 14px;
   cursor: grab; touch-action: none;
-  border-radius: 6px; user-select: none;
+  user-select: none; margin-bottom: 4px;
 }
-.folder-drag-handle:active { color: var(--accent); background: var(--accent-light); cursor: grabbing; }
+.folder-drag-handle:active { color: var(--accent); cursor: grabbing; }
 .folder-color-bar {
-  width: 4px; height: 32px; border-radius: 2px; flex-shrink: 0;
+  width: 28px; height: 4px; border-radius: 2px; margin-top: 6px;
 }
 .folder-drop-indicator {
   height: 3px; background: var(--accent); border-radius: 2px;
@@ -1686,11 +1688,11 @@ function renderFolders() {
     return `
       <div class="folder-list-item" data-folder-id="${id}" onclick="openFolderDetail('${id}')">
         <div class="folder-drag-handle" ontouchstart="folderDragStart(event, '${id}')" onmousedown="folderDragStart(event, '${id}')">⠿</div>
-        <div class="folder-color-bar" style="background:${f.color || 'var(--accent)'}"></div>
-        <div style="flex:1;min-width:0">
+        <div>
           <div class="folder-name">${esc(f.name)}</div>
           <div class="folder-count">${count}レシピ</div>
         </div>
+        <div class="folder-color-bar" style="background:${f.color || 'var(--accent)'}"></div>
       </div>
     `;
   }).join('');
@@ -1700,7 +1702,7 @@ function renderFolders() {
 }
 
 // Folder drag & drop
-let dragFolder = null, dragClone = null, dragStartY = 0, dragOffsetY = 0;
+let dragFolder = null, dragClone = null, dragStartY = 0, dragOffsetY = 0, dragOffsetX = 0;
 let folderOrder = [];
 
 function folderDragStart(e, folderId) {
@@ -1715,6 +1717,7 @@ function folderDragStart(e, folderId) {
   const rect = item.getBoundingClientRect();
   dragStartY = touch.clientY;
   dragOffsetY = touch.clientY - rect.top;
+  dragOffsetX = touch.clientX - rect.left;
 
   // Create floating clone
   dragClone = item.cloneNode(true);
@@ -1724,19 +1727,20 @@ function folderDragStart(e, folderId) {
 
   const onMove = (ev) => {
     const t = ev.touches ? ev.touches[0] : ev;
-    const y = t.clientY - dragOffsetY;
-    dragClone.style.top = y + 'px';
+    dragClone.style.top = (t.clientY - dragOffsetY) + 'px';
+    dragClone.style.left = (t.clientX - dragOffsetX) + 'px';
 
-    // Find drop target
+    // Find drop target (2D grid対応: X・Y両方で判定)
     const container = document.getElementById('folderSortable');
     const items = [...container.querySelectorAll('.folder-list-item')];
     let newIdx = folderOrder.indexOf(dragFolder);
+    let minDist = Infinity;
     items.forEach((el, i) => {
       if (el.dataset.folderId === dragFolder) return;
       const r = el.getBoundingClientRect();
-      const mid = r.top + r.height / 2;
-      if (t.clientY < mid && i < newIdx) newIdx = i;
-      if (t.clientY > mid && i >= newIdx) newIdx = i;
+      const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      const dist = Math.hypot(t.clientX - cx, t.clientY - cy);
+      if (dist < minDist) { minDist = dist; newIdx = i; }
     });
 
     // Reorder visually
