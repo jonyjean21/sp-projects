@@ -76,6 +76,15 @@
       ".read": true,
       ".write": true,
       ".indexOn": ["status", "timestamp"]
+    },
+    "daily-reports": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": ["date"]
+    },
+    "daily-report-log": {
+      ".read": true,
+      ".write": true
     }
   }
 }
