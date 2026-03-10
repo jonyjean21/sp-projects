@@ -14,6 +14,7 @@ const FIREBASE_URL = 'https://viisi-master-app-default-rtdb.firebaseio.com';
 const GITHUB_REPO = 'jonyjean21/sp-projects';
 const REPORT_PATH = '/daily-reports';
 const LOG_PATH = '/daily-report-log';
+const ACTIVITIES_PATH = '/daily-activities';
 
 // ===== プロジェクト分類マップ =====
 const AREA_MAP = [
@@ -100,26 +101,30 @@ function generateForDate(dateStr) {
   // 3. 各コミットの詳細取得 & 分類
   const enriched = commits.map(c => enrichCommit_(c, dateStr));
 
-  // 4. 統計集計
+  // 4. Claude Code セッション活動ログ取得
+  const activities = fetchDailyActivities_(dateStr);
+  Logger.log(`セッション活動: ${activities.length}件`);
+
+  // 5. 統計集計
   const stats = computeStats_(enriched);
 
-  // 5. 日付表示
+  // 6. 日付表示
   const days = ['日','月','火','水','木','金','土'];
   const d = new Date(year, month - 1, day);
   const dow = days[d.getDay()];
   const dateDisplay = `${year}年${month}月${day}日（${dow}）`;
 
-  // 6. AI要約（コミットがある場合のみ）
-  let summary = { headline: 'コミットなし', body: '活動なし', highlights: [], areas_narrative: '' };
+  // 7. AI要約（コミットまたはセッション活動がある場合）
+  let summary = { headline: '活動なし', body: '活動なし', highlights: [], areas_narrative: '' };
   let exports = { note_markdown: '', x_thread: [] };
 
-  if (enriched.length > 0) {
-    const aiResult = callGemini_(enriched, stats, dateDisplay);
+  if (enriched.length > 0 || activities.length > 0) {
+    const aiResult = callGemini_(enriched, stats, dateDisplay, activities);
     summary = aiResult.summary || summary;
     exports = aiResult.exports || exports;
   }
 
-  // 7. Firebase書き込み
+  // 8. Firebase書き込み
   const report = {
     generated_at: new Date().toISOString(),
     date: dateStr,
@@ -134,6 +139,7 @@ function generateForDate(dateStr) {
       deletions: c.deletions,
       area: c.area
     })),
+    activities: activities,
     stats: stats,
     summary: summary,
     exports: exports
@@ -146,7 +152,7 @@ function generateForDate(dateStr) {
     muteHttpExceptions: true
   });
 
-  // 8. 実行ログ
+  // 9. 実行ログ
   const duration = Math.round((new Date() - startTime) / 1000);
   UrlFetchApp.fetch(`${FIREBASE_URL}${LOG_PATH}.json`, {
     method: 'post',
@@ -266,9 +272,35 @@ function computeStats_(commits) {
   };
 }
 
+// ===== セッション活動ログ取得 =====
+
+function fetchDailyActivities_(dateStr) {
+  const resp = UrlFetchApp.fetch(
+    `${FIREBASE_URL}${ACTIVITIES_PATH}/${dateStr}.json`,
+    { muteHttpExceptions: true }
+  );
+  if (resp.getResponseCode() !== 200) return [];
+  const data = JSON.parse(resp.getContentText());
+  if (!data) return [];
+
+  // 全セッションの活動を時系列で統合
+  const all = [];
+  Object.values(data).forEach(session => {
+    if (session && session.items) {
+      session.items.forEach(item => {
+        all.push({
+          time: session.time || '',
+          activity: item
+        });
+      });
+    }
+  });
+  return all;
+}
+
 // ===== Gemini API =====
 
-function callGemini_(commits, stats, dateDisplay) {
+function callGemini_(commits, stats, dateDisplay, activities) {
   const geminiKey = PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
   if (!geminiKey) {
     Logger.log('GEMINI_API_KEY未設定 → AI要約スキップ');
@@ -284,17 +316,27 @@ function callGemini_(commits, stats, dateDisplay) {
     .map(([name, s]) => `${name}: ${s.commits}件, +${s.additions}/-${s.deletions}`)
     .join('\n');
 
+  // セッション活動テキスト
+  activities = activities || [];
+  const activitiesList = activities.length > 0
+    ? activities.map(a => `- ${a.time ? a.time + ' ' : ''}${a.activity}`).join('\n')
+    : 'なし';
+
   const prompt = `あなたはSP（個人開発者）の日報を書くアシスタントです。
-以下はSPの${dateDisplay}のgitコミット履歴です。
+以下はSPの${dateDisplay}のgitコミット履歴とClaude Codeセッションでの作業記録です。
 
 ## コミット一覧（時刻順）
-${commitList}
+${commitList || 'なし'}
 
 ## プロジェクト別集計
-${areasList}
+${areasList || 'なし'}
+
+## Claude Codeセッション活動（コミット外の作業）
+${activitiesList}
 
 ## 統計
-- 合計: ${stats.total_commits}コミット, +${stats.total_additions}行, -${stats.total_deletions}行
+- コミット: ${stats.total_commits}件, +${stats.total_additions}行, -${stats.total_deletions}行
+- セッション活動: ${activities.length}件
 - 活動時間帯: ${stats.time_range.first}〜${stats.time_range.last}
 
 以下のJSON形式で出力してください:

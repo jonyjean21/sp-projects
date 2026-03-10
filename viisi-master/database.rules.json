@@ -89,6 +89,10 @@
     "claude-tips-digest-log": {
       ".read": true,
       ".write": true
+    },
+    "daily-activities": {
+      ".read": true,
+      ".write": true
     }
   }
 }
