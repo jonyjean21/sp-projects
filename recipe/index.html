@@ -224,14 +224,14 @@ body {
 
 /* ===== Folder Grid ===== */
 .folder-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-  margin-bottom: 16px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  margin-bottom: 12px;
 }
 .folder-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.folder-count { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+.folder-count { font-size: 11px; color: var(--text-sub); flex-shrink: 0; }
 .folder-add-btn {
   display: flex; align-items: center; justify-content: center; gap: 6px;
-  width: 100%; padding: 14px; margin-top: 4px;
+  width: 100%; padding: 11px; margin-top: 0;
   background: var(--bg-warm); border: 2px dashed var(--border);
   border-radius: var(--radius); cursor: pointer;
   color: var(--accent); font-weight: 600; font-size: 13px;
@@ -243,13 +243,13 @@ body {
 /* Folder drag & drop */
 .folder-list { list-style: none; display: contents; }
 .folder-list-item {
-  display: flex; flex-direction: column; justify-content: space-between;
-  background: var(--bg-card); border-radius: var(--radius);
-  padding: 12px; cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg-card); border-radius: 10px;
+  padding: 10px; cursor: pointer;
   box-shadow: var(--shadow);
   transition: transform 0.15s, box-shadow 0.15s;
   touch-action: manipulation; position: relative;
-  min-height: 72px;
+  overflow: hidden;
 }
 .folder-list-item:active { transform: scale(0.97); }
 .folder-list-item.dragging {
@@ -257,14 +257,13 @@ body {
   z-index: 10; transform: scale(1.03);
 }
 .folder-drag-handle {
-  display: flex; align-items: center; justify-content: flex-end;
-  color: var(--text-light); font-size: 14px;
+  color: var(--text-light); font-size: 13px;
   cursor: grab; touch-action: none;
-  user-select: none; margin-bottom: 4px;
+  user-select: none; flex-shrink: 0;
 }
 .folder-drag-handle:active { color: var(--accent); cursor: grabbing; }
 .folder-color-bar {
-  width: 28px; height: 4px; border-radius: 2px; margin-top: 6px;
+  width: 4px; align-self: stretch; border-radius: 2px; flex-shrink: 0;
 }
 .folder-drop-indicator {
   height: 3px; background: var(--accent); border-radius: 2px;
@@ -951,9 +950,9 @@ body {
   </div>
 
   <!-- Page: Folders -->
-  <div id="pageFolders" class="page">
+  <div id="pageFolders" class="page" style="padding-top:8px">
     <div id="folderListView">
-      <div class="section-title">フォルダ一覧</div>
+      <div class="section-title" style="margin-bottom:6px">フォルダ一覧</div>
       <div class="folder-grid" id="folderGrid"></div>
     </div>
     <div id="folderDetailView" class="hidden">
@@ -1687,12 +1686,12 @@ function renderFolders() {
     const count = Object.values(itemsData).filter(r => r.folders && r.folders[id]).length;
     return `
       <div class="folder-list-item" data-folder-id="${id}" onclick="openFolderDetail('${id}')">
-        <div class="folder-drag-handle" ontouchstart="folderDragStart(event, '${id}')" onmousedown="folderDragStart(event, '${id}')">⠿</div>
-        <div>
+        <div class="folder-color-bar" style="background:${f.color || 'var(--accent)'}"></div>
+        <div style="flex:1;min-width:0">
           <div class="folder-name">${esc(f.name)}</div>
           <div class="folder-count">${count}レシピ</div>
         </div>
-        <div class="folder-color-bar" style="background:${f.color || 'var(--accent)'}"></div>
+        <div class="folder-drag-handle" ontouchstart="folderDragStart(event, '${id}')" onmousedown="folderDragStart(event, '${id}')">⠿</div>
       </div>
     `;
   }).join('');
