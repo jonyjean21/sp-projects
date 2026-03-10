@@ -272,6 +272,10 @@ textarea{resize:vertical;min-height:60px}
 .equip-btn.unassigned{border-color:var(--danger);background:#fce4ec}
 .equip-btn.unassigned .equip-btn-name{color:var(--danger)}
 
+/* Info accordion */
+.info-open>div:nth-child(2){display:block!important}
+.info-arrow.open{transform:rotate(90deg)}
+
 /* Hidden */
 .hidden{display:none!important}
 
@@ -436,8 +440,9 @@ textarea{resize:vertical;min-height:60px}
 
   <!-- Tab: Info -->
   <div class="page" id="pageInfo">
-    <div class="section-title">チーム情報</div>
+    <div class="section-title">共有情報</div>
     <div id="infoViewContent"></div>
+    <div style="font-size:12px;color:var(--text-light);margin:12px 4px">※各保護者LINEアカウント名はLINEノートで管理</div>
     <div id="infoAdminControls" style="display:none;margin-top:12px">
       <button class="btn btn-secondary btn-small" onclick="openInfoEditor()">✏️ 情報を編集</button>
     </div>
@@ -503,8 +508,8 @@ textarea{resize:vertical;min-height:60px}
       <input type="text" id="memberName" placeholder="やまだ たろう">
     </div>
     <div class="form-group">
-      <label class="form-label">学校</label>
-      <input type="text" id="memberSchool" placeholder="○○小学校">
+      <label class="form-label">背番号</label>
+      <input type="number" id="memberNumber" min="0" max="99" placeholder="例: 10" inputmode="numeric" style="width:100px">
     </div>
     <div class="form-group">
       <label class="form-label">学年</label>
@@ -519,21 +524,13 @@ textarea{resize:vertical;min-height:60px}
       </select>
     </div>
     <div class="form-group">
-      <label class="form-label">エリア</label>
+      <label class="form-label">校区エリア</label>
       <select id="memberZone"><option value="">未設定</option></select>
     </div>
-
     <div class="form-group">
-      <label class="form-label">保護者名</label>
-      <div style="display:flex;gap:8px">
-        <input type="text" id="memberFatherName" placeholder="父親の名前" style="flex:1">
-        <input type="text" id="memberMotherName" placeholder="母親の名前" style="flex:1">
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">住所（町名まで）</label>
-      <input type="text" id="memberAddress" placeholder="例: 川西市萩原台">
-      <div style="font-size:11px;color:var(--text-light);margin-top:4px">配車の近さ計算に使います。番地は不要です</div>
+      <label class="form-label">家が近い人（配車参考）</label>
+      <select id="memberNearby" multiple style="min-height:80px"><option value="">なし</option></select>
+      <div style="font-size:11px;color:var(--text-light);margin-top:4px">複数選択可。配車の割り当て参考にします</div>
     </div>
 
     <div class="form-group">
@@ -549,20 +546,15 @@ textarea{resize:vertical;min-height:60px}
       </select>
     </div>
     <div class="form-group" id="carSeatsGroup" style="display:none">
-      <label class="form-label">お子さん以外に乗せられる人数</label>
+      <label class="form-label">お子さん（選手）以外に乗せられる人数</label>
       <input type="number" id="memberCarMax" min="0" max="10" inputmode="numeric">
     </div>
     <div class="form-group" id="childSeatGroup" style="display:none">
-      <label class="form-label">チャイルドシート台数</label>
+      <label class="form-label">チャイルドシート台数（持っている数）</label>
       <input type="number" id="memberChildSeatCount" min="0" max="5" value="0" inputmode="numeric">
     </div>
     <div class="form-group" id="carryLargeGroup" style="display:none">
-      <div class="checkbox-item" id="memberCanCarryLarge" onclick="toggleCheckbox(this)">🚛 大きい荷物を運べる（大型車など）</div>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label">保有機材</label>
-      <div class="checkbox-group" id="memberEquipmentList"></div>
+      <div class="checkbox-item" id="memberCanCarryLarge" onclick="toggleCheckbox(this)">🚛 大きい荷物を運べる（ミニバンなど）</div>
     </div>
 
     <button class="btn btn-primary" onclick="saveMember()">保存</button>
@@ -605,14 +597,6 @@ textarea{resize:vertical;min-height:60px}
         <label class="form-label">新しい機材を追加</label>
         <input type="text" id="newEquipName" placeholder="機材名（例: テント）">
       </div>
-      <div class="form-group">
-        <label class="form-label">使用する席数</label>
-        <select id="newEquipSeats">
-          <option value="0">0席（足元等に収まる）</option>
-          <option value="1" selected>1席</option>
-          <option value="2">2席</option>
-        </select>
-      </div>
       <button class="btn btn-primary btn-small" onclick="addEquipment()">追加</button>
     </div>
     <button class="btn btn-outline" onclick="closeModal('equipmentModal')" style="margin-top:12px">閉じる</button>
@@ -631,14 +615,14 @@ textarea{resize:vertical;min-height:60px}
     <div class="form-group">
       <label class="form-label">種類</label>
       <div class="event-type-toggle">
-        <div class="event-type-btn selected-practice" id="eventTypePractice" onclick="setEventType('practice')">🟢 練習</div>
+        <div class="event-type-btn selected-practice" id="eventTypePractice" onclick="setEventType('practice')">試合以外</div>
         <div class="event-type-btn" id="eventTypeMatch" onclick="setEventType('match')">🟠 試合</div>
       </div>
       <input type="hidden" id="eventType" value="practice">
     </div>
     <div class="form-group">
-      <label class="form-label">タイトル</label>
-      <input type="text" id="eventTitle" placeholder="例: 練習試合 vs FC○○">
+      <label class="form-label">大会名 / イベント名</label>
+      <input type="text" id="eventTitle" placeholder="例: 緑ヶ丘カップ戦">
     </div>
     <div class="form-group">
       <label class="form-label">日付</label>
@@ -649,7 +633,7 @@ textarea{resize:vertical;min-height:60px}
       <input type="time" id="eventMeetTime">
     </div>
     <div class="form-group">
-      <label class="form-label">場所</label>
+      <label class="form-label">会場名</label>
       <input type="text" id="eventLocation" placeholder="例: ○○グラウンド" oninput="showLocSuggestions()" onfocus="showLocSuggestions()" autocomplete="off">
       <div class="loc-suggestions" id="locSuggestions"></div>
     </div>
@@ -662,10 +646,6 @@ textarea{resize:vertical;min-height:60px}
       <label class="form-label">台数上限</label>
       <input type="number" id="eventMaxCars" min="0" max="20" placeholder="制限なし" inputmode="numeric" style="width:120px">
       <div style="font-size:12px;color:var(--text-light);margin-top:4px">会場の駐車場制限。空欄=制限なし</div>
-    </div>
-    <div class="form-group" id="eventEquipSection">
-      <label class="form-label">必要機材</label>
-      <div id="eventEquipList"></div>
     </div>
 
     <button class="btn btn-primary" onclick="saveEvent()">保存</button>
@@ -709,9 +689,9 @@ textarea{resize:vertical;min-height:60px}
     <div class="modal-handle"></div>
     <div class="modal-title">📋 LINE用テキスト</div>
     <div id="lineTemplateSelector" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
-      <button class="btn btn-small btn-secondary" onclick="switchLineTemplate('assign')" id="lineTpl_assign">配車決定</button>
-      <button class="btn btn-small btn-outline" onclick="switchLineTemplate('meetup')" id="lineTpl_meetup">集合調整</button>
-      <button class="btn btn-small btn-outline" onclick="switchLineTemplate('parking')" id="lineTpl_parking">パーキング</button>
+      <button class="btn btn-small btn-secondary" onclick="switchLineTemplate('assign')" id="lineTpl_assign">配車決定後</button>
+      <button class="btn btn-small btn-outline" onclick="switchLineTemplate('meetup')" id="lineTpl_meetup">担当→同乗者</button>
+      <button class="btn btn-small btn-outline" onclick="switchLineTemplate('parking')" id="lineTpl_parking">同乗者→担当</button>
       <button class="btn btn-small btn-outline" onclick="switchLineTemplate('accident')" id="lineTpl_accident">事故連絡</button>
     </div>
     <div class="line-preview" id="lineTextPreview"></div>
@@ -725,13 +705,17 @@ textarea{resize:vertical;min-height:60px}
 <div class="modal-overlay" id="infoEditorModal">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title">📋 チーム情報を編集</div>
+    <div class="modal-title">📋 共有情報を編集</div>
     <div class="form-group">
-      <label class="form-label">持ち物リスト</label>
+      <label class="form-label">持ち物</label>
       <textarea id="infoMochimono" rows="4" placeholder="水筒、タオル、着替え..."></textarea>
     </div>
     <div class="form-group">
-      <label class="form-label">当日の流れ</label>
+      <label class="form-label">試合当日</label>
+      <textarea id="infoMatchDay" rows="3" placeholder="試合当日の注意事項"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">当日までの流れ</label>
       <textarea id="infoSchedule" rows="4" placeholder="8:30 集合&#10;9:00 試合開始..."></textarea>
     </div>
     <div class="form-group">
@@ -1178,11 +1162,12 @@ function updateMemberSelect() {
   }
   list.innerHTML = entries.map(([id, m]) => {
     const z = m.zone_id && zonesData[m.zone_id] ? zonesData[m.zone_id] : null;
+    const numLabel = m.number != null ? '#' + m.number + ' ' : '';
     return `<div class="member-select-item" onclick="selectMember('${id}')">
       ${z ? '<span class="zone-dot" style="background:'+escapeHtml(z.color)+'"></span>' : ''}
       <div>
-        <div class="name">${escapeHtml(m.name)}</div>
-        <div class="school">${escapeHtml(m.school)}${z ? ' · '+escapeHtml(z.name) : ''}</div>
+        <div class="name">${numLabel}${escapeHtml(m.name)}</div>
+        <div class="school">${gradeLabel(m.grade)}${z ? ' · '+escapeHtml(z.name) : ''}</div>
       </div>
     </div>`;
   }).join('');
@@ -1221,26 +1206,78 @@ function renderMembers() {
     const zb = b[1].zone_id && zonesData[b[1].zone_id] ? zonesData[b[1].zone_id].order || 0 : 999;
     return za - zb || a[1].name.localeCompare(b[1].name);
   });
-  list.innerHTML = sorted.map(([id, m]) => {
+
+  // Header with member count
+  let html = `<div style="font-size:13px;color:var(--text-sub);margin:8px 4px">${escapeHtml(configData.team_name || 'チーム')} <strong>${entries.length}人</strong></div>`;
+
+  html += sorted.map(([id, m]) => {
     const z = m.zone_id && zonesData[m.zone_id] ? zonesData[m.zone_id] : null;
     const car = m.car_type && CAR_TYPES[m.car_type] ? CAR_TYPES[m.car_type].label : '';
-    const eqList = m.equipment ? Object.keys(m.equipment).filter(k => m.equipment[k] && equipmentTypesData[k])
-      .map(k => equipmentTypesData[k].name) : [];
+    const numLabel = m.number != null ? '#' + m.number : '';
     const icons = [];
     if (car) icons.push('🚗');
-    if (m.childseat_count > 0) icons.push('🪑' + m.childseat_count);
     if (m.can_carry_large) icons.push('🚛');
-    if (eqList.length) icons.push('📦');
-    if (m.address) icons.push('📍');
-    return `<div class="list-item" onclick="editMember('${id}')">
+    if (m.childseat_count > 0) icons.push('🪑' + m.childseat_count);
+    return `<div class="list-item" onclick="showMemberDetail('${id}')">
       ${z ? '<span class="zone-dot" style="background:'+escapeHtml(z.color)+'"></span>' : '<span style="width:10px"></span>'}
       <div class="list-item-info">
-        <div class="list-item-name">${escapeHtml(m.name)}</div>
-        <div class="list-item-sub">${escapeHtml(m.school)} · ${gradeLabel(m.grade)}${car ? ' · '+car : ''}${m.address ? ' · '+escapeHtml(m.address) : ''}</div>
+        <div class="list-item-name">${escapeHtml(m.name)}${numLabel ? ' <span style="font-size:12px;color:var(--text-sub)">'+numLabel+'</span>' : ''}</div>
+        <div class="list-item-sub">${z ? escapeHtml(z.name)+' · ' : ''}${gradeLabel(m.grade)}${car ? ' · '+car : ''}</div>
       </div>
       <div class="list-item-icons">${icons.join(' ')}</div>
     </div>`;
   }).join('');
+  list.innerHTML = html;
+}
+
+// ── Member Detail View ──
+function showMemberDetail(id) {
+  const m = membersData[id];
+  if (!m) return;
+  const z = m.zone_id && zonesData[m.zone_id] ? zonesData[m.zone_id] : null;
+  const car = m.car_type && CAR_TYPES[m.car_type] ? CAR_TYPES[m.car_type].label : '';
+  const numLabel = m.number != null ? '#' + m.number : '';
+
+  let html = `<div class="modal-handle"></div>
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:20px;font-weight:700">${escapeHtml(m.name)} ${numLabel}</div>
+      <div style="font-size:14px;color:var(--text-sub);margin-top:4px">${gradeLabel(m.grade)}${z ? ' · '+escapeHtml(z.name) : ''}</div>
+    </div>
+    <div class="card" style="padding:12px">`;
+
+  if (car) html += `<div style="font-size:14px;padding:4px 0">🚗 ${escapeHtml(car)}${m.car_max_passengers ? '（空き'+m.car_max_passengers+'席）' : ''}</div>`;
+  if (m.childseat_count > 0) html += `<div style="font-size:14px;padding:4px 0">🪑 チャイルドシート ${m.childseat_count}台</div>`;
+  if (m.can_carry_large) html += `<div style="font-size:14px;padding:4px 0">🚛 大きい荷物運搬可</div>`;
+  if (m.nearby_members && m.nearby_members.length > 0) {
+    const nearbyNames = m.nearby_members.map(nid => membersData[nid]?.name || '').filter(Boolean);
+    if (nearbyNames.length) html += `<div style="font-size:14px;padding:4px 0">🏠 近い人: ${nearbyNames.map(n => escapeHtml(n)).join('、')}</div>`;
+  }
+  if (m.siblings && m.siblings.length) {
+    html += `<div style="font-size:14px;padding:4px 0">👶 兄弟: ${m.siblings.map(s => escapeHtml(s.name)+'('+s.age+'歳)').join('、')}</div>`;
+  }
+  if (!car && !m.can_carry_large && !(m.siblings && m.siblings.length)) {
+    html += `<div style="font-size:14px;color:var(--text-light);padding:4px 0">詳細情報なし</div>`;
+  }
+
+  html += `</div>`;
+
+  if (isAdmin) {
+    html += `<button class="btn btn-secondary btn-small" onclick="closeModal('memberDetailModal');editMember('${id}')" style="margin-top:12px">✏️ 編集</button>`;
+  }
+  html += `<button class="btn btn-outline btn-small" onclick="closeModal('memberDetailModal')" style="margin-top:8px">閉じる</button>`;
+
+  // Use a temporary modal or reuse assignModal pattern
+  let detailModal = document.getElementById('memberDetailModal');
+  if (!detailModal) {
+    detailModal = document.createElement('div');
+    detailModal.className = 'modal-overlay';
+    detailModal.id = 'memberDetailModal';
+    detailModal.addEventListener('click', e => { if (e.target === detailModal) detailModal.classList.remove('open'); });
+    detailModal.innerHTML = '<div class="modal" id="memberDetailContent"></div>';
+    document.body.appendChild(detailModal);
+  }
+  document.getElementById('memberDetailContent').innerHTML = html;
+  openModal('memberDetailModal');
 }
 
 // ── Member Modal ──
@@ -1260,27 +1297,30 @@ function openMemberModal(id) {
   carSelect.innerHTML = '<option value="">車なし</option>' +
     Object.entries(CAR_TYPES).map(([k, v]) => `<option value="${k}">${v.label}</option>`).join('');
 
-  // Populate equipment checkboxes
-  const eqList = document.getElementById('memberEquipmentList');
-  eqList.innerHTML = Object.entries(equipmentTypesData)
-    .sort((a,b) => (a[1].order||0) - (b[1].order||0))
-    .map(([eid, eq]) => `<div class="checkbox-item" data-eq="${eid}" onclick="toggleCheckbox(this)">
-      ${escapeHtml(eq.name)}${eq.seats_used ? ' ('+eq.seats_used+'席)' : ''}</div>`).join('');
+  // Populate nearby member select
+  const nearbySelect = document.getElementById('memberNearby');
+  const otherMembers = Object.entries(membersData).filter(([mid, m]) => m.active !== false && mid !== id);
+  nearbySelect.innerHTML = otherMembers.map(([mid, m]) => `<option value="${mid}">${escapeHtml(m.name)}</option>`).join('');
 
   if (id && membersData[id]) {
     const m = membersData[id];
     document.getElementById('memberName').value = m.name || '';
-    document.getElementById('memberSchool').value = m.school || '';
+    document.getElementById('memberNumber').value = m.number != null ? m.number : '';
     document.getElementById('memberGrade').value = m.grade != null ? m.grade : '1';
     document.getElementById('memberZone').value = m.zone_id || '';
-    document.getElementById('memberFatherName').value = m.father_name || '';
-    document.getElementById('memberMotherName').value = m.mother_name || '';
-    document.getElementById('memberAddress').value = m.address || '';
     document.getElementById('memberCarType').value = m.car_type || '';
     document.getElementById('memberCarMax').value = m.car_max_passengers || 0;
     document.getElementById('memberChildSeatCount').value = m.childseat_count || 0;
     const clEl = document.getElementById('memberCanCarryLarge');
     clEl.classList.toggle('checked', !!m.can_carry_large);
+
+    // Nearby members
+    if (m.nearby_members) {
+      m.nearby_members.forEach(nid => {
+        const opt = nearbySelect.querySelector(`option[value="${nid}"]`);
+        if (opt) opt.selected = true;
+      });
+    }
 
     // Siblings
     const sc = document.getElementById('siblingsContainer');
@@ -1288,24 +1328,11 @@ function openMemberModal(id) {
     if (m.siblings && m.siblings.length) {
       m.siblings.forEach(s => addSiblingRow(s.name, s.age));
     }
-
-    // Equipment
-    if (m.equipment) {
-      Object.keys(m.equipment).forEach(eid => {
-        if (m.equipment[eid]) {
-          const el = eqList.querySelector(`[data-eq="${eid}"]`);
-          if (el) el.classList.add('checked');
-        }
-      });
-    }
   } else {
     document.getElementById('memberName').value = '';
-    document.getElementById('memberSchool').value = '';
+    document.getElementById('memberNumber').value = '';
     document.getElementById('memberGrade').value = '1';
     document.getElementById('memberZone').value = '';
-    document.getElementById('memberFatherName').value = '';
-    document.getElementById('memberMotherName').value = '';
-    document.getElementById('memberAddress').value = '';
     document.getElementById('memberCarType').value = '';
     document.getElementById('memberCarMax').value = '0';
     document.getElementById('memberChildSeatCount').value = '0';
@@ -1367,22 +1394,17 @@ async function saveMember() {
     if (n) siblings.push({ name: n, age: a });
   });
 
-  const equipment = {};
-  document.querySelectorAll('#memberEquipmentList .checkbox-item.checked').forEach(el => {
-    equipment[el.dataset.eq] = true;
-  });
-
   const carType = document.getElementById('memberCarType').value || null;
+  const nearbySelect = document.getElementById('memberNearby');
+  const nearbyIds = Array.from(nearbySelect.selectedOptions).map(o => o.value).filter(v => v);
+
   const data = {
     name,
-    school: document.getElementById('memberSchool').value.trim(),
+    number: parseInt(document.getElementById('memberNumber').value) || null,
     grade: parseInt(document.getElementById('memberGrade').value) || 0,
     zone_id: document.getElementById('memberZone').value || '',
-    father_name: document.getElementById('memberFatherName').value.trim(),
-    mother_name: document.getElementById('memberMotherName').value.trim(),
-    address: document.getElementById('memberAddress').value.trim(),
+    nearby_members: nearbyIds.length > 0 ? nearbyIds : null,
     siblings,
-    equipment,
     car_type: carType,
     car_max_passengers: carType ? (parseInt(document.getElementById('memberCarMax').value) || 0) : 0,
     childseat_count: carType ? (parseInt(document.getElementById('memberChildSeatCount').value) || 0) : 0,
@@ -1484,7 +1506,7 @@ function renderEquipmentList() {
   }
   list.innerHTML = entries.map(([id, eq]) =>
     `<div class="list-item" style="cursor:default">
-      <span style="flex:1;font-weight:600">${escapeHtml(eq.name)} <span style="font-size:12px;color:var(--text-sub)">${eq.seats_used}席使用</span></span>
+      <span style="flex:1;font-weight:600">${escapeHtml(eq.name)}</span>
       <button class="btn-icon btn-outline" onclick="deleteEquipment('${id}')" style="font-size:12px;width:44px;height:44px">✕</button>
     </div>`
   ).join('');
@@ -1493,9 +1515,8 @@ function renderEquipmentList() {
 async function addEquipment() {
   const name = document.getElementById('newEquipName').value.trim();
   if (!name) return showToast('機材名を入力してください', 'error');
-  const seats = parseInt(document.getElementById('newEquipSeats').value) || 0;
   const order = Object.keys(equipmentTypesData).length + 1;
-  await db.ref(ROOT + '/equipment_types').push({ name, seats_used: seats, order });
+  await db.ref(ROOT + '/equipment_types').push({ name, order });
   document.getElementById('newEquipName').value = '';
   showToast(name + ' を追加しました');
   renderEquipmentList();
@@ -1657,8 +1678,11 @@ function adminLogout() {
 function renderHome() {
   autoMarkDoneEvents();
   const c = document.getElementById('homeContent');
-  const active = Object.entries(eventsData)
-    .filter(([, e]) => e.status === 'open' || e.status === 'assigned')
+  const open = Object.entries(eventsData)
+    .filter(([, e]) => e.status === 'open')
+    .sort((a, b) => (a[1].date || '').localeCompare(b[1].date || ''));
+  const assigned = Object.entries(eventsData)
+    .filter(([, e]) => e.status === 'assigned')
     .sort((a, b) => (a[1].date || '').localeCompare(b[1].date || ''));
   const past = Object.entries(eventsData)
     .filter(([, e]) => e.status === 'done')
@@ -1666,50 +1690,247 @@ function renderHome() {
 
   let html = '';
 
-  // Stats dashboard
-  html += renderTeamStats(active, past);
-
-  // Next event hero card
-  if (active.length > 0) {
-    const [nextId, nextE] = active[0];
-    const myRsvp = selectedMemberId ? (nextE.rsvp || {})[selectedMemberId] : null;
-    const isMatch = nextE.type === 'match';
-    html += `<div class="next-event-hero" style="${isMatch ? 'background:linear-gradient(135deg,#e65100,#bf360c)' : ''}">
-      <div class="next-event-badge">${isMatch ? '🟠 試合' : '🟢 練習'}${nextE.status === 'assigned' ? ' · 配車確定' : ''}</div>
-      <div class="next-event-title">${escapeHtml(nextE.title) || 'イベント'}</div>
-      <div class="next-event-meta">📅 ${formatEventDate(nextE.date)} ${nextE.meet_time ? '🕗 '+nextE.meet_time : ''} ${nextE.location ? '📍 '+escapeHtml(nextE.location) : ''}</div>
-      ${!myRsvp && nextE.status === 'open' && !isRsvpPastDeadline(nextE) ? `<button class="next-event-cta" onclick="startRsvp('${nextId}')">出欠を回答する</button>` : ''}
-      ${myRsvp && myRsvp.attending === true ? `<div style="margin-top:8px;font-size:13px;opacity:.85">✅ 回答済み（${myRsvp.transport === 'drive' ? '車出し' : myRsvp.transport === 'ride' ? '乗せて' : '現地集合'}）</div>` : ''}
-      ${myRsvp && myRsvp.attending === 'maybe' ? `<div style="margin-top:8px;font-size:13px;opacity:.85">△ 検討中</div>` : ''}
-      ${myRsvp && myRsvp.attending === false ? `<div style="margin-top:8px;font-size:13px;opacity:.85">❌ 不参加</div>` : ''}
-      ${nextE.status === 'assigned' ? `<button class="next-event-cta" onclick="viewAssignment('${nextId}')" style="background:rgba(255,255,255,.9)">🚗 配車表を見る</button>` : ''}
-    </div>`;
+  // イベント作成ボタン（管理者のみ・左上）
+  if (isAdmin) {
+    html += '<div style="margin:0 0 12px"><button class="btn btn-primary btn-small" onclick="openEventModal()">+ イベント作成</button></div>';
   }
 
-  html += '<div style="margin:12px 0"><button class="btn btn-primary btn-small" onclick="openEventModal()">+ イベント作成</button></div>';
-
-  if (active.length === 0) {
-    html += '<div class="empty"><div class="empty-icon">⚽</div><div class="empty-text">次のイベントはまだありません<br>管理者がイベントを作成してください</div></div>';
-  } else {
-    // Skip first event in detailed cards since hero already shows it
-    const remaining = active.length > 1 ? active.slice(1) : [];
-    if (remaining.length > 0) {
-      html += `<div class="section-title">予定のイベント</div>`;
-      html += remaining.map(([id, e]) => renderEventCard(id, e)).join('');
-    }
-    // Still show the first event's full card for RSVP details
-    html += `<div class="section-title">イベント詳細</div>`;
-    html += renderEventCard(active[0][0], active[0][1]);
+  // 回答受付中
+  if (open.length > 0) {
+    html += `<div class="section-title">📋 回答受付中（${open.length}件）</div>`;
+    html += open.map(([id, e]) => renderHomeCard(id, e)).join('');
   }
 
+  // 回答受付終了（配車確定）
+  if (assigned.length > 0) {
+    html += `<div class="section-title">✅ 回答受付終了（${assigned.length}件）</div>`;
+    html += assigned.map(([id, e]) => renderHomeCard(id, e)).join('');
+  }
+
+  if (open.length === 0 && assigned.length === 0) {
+    html += '<div class="empty"><div class="empty-icon">⚽</div><div class="empty-text">次のイベントはまだありません</div></div>';
+  }
+
+  // 過去のイベント（トグル）
   if (past.length > 0) {
     html += `<div class="past-toggle" onclick="togglePastEvents()">
       <span class="past-toggle-arrow" id="pastArrow">▶</span> 過去のイベント（${past.length}件）
     </div>
     <div id="pastEventsContainer" style="display:none">
-      ${past.map(([id, e]) => renderEventCard(id, e, true)).join('')}
+      ${past.map(([id, e]) => renderHomeCard(id, e)).join('')}
     </div>`;
   }
+  c.innerHTML = html;
+}
+
+// ホーム一覧用の簡易カード（クリック→詳細画面）
+function renderHomeCard(id, e) {
+  const isMatch = e.type === 'match';
+  const typeLabel = isMatch ? '🟠 試合' : '🟢 試合以外';
+  const dateStr = formatEventDate(e.date);
+  const rsvp = e.rsvp || {};
+  const activeMembers = Object.entries(membersData).filter(([,m]) => m.active !== false);
+  const totalMembers = activeMembers.length;
+  const answeredCount = Object.keys(rsvp).length;
+  const isPast = e.status === 'done';
+  const isAssigned = e.status === 'assigned';
+  let drivers = 0, driverSeats = 0, riders = 0, riderSeats = 0;
+  Object.entries(rsvp).forEach(([mid, r]) => {
+    if (r.attending !== true) return;
+    const mem = membersData[mid];
+    if (!mem || mem.active === false) return;
+    if (r.transport === 'drive') { drivers++; driverSeats += (r.extra_seats || 0); }
+    else if (r.transport === 'ride') { riders++; riderSeats += calcSeatsNeeded(mid, r); }
+  });
+  const seatAlert = !isPast && riderSeats > 0 && driverSeats < riderSeats;
+
+  let html = `<div class="card" style="border-left:4px solid ${isMatch?'var(--match)':'var(--practice)'};cursor:pointer" onclick="showEventDetail('${id}')">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+      <span class="badge ${isMatch?'badge-match':'badge-practice'}">${typeLabel}</span>
+      ${isAssigned ? '<span style="font-size:11px;color:var(--success);font-weight:600">配車確定</span>' : ''}
+      <span style="font-size:15px;font-weight:700;flex:1">${escapeHtml(e.title) || 'イベント'}</span>
+    </div>
+    <div style="font-size:13px;color:var(--text-sub)">
+      📅 ${dateStr} ${e.meet_time ? '🕗 '+escapeHtml(e.meet_time) : ''} ${e.location ? '📍 '+escapeHtml(e.location) : ''}
+    </div>`;
+
+  if (!isPast) {
+    const pct = totalMembers > 0 ? Math.round(answeredCount / totalMembers * 100) : 0;
+    html += `<div style="display:flex;align-items:center;gap:8px;margin-top:6px;font-size:12px;color:var(--text-sub)">
+      <span>回答 ${answeredCount}/${totalMembers}</span>
+      <span>🚗${drivers}台</span><span>🙋${riders}人</span>
+      ${seatAlert ? '<span style="color:var(--danger)">⚠席不足</span>' : ''}
+    </div>
+    <div class="progress-bar" style="margin-top:4px"><div class="progress-fill" style="width:${pct}%"></div></div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+// イベント詳細画面（ホームカードから遷移）
+function showEventDetail(id) {
+  const e = eventsData[id];
+  if (!e) return;
+  const c = document.getElementById('homeContent');
+  const isPast = e.status === 'done';
+  const isMatch = e.type === 'match';
+  const typeLabel = isMatch ? '🟠 試合' : '🟢 試合以外';
+  const dateStr = formatEventDate(e.date);
+  const rsvp = e.rsvp || {};
+  const activeMembers = Object.entries(membersData).filter(([,m]) => m.active !== false);
+  const totalMembers = activeMembers.length;
+  const answeredCount = Object.keys(rsvp).length;
+  const myRsvp = selectedMemberId ? rsvp[selectedMemberId] : null;
+
+  let drivers = 0, driverSeats = 0, riders = 0, riderSeats = 0, directs = 0;
+  Object.entries(rsvp).forEach(([mid, r]) => {
+    if (r.attending !== true) return;
+    const mem = membersData[mid];
+    if (!mem || mem.active === false) return;
+    if (r.transport === 'drive') { drivers++; driverSeats += (r.extra_seats || 0); }
+    else if (r.transport === 'ride') { riders++; riderSeats += calcSeatsNeeded(mid, r); }
+    else if (r.transport === 'direct') directs++;
+  });
+
+  let html = '';
+
+  // ヘッダー（戻る＋編集）
+  html += `<div style="display:flex;align-items:center;margin-bottom:12px">
+    <button class="btn btn-outline btn-small" onclick="renderHome()">← 戻る</button>
+    <div style="flex:1"></div>
+    ${!isPast && isAdmin ? `<button class="btn btn-outline btn-small" onclick="openEventModal('${id}')">✏️ 編集</button>` : ''}
+  </div>`;
+
+  // イベント情報カード
+  html += `<div class="card" style="border-left:4px solid ${isMatch?'var(--match)':'var(--practice)'}">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <span class="badge ${isMatch?'badge-match':'badge-practice'}">${typeLabel}</span>
+      <span style="font-size:16px;font-weight:700">${escapeHtml(e.title) || 'イベント'}</span>
+    </div>
+    <div style="font-size:14px;color:var(--text-sub)">
+      📅 ${dateStr} ${e.meet_time ? '🕗 '+escapeHtml(e.meet_time) : ''} ${e.location ? '📍 '+escapeHtml(e.location) : ''}
+      ${e.rsvp_deadline ? '<br>📝 回答締切: '+formatEventDate(e.rsvp_deadline)+(isRsvpPastDeadline(e)?' <span style="color:var(--danger);font-weight:600">締切済み</span>':'') : ''}
+    </div>
+  </div>`;
+
+  // 回答状況
+  if (!isPast) {
+    const pct = totalMembers > 0 ? Math.round(answeredCount / totalMembers * 100) : 0;
+    const seatBalance = driverSeats - riderSeats;
+    const maxCars = e.max_cars || 0;
+    const overCars = maxCars > 0 && drivers > maxCars;
+    html += `<div class="card">
+      <div style="font-size:13px;color:var(--text-sub)">回答: ${answeredCount}/${totalMembers}</div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div style="font-size:13px;margin:8px 0;display:flex;flex-wrap:wrap;gap:8px">
+        <span>🚗 ${drivers}台(${driverSeats}席)${maxCars > 0 ? ' <span style="font-size:11px;color:'+(overCars?'var(--danger)':'var(--text-light)')+'">/ 上限'+maxCars+'台</span>' : ''}</span>
+        <span>🙋 ${riders}人(${riderSeats}席)</span>
+        <span>🏃 ${directs}人</span>
+      </div>
+      ${riderSeats > 0 ? (seatBalance >= 0
+        ? '<div style="font-size:13px;color:var(--success)">✅ 席OK ('+seatBalance+'席余裕)</div>'
+        : '<div style="font-size:13px;color:var(--danger)">⚠ '+Math.abs(seatBalance)+'席不足</div>') : ''}
+      ${overCars ? '<div style="font-size:12px;color:var(--danger);margin-top:4px">⚠ 台数制限'+maxCars+'台に対し'+drivers+'台</div>' : ''}
+    </div>`;
+  }
+
+  // 備品状況
+  if (e.equipment_needed) {
+    const eqEntries = Object.entries(e.equipment_needed).filter(([,q]) => q > 0);
+    if (eqEntries.length) {
+      const eqAssignees = {};
+      Object.entries(rsvp).forEach(([mid, r]) => {
+        if (r.attending !== true || !r.bring_equipment) return;
+        Object.keys(r.bring_equipment).forEach(eid => {
+          if (r.bring_equipment[eid]) {
+            if (!eqAssignees[eid]) eqAssignees[eid] = [];
+            eqAssignees[eid].push(membersData[mid]?.name || mid);
+          }
+        });
+      });
+      const EQUIP_ICONS = {'テント':'⛺','救急箱':'🩹','カゴ':'🧺','椅子':'🪑','ベンチ':'🪑','クーラーボックス':'🧊','ゴール':'⚽','コーン':'🔶','ビブス':'🦺'};
+      html += '<div class="equip-btn-grid">';
+      let hasUnassigned = false;
+      eqEntries.forEach(([eid, qty]) => {
+        const eq = equipmentTypesData[eid];
+        const name = eq?.name || eid;
+        const icon = EQUIP_ICONS[name] || '📦';
+        const assignees = eqAssignees[eid] || [];
+        for (let i = 0; i < qty; i++) {
+          const person = assignees[i] || null;
+          const cls = person ? 'assigned' : 'unassigned';
+          if (!person) hasUnassigned = true;
+          html += `<div class="equip-btn ${cls}">
+            <div class="equip-btn-icon">${icon}</div>
+            <div class="equip-btn-name">${escapeHtml(name)}</div>
+            <div class="equip-btn-assignee">${person ? escapeHtml(person) : '未定'}</div>
+          </div>`;
+        }
+      });
+      html += '</div>';
+      if (!isPast && hasUnassigned) {
+        html += `<button class="btn btn-outline btn-small" onclick="generateEquipNudgeText('${id}')" style="margin-top:4px;font-size:12px;color:var(--danger)">📦 備品不足 → LINE催促文を作成</button>`;
+      }
+    }
+  }
+
+  // アクションボタン
+  html += '<div class="card">';
+  if (!isPast) {
+    // 自分の出欠
+    if (selectedMemberId && e.status === 'open') {
+      if (myRsvp) {
+        html += renderMyRsvpSummary(myRsvp);
+        if (!isRsvpPastDeadline(e)) {
+          html += `<button class="btn btn-secondary btn-small" onclick="startRsvp('${id}')" style="margin-top:8px">回答を変更</button>`;
+        } else {
+          html += '<div style="font-size:13px;color:var(--danger);margin-top:8px">🔒 回答締切済み（変更はLINEで配車担当者へ）</div>';
+        }
+      } else if (!isRsvpPastDeadline(e)) {
+        html += `<button class="btn btn-primary" onclick="startRsvp('${id}')">出欠を回答する</button>`;
+      } else {
+        html += '<div style="font-size:13px;color:var(--danger);margin-top:8px">🔒 回答締切済み</div>';
+      }
+    }
+
+    // 配車を決める
+    if (e.status === 'open' && drivers > 0) {
+      html += `<button class="btn btn-secondary" onclick="showDriverSelection('${id}')" style="margin-top:12px;width:100%">🚗 配車を決める</button>`;
+    }
+
+    // 配車確定後
+    if (e.status === 'assigned') {
+      if (selectedMemberId && myRsvp) html += renderMyRsvpSummary(myRsvp);
+      html += `<div class="btn-row" style="margin-top:10px">
+        <button class="btn btn-secondary btn-small" onclick="viewAssignment('${id}')">🚗 配車表を見る</button>
+        <button class="btn btn-outline btn-small" onclick="showLineText('${id}')">📋 配車決定後の連絡</button>
+      </div>
+      <button class="btn btn-line btn-small" onclick="shareLineDirect('${id}')" style="margin-top:8px;width:100%">💬 LINEで共有</button>`;
+      if (selectedMemberId) {
+        html += `<button class="btn btn-outline btn-small" onclick="startRsvp('${id}')" style="margin-top:8px">回答を変更 ⚠</button>`;
+      }
+    }
+
+    // 未回答催促
+    if (answeredCount < totalMembers && e.status === 'open') {
+      html += `<button class="btn btn-outline btn-small" onclick="generateNudgeText('${id}')" style="margin-top:8px;font-size:13px">📢 未回答に催促（${totalMembers - answeredCount}人）</button>`;
+    }
+  } else {
+    // 過去イベント
+    if (e.assignments) {
+      html += `<div class="btn-row">
+        <button class="btn btn-secondary btn-small" onclick="viewAssignment('${id}')">🚗 配車表</button>
+        <button class="btn btn-outline btn-small" onclick="showLineText('${id}')">📋 LINE共有</button>
+      </div>`;
+    } else if (drivers > 0) {
+      html += `<button class="btn btn-secondary" onclick="showDriverSelection('${id}')" style="margin-top:12px">🚗 配車を決める</button>`;
+    }
+  }
+  html += '</div>';
+
+  // 回答一覧
+  html += renderRsvpList(id, e);
+
   c.innerHTML = html;
 }
 
@@ -1819,7 +2040,7 @@ function formatEventDate(dateStr) {
 
 function renderEventCard(id, e, isPast) {
   const typeClass = e.type === 'match' ? 'badge-match' : 'badge-practice';
-  const typeLabel = e.type === 'match' ? '🟠 試合' : '🟢 練習';
+  const typeLabel = e.type === 'match' ? '🟠 試合' : '🟢 試合以外';
   const dateStr = formatEventDate(e.date);
   const rsvp = e.rsvp || {};
   const activeMembers = Object.entries(membersData).filter(([,m]) => m.active !== false);
@@ -2202,20 +2423,6 @@ function openEventModal(eventId) {
   document.getElementById('eventEditId').value = eventId || '';
   document.getElementById('eventDeleteBtn').classList.toggle('hidden', !isEdit);
 
-  // Equipment quantity rows
-  const eqSection = document.getElementById('eventEquipList');
-  const eqEntries = Object.entries(equipmentTypesData).sort((a,b) => (a[1].order||0) - (b[1].order||0));
-  if (eqEntries.length > 0) {
-    eqSection.innerHTML = eqEntries.map(([eid, eq]) =>
-      `<div class="equip-qty-row">
-        <span class="name">${escapeHtml(eq.name)}</span>
-        <input type="number" id="eventEq_${eid}" min="0" max="20" value="0" inputmode="numeric">
-      </div>`).join('');
-    document.getElementById('eventEquipSection').style.display = '';
-  } else {
-    document.getElementById('eventEquipSection').style.display = 'none';
-  }
-
   if (isEdit && eventsData[eventId]) {
     const e = eventsData[eventId];
     setEventType(e.type || 'practice');
@@ -2225,12 +2432,6 @@ function openEventModal(eventId) {
     document.getElementById('eventLocation').value = e.location || '';
     document.getElementById('eventRsvpDeadline').value = e.rsvp_deadline || '';
     document.getElementById('eventMaxCars').value = e.max_cars || '';
-    if (e.equipment_needed) {
-      Object.entries(e.equipment_needed).forEach(([eid, qty]) => {
-        const inp = document.getElementById('eventEq_' + eid);
-        if (inp) inp.value = qty;
-      });
-    }
   } else {
     setEventType('practice');
     document.getElementById('eventTitle').value = '';
@@ -2286,15 +2487,6 @@ async function saveEvent() {
   if (!title) return showToast('タイトルを入力してください', 'error');
   if (!date) return showToast('日付を入力してください', 'error');
 
-  const equipNeeded = {};
-  Object.keys(equipmentTypesData).forEach(eid => {
-    const inp = document.getElementById('eventEq_' + eid);
-    if (inp) {
-      const v = parseInt(inp.value) || 0;
-      if (v > 0) equipNeeded[eid] = v;
-    }
-  });
-
   const maxCars = parseInt(document.getElementById('eventMaxCars').value) || 0;
   const rsvpDeadline = document.getElementById('eventRsvpDeadline').value || '';
 
@@ -2306,8 +2498,7 @@ async function saveEvent() {
     meet_time: meetTime,
     location,
     max_cars: maxCars,
-    rsvp_deadline: rsvpDeadline,
-    equipment_needed: equipNeeded
+    rsvp_deadline: rsvpDeadline
   };
 
   try {
@@ -2424,24 +2615,28 @@ function renderRsvpForm() {
     .filter(([eid]) => mem.equipment && mem.equipment[eid])
     .sort((a,b) => (a[1].order||0) - (b[1].order||0));
 
+  // Equipment tags from all equipment types
+  const allEq = Object.entries(equipmentTypesData).sort((a,b) => (a[1].order||0) - (b[1].order||0));
+  const EQUIP_ICONS_MAP = {'テント':'⛺','折畳':'🪑','シート':'🧶','ベンチ':'🪑','救急箱':'🩹','カゴ':'🧺','椅子':'🪑','クーラーボックス':'🧊','ゴール':'⚽','コーン':'🔶','ビブス':'🦺'};
+
   c.innerHTML = `
-    <div style="text-align:center;margin-bottom:16px">
-      <div style="font-size:14px;color:var(--text-sub)">${e.type==='match'?'🟠 試合':'🟢 練習'} ${dateStr} ${e.meet_time||''}</div>
-      <div style="font-size:17px;font-weight:700;margin-top:4px">${escapeHtml(e.title)}</div>
-      ${e.location ? '<div style="font-size:13px;color:var(--text-sub)">📍 '+escapeHtml(e.location)+'</div>' : ''}
+    <div style="text-align:center;margin-bottom:12px">
+      <div style="font-size:13px;color:var(--text-sub)">${e.type==='match'?'🟠 試合':'🟢 試合以外'} ${dateStr} ${e.meet_time||''}</div>
+      <div style="font-size:16px;font-weight:700;margin-top:2px">${escapeHtml(e.title)}</div>
+      ${e.location ? '<div style="font-size:12px;color:var(--text-sub)">📍 '+escapeHtml(e.location)+'</div>' : ''}
     </div>
 
-    <!-- 参加/不参加/△ -->
-    <div class="form-label">${escapeHtml(mem.name)}は参加しますか？</div>
-    <div class="rsvp-choices" style="margin-bottom:16px" id="rsvpAttendChoices">
-      <div class="rsvp-choice ${att===true?'selected':''}" onclick="rsvpToggleAttending(true)">
-        <div class="rsvp-choice-icon">✅</div>参加
+    <!-- 参加可否 -->
+    <div class="form-label">参加可否</div>
+    <div style="display:flex;gap:6px;margin-bottom:12px" id="rsvpAttendChoices">
+      <div class="rsvp-choice ${att===true?'selected':''}" onclick="rsvpToggleAttending(true)" style="flex:1;min-width:0;padding:10px 8px">
+        <div class="rsvp-choice-icon" style="font-size:22px">✅</div><span style="font-size:13px">参加</span>
       </div>
-      <div class="rsvp-choice ${att==='maybe'?'selected':''}" onclick="rsvpToggleAttending('maybe')">
-        <div class="rsvp-choice-icon">△</div>検討中
+      <div class="rsvp-choice ${att==='maybe'?'selected':''}" onclick="rsvpToggleAttending('maybe')" style="flex:1;min-width:0;padding:10px 8px">
+        <div class="rsvp-choice-icon" style="font-size:22px">△</div><span style="font-size:13px">検討中</span>
       </div>
-      <div class="rsvp-choice ${att===false?'selected':''}" onclick="rsvpToggleAttending(false)">
-        <div class="rsvp-choice-icon">❌</div>不参加
+      <div class="rsvp-choice ${att===false?'selected':''}" onclick="rsvpToggleAttending(false)" style="flex:1;min-width:0;padding:10px 8px">
+        <div class="rsvp-choice-icon" style="font-size:22px">❌</div><span style="font-size:13px">不参加</span>
       </div>
     </div>
 
@@ -2449,7 +2644,7 @@ function renderRsvpForm() {
     <div id="rsvpMaybeSection" style="display:${att==='maybe'?'':'none'}">
       <div class="form-group">
         <label class="form-label">備考（任意）</label>
-        <textarea id="rsvpMaybeNote" placeholder="いつ頃わかるか等">${escapeHtml(note)}</textarea>
+        <textarea id="rsvpMaybeNote" rows="2" placeholder="いつ頃わかるか等">${escapeHtml(note)}</textarea>
       </div>
       <button class="btn btn-primary" id="rsvpSubmitBtnMaybe" onclick="rsvpSubmit()">回答を送信</button>
       <button class="btn btn-outline" onclick="closeModal('rsvpModal')" style="margin-top:8px">キャンセル</button>
@@ -2459,7 +2654,7 @@ function renderRsvpForm() {
     <div id="rsvpNotAttendSection" style="display:${att===false?'':'none'}">
       <div class="form-group">
         <label class="form-label">理由（任意）</label>
-        <textarea id="rsvpReason" placeholder="理由があれば">${escapeHtml(reason)}</textarea>
+        <textarea id="rsvpReason" rows="2" placeholder="理由があれば">${escapeHtml(reason)}</textarea>
       </div>
       <button class="btn btn-primary" id="rsvpSubmitBtn" onclick="rsvpSubmit()">回答を送信</button>
       <button class="btn btn-outline" onclick="closeModal('rsvpModal')" style="margin-top:8px">キャンセル</button>
@@ -2468,79 +2663,87 @@ function renderRsvpForm() {
     <!-- 参加の場合の詳細 -->
     <div id="rsvpAttendSection" style="display:${att===true?'':'none'}">
 
-      <!-- 帯同人数の内訳 -->
+      <!-- 帯同人数 -->
       <div class="form-label">帯同人数</div>
-      <div style="margin-bottom:16px">
-        <div style="display:flex;gap:8px;margin-bottom:8px">
-          <div style="flex:1">
-            <div style="font-size:12px;color:var(--text-sub);margin-bottom:4px">大人</div>
-            <div class="rsvp-number-choices" id="rsvpAdultChoices">
-              ${[0,1,2,3].map(n => `<div class="rsvp-num ${adultCount===n?'selected':''}" onclick="rsvpPickCount('adult',${n})">${n}</div>`).join('')}
-            </div>
+      <div style="margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="font-size:12px;color:var(--text-sub);min-width:90px">大人</span>
+          <div class="rsvp-number-choices" id="rsvpAdultChoices" style="gap:6px">
+            ${[0,1,2,3].map(n => `<div class="rsvp-num ${adultCount===n?'selected':''}" onclick="rsvpPickCount('adult',${n})" style="width:40px;height:40px">${n}</div>`).join('')}
           </div>
         </div>
-        <div style="display:flex;gap:8px;margin-bottom:8px">
-          <div style="flex:1">
-            <div style="font-size:12px;color:var(--text-sub);margin-bottom:4px">子ども（小学生）</div>
-            <div class="rsvp-number-choices" id="rsvpChildChoices">
-              ${[0,1,2,3,4].map(n => `<div class="rsvp-num ${childCount===n?'selected':''}" onclick="rsvpPickCount('child',${n})">${n}</div>`).join('')}
-            </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="font-size:12px;color:var(--text-sub);min-width:90px">小学生(選手含)</span>
+          <div class="rsvp-number-choices" id="rsvpChildChoices" style="gap:6px">
+            ${[0,1,2,3,4].map(n => `<div class="rsvp-num ${childCount===n?'selected':''}" onclick="rsvpPickCount('child',${n})" style="width:40px;height:40px">${n}</div>`).join('')}
           </div>
         </div>
-        <div style="display:flex;gap:8px">
-          <div style="flex:1">
-            <div style="font-size:12px;color:var(--text-sub);margin-bottom:4px">小学生未満（CS必要）</div>
-            <div class="rsvp-number-choices" id="rsvpPreschoolChoices">
-              ${[0,1,2,3].map(n => `<div class="rsvp-num ${preschoolCount===n?'selected':''}" onclick="rsvpPickCount('preschool',${n})">${n}</div>`).join('')}
-            </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;color:var(--text-sub);min-width:90px">未就学児</span>
+          <div class="rsvp-number-choices" id="rsvpPreschoolChoices" style="gap:6px">
+            ${[0,1,2,3].map(n => `<div class="rsvp-num ${preschoolCount===n?'selected':''}" onclick="rsvpPickCount('preschool',${n})" style="width:40px;height:40px">${n}</div>`).join('')}
           </div>
         </div>
+        <div style="font-size:11px;color:var(--warning);margin-top:4px">※未就学児はチャイルドシート必須</div>
       </div>
 
-      <!-- 移動手段 -->
+      <!-- 配車可否 -->
       <div id="rsvpTransportSection">
-        <div class="form-label">移動手段</div>
-        <div class="rsvp-choices" style="margin-bottom:16px">
-          <div class="rsvp-choice ${transport==='drive'?'selected':''}" data-transport="drive" onclick="rsvpPickTransport('drive')">
-            <div class="rsvp-choice-icon">🚗</div>車を出す
+        <div class="form-label">配車可否</div>
+        <div style="display:flex;gap:6px;margin-bottom:12px">
+          <div class="rsvp-choice ${transport==='drive'?'selected':''}" data-transport="drive" onclick="rsvpPickTransport('drive')" style="flex:1;min-width:0;padding:10px 6px">
+            <div class="rsvp-choice-icon" style="font-size:20px">🚗</div><span style="font-size:12px">車を出す</span>
           </div>
-          <div class="rsvp-choice ${transport==='ride'?'selected':''}" data-transport="ride" onclick="rsvpPickTransport('ride')">
-            <div class="rsvp-choice-icon">🙋</div>乗せて
+          <div class="rsvp-choice ${transport==='ride'?'selected':''}" data-transport="ride" onclick="rsvpPickTransport('ride')" style="flex:1;min-width:0;padding:10px 6px">
+            <div class="rsvp-choice-icon" style="font-size:20px">🙋</div><span style="font-size:12px">乗せて</span>
           </div>
-          <div class="rsvp-choice ${transport==='direct'?'selected':''}" data-transport="direct" onclick="rsvpPickTransport('direct')">
-            <div class="rsvp-choice-icon">🏃</div>現地集合
+          <div class="rsvp-choice ${transport==='direct'?'selected':''}" data-transport="direct" onclick="rsvpPickTransport('direct')" style="flex:1;min-width:0;padding:10px 6px">
+            <div class="rsvp-choice-icon" style="font-size:20px">🏃</div><span style="font-size:12px">現地集合</span>
+          </div>
+          <div class="rsvp-choice ${transport==='considering'?'selected':''}" data-transport="considering" onclick="rsvpPickTransport('considering')" style="flex:1;min-width:0;padding:10px 6px">
+            <div class="rsvp-choice-icon" style="font-size:20px">△</div><span style="font-size:12px">検討中</span>
           </div>
         </div>
       </div>
 
-      <!-- 子どもだけ乗せてほしい -->
+      <!-- オプション（乗せて選択時） -->
       <div id="rsvpChildOnlySection" style="display:${transport==='ride'?'':'none'}">
-        <div class="checkbox-item ${childOnlyRide?'checked':''}" id="rsvpChildOnlyRide"
-          onclick="this.classList.toggle('checked');document.getElementById('rsvpContent').dataset.childOnlyRide=this.classList.contains('checked')">
-          👶 子どもだけ乗せてほしい（保護者は別の車で行きます）
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+          <div class="checkbox-item ${childOnlyRide?'checked':''}" id="rsvpChildOnlyRide"
+            onclick="this.classList.toggle('checked');document.getElementById('rsvpContent').dataset.childOnlyRide=this.classList.contains('checked')" style="font-size:13px">
+            ※人数オーバー時→子のみ
+          </div>
+          <div class="checkbox-item" id="rsvpNearParking"
+            onclick="this.classList.toggle('checked');document.getElementById('rsvpContent').dataset.nearParking=this.classList.contains('checked')" style="font-size:13px">
+            ※近隣駐車場希望
+          </div>
         </div>
-        <div style="font-size:11px;color:var(--text-light);margin:4px 0 12px">チェックすると大人の人数は席数に含めません</div>
       </div>
 
       <!-- 車出しの詳細 -->
       <div id="rsvpDriverSection" style="display:${transport==='drive'?'':'none'}">
-        <div class="form-label">あと何人乗せられますか？${hasCar ? ' <span style="font-weight:400;color:var(--text-sub)">(提案: '+suggestedSeats+'人)</span>' : ''}</div>
-        <div class="rsvp-number-choices" style="margin-bottom:12px;flex-wrap:wrap" id="rsvpSeatChoices">
-          ${Array.from({length: Math.max(6, suggestedSeats + 1)}, (_, n) => n).map(n => `<div class="rsvp-num ${(existing ? extraSeats : suggestedSeats)===n?'selected':''}"
-            onclick="rsvpPickSeats(${n})">${n}</div>`).join('')}
+        <div class="form-label">あと何人乗せられますか？</div>
+        <div class="rsvp-number-choices" style="margin-bottom:12px;flex-wrap:wrap;gap:6px" id="rsvpSeatChoices">
+          ${Array.from({length: 6}, (_, n) => n).map(n => `<div class="rsvp-num ${(existing ? extraSeats : 0)===n?'selected':''}"
+            onclick="rsvpPickSeats(${n})" style="width:40px;height:40px">${n}</div>`).join('')}
         </div>
-        ${availEq.length > 0 ? `
-          <div class="form-label">荷物</div>
-          <div class="checkbox-group" style="margin-bottom:12px" id="rsvpEquipGroup">
-            ${availEq.map(([eid, eq]) => `<div class="checkbox-item ${bringEq[eid]?'checked':''}"
-              data-eq="${eid}" onclick="this.classList.toggle('checked')">${escapeHtml(eq.name)}${eq.seats_used?' ('+eq.seats_used+'席)':''}</div>`).join('')}
-          </div>` : ''}
       </div>
+
+      <!-- 荷物タグ -->
+      ${allEq.length > 0 ? `
+        <div class="form-label">荷物</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px" id="rsvpEquipGroup">
+          ${allEq.map(([eid, eq]) => {
+            const icon = EQUIP_ICONS_MAP[eq.name] || '📦';
+            return `<div class="checkbox-item ${bringEq[eid]?'checked':''}" data-eq="${eid}" onclick="this.classList.toggle('checked')" style="padding:6px 12px;font-size:13px">
+              ${icon} ${escapeHtml(eq.name)}</div>`;
+          }).join('')}
+        </div>` : ''}
 
       <!-- 備考 -->
       <div class="form-group">
         <label class="form-label">備考（任意）</label>
-        <textarea id="rsvpNote" placeholder="メモがあれば">${escapeHtml(note)}</textarea>
+        <textarea id="rsvpNote" rows="2" placeholder="メモがあれば">${escapeHtml(note)}</textarea>
       </div>
 
       <button class="btn btn-primary" id="rsvpSubmitBtn2" onclick="rsvpSubmit()">回答を送信</button>
@@ -3479,21 +3682,16 @@ function generateLineTemplateAssign(eventId) {
 
   const dateStr = formatEventDate(e.date);
   const rsvp = e.rsvp || {};
-  const attending = Object.values(rsvp).filter(r => r.attending === true).length;
-  const notAttending = Object.values(rsvp).filter(r => r.attending === false).length;
-  const maybe = Object.values(rsvp).filter(r => r.attending === 'maybe').length;
-  const totalMembers = Object.entries(membersData).filter(([,m]) => m.active !== false).length;
-  const unanswered = totalMembers - attending - notAttending - maybe;
+  const maxCars = e.max_cars || 0;
 
-  let text = `⚽ ${dateStr} ${e.title || ''}\n`;
-  text += `📍 ${e.location || ''} ${e.meet_time ? e.meet_time + '集合' : ''}\n`;
-  if (e.max_cars > 0) text += `🅿️ 会場駐車場: ${e.max_cars}台まで\n`;
-  text += '\n【配車表】\n\n';
+  let text = `お疲れ様です。\n${dateStr} ${e.title || ''}の配車案を作成しました。\nご確認をお願いいたします🙇\n`;
+  if (e.meet_time) text += `${e.meet_time}集合でお願いします。\n`;
+  text += `何かありましたら、私までご連絡ください。\n\n`;
 
   if (!a && !e.assignments) return text + '(配車未確定)';
 
   // Use currentAssignment or reconstruct from stored assignments
-  const driversToRender = a ? a.drivers : [];
+  const driversToRender = a ? [...a.drivers] : [];
   if (!a && e.assignments?.drivers) {
     Object.entries(e.assignments.drivers).forEach(([did, d]) => {
       const mem = membersData[did];
@@ -3505,38 +3703,72 @@ function generateLineTemplateAssign(eventId) {
     });
   }
 
-  // Separate parking vs no-parking drivers
-  driversToRender.forEach(d => {
-    const zone = d.zone_id && zonesData[d.zone_id] ? zonesData[d.zone_id] : null;
-    text += `🚗 ${d.name}家${zone ? ' (' + zone.name + ')' : ''}\n`;
+  const NUM_EMOJIS = ['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
 
-    const allPassengers = [];
-    const dRsvp = rsvp[d.id];
-    const dFamily = dRsvp?.family_count || 1;
-    allPassengers.push(d.name + (dFamily > 1 ? `(${dFamily}人)` : ''));
-
+  // Build passenger text for a driver
+  function driverLine(d) {
+    const passengers = [];
     d.passengers.forEach(p => {
-      let pLabel = p.name;
-      const fc = p.family_count || 1;
-      if (fc > 1) pLabel += `(${fc}人)`;
-      allPassengers.push(pLabel);
+      let label = p.name;
+      const r = rsvp[p.id];
+      if (r?.preschool_count > 0) label += `　※内未就学児${r.preschool_count}名`;
+      passengers.push(label);
     });
-    text += ` → ${allPassengers.join('、')}\n`;
+    return passengers.length > 0 ? `同乗者：${passengers.join('、')}` : '同乗者：なし';
+  }
 
-    if (d.assigned_equipment && d.assigned_equipment.length > 0) {
-      const eqNames = d.assigned_equipment.map(eid => equipmentTypesData[eid]?.name || eid);
-      text += ` 📦 ${eqNames.join('、')}\n`;
-    }
+  // Separate venue parking vs no-parking drivers
+  let venueParkingDrivers = driversToRender;
+  let noParkingDrivers = [];
+  if (maxCars > 0 && driversToRender.length > maxCars) {
+    venueParkingDrivers = driversToRender.slice(0, maxCars);
+    noParkingDrivers = driversToRender.slice(maxCars);
+  }
+
+  // 【会場駐車場利用】
+  if (venueParkingDrivers.length > 0) {
+    text += `【会場駐車場利用】\n`;
+    venueParkingDrivers.forEach((d, i) => {
+      const emoji = NUM_EMOJIS[i] || `(${i+1})`;
+      text += `${emoji} ${d.name}号　${driverLine(d)}\n`;
+    });
     text += '\n';
-  });
+  }
 
+  // 【駐車場利用なし】
+  if (noParkingDrivers.length > 0) {
+    text += `【駐車場利用なし】\n`;
+    noParkingDrivers.forEach(d => {
+      text += `・${d.name}号　${driverLine(d)}\n`;
+    });
+    text += '\n';
+  }
+
+  // 【備品】
+  const allEquip = [];
+  driversToRender.forEach(d => {
+    if (d.assigned_equipment && d.assigned_equipment.length > 0) {
+      d.assigned_equipment.forEach(eid => {
+        const eqName = equipmentTypesData[eid]?.name || eid;
+        allEquip.push(`${eqName} → ${d.name}家`);
+      });
+    }
+  });
+  if (allEquip.length > 0) {
+    text += `【備品】\n`;
+    allEquip.forEach(eq => { text += `・${eq}\n`; });
+    text += '\n';
+  }
+
+  // 現地集合
   const directsList = a ? a.directs : Object.keys(e.assignments?.direct || {}).map(did => ({
     id: did, name: membersData[did]?.name || did
   }));
   if (directsList.length > 0) {
-    text += `🏃 現地集合: ${directsList.map(d => d.name + (rsvp[d.id]?.parent_coming ? '+保護者' : '')).join('、')}\n\n`;
+    text += `【現地集合】${directsList.map(d => d.name).join('、')}\n\n`;
   }
 
+  // 未割り当て
   const unassignedList = a ? a.unassigned : Object.keys(e.assignments?.unassigned || {}).map(rid => ({
     id: rid, name: membersData[rid]?.name || rid
   }));
@@ -3544,10 +3776,12 @@ function generateLineTemplateAssign(eventId) {
     text += `⚠ 未割り当て: ${unassignedList.map(r => r.name).join('、')}\n\n`;
   }
 
-  let statusParts = [`参加${attending}人`, `不参加${notAttending}人`];
-  if (maybe > 0) statusParts.push(`検討中${maybe}人`);
-  if (unanswered > 0) statusParts.push(`未回答${unanswered}人`);
-  text += statusParts.join(' / ');
+  // 注意事項
+  text += `※割り当て車両に乗らない場合は、ご連絡ください。\n`;
+  text += `※会場駐車場利用の同乗者の方も、各家庭でご相談のうえ、ご都合に合わせて各自で車を出し、周辺パーキングをご利用いただいても大丈夫です。\n`;
+  if (maxCars > 0) {
+    text += `※会場駐車場を利用する方は、駐車整理券を印刷のうえ、当日ご提示ください。印刷が難しい方は、ご連絡ください。`;
+  }
   return text;
 }
 
@@ -3555,17 +3789,16 @@ function generateLineTemplateMeetup(eventId) {
   const e = eventsData[eventId];
   if (!e) return '';
   const dateStr = formatEventDate(e.date);
-  const mem = selectedMemberId ? membersData[selectedMemberId] : null;
-  const driverName = mem ? mem.name : '○○';
-  let text = `【集合場所・時間のご連絡】\n\n`;
-  text += `⚽ ${dateStr} ${e.title || ''}\n\n`;
-  text += `🚗 ${driverName}です。同乗の皆さんへ\n\n`;
-  text += `📍 集合場所: ＿＿＿＿＿\n`;
-  text += `🕗 集合時間: ＿＿:＿＿\n`;
-  text += `🕗 出発時間: ＿＿:＿＿\n\n`;
-  text += `※遅れそうな場合は早めにご連絡ください。\n`;
-  text += `※帰りの予定: ＿＿時頃\n\n`;
-  text += `よろしくお願いします！`;
+  let text = `お疲れさまです。\n`;
+  text += `【${e.title || '○○大会'}／${dateStr}】についてご連絡です。\n\n`;
+  text += `当日は○時ごろにお迎え予定です。\nよろしくお願いします。\n\n`;
+  text += `--- または ---\n\n`;
+  text += `当日は、○時ごろにお迎えで大丈夫でしょうか。\nよろしくお願いします。\n\n`;
+  text += `--- または ---\n\n`;
+  text += `当日は、どのようにしましょうか。\n`;
+  text += `ご自宅まで伺うこともできますし、\n`;
+  text += `ローソン・小学校・私の自宅まで来ていただく形でも大丈夫です。\n`;
+  text += `ご都合の良い方法を教えてください。\nよろしくお願いします。`;
   return text;
 }
 
@@ -3573,37 +3806,24 @@ function generateLineTemplateParking(eventId) {
   const e = eventsData[eventId];
   if (!e) return '';
   const dateStr = formatEventDate(e.date);
-  const mem = selectedMemberId ? membersData[selectedMemberId] : null;
-  const name = mem ? mem.name : '○○';
-  let text = `【周辺パーキング利用の連絡】\n\n`;
-  text += `${name}です。${dateStr}の${e.title || 'イベント'}について\n\n`;
-  text += `会場駐車場に停められなかったので、\n`;
-  text += `周辺のコインパーキングに停めました。\n\n`;
-  text += `🅿️ パーキング名: ＿＿＿＿＿\n`;
-  text += `📍 場所: ＿＿＿＿＿\n`;
-  text += `💰 料金: ＿＿＿円/＿＿分\n\n`;
-  text += `会場まで徒歩＿＿分です。\n`;
-  text += `配車担当の方、ご確認お願いします。`;
+  let text = `お疲れさまです。\n`;
+  text += `【${e.title || '○○大会'}／${dateStr}】ですが、うちも車を出して、周辺パーキングを利用しようと思います。\n`;
+  text += `よろしくお願いします。`;
   return text;
 }
 
 function generateLineTemplateAccident(eventId) {
   const e = eventsData[eventId];
   const dateStr = e ? formatEventDate(e.date) : '本日';
-  let text = `🚨【事故発生連絡】\n\n`;
-  text += `${dateStr}${e ? ' ' + (e.title || '') : ''}\n\n`;
-  text += `■ 発生時間: ＿＿:＿＿\n`;
-  text += `■ 発生場所: ＿＿＿＿＿\n`;
-  text += `■ 状況: ＿＿＿＿＿\n`;
-  text += `■ けが人: □なし □あり → ＿＿＿\n`;
-  text += `■ 警察連絡: □済 □未\n`;
-  text += `■ 救急車: □済 □未 □不要\n`;
-  text += `■ 保険会社連絡: □済 □未\n\n`;
-  text += `■ 同乗者:\n`;
-  text += `  ・＿＿＿\n  ・＿＿＿\n\n`;
-  text += `■ 相手方の情報:\n`;
-  text += `  名前: ＿＿＿\n  連絡先: ＿＿＿\n  車番: ＿＿＿\n\n`;
-  text += `至急ご確認をお願いします。`;
+  let text = `お疲れさまです。\n`;
+  text += `本日、【${e ? (e.title || '○○大会') : '○○大会'}／${dateStr}】の移動中に事故がありましたので、ご連絡いたします。\n\n`;
+  text += `【発生時間】○時○分ごろ\n`;
+  text += `【場所】○○\n`;
+  text += `【状況】○○\n`;
+  text += `【けが人】あり／なし\n`;
+  text += `【現在の状況】○○\n\n`;
+  text += `取り急ぎのご連絡となります。\n`;
+  text += `詳細が分かり次第、改めてご連絡いたします。`;
   return text;
 }
 
@@ -4031,8 +4251,9 @@ const TEAM_INFO_TEMPLATE = {
 };
 
 const INFO_LABELS = {
-  mochimono: { icon: '🎒', label: '持ち物リスト' },
-  schedule: { icon: '🕐', label: '当日の流れ' },
+  mochimono: { icon: '🎒', label: '持ち物' },
+  match_day: { icon: '⚽', label: '試合当日' },
+  schedule: { icon: '🕐', label: '当日までの流れ' },
   uniform: { icon: '👕', label: 'ユニフォーム取扱' },
   taido: { icon: '🚗', label: '帯同・配車の説明' },
   gakunen: { icon: '📚', label: '学年荷物' },
@@ -4046,15 +4267,21 @@ function renderInfoPage() {
   Object.entries(INFO_LABELS).forEach(([key, meta]) => {
     const val = info[key] || '';
     if (!val && key !== 'mochimono' && key !== 'schedule') return;
-    html += `<div class="card">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <span style="font-size:20px">${meta.icon}</span>
-        <span style="font-size:15px;font-weight:700">${meta.label}</span>
+    html += `<div class="card" style="padding:0;overflow:hidden;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:8px;padding:14px 16px;cursor:pointer" onclick="this.parentElement.classList.toggle('info-open');this.querySelector('.info-arrow').classList.toggle('open')">
+        <span style="font-size:18px">${meta.icon}</span>
+        <span style="font-size:15px;font-weight:700;flex:1">${meta.label}</span>
+        <span class="past-toggle-arrow info-arrow" style="font-size:12px;color:var(--text-sub)">▶</span>
       </div>
-      <div style="font-size:14px;color:var(--text-sub);white-space:pre-wrap;line-height:1.8">${escapeHtml(val) || '<span style="color:var(--text-light)">未設定</span>'}</div>
+      <div style="display:none;padding:0 16px 14px;font-size:14px;color:var(--text-sub);white-space:pre-wrap;line-height:1.8">${escapeHtml(val) || '<span style="color:var(--text-light)">未設定</span>'}</div>
     </div>`;
   });
-  c.innerHTML = html || '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">チーム情報はまだ登録されていません</div></div>';
+  c.innerHTML = html || '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">共有情報はまだ登録されていません</div></div>';
+
+  // Accordion toggle
+  c.querySelectorAll('.card').forEach(card => {
+    card.querySelectorAll('div')[1]  // the content div
+  });
 
   // Admin controls
   const adminCtrl = document.getElementById('infoAdminControls');
@@ -4064,6 +4291,7 @@ function renderInfoPage() {
 function openInfoEditor() {
   const info = Object.keys(teamInfoData).length > 0 ? teamInfoData : TEAM_INFO_TEMPLATE;
   document.getElementById('infoMochimono').value = info.mochimono || '';
+  document.getElementById('infoMatchDay').value = info.match_day || '';
   document.getElementById('infoSchedule').value = info.schedule || '';
   document.getElementById('infoUniform').value = info.uniform || '';
   document.getElementById('infoTaido').value = info.taido || '';
@@ -4075,6 +4303,7 @@ function openInfoEditor() {
 async function saveTeamInfo() {
   const data = {
     mochimono: document.getElementById('infoMochimono').value.trim(),
+    match_day: document.getElementById('infoMatchDay').value.trim(),
     schedule: document.getElementById('infoSchedule').value.trim(),
     uniform: document.getElementById('infoUniform').value.trim(),
     taido: document.getElementById('infoTaido').value.trim(),
