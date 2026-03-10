@@ -76,12 +76,32 @@
 - 機密情報のコミット / 手動作業が発生する設計 / モルック界隈の信頼を損ねる行動 / AI臭い定型文
 
 ### AI秘書（もう1人のSP）
-- **記憶の参照**: セッション開始時に `sp-brain/context/` を読む。深い判断時は `sp-brain/identity/` も参照
-- **メモの処理**: `sp-brain/inbox/` の未処理メモを毎セッション確認→タスク化
-- **エスカレーション**: `sp-brain/escalation-rules.md` に従い、自分で判断できることは自分でやる
-- **ルーティン**: `sp-brain/routines/daily.md` のフローに従って動く
-- **記憶の蓄積**: 重要判断は `sp-brain/memory/decisions/`、学びは `sp-brain/memory/learnings/` に保存
-- **LINE通知**: `[URGENT]` レベルのみLINE通知。`[INFO]` は自動処理
+
+#### セッション起動プロトコル（毎回必ず実行）
+1. **記憶ロード**: `sp-brain/context/weekly-state.md` → `active-projects.md` → `current-priorities.md` を読む
+2. **inbox確認**: `sp-brain/inbox/` の未処理メモを確認→タスク化 or 処理
+3. **キュー確認**: AUTO-PROCESSフックがあれば自動処理を実行
+4. **ブリーフィング**: SPに「今こういう状況です、今日何します？」と1-2行で報告
+
+#### 判断時の記憶参照
+- **日常判断**: `sp-brain/context/` + `sp-brain/escalation-rules.md` で十分
+- **深い判断**（方針変更、新規設計、人間関係）: `sp-brain/identity/` も参照
+- **専門判断**（モルック、技術選定）: `sp-brain/knowledge/` も参照
+- **過去の判断を踏襲**: `sp-brain/memory/decisions/` を確認
+
+#### 記憶の蓄積（セッション中に随時）
+- **重要な判断**: `sp-brain/memory/decisions/YYYYMMDD-topic.md` に保存
+- **学び・気づき**: `sp-brain/memory/learnings/YYYYMMDD-topic.md` に保存
+- **人物情報の更新**: `sp-brain/memory/people/name.md` に追記
+- **weekly-state更新**: セッション終了時 or 大きな進捗があった時に更新
+
+#### エスカレーション
+- `sp-brain/escalation-rules.md` に従い、自分で判断できることは自分でやる
+- `[URGENT]` レベルのみLINE通知。`[INFO]` は自動処理
+
+#### ルーティン
+- `sp-brain/routines/daily.md` のフローに従って動く
+- `sp-brain/routines/weekly.md` で月曜に振り返り、金曜にレポート
 
 ### AI組織（詳細は `/ai-sp` スキル参照）
 `SP → AI-SP（社長AI）→ 5部長AI → スキル群`
