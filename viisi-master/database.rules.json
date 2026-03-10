@@ -61,6 +61,21 @@
       ".read": true,
       ".write": true,
       ".indexOn": ["timestamp", "userId"]
+    },
+    "contribution-queue": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": ["status", "timestamp"]
+    },
+    "claude-tips-queue": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": ["status", "timestamp"]
+    },
+    "buildhub-queue": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": ["status", "timestamp"]
     }
   }
 }
