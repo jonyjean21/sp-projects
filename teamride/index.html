@@ -765,12 +765,6 @@ textarea{resize:vertical;min-height:60px}
     <div class="modal-title" id="tournamentModalTitle">大会記録</div>
     <input type="hidden" id="tournamentEditId">
     <input type="hidden" id="tournamentEventId">
-    <div class="form-group" id="tournamentEventLinkGroup">
-      <label class="form-label">イベント連携</label>
-      <select id="tournamentEventSelect" onchange="onTournamentEventSelect()">
-        <option value="">連携なし</option>
-      </select>
-    </div>
     <div class="form-group">
       <label class="form-label">大会名</label>
       <input type="text" id="tournamentName" placeholder="例: 春季カップ">
@@ -1986,7 +1980,14 @@ function showEventDetail(id) {
         </div>
       </div>`;
     } else {
-      html += `<button class="btn btn-outline btn-small" onclick="openTournamentModal(null,'${id}')" style="margin-top:8px">🏆 大会記録を作成</button>`;
+      // 試合イベントなのにリンクされた大会記録がない（手動作成分）→ 作成ボタン
+      html += `<div class="card" style="border-left:4px solid #ccc;cursor:pointer;opacity:0.7" onclick="createTournamentForEvent('${id}')">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:18px">🏆</span>
+          <div style="flex:1;font-size:13px;color:var(--text-sub)">大会記録を入力する</div>
+          <div style="font-size:12px;color:var(--text-light)">＋</div>
+        </div>
+      </div>`;
     }
   }
 
@@ -2571,11 +2572,25 @@ async function saveEvent() {
   try {
     if (editId) {
       await db.ref(ROOT + '/events/' + editId).update(data);
+      // 試合イベント更新時、リンク済み大会記録も同期
+      if (eventTypeSelected === 'match') {
+        const linked = Object.entries(tournamentsData).find(([, t]) => t.event_id === editId);
+        if (linked) {
+          await db.ref(ROOT + '/tournaments/' + linked[0]).update({ name: title, date, location });
+        }
+      }
       showToast('イベントを更新しました');
     } else {
       data.status = 'open';
       data.created_at = new Date().toISOString();
-      await db.ref(ROOT + '/events').push(data);
+      const newRef = await db.ref(ROOT + '/events').push(data);
+      // 試合イベント → 大会記録を自動作成
+      if (eventTypeSelected === 'match') {
+        await db.ref(ROOT + '/tournaments').push({
+          name: title, date, location, type: 'official',
+          event_id: newRef.key, created_at: new Date().toISOString()
+        });
+      }
       showToast('イベントを作成しました');
     }
 
@@ -4129,23 +4144,10 @@ function renderTournamentCard(id, t) {
   </div>`;
 }
 
-function openTournamentModal(id, prefillEventId) {
+function openTournamentModal(id) {
   document.getElementById('tournamentEditId').value = id || '';
   document.getElementById('tournamentModalTitle').textContent = id ? '大会記録を編集' : '大会を記録';
   document.getElementById('tournamentDeleteBtn').classList.toggle('hidden', !id);
-
-  // Event selector（試合イベントのみ）
-  const evSel = document.getElementById('tournamentEventSelect');
-  const matchEvents = Object.entries(eventsData)
-    .filter(([, e]) => e.type === 'match')
-    .sort((a, b) => (b[1].date || '').localeCompare(a[1].date || ''));
-  // 既にリンク済みのイベントIDを除外（自分自身のリンクは除く）
-  const linkedEventIds = new Set(Object.entries(tournamentsData)
-    .filter(([tid, t]) => t.event_id && tid !== id)
-    .map(([, t]) => t.event_id));
-  evSel.innerHTML = '<option value="">連携なし</option>' +
-    matchEvents.filter(([eid]) => !linkedEventIds.has(eid))
-      .map(([eid, e]) => `<option value="${eid}">${formatEventDate(e.date)} ${escapeHtml(e.title)}</option>`).join('');
 
   // MVP select
   const mvpSel = document.getElementById('tournamentMvp');
@@ -4156,7 +4158,6 @@ function openTournamentModal(id, prefillEventId) {
   if (id && tournamentsData[id]) {
     const t = tournamentsData[id];
     document.getElementById('tournamentEventId').value = t.event_id || '';
-    evSel.value = t.event_id || '';
     document.getElementById('tournamentName').value = t.name || '';
     document.getElementById('tournamentDate').value = t.date || '';
     document.getElementById('tournamentLocation').value = t.location || '';
@@ -4165,7 +4166,6 @@ function openTournamentModal(id, prefillEventId) {
     document.getElementById('tournamentTotalTeams').value = t.total_teams || '';
     document.getElementById('tournamentMvp').value = t.mvp || '';
     document.getElementById('tournamentMemo').value = t.memo || '';
-    // Matches
     const mc = document.getElementById('tournamentMatchesContainer');
     mc.innerHTML = '';
     if (t.scores && t.scores.length) {
@@ -4182,32 +4182,21 @@ function openTournamentModal(id, prefillEventId) {
     document.getElementById('tournamentMvp').value = '';
     document.getElementById('tournamentMemo').value = '';
     document.getElementById('tournamentMatchesContainer').innerHTML = '';
-    // イベントから大会記録作成（プリフィル）
-    if (prefillEventId && eventsData[prefillEventId]) {
-      const ev = eventsData[prefillEventId];
-      evSel.value = prefillEventId;
-      document.getElementById('tournamentEventId').value = prefillEventId;
-      document.getElementById('tournamentName').value = ev.title || '';
-      document.getElementById('tournamentDate').value = ev.date || '';
-      document.getElementById('tournamentLocation').value = ev.location || '';
-    }
   }
   openModal('tournamentModal');
 }
 
-function onTournamentEventSelect() {
-  const eid = document.getElementById('tournamentEventSelect').value;
-  document.getElementById('tournamentEventId').value = eid;
-  if (eid && eventsData[eid]) {
-    const ev = eventsData[eid];
-    // 空の場合のみ自動入力
-    if (!document.getElementById('tournamentName').value) document.getElementById('tournamentName').value = ev.title || '';
-    if (!document.getElementById('tournamentDate').value) document.getElementById('tournamentDate').value = ev.date || '';
-    if (!document.getElementById('tournamentLocation').value) document.getElementById('tournamentLocation').value = ev.location || '';
-  }
-}
-
 function editTournament(id) { openTournamentModal(id); }
+
+async function createTournamentForEvent(eventId) {
+  const ev = eventsData[eventId];
+  if (!ev) return;
+  const newRef = await db.ref(ROOT + '/tournaments').push({
+    name: ev.title, date: ev.date, location: ev.location || '',
+    type: 'official', event_id: eventId, created_at: new Date().toISOString()
+  });
+  openTournamentModal(newRef.key);
+}
 
 function addTournamentMatch(score, opponent, result) {
   const c = document.getElementById('tournamentMatchesContainer');
