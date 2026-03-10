@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>まなびモン2 — 小学生べんきょうアプリ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ======= SCREEN: スターター選択 ======= -->
+<div id="screen-starter" class="screen active">
+  <div class="starter-wrap">
+    <div class="starter-title">
+      <div class="game-logo">🐲 まなびモン2</div>
+      <p class="starter-sub">パートナーを えらんでね！</p>
+    </div>
+    <div class="starter-grid" id="starter-grid"></div>
+    <button class="btn-starter-go" id="btn-starter-go" style="display:none">けっていする！</button>
+  </div>
+</div>
+
+<!-- ======= SCREEN: ホーム ======= -->
+<div id="screen-home" class="screen">
+  <header class="top-bar">
+    <div class="stat-chip">❓ <span id="stat-total">0</span>もん</div>
+    <div class="app-logo">まなびモン2</div>
+  </header>
+
+  <section class="partner-sec">
+    <div class="partner-svg-wrap" id="home-partner-svg"></div>
+    <div class="partner-info">
+      <span class="partner-name" id="home-name">---</span>
+      <span class="lv-badge">Lv.<span id="home-lv">1</span></span>
+    </div>
+    <div class="xp-track">
+      <div class="xp-fill" id="home-xp-fill" style="width:0%"></div>
+    </div>
+    <div class="xp-label"><span id="home-xp">0</span> / <span id="home-xp-max">15</span> XP</div>
+  </section>
+
+  <section class="subjects-sec">
+    <h2 class="sec-h">📚 べんきょうする</h2>
+    <div class="subjects-grid" id="subjects-grid"></div>
+  </section>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-nav="home">🏠<span class="nl">ホーム</span></button>
+    <button class="nav-btn" data-nav="monster">👾<span class="nl">モンスター</span></button>
+    <button class="nav-btn" data-nav="zukan">📖<span class="nl">ずかん</span></button>
+    <button class="nav-btn" data-nav="settings">⚙️<span class="nl">せってい</span></button>
+  </nav>
+</div>
+
+<!-- ======= SCREEN: クイズ ======= -->
+<div id="screen-quiz" class="screen">
+  <header class="quiz-header">
+    <button class="back-btn" id="quiz-back">✕</button>
+    <div class="quiz-subject-name" id="quiz-subject-name"></div>
+    <div class="quiz-progress-label"><span id="quiz-cur">1</span>/<span id="quiz-total">10</span></div>
+  </header>
+  <div class="quiz-progress-bar-wrap">
+    <div class="quiz-progress-bar" id="quiz-progress-bar" style="width:0%"></div>
+  </div>
+  <div class="quiz-body" id="quiz-body">
+    <div class="question-card">
+      <div class="question-text" id="question-text"></div>
+    </div>
+    <div class="choices-grid" id="choices-grid"></div>
+  </div>
+</div>
+
+<!-- ======= SCREEN: リザルト ======= -->
+<div id="screen-result" class="screen">
+  <div class="result-wrap">
+    <h2 class="result-title">📊 けっか</h2>
+    <div class="result-score-wrap">
+      <div class="result-score" id="result-score">0/10</div>
+      <div class="result-rank" id="result-rank">B</div>
+    </div>
+    <div class="result-xp" id="result-xp">+0 XP</div>
+    <div class="result-partner-wrap">
+      <div class="result-partner-svg" id="result-partner-svg"></div>
+      <div class="result-partner-msg" id="result-partner-msg"></div>
+    </div>
+    <div class="result-unlock" id="result-unlock" style="display:none">
+      <div class="unlock-label">🎉 あたらしいモンスターゲット！</div>
+      <div class="unlock-monster-svg" id="result-unlock-svg"></div>
+      <div class="unlock-monster-name" id="result-unlock-name"></div>
+    </div>
+    <button class="btn-primary btn-result-home" id="btn-result-home">🏠 ホームへもどる</button>
+  </div>
+</div>
+
+<!-- ======= SCREEN: モンスタールーム ======= -->
+<div id="screen-monster" class="screen">
+  <header class="sub-header">
+    <h2>👾 モンスタールーム</h2>
+  </header>
+  <section class="partner-room-sec">
+    <h3 class="room-sec-title">🐣 パートナー</h3>
+    <div class="partner-room-card" id="partner-room-card"></div>
+  </section>
+  <section class="collection-room-sec">
+    <h3 class="room-sec-title">✨ コレクション（<span id="coll-count">0</span>/21）</h3>
+    <div class="collection-grid" id="collection-grid"></div>
+  </section>
+  <nav class="bottom-nav">
+    <button class="nav-btn" data-nav="home">🏠<span class="nl">ホーム</span></button>
+    <button class="nav-btn active" data-nav="monster">👾<span class="nl">モンスター</span></button>
+    <button class="nav-btn" data-nav="zukan">📖<span class="nl">ずかん</span></button>
+    <button class="nav-btn" data-nav="settings">⚙️<span class="nl">せってい</span></button>
+  </nav>
+</div>
+
+<!-- ======= SCREEN: ずかん ======= -->
+<div id="screen-zukan" class="screen">
+  <header class="sub-header">
+    <h2>📖 ずかん</h2>
+    <span class="zukan-count"><span id="zukan-count">0</span>/21</span>
+  </header>
+  <div class="zukan-tabs" id="zukan-tabs">
+    <button class="zukan-tab active" data-tab="all">すべて</button>
+    <button class="zukan-tab" data-tab="kuku">九九</button>
+    <button class="zukan-tab" data-tab="tashihiki">たしひき</button>
+    <button class="zukan-tab" data-tab="kanji">かんじ</button>
+    <button class="zukan-tab" data-tab="tani">たんい</button>
+    <button class="zukan-tab" data-tab="sansu">さんすう</button>
+    <button class="zukan-tab" data-tab="kokugo">こくご</button>
+    <button class="zukan-tab" data-tab="eigo">えいご</button>
+  </div>
+  <div class="zukan-grid" id="zukan-grid"></div>
+  <nav class="bottom-nav">
+    <button class="nav-btn" data-nav="home">🏠<span class="nl">ホーム</span></button>
+    <button class="nav-btn" data-nav="monster">👾<span class="nl">モンスター</span></button>
+    <button class="nav-btn active" data-nav="zukan">📖<span class="nl">ずかん</span></button>
+    <button class="nav-btn" data-nav="settings">⚙️<span class="nl">せってい</span></button>
+  </nav>
+</div>
+
+<!-- ======= SCREEN: せってい ======= -->
+<div id="screen-settings" class="screen">
+  <header class="sub-header">
+    <h2>⚙️ せってい</h2>
+  </header>
+  <div class="settings-body">
+    <div class="settings-section">
+      <h3>パートナー</h3>
+      <button class="btn-danger" id="btn-reset-partner">パートナーをかえる（リセット）</button>
+    </div>
+    <div class="settings-section">
+      <h3>データ</h3>
+      <button class="btn-danger" id="btn-reset-all">ぜんぶリセット</button>
+    </div>
+    <div class="settings-section">
+      <h3>バージョン</h3>
+      <p class="settings-info">まなびモン2 v1.0<br>2ねんせい むけ べんきょうアプリ</p>
+    </div>
+  </div>
+  <nav class="bottom-nav">
+    <button class="nav-btn" data-nav="home">🏠<span class="nl">ホーム</span></button>
+    <button class="nav-btn" data-nav="monster">👾<span class="nl">モンスター</span></button>
+    <button class="nav-btn" data-nav="zukan">📖<span class="nl">ずかん</span></button>
+    <button class="nav-btn active" data-nav="settings">⚙️<span class="nl">せってい</span></button>
+  </nav>
+</div>
+
+<!-- ======= OVERLAY: 進化演出 ======= -->
+<div id="evo-overlay" class="overlay hidden">
+  <div class="evo-content">
+    <div class="evo-particles" id="evo-particles"></div>
+    <div class="evo-title">✨ しんか！ ✨</div>
+    <div class="evo-stage">
+      <div class="evo-before" id="evo-before"></div>
+      <div class="evo-arrow">▶▶</div>
+      <div class="evo-after" id="evo-after"></div>
+    </div>
+    <div class="evo-name" id="evo-name">ホノリュウ</div>
+    <button class="btn-primary evo-ok" id="evo-ok">やった！</button>
+  </div>
+</div>
+
+<!-- ======= OVERLAY: コレクション解放 ======= -->
+<div id="unlock-overlay" class="overlay hidden">
+  <div class="unlock-content">
+    <div class="unlock-title">🎉 ゲット！</div>
+    <div class="unlock-svg-wrap" id="unlock-svg-wrap"></div>
+    <div class="unlock-name" id="unlock-name"></div>
+    <div class="unlock-rank" id="unlock-rank-badge"></div>
+    <button class="btn-primary unlock-ok" id="unlock-ok">げっと！</button>
+  </div>
+</div>
+
+<!-- ======= OVERLAY: 答え合わせ ======= -->
+<div id="answer-overlay" class="overlay-inline hidden">
+  <div class="answer-content">
+    <div class="answer-icon" id="answer-icon">⭕</div>
+    <div class="answer-text" id="answer-text">せいかい！</div>
+    <div class="answer-correct" id="answer-correct"></div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
