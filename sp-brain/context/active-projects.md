@@ -1,6 +1,6 @@
 # 進行中プロジェクト一覧
 
-> 最終更新: 2026-03-09
+> 最終更新: 2026-03-10
 
 ## MOLKKY HUB（最優先）
 - 状態: 運用中
@@ -20,8 +20,10 @@
 - 目標: 月¥100,000
 
 ## AIクローン（もう1人のSP）
-- 状態: Phase 1着手
-- やること: 記憶層 → LINE Bot → 自律稼働
+- 状態: Phase 1完了 → Phase 2準備中
+- 完了: 記憶層構築、蒸留システム、自律稼働エージェント（Phase 3）
+- 次: Phase 2（LINE Bot連携）— LINE Developers登録待ち
+- ブロッカー: GitHub Secrets設定（ANTHROPIC_API_KEY, FIREBASE_URL）未完了
 - 技術: sp-brain/(MD) + Vercel API + Firebase + LINE Messaging API
 
 ## GitHub Pages アプリ群
