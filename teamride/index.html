@@ -764,6 +764,13 @@ textarea{resize:vertical;min-height:60px}
     <div class="modal-handle"></div>
     <div class="modal-title" id="tournamentModalTitle">大会記録</div>
     <input type="hidden" id="tournamentEditId">
+    <input type="hidden" id="tournamentEventId">
+    <div class="form-group" id="tournamentEventLinkGroup">
+      <label class="form-label">イベント連携</label>
+      <select id="tournamentEventSelect" onchange="onTournamentEventSelect()">
+        <option value="">連携なし</option>
+      </select>
+    </div>
     <div class="form-group">
       <label class="form-label">大会名</label>
       <input type="text" id="tournamentName" placeholder="例: 春季カップ">
@@ -1228,7 +1235,6 @@ function renderMembers() {
     const car = m.car_type && CAR_TYPES[m.car_type] ? CAR_TYPES[m.car_type].label : '';
     const numLabel = m.number != null ? '#' + m.number : '';
     const icons = [];
-    if (car) icons.push('🚗');
     if (m.can_carry_large) icons.push('🚛');
     if (m.childseat_count > 0) icons.push('🪑' + m.childseat_count);
     return `<div class="list-item" onclick="showMemberDetail('${id}')">
@@ -1961,6 +1967,29 @@ function showEventDetail(id) {
       html += `<button class="btn btn-secondary" onclick="showDriverSelection('${id}')" style="margin-top:12px">🚗 配車を決める</button>`;
     }
   }
+
+  // 試合イベント → 大会記録リンク
+  if (isMatch) {
+    const linkedTournament = Object.entries(tournamentsData).find(([, t]) => t.event_id === id);
+    if (linkedTournament) {
+      const [tid, t] = linkedTournament;
+      const scores = t.scores || [];
+      const wld = `${scores.filter(s=>s.result==='win').length}勝${scores.filter(s=>s.result==='lose').length}敗`;
+      html += `<div class="card" style="border-left:4px solid #1976d2;cursor:pointer" onclick="editTournament('${tid}')">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:18px">🏆</span>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700">大会記録</div>
+            <div style="font-size:12px;color:var(--text-sub)">${t.team_rank ? t.team_rank+'位/'+( t.total_teams||'?')+'チーム' : '順位未入力'} ${scores.length > 0 ? wld : ''}</div>
+          </div>
+          <div style="font-size:12px;color:var(--text-light)">✏️</div>
+        </div>
+      </div>`;
+    } else {
+      html += `<button class="btn btn-outline btn-small" onclick="openTournamentModal(null,'${id}')" style="margin-top:8px">🏆 大会記録を作成</button>`;
+    }
+  }
+
   html += '</div>';
 
   // 回答一覧
@@ -4059,6 +4088,16 @@ function renderTournamentCard(id, t) {
   const losses = scores.filter(s => s.result === 'lose').length;
   const draws = scores.filter(s => s.result === 'draw').length;
 
+  // リンク済みイベントの参加者情報
+  let eventInfo = '';
+  if (t.event_id && eventsData[t.event_id]) {
+    const ev = eventsData[t.event_id];
+    const rsvp = ev.rsvp || {};
+    const attending = Object.entries(rsvp).filter(([, r]) => r.attending === true).length;
+    const driverCount = Object.entries(rsvp).filter(([, r]) => r.attending === true && r.transport === 'drive').length;
+    eventInfo = `<div style="font-size:11px;color:var(--accent);margin-top:4px">⚽ ${attending}人参加 🚗${driverCount}台</div>`;
+  }
+
   return `<div class="tournament-card" onclick="editTournament('${id}')">
     <div style="display:flex;align-items:flex-start;gap:12px">
       <div style="text-align:center;min-width:50px">
@@ -4083,16 +4122,30 @@ function renderTournamentCard(id, t) {
           }).join('')}
           <span style="font-size:11px;color:var(--text-sub)">${wins}勝${losses}敗${draws > 0 ? draws+'分' : ''}</span>
         </div>` : ''}
+        ${eventInfo}
       </div>
       <div style="color:var(--text-light);font-size:14px">✏️</div>
     </div>
   </div>`;
 }
 
-function openTournamentModal(id) {
+function openTournamentModal(id, prefillEventId) {
   document.getElementById('tournamentEditId').value = id || '';
   document.getElementById('tournamentModalTitle').textContent = id ? '大会記録を編集' : '大会を記録';
   document.getElementById('tournamentDeleteBtn').classList.toggle('hidden', !id);
+
+  // Event selector（試合イベントのみ）
+  const evSel = document.getElementById('tournamentEventSelect');
+  const matchEvents = Object.entries(eventsData)
+    .filter(([, e]) => e.type === 'match')
+    .sort((a, b) => (b[1].date || '').localeCompare(a[1].date || ''));
+  // 既にリンク済みのイベントIDを除外（自分自身のリンクは除く）
+  const linkedEventIds = new Set(Object.entries(tournamentsData)
+    .filter(([tid, t]) => t.event_id && tid !== id)
+    .map(([, t]) => t.event_id));
+  evSel.innerHTML = '<option value="">連携なし</option>' +
+    matchEvents.filter(([eid]) => !linkedEventIds.has(eid))
+      .map(([eid, e]) => `<option value="${eid}">${formatEventDate(e.date)} ${escapeHtml(e.title)}</option>`).join('');
 
   // MVP select
   const mvpSel = document.getElementById('tournamentMvp');
@@ -4102,6 +4155,8 @@ function openTournamentModal(id) {
 
   if (id && tournamentsData[id]) {
     const t = tournamentsData[id];
+    document.getElementById('tournamentEventId').value = t.event_id || '';
+    evSel.value = t.event_id || '';
     document.getElementById('tournamentName').value = t.name || '';
     document.getElementById('tournamentDate').value = t.date || '';
     document.getElementById('tournamentLocation').value = t.location || '';
@@ -4117,6 +4172,7 @@ function openTournamentModal(id) {
       t.scores.forEach(s => addTournamentMatch(s.score, s.opponent, s.result));
     }
   } else {
+    document.getElementById('tournamentEventId').value = '';
     document.getElementById('tournamentName').value = '';
     document.getElementById('tournamentDate').value = '';
     document.getElementById('tournamentLocation').value = '';
@@ -4126,8 +4182,29 @@ function openTournamentModal(id) {
     document.getElementById('tournamentMvp').value = '';
     document.getElementById('tournamentMemo').value = '';
     document.getElementById('tournamentMatchesContainer').innerHTML = '';
+    // イベントから大会記録作成（プリフィル）
+    if (prefillEventId && eventsData[prefillEventId]) {
+      const ev = eventsData[prefillEventId];
+      evSel.value = prefillEventId;
+      document.getElementById('tournamentEventId').value = prefillEventId;
+      document.getElementById('tournamentName').value = ev.title || '';
+      document.getElementById('tournamentDate').value = ev.date || '';
+      document.getElementById('tournamentLocation').value = ev.location || '';
+    }
   }
   openModal('tournamentModal');
+}
+
+function onTournamentEventSelect() {
+  const eid = document.getElementById('tournamentEventSelect').value;
+  document.getElementById('tournamentEventId').value = eid;
+  if (eid && eventsData[eid]) {
+    const ev = eventsData[eid];
+    // 空の場合のみ自動入力
+    if (!document.getElementById('tournamentName').value) document.getElementById('tournamentName').value = ev.title || '';
+    if (!document.getElementById('tournamentDate').value) document.getElementById('tournamentDate').value = ev.date || '';
+    if (!document.getElementById('tournamentLocation').value) document.getElementById('tournamentLocation').value = ev.location || '';
+  }
 }
 
 function editTournament(id) { openTournamentModal(id); }
@@ -4160,6 +4237,7 @@ async function saveTournament() {
     if (opponent || score) scores.push({ result, score, opponent });
   });
 
+  const eventId = document.getElementById('tournamentEventId').value || null;
   const data = {
     name,
     date: document.getElementById('tournamentDate').value,
@@ -4169,7 +4247,8 @@ async function saveTournament() {
     total_teams: parseInt(document.getElementById('tournamentTotalTeams').value) || null,
     mvp: document.getElementById('tournamentMvp').value,
     memo: document.getElementById('tournamentMemo').value.trim(),
-    scores
+    scores,
+    event_id: eventId
   };
 
   const editId = document.getElementById('tournamentEditId').value;
@@ -4379,10 +4458,15 @@ function openInfoEditor() {
   const customContainer = document.getElementById('infoCustomSections');
   if (customContainer) {
     let customHtml = '';
-    Object.entries(infoSectionsData).sort((a,b) => (a[1].order||0) - (b[1].order||0)).forEach(([sid, sec]) => {
+    const sortedSections = Object.entries(infoSectionsData).sort((a,b) => (a[1].order||0) - (b[1].order||0));
+    sortedSections.forEach(([sid, sec], idx) => {
       customHtml += `<div class="form-group">
-        <label class="form-label">${escapeHtml(sec.icon || '📝')} ${escapeHtml(sec.name)}
-          <button onclick="deleteInfoSection('${sid}')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:12px;margin-left:8px">削除</button>
+        <label class="form-label" style="display:flex;align-items:center;gap:4px">
+          <span>${escapeHtml(sec.icon || '📝')} ${escapeHtml(sec.name)}</span>
+          <span style="flex:1"></span>
+          ${idx > 0 ? `<button onclick="moveInfoSection('${sid}',-1)" style="background:none;border:none;cursor:pointer;font-size:16px;padding:0 4px">⬆</button>` : ''}
+          ${idx < sortedSections.length - 1 ? `<button onclick="moveInfoSection('${sid}',1)" style="background:none;border:none;cursor:pointer;font-size:16px;padding:0 4px">⬇</button>` : ''}
+          <button onclick="deleteInfoSection('${sid}')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:12px;margin-left:4px">削除</button>
         </label>
         <textarea id="infoCustom_${sid}" rows="6" placeholder="${escapeHtml(sec.name)}の内容">${escapeHtml(info['custom_' + sid] || '')}</textarea>
       </div>`;
@@ -4424,6 +4508,22 @@ async function addInfoSection() {
   const order = Object.keys(infoSectionsData).length + 1;
   await db.ref(ROOT + '/info_sections').push({ name: name.trim(), icon: icon.trim() || '📝', order });
   showToast(name.trim() + ' を追加しました');
+  openInfoEditor();
+}
+
+async function moveInfoSection(sid, direction) {
+  const sorted = Object.entries(infoSectionsData).sort((a,b) => (a[1].order||0) - (b[1].order||0));
+  const idx = sorted.findIndex(([id]) => id === sid);
+  if (idx < 0) return;
+  const swapIdx = idx + direction;
+  if (swapIdx < 0 || swapIdx >= sorted.length) return;
+  const [idA] = sorted[idx], [idB] = sorted[swapIdx];
+  const orderA = infoSectionsData[idA].order || 0;
+  const orderB = infoSectionsData[idB].order || 0;
+  const updates = {};
+  updates['/info_sections/' + idA + '/order'] = orderB;
+  updates['/info_sections/' + idB + '/order'] = orderA;
+  await db.ref(ROOT).update(updates);
   openInfoEditor();
 }
 
