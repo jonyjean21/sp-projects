@@ -85,6 +85,10 @@
     "daily-report-log": {
       ".read": true,
       ".write": true
+    },
+    "claude-tips-digest-log": {
+      ".read": true,
+      ".write": true
     }
   }
 }
