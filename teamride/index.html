@@ -1708,9 +1708,11 @@ function adminLogout() {
 function renderHome() {
   autoMarkDoneEvents();
   const c = document.getElementById('homeContent');
-  const open = Object.entries(eventsData)
+  const allOpen = Object.entries(eventsData)
     .filter(([, e]) => e.status === 'open')
     .sort((a, b) => (a[1].date || '').localeCompare(b[1].date || ''));
+  const open = allOpen.filter(([, e]) => !isRsvpPastDeadline(e));
+  const deadlined = allOpen.filter(([, e]) => isRsvpPastDeadline(e));
   const assigned = Object.entries(eventsData)
     .filter(([, e]) => e.status === 'assigned')
     .sort((a, b) => (a[1].date || '').localeCompare(b[1].date || ''));
@@ -1729,13 +1731,19 @@ function renderHome() {
     html += open.map(([id, e]) => renderHomeCard(id, e)).join('');
   }
 
-  // 回答受付終了（配車確定）
+  // 回答締切済み（まだ配車未確定）
+  if (deadlined.length > 0) {
+    html += `<div class="section-title">📝 回答締切済み（${deadlined.length}件）</div>`;
+    html += deadlined.map(([id, e]) => renderHomeCard(id, e)).join('');
+  }
+
+  // 配車確定
   if (assigned.length > 0) {
-    html += `<div class="section-title">✅ 回答受付終了（${assigned.length}件）</div>`;
+    html += `<div class="section-title">✅ 配車確定（${assigned.length}件）</div>`;
     html += assigned.map(([id, e]) => renderHomeCard(id, e)).join('');
   }
 
-  if (open.length === 0 && assigned.length === 0) {
+  if (open.length === 0 && deadlined.length === 0 && assigned.length === 0) {
     html += '<div class="empty"><div class="empty-icon">⚽</div><div class="empty-text">次のイベントはまだありません</div></div>';
   }
 
@@ -2571,7 +2579,7 @@ async function deleteEvent() {
 // ── RSVP Deadline Check ──
 function isRsvpPastDeadline(e) {
   if (!e.rsvp_deadline) return false;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = getTodayJST();
   return today >= e.rsvp_deadline;
 }
 
