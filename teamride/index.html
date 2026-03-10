@@ -419,9 +419,9 @@ textarea{resize:vertical;min-height:60px}
   <!-- Tab: Members -->
   <div class="page" id="pageMembers">
     <div id="membersAdminControls" style="margin:16px 0">
-      <div class="btn-row">
-        <button class="btn btn-primary btn-small" onclick="openMemberModal()">+ メンバー追加</button>
-        <button class="btn btn-outline btn-small" onclick="openZoneManager()">エリア管理</button>
+      <div class="btn-row" style="flex-wrap:nowrap">
+        <button class="btn btn-primary btn-small" onclick="openMemberModal()">+ 追加</button>
+        <button class="btn btn-outline btn-small" onclick="openZoneManager()">校区管理</button>
         <button class="btn btn-outline btn-small" onclick="openEquipmentManager()">機材管理</button>
       </div>
     </div>
@@ -473,7 +473,7 @@ textarea{resize:vertical;min-height:60px}
       <div style="font-size:15px;font-weight:600;color:var(--danger)">管理者ログアウト</div>
     </div>
 
-    <div style="text-align:center;margin-top:24px;font-size:11px;color:var(--text-light)">v3 (2026-03-10)</div>
+    <div style="text-align:center;margin-top:24px;font-size:11px;color:var(--text-light)">v4 (2026-03-10)</div>
   </div>
 </div>
 
@@ -508,6 +508,10 @@ textarea{resize:vertical;min-height:60px}
       <input type="text" id="memberName" placeholder="やまだ たろう">
     </div>
     <div class="form-group">
+      <label class="form-label">選手名（漢字）</label>
+      <input type="text" id="memberNameKanji" placeholder="山田 太郎">
+    </div>
+    <div class="form-group">
       <label class="form-label">背番号</label>
       <input type="number" id="memberNumber" min="0" max="99" placeholder="例: 10" inputmode="numeric" style="width:100px">
     </div>
@@ -524,7 +528,7 @@ textarea{resize:vertical;min-height:60px}
       </select>
     </div>
     <div class="form-group">
-      <label class="form-label">校区エリア</label>
+      <label class="form-label">校区</label>
       <select id="memberZone"><option value="">未設定</option></select>
     </div>
     <div class="form-group">
@@ -569,12 +573,12 @@ textarea{resize:vertical;min-height:60px}
 <div class="modal-overlay" id="zoneModal">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title">エリア管理</div>
+    <div class="modal-title">校区管理</div>
     <div id="zoneList"></div>
     <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px">
       <div class="form-group">
-        <label class="form-label">新しいエリアを追加</label>
-        <input type="text" id="newZoneName" placeholder="エリア名（例: 北エリア）">
+        <label class="form-label">新しい校区を追加</label>
+        <input type="text" id="newZoneName" placeholder="校区名（例: 北校区）">
       </div>
       <div class="form-group">
         <label class="form-label">色</label>
@@ -595,7 +599,10 @@ textarea{resize:vertical;min-height:60px}
     <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px">
       <div class="form-group">
         <label class="form-label">新しい機材を追加</label>
-        <input type="text" id="newEquipName" placeholder="機材名（例: テント）">
+        <div style="display:flex;gap:8px">
+          <input type="text" id="newEquipIcon" placeholder="📦" style="width:60px;text-align:center;font-size:20px">
+          <input type="text" id="newEquipName" placeholder="機材名（例: テント）" style="flex:1">
+        </div>
       </div>
       <button class="btn btn-primary btn-small" onclick="addEquipment()">追加</button>
     </div>
@@ -615,10 +622,10 @@ textarea{resize:vertical;min-height:60px}
     <div class="form-group">
       <label class="form-label">種類</label>
       <div class="event-type-toggle">
-        <div class="event-type-btn selected-practice" id="eventTypePractice" onclick="setEventType('practice')">試合以外</div>
-        <div class="event-type-btn" id="eventTypeMatch" onclick="setEventType('match')">🟠 試合</div>
+        <div class="event-type-btn selected-match" id="eventTypeMatch" onclick="setEventType('match')">🟠 試合</div>
+        <div class="event-type-btn" id="eventTypePractice" onclick="setEventType('practice')">試合以外</div>
       </div>
-      <input type="hidden" id="eventType" value="practice">
+      <input type="hidden" id="eventType" value="match">
     </div>
     <div class="form-group">
       <label class="form-label">大会名 / イベント名</label>
@@ -708,32 +715,34 @@ textarea{resize:vertical;min-height:60px}
     <div class="modal-title">📋 共有情報を編集</div>
     <div class="form-group">
       <label class="form-label">持ち物</label>
-      <textarea id="infoMochimono" rows="4" placeholder="水筒、タオル、着替え..."></textarea>
+      <textarea id="infoMochimono" rows="8" placeholder="水筒、タオル、着替え..."></textarea>
     </div>
     <div class="form-group">
       <label class="form-label">試合当日</label>
-      <textarea id="infoMatchDay" rows="3" placeholder="試合当日の注意事項"></textarea>
+      <textarea id="infoMatchDay" rows="6" placeholder="試合当日の注意事項"></textarea>
     </div>
     <div class="form-group">
       <label class="form-label">当日までの流れ</label>
-      <textarea id="infoSchedule" rows="4" placeholder="8:30 集合&#10;9:00 試合開始..."></textarea>
+      <textarea id="infoSchedule" rows="8" placeholder="8:30 集合&#10;9:00 試合開始..."></textarea>
     </div>
     <div class="form-group">
       <label class="form-label">ユニフォーム取扱</label>
-      <textarea id="infoUniform" rows="3" placeholder="白のユニフォーム着用、予備を持参"></textarea>
+      <textarea id="infoUniform" rows="6" placeholder="白のユニフォーム着用、予備を持参"></textarea>
     </div>
     <div class="form-group">
       <label class="form-label">帯同・配車の説明</label>
-      <textarea id="infoTaido" rows="3" placeholder="配車はアプリで回答。締切後の変更はLINEで連絡"></textarea>
+      <textarea id="infoTaido" rows="6" placeholder="配車はアプリで回答。締切後の変更はLINEで連絡"></textarea>
     </div>
     <div class="form-group">
       <label class="form-label">学年荷物（当番等）</label>
-      <textarea id="infoGakunen" rows="3" placeholder="3年生：テント、タープ&#10;4年生：ゴール"></textarea>
+      <textarea id="infoGakunen" rows="6" placeholder="3年生：テント、タープ&#10;4年生：ゴール"></textarea>
     </div>
     <div class="form-group">
       <label class="form-label">その他（自由記述）</label>
-      <textarea id="infoOther" rows="3" placeholder=""></textarea>
+      <textarea id="infoOther" rows="6" placeholder=""></textarea>
     </div>
+    <div id="infoCustomSections"></div>
+    <button class="btn btn-outline btn-small" onclick="addInfoSection()" style="margin-bottom:16px">+ セクション追加</button>
     <button class="btn btn-primary" onclick="saveTeamInfo()">保存</button>
     <button class="btn btn-outline" onclick="closeModal('infoEditorModal')" style="margin-top:8px">キャンセル</button>
   </div>
@@ -835,6 +844,7 @@ let locationsData = {};
 let eventsData = {};
 let tournamentsData = {};
 let teamInfoData = {};
+let infoSectionsData = {};
 let isAdmin = !!localStorage.getItem('teamride_admin');
 let selectedMemberId = localStorage.getItem('teamride_member') || null;
 
@@ -969,6 +979,9 @@ function loadAll() {
   db.ref(ROOT + '/team_info').on('value', snap => {
     teamInfoData = snap.val() || {};
   });
+  db.ref(ROOT + '/info_sections').on('value', snap => {
+    infoSectionsData = snap.val() || {};
+  });
 }
 
 function afterConfigLoaded() {
@@ -1056,16 +1069,16 @@ function renderWizardStep() {
       </div>`).join('');
     c.innerHTML = `
       <div class="wizard-step">Step 3 / 3</div>
-      <div class="wizard-title">📍 エリアを追加</div>
-      <p style="font-size:14px;color:var(--text-sub);margin-bottom:16px">近所のメンバー同士で乗り合わせるためのエリア分けです</p>
+      <div class="wizard-title">📍 校区を追加</div>
+      <p style="font-size:14px;color:var(--text-sub);margin-bottom:16px">近所のメンバー同士で乗り合わせるための校区分けです</p>
       ${zonesHtml}
       <div style="margin-top:12px">
-        <input type="text" id="wizZoneName" placeholder="エリア名（例: 北エリア、○○小学校区）">
+        <input type="text" id="wizZoneName" placeholder="校区名（例: 北校区、○○小学校区）">
         <div class="color-options" style="margin-top:8px">
           ${ZONE_COLORS.map((c,i) => `<div class="color-dot ${i===0?'selected':''}" style="background:${c}"
             onclick="selectWizColor(this,'${c}')" data-color="${c}"></div>`).join('')}
         </div>
-        <button class="btn btn-secondary btn-small" onclick="addWizZone()" style="margin-top:8px">+ エリア追加</button>
+        <button class="btn btn-secondary btn-small" onclick="addWizZone()" style="margin-top:8px">+ 校区追加</button>
       </div>
       <button class="btn btn-primary" onclick="wizardFinish()" style="margin-top:24px"
         ${wizardData.zones.length === 0 ? 'disabled' : ''}>セットアップ完了</button>
@@ -1088,7 +1101,7 @@ function selectWizColor(el, color) {
 
 function addWizZone() {
   const name = document.getElementById('wizZoneName').value.trim();
-  if (!name) return showToast('エリア名を入力してください', 'error');
+  if (!name) return showToast('校区名を入力してください', 'error');
   wizardData.zones.push({ name, color: wizSelectedColor });
   document.getElementById('wizZoneName').value = '';
   renderWizardStep();
@@ -1222,7 +1235,7 @@ function renderMembers() {
       ${z ? '<span class="zone-dot" style="background:'+escapeHtml(z.color)+'"></span>' : '<span style="width:10px"></span>'}
       <div class="list-item-info">
         <div class="list-item-name">${escapeHtml(m.name)}${numLabel ? ' <span style="font-size:12px;color:var(--text-sub)">'+numLabel+'</span>' : ''}</div>
-        <div class="list-item-sub">${z ? escapeHtml(z.name)+' · ' : ''}${gradeLabel(m.grade)}${car ? ' · '+car : ''}</div>
+        <div class="list-item-sub">${m.name_kanji ? escapeHtml(m.name_kanji)+' · ' : ''}${z ? escapeHtml(z.name)+' · ' : ''}${gradeLabel(m.grade)}${car ? ' · '+car : ''}</div>
       </div>
       <div class="list-item-icons">${icons.join(' ')}</div>
     </div>`;
@@ -1241,6 +1254,7 @@ function showMemberDetail(id) {
   let html = `<div class="modal-handle"></div>
     <div style="text-align:center;margin-bottom:16px">
       <div style="font-size:20px;font-weight:700">${escapeHtml(m.name)} ${numLabel}</div>
+      ${m.name_kanji ? `<div style="font-size:14px;color:var(--text-sub);margin-top:2px">${escapeHtml(m.name_kanji)}</div>` : ''}
       <div style="font-size:14px;color:var(--text-sub);margin-top:4px">${gradeLabel(m.grade)}${z ? ' · '+escapeHtml(z.name) : ''}</div>
     </div>
     <div class="card" style="padding:12px">`;
@@ -1261,7 +1275,7 @@ function showMemberDetail(id) {
 
   html += `</div>`;
 
-  if (isAdmin) {
+  if (isAdmin || selectedMemberId === id) {
     html += `<button class="btn btn-secondary btn-small" onclick="closeModal('memberDetailModal');editMember('${id}')" style="margin-top:12px">✏️ 編集</button>`;
   }
   html += `<button class="btn btn-outline btn-small" onclick="closeModal('memberDetailModal')" style="margin-top:8px">閉じる</button>`;
@@ -1305,6 +1319,7 @@ function openMemberModal(id) {
   if (id && membersData[id]) {
     const m = membersData[id];
     document.getElementById('memberName').value = m.name || '';
+    document.getElementById('memberNameKanji').value = m.name_kanji || '';
     document.getElementById('memberNumber').value = m.number != null ? m.number : '';
     document.getElementById('memberGrade').value = m.grade != null ? m.grade : '1';
     document.getElementById('memberZone').value = m.zone_id || '';
@@ -1330,6 +1345,7 @@ function openMemberModal(id) {
     }
   } else {
     document.getElementById('memberName').value = '';
+    document.getElementById('memberNameKanji').value = '';
     document.getElementById('memberNumber').value = '';
     document.getElementById('memberGrade').value = '1';
     document.getElementById('memberZone').value = '';
@@ -1398,8 +1414,10 @@ async function saveMember() {
   const nearbySelect = document.getElementById('memberNearby');
   const nearbyIds = Array.from(nearbySelect.selectedOptions).map(o => o.value).filter(v => v);
 
+  const nameKanji = document.getElementById('memberNameKanji').value.trim();
   const data = {
     name,
+    name_kanji: nameKanji || null,
     number: parseInt(document.getElementById('memberNumber').value) || null,
     grade: parseInt(document.getElementById('memberGrade').value) || 0,
     zone_id: document.getElementById('memberZone').value || '',
@@ -1461,7 +1479,7 @@ function renderZoneList() {
   const list = document.getElementById('zoneList');
   const entries = Object.entries(zonesData).sort((a,b) => (a[1].order||0) - (b[1].order||0));
   if (entries.length === 0) {
-    list.innerHTML = '<div style="text-align:center;color:var(--text-sub);padding:16px">エリアがまだありません</div>';
+    list.innerHTML = '<div style="text-align:center;color:var(--text-sub);padding:16px">校区がまだありません</div>';
     return;
   }
   list.innerHTML = entries.map(([id, z]) =>
@@ -1475,7 +1493,7 @@ function renderZoneList() {
 
 async function addZone() {
   const name = document.getElementById('newZoneName').value.trim();
-  if (!name) return showToast('エリア名を入力してください', 'error');
+  if (!name) return showToast('校区名を入力してください', 'error');
   const order = Object.keys(zonesData).length + 1;
   await db.ref(ROOT + '/zones').push({ name, color: newZoneSelectedColor, order });
   document.getElementById('newZoneName').value = '';
@@ -1497,6 +1515,13 @@ function openEquipmentManager() {
   openModal('equipmentModal');
 }
 
+const EQUIP_ICONS_DEFAULT = {'テント':'⛺','救急箱':'🩹','カゴ':'🧺','椅子':'🪑','ベンチ':'🪑','クーラーボックス':'🧊','ゴール':'⚽','コーン':'🔶','ビブス':'🦺','折畳':'🪑','シート':'🧶'};
+function getEquipIcon(eid) {
+  const eq = equipmentTypesData[eid];
+  if (!eq) return '📦';
+  return eq.icon || EQUIP_ICONS_DEFAULT[eq.name] || '📦';
+}
+
 function renderEquipmentList() {
   const list = document.getElementById('equipmentList');
   const entries = Object.entries(equipmentTypesData).sort((a,b) => (a[1].order||0) - (b[1].order||0));
@@ -1506,6 +1531,7 @@ function renderEquipmentList() {
   }
   list.innerHTML = entries.map(([id, eq]) =>
     `<div class="list-item" style="cursor:default">
+      <span style="font-size:20px;width:32px;text-align:center">${getEquipIcon(id)}</span>
       <span style="flex:1;font-weight:600">${escapeHtml(eq.name)}</span>
       <button class="btn-icon btn-outline" onclick="deleteEquipment('${id}')" style="font-size:12px;width:44px;height:44px">✕</button>
     </div>`
@@ -1515,9 +1541,13 @@ function renderEquipmentList() {
 async function addEquipment() {
   const name = document.getElementById('newEquipName').value.trim();
   if (!name) return showToast('機材名を入力してください', 'error');
+  const icon = document.getElementById('newEquipIcon').value.trim() || null;
   const order = Object.keys(equipmentTypesData).length + 1;
-  await db.ref(ROOT + '/equipment_types').push({ name, order });
+  const data = { name, order };
+  if (icon) data.icon = icon;
+  await db.ref(ROOT + '/equipment_types').push(data);
   document.getElementById('newEquipName').value = '';
+  document.getElementById('newEquipIcon').value = '';
   showToast(name + ' を追加しました');
   renderEquipmentList();
 }
@@ -1798,7 +1828,7 @@ function showEventDetail(id) {
   html += `<div style="display:flex;align-items:center;margin-bottom:12px">
     <button class="btn btn-outline btn-small" onclick="renderHome()">← 戻る</button>
     <div style="flex:1"></div>
-    ${!isPast && isAdmin ? `<button class="btn btn-outline btn-small" onclick="openEventModal('${id}')">✏️ 編集</button>` : ''}
+    ${isAdmin ? `<button class="btn btn-outline btn-small" onclick="openEventModal('${id}')">✏️ 編集</button>` : ''}
   </div>`;
 
   // イベント情報カード
@@ -1848,13 +1878,12 @@ function showEventDetail(id) {
           }
         });
       });
-      const EQUIP_ICONS = {'テント':'⛺','救急箱':'🩹','カゴ':'🧺','椅子':'🪑','ベンチ':'🪑','クーラーボックス':'🧊','ゴール':'⚽','コーン':'🔶','ビブス':'🦺'};
       html += '<div class="equip-btn-grid">';
       let hasUnassigned = false;
       eqEntries.forEach(([eid, qty]) => {
         const eq = equipmentTypesData[eid];
         const name = eq?.name || eid;
-        const icon = EQUIP_ICONS[name] || '📦';
+        const icon = getEquipIcon(eid);
         const assignees = eqAssignees[eid] || [];
         for (let i = 0; i < qty; i++) {
           const person = assignees[i] || null;
@@ -1955,7 +1984,7 @@ function renderTeamStats(active, past) {
 
   let html = `<div class="stats-row">
     <div class="stat-card"><div class="stat-value">${totalMembers}</div><div class="stat-label">メンバー</div></div>
-    <div class="stat-card"><div class="stat-value">${driversCount}</div><div class="stat-label">車出し可</div></div>
+    <div class="stat-card"><div class="stat-value">${driversCount}</div><div class="stat-label">配車可</div></div>
     <div class="stat-card"><div class="stat-value">${totalEvents}</div><div class="stat-label">イベント</div></div>
   </div>`;
 
@@ -2006,7 +2035,7 @@ function renderTeamStats(active, past) {
     if (sorted.length > 0) {
       const maxCount = sorted[0][1];
       html += `<div class="card" style="margin-top:8px">
-        <div style="font-size:13px;font-weight:700;color:var(--text-sub);margin-bottom:8px">🚗 車出し回数（累計）</div>`;
+        <div style="font-size:13px;font-weight:700;color:var(--text-sub);margin-bottom:8px">🚗 配車回数（累計）</div>`;
       sorted.forEach(([mid, count]) => {
         const pct = maxCount > 0 ? Math.round(count / maxCount * 100) : 0;
         html += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:13px">
@@ -2085,13 +2114,12 @@ function renderEventCard(id, e, isPast) {
           }
         });
       });
-      const EQUIP_ICONS = {'テント':'⛺','救急箱':'🩹','カゴ':'🧺','椅子':'🪑','ベンチ':'🪑','クーラーボックス':'🧊','ゴール':'⚽','コーン':'🔶','ビブス':'🦺'};
       html += '<div class="equip-btn-grid">';
       let hasUnassigned = false;
       eqEntries.forEach(([eid, qty]) => {
         const eq = equipmentTypesData[eid];
         const name = eq?.name || eid;
-        const icon = EQUIP_ICONS[name] || '📦';
+        const icon = getEquipIcon(eid);
         const assignees = eqAssignees[eid] || [];
         for (let i = 0; i < qty; i++) {
           const person = assignees[i] || null;
@@ -2219,7 +2247,7 @@ function renderMyRsvpSummary(r) {
       ${r.not_attending_reason ? '<div class="rsvp-summary-detail">理由: '+escapeHtml(r.not_attending_reason)+'</div>' : ''}
     </div>`;
   }
-  const transport = r.transport === 'drive' ? '車出し' : r.transport === 'ride' ? '乗せてほしい' : '現地集合';
+  const transport = r.transport === 'drive' ? '配車可' : r.transport === 'ride' ? '乗せてほしい' : '現地集合';
   // New split counts
   let peopleStr = '';
   if (r.adult_count != null) {
@@ -2288,26 +2316,34 @@ function renderRsvpList(eventId, e) {
   if (groups.drivers.length) {
     const maxC = e.max_cars || 0;
     const limitLabel = maxC > 0 ? ` / 上限${maxC}台` : '';
-    html += `<div class="rsvp-section-header">🚗 車出し <span class="rsvp-section-count">(${groups.drivers.length}台${limitLabel})</span></div>`;
+    html += `<div class="rsvp-section-header">🚗 配車可 <span class="rsvp-section-count">(${groups.drivers.length}台${limitLabel})</span></div>`;
+    const allEquipItems = [];
     groups.drivers.forEach(([mid, m, r]) => {
       const fc = r.family_count || (r.parent_coming ? 2 : 1);
       const seats = r.extra_seats || 0;
       const carLabel = m.car_type && CAR_TYPES[m.car_type] ? CAR_TYPES[m.car_type].label : '';
-      const eqNames = r.bring_equipment ? Object.keys(r.bring_equipment)
-        .filter(k => r.bring_equipment[k] && equipmentTypesData[k])
-        .map(k => equipmentTypesData[k].name) : [];
+      if (r.bring_equipment) {
+        Object.keys(r.bring_equipment).filter(k => r.bring_equipment[k] && equipmentTypesData[k]).forEach(k => {
+          allEquipItems.push({ icon: getEquipIcon(k), name: m.name });
+        });
+      }
       const seatsCls = seats > 0 ? 'rsvp-seats-ok' : 'rsvp-seats-zero';
       const seatsText = seats > 0 ? '空'+seats+'席' : '満席';
       html += `<div class="rsvp-status-item" style="flex-wrap:wrap">
-        <div class="rsvp-status-icon">🚗</div>
         ${zoneDot(m)}
         <div class="rsvp-status-name">${escapeHtml(m.name)}</div>
+        <span class="rsvp-seats-badge rsvp-seats-zero" style="font-size:11px">乗車${fc}人</span>
         <span class="rsvp-seats-badge ${seatsCls}">${seatsText}</span>
-        <div class="rsvp-detail-line">
-          ${carLabel ? escapeHtml(carLabel)+' / ' : ''}家族${fc}人${eqNames.map(n => ' <span class="rsvp-eq-badge">📦'+escapeHtml(n)+'</span>').join('')}
-        </div>
+        ${carLabel ? `<div class="rsvp-detail-line">${escapeHtml(carLabel)}</div>` : ''}
       </div>`;
     });
+    if (allEquipItems.length > 0) {
+      html += '<div style="padding:6px 12px;font-size:13px;color:var(--text-sub);display:flex;flex-wrap:wrap;gap:4px 12px;border-bottom:1px solid var(--border)">';
+      allEquipItems.forEach(item => {
+        html += `<span>${item.icon}${escapeHtml(item.name)}</span>`;
+      });
+      html += '</div>';
+    }
   }
 
   // Riders
@@ -2326,7 +2362,6 @@ function renderRsvpList(eventId, e) {
       }
       const childOnlyLabel = r.child_only_ride ? ' <span style="font-size:11px;background:#fff3e0;color:#c45000;padding:1px 6px;border-radius:6px">子だけ乗車</span>' : '';
       html += `<div class="rsvp-status-item">
-        <div class="rsvp-status-icon">🙋</div>
         ${zoneDot(m)}
         <div class="rsvp-status-name">${escapeHtml(m.name)}${childOnlyLabel}</div>
         <div class="rsvp-status-detail">${detailParts.join(' ')} (${sn}席)</div>
@@ -2339,7 +2374,6 @@ function renderRsvpList(eventId, e) {
     html += `<div class="rsvp-section-header">🏃 現地集合 <span class="rsvp-section-count">(${groups.directs.length}人)</span></div>`;
     groups.directs.forEach(([mid, m]) => {
       html += `<div class="rsvp-status-item">
-        <div class="rsvp-status-icon">🏃</div>
         ${zoneDot(m)}
         <div class="rsvp-status-name">${escapeHtml(m.name)}</div>
       </div>`;
@@ -2406,7 +2440,7 @@ function autoMarkDoneEvents() {
 }
 
 // ── Event Create/Edit ──
-let eventTypeSelected = 'practice';
+let eventTypeSelected = 'match';
 
 function setEventType(type) {
   eventTypeSelected = type;
@@ -2433,7 +2467,7 @@ function openEventModal(eventId) {
     document.getElementById('eventRsvpDeadline').value = e.rsvp_deadline || '';
     document.getElementById('eventMaxCars').value = e.max_cars || '';
   } else {
-    setEventType('practice');
+    setEventType('match');
     document.getElementById('eventTitle').value = '';
     document.getElementById('eventDate').value = '';
     document.getElementById('eventMeetTime').value = '';
@@ -2617,8 +2651,6 @@ function renderRsvpForm() {
 
   // Equipment tags from all equipment types
   const allEq = Object.entries(equipmentTypesData).sort((a,b) => (a[1].order||0) - (b[1].order||0));
-  const EQUIP_ICONS_MAP = {'テント':'⛺','折畳':'🪑','シート':'🧶','ベンチ':'🪑','救急箱':'🩹','カゴ':'🧺','椅子':'🪑','クーラーボックス':'🧊','ゴール':'⚽','コーン':'🔶','ビブス':'🦺'};
-
   c.innerHTML = `
     <div style="text-align:center;margin-bottom:12px">
       <div style="font-size:13px;color:var(--text-sub)">${e.type==='match'?'🟠 試合':'🟢 試合以外'} ${dateStr} ${e.meet_time||''}</div>
@@ -2692,7 +2724,7 @@ function renderRsvpForm() {
         <div class="form-label">配車可否</div>
         <div style="display:flex;gap:6px;margin-bottom:12px">
           <div class="rsvp-choice ${transport==='drive'?'selected':''}" data-transport="drive" onclick="rsvpPickTransport('drive')" style="flex:1;min-width:0;padding:10px 6px">
-            <div class="rsvp-choice-icon" style="font-size:20px">🚗</div><span style="font-size:12px">車を出す</span>
+            <div class="rsvp-choice-icon" style="font-size:20px">🚗</div><span style="font-size:12px">配車可</span>
           </div>
           <div class="rsvp-choice ${transport==='ride'?'selected':''}" data-transport="ride" onclick="rsvpPickTransport('ride')" style="flex:1;min-width:0;padding:10px 6px">
             <div class="rsvp-choice-icon" style="font-size:20px">🙋</div><span style="font-size:12px">乗せて</span>
@@ -2734,7 +2766,7 @@ function renderRsvpForm() {
         <div class="form-label">荷物</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px" id="rsvpEquipGroup">
           ${allEq.map(([eid, eq]) => {
-            const icon = EQUIP_ICONS_MAP[eq.name] || '📦';
+            const icon = getEquipIcon(eid);
             return `<div class="checkbox-item ${bringEq[eid]?'checked':''}" data-eq="${eid}" onclick="this.classList.toggle('checked')" style="padding:6px 12px;font-size:13px">
               ${icon} ${escapeHtml(eq.name)}</div>`;
           }).join('')}
@@ -2872,7 +2904,7 @@ async function rsvpSubmit() {
 
     await db.ref(ROOT + '/events/' + rsvpEventId + '/rsvp/' + selectedMemberId).set(data);
     closeModal('rsvpModal');
-    const tLabel = transport === 'drive' ? '車出し' : transport === 'ride' ? '乗せてほしい' : '現地集合';
+    const tLabel = transport === 'drive' ? '配車可' : transport === 'ride' ? '乗せてほしい' : '現地集合';
     showToast(`参加（${tLabel}）で回答しました`);
   } catch (err) {
     showToast('エラー: ' + err.message, 'error');
@@ -3375,7 +3407,7 @@ function showAssignmentResult() {
       d.passengers.forEach((p, pi) => {
         const detail = [];
         if (p.with_parent) detail.push('保護者同行');
-        if (p.family_count > 1) detail.push(`${p.family_count}人`);
+        if (p.family_count > 1) detail.push(`乗車${p.family_count}人`);
         html += `<div class="assign-passenger">
           <span>${escapeHtml(p.name)}${detail.length ? ' ('+detail.join('・')+')' : ''}</span>
           <span class="passenger-move-btn" onclick="openMoveRider('${currentAssignEventId}',${di},${pi})" style="min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center">移動</span>
@@ -4264,24 +4296,28 @@ function renderInfoPage() {
   const c = document.getElementById('infoViewContent');
   const info = Object.keys(teamInfoData).length > 0 ? teamInfoData : TEAM_INFO_TEMPLATE;
   let html = '';
-  Object.entries(INFO_LABELS).forEach(([key, meta]) => {
-    const val = info[key] || '';
-    if (!val && key !== 'mochimono' && key !== 'schedule') return;
-    html += `<div class="card" style="padding:0;overflow:hidden;margin-bottom:8px">
+  function infoCard(icon, label, val, alwaysShow) {
+    if (!val && !alwaysShow) return '';
+    return `<div class="card" style="padding:0;overflow:hidden;margin-bottom:8px">
       <div style="display:flex;align-items:center;gap:8px;padding:14px 16px;cursor:pointer" onclick="this.parentElement.classList.toggle('info-open');this.querySelector('.info-arrow').classList.toggle('open')">
-        <span style="font-size:18px">${meta.icon}</span>
-        <span style="font-size:15px;font-weight:700;flex:1">${meta.label}</span>
+        <span style="font-size:18px">${icon}</span>
+        <span style="font-size:15px;font-weight:700;flex:1">${escapeHtml(label)}</span>
         <span class="past-toggle-arrow info-arrow" style="font-size:12px;color:var(--text-sub)">▶</span>
       </div>
       <div style="display:none;padding:0 16px 14px;font-size:14px;color:var(--text-sub);white-space:pre-wrap;line-height:1.8">${escapeHtml(val) || '<span style="color:var(--text-light)">未設定</span>'}</div>
     </div>`;
+  }
+  // Fixed sections
+  Object.entries(INFO_LABELS).forEach(([key, meta]) => {
+    const val = info[key] || '';
+    html += infoCard(meta.icon, meta.label, val, key === 'mochimono' || key === 'schedule');
+  });
+  // Custom sections
+  Object.entries(infoSectionsData).sort((a,b) => (a[1].order||0) - (b[1].order||0)).forEach(([sid, sec]) => {
+    const val = info['custom_' + sid] || '';
+    html += infoCard(sec.icon || '📝', sec.name, val, false);
   });
   c.innerHTML = html || '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">共有情報はまだ登録されていません</div></div>';
-
-  // Accordion toggle
-  c.querySelectorAll('.card').forEach(card => {
-    card.querySelectorAll('div')[1]  // the content div
-  });
 
   // Admin controls
   const adminCtrl = document.getElementById('infoAdminControls');
@@ -4297,6 +4333,20 @@ function openInfoEditor() {
   document.getElementById('infoTaido').value = info.taido || '';
   document.getElementById('infoGakunen').value = info.gakunen || '';
   document.getElementById('infoOther').value = info.other || '';
+  // Render custom section textareas
+  const customContainer = document.getElementById('infoCustomSections');
+  if (customContainer) {
+    let customHtml = '';
+    Object.entries(infoSectionsData).sort((a,b) => (a[1].order||0) - (b[1].order||0)).forEach(([sid, sec]) => {
+      customHtml += `<div class="form-group">
+        <label class="form-label">${escapeHtml(sec.icon || '📝')} ${escapeHtml(sec.name)}
+          <button onclick="deleteInfoSection('${sid}')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:12px;margin-left:8px">削除</button>
+        </label>
+        <textarea id="infoCustom_${sid}" rows="6" placeholder="${escapeHtml(sec.name)}の内容">${escapeHtml(info['custom_' + sid] || '')}</textarea>
+      </div>`;
+    });
+    customContainer.innerHTML = customHtml;
+  }
   openModal('infoEditorModal');
 }
 
@@ -4310,6 +4360,11 @@ async function saveTeamInfo() {
     gakunen: document.getElementById('infoGakunen').value.trim(),
     other: document.getElementById('infoOther').value.trim()
   };
+  // Save custom section values
+  Object.keys(infoSectionsData).forEach(sid => {
+    const el = document.getElementById('infoCustom_' + sid);
+    if (el) data['custom_' + sid] = el.value.trim();
+  });
   try {
     await db.ref(ROOT + '/team_info').set(data);
     closeModal('infoEditorModal');
@@ -4318,6 +4373,25 @@ async function saveTeamInfo() {
   } catch (err) {
     showToast('エラー: ' + err.message, 'error');
   }
+}
+
+async function addInfoSection() {
+  const name = prompt('セクション名を入力してください');
+  if (!name || !name.trim()) return;
+  const icon = prompt('アイコン（絵文字、空白でOK）') || '📝';
+  const order = Object.keys(infoSectionsData).length + 1;
+  await db.ref(ROOT + '/info_sections').push({ name: name.trim(), icon: icon.trim() || '📝', order });
+  showToast(name.trim() + ' を追加しました');
+  openInfoEditor();
+}
+
+async function deleteInfoSection(sid) {
+  const sec = infoSectionsData[sid];
+  if (!sec || !confirm(sec.name + ' セクションを削除しますか？')) return;
+  await db.ref(ROOT + '/info_sections/' + sid).remove();
+  await db.ref(ROOT + '/team_info/custom_' + sid).remove();
+  showToast(sec.name + ' を削除しました');
+  openInfoEditor();
 }
 
 // ── Init ──
