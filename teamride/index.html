@@ -2428,9 +2428,14 @@ function renderRsvpList(eventId, e) {
 }
 
 let _autoMarkDone = false;
+function getTodayJST() {
+  const now = new Date();
+  const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  return jst.toISOString().slice(0, 10);
+}
 function autoMarkDoneEvents() {
   if (_autoMarkDone) return;
-  const today = new Date().toISOString().slice(0,10);
+  const today = getTodayJST();
   const updates = {};
   Object.entries(eventsData).forEach(([id, e]) => {
     if (e.date && e.date < today && e.status !== 'done') {
