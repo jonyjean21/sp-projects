@@ -1720,10 +1720,8 @@ function renderHome() {
 
   let html = '';
 
-  // イベント作成ボタン（管理者のみ・左上）
-  if (isAdmin) {
-    html += '<div style="margin:0 0 12px"><button class="btn btn-primary btn-small" onclick="openEventModal()">+ イベント作成</button></div>';
-  }
+  // イベント作成ボタン（左上・全員表示）
+  html += '<div style="margin:0 0 12px"><button class="btn btn-primary btn-small" onclick="openEventModal()">+ イベント作成</button></div>';
 
   // 回答受付中
   if (open.length > 0) {
