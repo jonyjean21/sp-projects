@@ -11,6 +11,8 @@ SPのプロジェクト司令塔。方針・進捗・タスク・ナレッジを
 | チャプチェ会の準備 | [docs/chapche-status-template.md](docs/chapche-status-template.md) |
 | 会議用ダッシュボード | [docs/chapche-dashboard.html](docs/chapche-dashboard.html)（ブラウザで開いて画面共有） |
 | MOLKKY HUB の状況 | [projects/personal/molkky-hub.md](projects/personal/molkky-hub.md) |
+| BuildHub の状況 | [projects/personal/buildhub.md](projects/personal/buildhub.md) |
+| トクラシの状況 | [projects/personal/tokurashi.md](projects/personal/tokurashi.md) |
 | マルタ村 PJ の状況 | [projects/molkky-dome/README.md](projects/molkky-dome/README.md) |
 | 完了タスクの記録 | [tasks/done.md](tasks/done.md) |
 | セットアップ手順書 | [docs/setup-guides/](docs/setup-guides/README.md) |
@@ -25,6 +27,14 @@ SPのプロジェクト司令塔。方針・進捗・タスク・ナレッジを
   - X（SNS）が最大の集客チャネル
   - 大会情報のスプシ→GAS→WP自動投稿が稼働中
   - 寄稿プロジェクト（レギュラー3名）で週2〜3回更新
+- [BuildHub](projects/personal/buildhub.md) — Claude Code・AI開発ツール情報メディア（buildhub.jp）
+  - Reddit/HN/Zenn/Qiita/dev.to/GitHub releases/X から自動収集
+  - Gemini 2.5-flash で要約 → 毎朝7時JST 自動投稿
+  - ニュースレター × スポンサーシップ型収益化を目指す
+- [トクラシ](projects/personal/tokurashi.md) — お得な暮らし情報アフィリエイトブログ（tokurashi.com）
+  - 32歳時短主婦「ゆうこ」ペルソナで運営
+  - 集客記事30本 + キラーページ5本 = 合計35本公開済み
+  - A8.net アフィリエイト運用中（楽天・プレミアムウォーター等）
 
 ### マルタ村共同プロジェクト（`projects/molkky-dome/`）
 
