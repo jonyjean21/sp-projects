@@ -276,11 +276,11 @@ textarea{resize:vertical;min-height:60px}
 .info-open>div:nth-child(2){display:block!important}
 .info-arrow.open{transform:rotate(90deg)}
 /* Info drag-and-drop */
-.info-drag-handle{display:flex;align-items:center;padding:0 6px;font-size:18px;color:var(--text-light);cursor:grab;touch-action:none;user-select:none}
-.info-sortable-item{transition:transform 0.15s ease}
-.info-sortable-item.dragging{opacity:0.8;z-index:100;box-shadow:0 4px 16px rgba(0,0,0,0.15);transform:scale(1.02)}
-.info-sortable-item.drag-over-top{border-top:3px solid var(--accent)}
-.info-sortable-item.drag-over-bottom{border-bottom:3px solid var(--accent)}
+.info-drag-handle{display:flex;align-items:center;justify-content:center;width:36px;min-width:36px;
+  font-size:20px;color:var(--text-light);cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none}
+.info-sortable-item{transition:none}
+.info-sortable-item.dragging{opacity:0.85;z-index:100;box-shadow:0 6px 20px rgba(0,0,0,0.2);background:#fff}
+.info-drop-indicator{height:4px;background:var(--accent);border-radius:2px;margin:2px 0;transition:none}
 
 /* Hidden */
 .hidden{display:none!important}
@@ -4449,12 +4449,12 @@ function renderInfoPage() {
     const meta = getInfoSectionMeta(key);
     if (!meta) return;
     const val = info[key] || '';
-    if (!val && !alwaysShow.includes(key)) return;
-    const handle = isAdmin ? '<div class="info-drag-handle" data-drag="true">≡</div>' : '';
+    if (!val && !alwaysShow.includes(key) && !isAdmin) return;
+    const handle = isAdmin ? '<div class="info-drag-handle" style="touch-action:none">≡</div>' : '';
     html += `<div class="card info-sortable-item" data-section-key="${key}" style="padding:0;overflow:hidden;margin-bottom:8px">
       <div style="display:flex;align-items:center;gap:0">
         ${handle}
-        <div style="display:flex;align-items:center;gap:8px;padding:14px 16px;flex:1;cursor:pointer" onclick="this.closest('.card').classList.toggle('info-open');this.querySelector('.info-arrow').classList.toggle('open')">
+        <div style="display:flex;align-items:center;gap:8px;padding:12px 14px;flex:1;cursor:pointer" onclick="this.closest('.card').classList.toggle('info-open');this.querySelector('.info-arrow').classList.toggle('open')">
           <span style="font-size:18px">${meta.icon}</span>
           <span style="font-size:15px;font-weight:700;flex:1">${escapeHtml(meta.label)}</span>
           <span class="past-toggle-arrow info-arrow" style="font-size:12px;color:var(--text-sub)">▶</span>
@@ -4474,71 +4474,93 @@ function renderInfoPage() {
   if (adminCtrl) adminCtrl.style.display = isAdmin ? '' : 'none';
 }
 
+let _infoDragBound = false;
+let _infoDragState = { el: null, startY: 0, indicator: null };
+
 function initInfoDragSort(container) {
-  let dragEl = null, startY = 0, offsetY = 0, placeholder = null;
-  const items = () => [...container.querySelectorAll('.info-sortable-item')];
+  if (_infoDragBound) return; // 重複登録防止
+  _infoDragBound = true;
 
+  // ドロップインジケーター
+  const indicator = document.createElement('div');
+  indicator.className = 'info-drop-indicator';
+  indicator.style.display = 'none';
+  _infoDragState.indicator = indicator;
+
+  const getItems = () => [...container.querySelectorAll('.info-sortable-item')];
+
+  // Touch Start
   container.addEventListener('touchstart', e => {
-    const handle = e.target.closest('[data-drag="true"]');
+    const handle = e.target.closest('.info-drag-handle');
     if (!handle) return;
-    dragEl = handle.closest('.info-sortable-item');
-    if (!dragEl) return;
-    const rect = dragEl.getBoundingClientRect();
-    startY = e.touches[0].clientY;
-    offsetY = startY - rect.top;
-    dragEl.classList.add('dragging');
-    dragEl.style.position = 'relative';
-    dragEl.style.zIndex = '100';
+    const el = handle.closest('.info-sortable-item');
+    if (!el) return;
     e.preventDefault();
+    e.stopPropagation();
+    _infoDragState.el = el;
+    _infoDragState.startY = e.touches[0].clientY;
+    el.classList.add('dragging');
+    el.style.position = 'relative';
+    container.appendChild(indicator);
   }, { passive: false });
 
+  // Touch Move
   container.addEventListener('touchmove', e => {
-    if (!dragEl) return;
+    if (!_infoDragState.el) return;
     e.preventDefault();
+    e.stopPropagation();
     const y = e.touches[0].clientY;
-    const dy = y - startY;
-    dragEl.style.transform = `translateY(${dy}px)`;
+    const dy = y - _infoDragState.startY;
+    _infoDragState.el.style.transform = `translateY(${dy}px)`;
 
-    // Find target position
-    items().forEach(item => {
-      if (item === dragEl) return;
-      item.classList.remove('drag-over-top', 'drag-over-bottom');
+    // インジケーター位置を更新
+    indicator.style.display = 'none';
+    let closestItem = null, closestDist = Infinity, insertAfter = false;
+    getItems().forEach(item => {
+      if (item === _infoDragState.el) return;
       const rect = item.getBoundingClientRect();
-      const mid = rect.top + rect.height / 2;
-      if (y > rect.top && y < mid) item.classList.add('drag-over-top');
-      else if (y >= mid && y < rect.bottom) item.classList.add('drag-over-bottom');
+      const topDist = Math.abs(y - rect.top);
+      const botDist = Math.abs(y - rect.bottom);
+      if (topDist < closestDist) { closestDist = topDist; closestItem = item; insertAfter = false; }
+      if (botDist < closestDist) { closestDist = botDist; closestItem = item; insertAfter = true; }
     });
+    if (closestItem && closestDist < 60) {
+      indicator.style.display = '';
+      if (insertAfter) closestItem.after(indicator);
+      else closestItem.before(indicator);
+    }
   }, { passive: false });
 
+  // Touch End
   container.addEventListener('touchend', async () => {
-    if (!dragEl) return;
-    // Find drop target
-    const allItems = items();
-    let targetIdx = -1;
-    let insertBefore = true;
-    allItems.forEach((item, idx) => {
-      if (item.classList.contains('drag-over-top')) { targetIdx = idx; insertBefore = true; }
-      if (item.classList.contains('drag-over-bottom')) { targetIdx = idx; insertBefore = false; }
-      item.classList.remove('drag-over-top', 'drag-over-bottom');
-    });
+    if (!_infoDragState.el) return;
+    const el = _infoDragState.el;
+    el.classList.remove('dragging');
+    el.style.position = '';
+    el.style.transform = '';
 
-    dragEl.classList.remove('dragging');
-    dragEl.style.position = '';
-    dragEl.style.zIndex = '';
-    dragEl.style.transform = '';
-
-    if (targetIdx >= 0) {
-      const target = allItems[targetIdx];
-      if (insertBefore) container.insertBefore(dragEl, target);
-      else if (target.nextSibling) container.insertBefore(dragEl, target.nextSibling);
-      else container.appendChild(dragEl);
-
-      // Save new order to Firebase
-      const newOrder = [...container.querySelectorAll('.info-sortable-item')]
-        .map(el => el.dataset.sectionKey).filter(Boolean);
-      await db.ref(ROOT + '/info_section_order').set(newOrder);
+    // インジケーターの位置に移動
+    if (indicator.style.display !== 'none' && indicator.parentNode) {
+      indicator.before(el);
     }
-    dragEl = null;
+    indicator.style.display = 'none';
+    if (indicator.parentNode) indicator.remove();
+    _infoDragState.el = null;
+
+    // 新しい順序をFirebaseに保存
+    const newOrder = getItems().map(item => item.dataset.sectionKey).filter(Boolean);
+    await db.ref(ROOT + '/info_section_order').set(newOrder);
+  });
+
+  // Touch Cancel
+  container.addEventListener('touchcancel', () => {
+    if (!_infoDragState.el) return;
+    _infoDragState.el.classList.remove('dragging');
+    _infoDragState.el.style.position = '';
+    _infoDragState.el.style.transform = '';
+    indicator.style.display = 'none';
+    if (indicator.parentNode) indicator.remove();
+    _infoDragState.el = null;
   });
 }
 
