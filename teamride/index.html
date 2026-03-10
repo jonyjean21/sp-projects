@@ -1960,8 +1960,8 @@ function showEventDetail(id) {
   // 回答一覧
   html += renderRsvpList(id, e);
 
-  // 過去イベント（試合日経過後）→ LINE文テンプレートをインライン表示
-  if (isPast && e.assignments) {
+  // 配車決定後 → LINE文テンプレートをインライン表示（過去・アクティブ問わず）
+  if (e.assignments) {
     html += renderInlineLineTemplates(id);
   }
 
@@ -2012,18 +2012,6 @@ function renderTeamStats(active, past) {
         preschoolNeeds += r.preschool_count || 0;
       }
     });
-    // Vehicle shortage alert
-    if (totalDriverSeats < totalRiderSeats && totalRiderSeats > 0) {
-      html += `<div style="background:#fce4ec;border:1px solid var(--danger);border-radius:var(--radius);padding:10px 14px;margin:8px 0;font-size:13px;color:var(--danger)">
-        ⚠ 車両不足: ${totalRiderSeats}席必要に対し${totalDriverSeats}席（${totalRiderSeats - totalDriverSeats}席不足）
-      </div>`;
-    }
-    // Needed vehicles estimate
-    if (totalRiderSeats > 0 && driverCount > 0) {
-      const avgSeats = totalDriverSeats / driverCount;
-      const neededCars = Math.ceil(totalRiderSeats / (avgSeats || 3));
-      html += `<div style="font-size:12px;color:var(--text-sub);margin:4px 0">必要台数目安: 約${neededCars}台（平均空き${avgSeats.toFixed(1)}席/台）</div>`;
-    }
     // CS shortage alert
     if (preschoolNeeds > 0 && csAvailable < preschoolNeeds) {
       html += `<div style="background:#fff3e0;border:1px solid var(--warning);border-radius:var(--radius);padding:10px 14px;margin:8px 0;font-size:13px;color:var(--warning)">
@@ -3004,13 +2992,11 @@ function runAutoAssign(eventId) {
     const mem = membersData[mid];
     if (!mem || mem.active === false) return;
     if (r.transport === 'drive') {
-      drivers.push({ id: mid, name: mem.name, zone_id: mem.zone_id || '', address: mem.address || '',
-        grade: mem.grade, childseat_count: mem.childseat_count || 0,
+      drivers.push({ id: mid, name: mem.name, zone_id: mem.zone_id || '', grade: mem.grade, childseat_count: mem.childseat_count || 0,
         available_seats: r.extra_seats || 0, original_seats: r.extra_seats || 0,
         equipment: r.bring_equipment || {}, assigned_equipment: [], passengers: [] });
     } else if (r.transport === 'ride') {
-      riders.push({ id: mid, name: mem.name, zone_id: mem.zone_id || '', address: mem.address || '',
-        grade: mem.grade, has_preschool: (r.preschool_count || 0) > 0,
+      riders.push({ id: mid, name: mem.name, zone_id: mem.zone_id || '', grade: mem.grade, has_preschool: (r.preschool_count || 0) > 0,
         seats_needed: calcSeatsNeeded(mid, r), with_parent: r.parent_coming || false,
         family_count: r.family_count || (r.parent_coming ? 2 : 1) });
     } else if (r.transport === 'direct') { directs.push({ id: mid, name: mem.name }); }
@@ -3022,10 +3008,9 @@ function runAutoAssign(eventId) {
   const eqNeeded = e.equipment_needed ? { ...e.equipment_needed } : {};
   Object.entries(eqNeeded).forEach(([eid, qty]) => {
     let remaining = qty; const eqType = equipmentTypesData[eid]; if (!eqType) return;
-    const seatsUsed = eqType.seats_used || 0;
     drivers.filter(d => d.equipment[eid]).sort((a, b) => b.available_seats - a.available_seats).forEach(d => {
       if (remaining <= 0) return; d.assigned_equipment.push(eid);
-      d.available_seats = Math.max(0, d.available_seats - seatsUsed); remaining--;
+      remaining--;
     });
     if (remaining > 0) warnings.push(`⚠ ${eqType.name}${qty}つ必要ですが${qty - remaining}つしか確保できません`);
   });
@@ -3204,7 +3189,6 @@ function runAssignmentWithSelected(eventId) {
       const seats = r?.transport === 'drive' ? (r.extra_seats || 0) : (mem.extra_seats || c.seats || 0);
       drivers.push({
         id: c.id, name: mem.name, zone_id: mem.zone_id || '',
-        address: mem.address || '',
         available_seats: seats, original_seats: seats,
         equipment: r?.bring_equipment || {},
         assigned_equipment: [], passengers: []
@@ -3212,7 +3196,6 @@ function runAssignmentWithSelected(eventId) {
     } else {
       riders.push({
         id: c.id, name: mem.name, zone_id: mem.zone_id || '',
-        address: mem.address || '',
         seats_needed: c.family_count,
         with_parent: c.with_parent, family_count: c.family_count
       });
@@ -3351,12 +3334,6 @@ function calcPairScore(driver, rider) {
   // Zone match
   if (driver.zone_id && rider.zone_id && driver.zone_id === rider.zone_id) score += 20;
   else if (driver.zone_id && rider.zone_id) score += 3;
-  // Address proximity
-  if (driver.address && rider.address) {
-    const da = driver.address.replace(/\s/g,''), ra = rider.address.replace(/\s/g,'');
-    if (da === ra) { score += 25; }
-    else { let c = 0; for (let i = 0; i < Math.min(da.length, ra.length); i++) { if (da[i] === ra[i]) c++; else break; } score += Math.min(20, c * 5); }
-  }
   // Grade match bonus: same grade children prefer same car
   if (driver.grade != null && rider.grade != null && driver.grade === rider.grade) score += 15;
   // Childseat matching: preschooler needs CS-equipped driver
@@ -3665,7 +3642,6 @@ function promoteToDriver(unassignedIdx) {
   // Create new driver entry
   a.drivers.push({
     id: rider.id, name: rider.name, zone_id: rider.zone_id || mem?.zone_id || '',
-    address: mem?.address || '',
     original_seats: seats, available_seats: seats,
     assigned_equipment: [], passengers: []
   });
@@ -3993,12 +3969,11 @@ function viewAssignment(eventId) {
     const mem = membersData[did];
     if (!mem) return;
     const rsvp = e.rsvp?.[did];
-    const eqSeatsUsed = (d.equipment || []).reduce((s, eid) => s + (equipmentTypesData[eid]?.seats_used || 0), 0);
     const passengerSeats = (d.passengers || []).reduce((s,p) => s + (p.seats_needed || 1), 0);
     drivers.push({
       id: did, name: mem.name, zone_id: mem.zone_id || '',
       original_seats: rsvp?.extra_seats || 0,
-      available_seats: (rsvp?.extra_seats || 0) - eqSeatsUsed - passengerSeats,
+      available_seats: (rsvp?.extra_seats || 0) - passengerSeats,
       assigned_equipment: d.equipment || [],
       passengers: (d.passengers || []).map(p => ({
         id: p.id, name: p.name, with_parent: p.with_parent,
