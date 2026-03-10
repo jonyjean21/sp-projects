@@ -1,0 +1,19 @@
+{
+  "name": "sp-clone-agent",
+  "version": "1.0.0",
+  "description": "SP Clone - 自律稼働AIエージェント",
+  "type": "module",
+  "scripts": {
+    "morning": "node index.js morning-review",
+    "queue": "node index.js queue-process",
+    "summary": "node index.js daily-summary",
+    "weekly": "node index.js weekly-report",
+    "test": "node index.js morning-review --dry-run"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.36.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
