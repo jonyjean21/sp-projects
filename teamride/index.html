@@ -275,6 +275,12 @@ textarea{resize:vertical;min-height:60px}
 /* Info accordion */
 .info-open>div:nth-child(2){display:block!important}
 .info-arrow.open{transform:rotate(90deg)}
+/* Info drag-and-drop */
+.info-drag-handle{display:flex;align-items:center;padding:0 6px;font-size:18px;color:var(--text-light);cursor:grab;touch-action:none;user-select:none}
+.info-sortable-item{transition:transform 0.15s ease}
+.info-sortable-item.dragging{opacity:0.8;z-index:100;box-shadow:0 4px 16px rgba(0,0,0,0.15);transform:scale(1.02)}
+.info-sortable-item.drag-over-top{border-top:3px solid var(--accent)}
+.info-sortable-item.drag-over-bottom{border-bottom:3px solid var(--accent)}
 
 /* Hidden */
 .hidden{display:none!important}
@@ -846,6 +852,7 @@ let eventsData = {};
 let tournamentsData = {};
 let teamInfoData = {};
 let infoSectionsData = {};
+let infoSectionOrder = null; // null = use default order
 let isAdmin = !!localStorage.getItem('teamride_admin');
 let selectedMemberId = localStorage.getItem('teamride_member') || null;
 
@@ -982,6 +989,10 @@ function loadAll() {
   });
   db.ref(ROOT + '/info_sections').on('value', snap => {
     infoSectionsData = snap.val() || {};
+  });
+  db.ref(ROOT + '/info_section_order').on('value', snap => {
+    infoSectionOrder = snap.val() || null;
+    renderInfoPage();
   });
 }
 
@@ -4402,36 +4413,133 @@ const INFO_LABELS = {
   other: { icon: '📝', label: 'その他' }
 };
 
+function getInfoSectionKeys() {
+  // 全セクションキーを統一順序で返す
+  const fixedKeys = Object.keys(INFO_LABELS);
+  const customKeys = Object.entries(infoSectionsData)
+    .sort((a,b) => (a[1].order||0) - (b[1].order||0))
+    .map(([sid]) => 'custom_' + sid);
+  const allKeys = [...fixedKeys, ...customKeys];
+  if (infoSectionOrder && Array.isArray(infoSectionOrder)) {
+    // 保存済み順序を使い、新規追加分は末尾に
+    const ordered = [];
+    infoSectionOrder.forEach(k => { if (allKeys.includes(k)) ordered.push(k); });
+    allKeys.forEach(k => { if (!ordered.includes(k)) ordered.push(k); });
+    return ordered;
+  }
+  return allKeys;
+}
+
+function getInfoSectionMeta(key) {
+  if (INFO_LABELS[key]) return { icon: INFO_LABELS[key].icon, label: INFO_LABELS[key].label };
+  const sid = key.replace('custom_', '');
+  const sec = infoSectionsData[sid];
+  return sec ? { icon: sec.icon || '📝', label: sec.name } : null;
+}
+
 function renderInfoPage() {
   const c = document.getElementById('infoViewContent');
+  if (!c) return;
   const info = Object.keys(teamInfoData).length > 0 ? teamInfoData : TEAM_INFO_TEMPLATE;
+  const keys = getInfoSectionKeys();
+  const alwaysShow = ['mochimono', 'schedule'];
+
   let html = '';
-  function infoCard(icon, label, val, alwaysShow) {
-    if (!val && !alwaysShow) return '';
-    return `<div class="card" style="padding:0;overflow:hidden;margin-bottom:8px">
-      <div style="display:flex;align-items:center;gap:8px;padding:14px 16px;cursor:pointer" onclick="this.parentElement.classList.toggle('info-open');this.querySelector('.info-arrow').classList.toggle('open')">
-        <span style="font-size:18px">${icon}</span>
-        <span style="font-size:15px;font-weight:700;flex:1">${escapeHtml(label)}</span>
-        <span class="past-toggle-arrow info-arrow" style="font-size:12px;color:var(--text-sub)">▶</span>
+  keys.forEach(key => {
+    const meta = getInfoSectionMeta(key);
+    if (!meta) return;
+    const val = info[key] || '';
+    if (!val && !alwaysShow.includes(key)) return;
+    const handle = isAdmin ? '<div class="info-drag-handle" data-drag="true">≡</div>' : '';
+    html += `<div class="card info-sortable-item" data-section-key="${key}" style="padding:0;overflow:hidden;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:0">
+        ${handle}
+        <div style="display:flex;align-items:center;gap:8px;padding:14px 16px;flex:1;cursor:pointer" onclick="this.closest('.card').classList.toggle('info-open');this.querySelector('.info-arrow').classList.toggle('open')">
+          <span style="font-size:18px">${meta.icon}</span>
+          <span style="font-size:15px;font-weight:700;flex:1">${escapeHtml(meta.label)}</span>
+          <span class="past-toggle-arrow info-arrow" style="font-size:12px;color:var(--text-sub)">▶</span>
+        </div>
       </div>
       <div style="display:none;padding:0 16px 14px;font-size:14px;color:var(--text-sub);white-space:pre-wrap;line-height:1.8">${escapeHtml(val) || '<span style="color:var(--text-light)">未設定</span>'}</div>
     </div>`;
-  }
-  // Fixed sections
-  Object.entries(INFO_LABELS).forEach(([key, meta]) => {
-    const val = info[key] || '';
-    html += infoCard(meta.icon, meta.label, val, key === 'mochimono' || key === 'schedule');
   });
-  // Custom sections
-  Object.entries(infoSectionsData).sort((a,b) => (a[1].order||0) - (b[1].order||0)).forEach(([sid, sec]) => {
-    const val = info['custom_' + sid] || '';
-    html += infoCard(sec.icon || '📝', sec.name, val, false);
-  });
+
   c.innerHTML = html || '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">共有情報はまだ登録されていません</div></div>';
+
+  // Admin: タッチドラッグ並び替え初期化
+  if (isAdmin) initInfoDragSort(c);
 
   // Admin controls
   const adminCtrl = document.getElementById('infoAdminControls');
   if (adminCtrl) adminCtrl.style.display = isAdmin ? '' : 'none';
+}
+
+function initInfoDragSort(container) {
+  let dragEl = null, startY = 0, offsetY = 0, placeholder = null;
+  const items = () => [...container.querySelectorAll('.info-sortable-item')];
+
+  container.addEventListener('touchstart', e => {
+    const handle = e.target.closest('[data-drag="true"]');
+    if (!handle) return;
+    dragEl = handle.closest('.info-sortable-item');
+    if (!dragEl) return;
+    const rect = dragEl.getBoundingClientRect();
+    startY = e.touches[0].clientY;
+    offsetY = startY - rect.top;
+    dragEl.classList.add('dragging');
+    dragEl.style.position = 'relative';
+    dragEl.style.zIndex = '100';
+    e.preventDefault();
+  }, { passive: false });
+
+  container.addEventListener('touchmove', e => {
+    if (!dragEl) return;
+    e.preventDefault();
+    const y = e.touches[0].clientY;
+    const dy = y - startY;
+    dragEl.style.transform = `translateY(${dy}px)`;
+
+    // Find target position
+    items().forEach(item => {
+      if (item === dragEl) return;
+      item.classList.remove('drag-over-top', 'drag-over-bottom');
+      const rect = item.getBoundingClientRect();
+      const mid = rect.top + rect.height / 2;
+      if (y > rect.top && y < mid) item.classList.add('drag-over-top');
+      else if (y >= mid && y < rect.bottom) item.classList.add('drag-over-bottom');
+    });
+  }, { passive: false });
+
+  container.addEventListener('touchend', async () => {
+    if (!dragEl) return;
+    // Find drop target
+    const allItems = items();
+    let targetIdx = -1;
+    let insertBefore = true;
+    allItems.forEach((item, idx) => {
+      if (item.classList.contains('drag-over-top')) { targetIdx = idx; insertBefore = true; }
+      if (item.classList.contains('drag-over-bottom')) { targetIdx = idx; insertBefore = false; }
+      item.classList.remove('drag-over-top', 'drag-over-bottom');
+    });
+
+    dragEl.classList.remove('dragging');
+    dragEl.style.position = '';
+    dragEl.style.zIndex = '';
+    dragEl.style.transform = '';
+
+    if (targetIdx >= 0) {
+      const target = allItems[targetIdx];
+      if (insertBefore) container.insertBefore(dragEl, target);
+      else if (target.nextSibling) container.insertBefore(dragEl, target.nextSibling);
+      else container.appendChild(dragEl);
+
+      // Save new order to Firebase
+      const newOrder = [...container.querySelectorAll('.info-sortable-item')]
+        .map(el => el.dataset.sectionKey).filter(Boolean);
+      await db.ref(ROOT + '/info_section_order').set(newOrder);
+    }
+    dragEl = null;
+  });
 }
 
 function openInfoEditor() {
