@@ -90,6 +90,18 @@
 - **専門判断**（モルック、技術選定）: `sp-brain/knowledge/` も参照
 - **過去の判断を踏襲**: `sp-brain/memory/decisions/` を確認
 
+#### 日報用アクティビティ記録（セッション中に都度実行）
+- **大きな作業が完了するたびに**、Firebase `/daily-activities/YYYY-MM-DD` にPOSTで追記する
+- セッション終了を待たず、都度書き込む（セッション切断時のデータ消失を防ぐ）
+- 書き込みコマンド例:
+  ```
+  curl -s -X POST "https://viisi-master-app-default-rtdb.firebaseio.com/daily-activities/YYYY-MM-DD.json" \
+    -H "Content-Type: application/json" \
+    -d '{"time": "HH:MM", "items": ["作業内容1", "作業内容2"]}'
+  ```
+- 記録対象: WP記事投稿、API設定変更、Firebase更新、Vercelデプロイ、調査・分析、ツール構築など（コミットに残らない作業すべて）
+- 毎朝4時の日報GASがコミット＋この活動ログを合算してGemini要約を生成
+
 #### 記憶の蓄積（セッション中に随時）
 - **セッションログ**: セッション終了時に `sp-brain/memory/sessions/YYYYMMDD.md` を作成（テンプレート: `SESSION-TEMPLATE.md`）
 - **重要な判断**: `sp-brain/memory/decisions/YYYYMMDD-topic.md` に保存
