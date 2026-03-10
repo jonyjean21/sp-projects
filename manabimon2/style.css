@@ -117,6 +117,7 @@ html, body {
   justify-content: center;
 }
 .partner-svg-wrap svg { width: 100%; height: 100%; animation: float 3s ease-in-out infinite; }
+.partner-svg-wrap .mon-img { width: 120px; height: 120px; object-fit: contain; animation: float 3s ease-in-out infinite; }
 .partner-info { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
 .partner-name { font-size: 20px; font-weight: 800; color: var(--text); }
 .lv-badge {
@@ -210,6 +211,7 @@ html, body {
   transform: scale(1.06);
 }
 .starter-card svg { width: 75px; height: 75px; }
+.starter-mon-img { width: 90px; height: 90px; object-fit: contain; }
 .starter-card-name { font-size: 14px; font-weight: 800; color: var(--text); }
 .starter-card-type { font-size: 11px; color: var(--text-sub); }
 .btn-starter-go {
@@ -295,6 +297,7 @@ html, body {
 .result-partner-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .result-partner-svg { width: 80px; height: 80px; }
 .result-partner-svg svg { width: 100%; height: 100%; }
+.result-partner-svg .mon-img { width: 80px; height: 80px; object-fit: contain; }
 .result-partner-msg { font-size: 14px; color: var(--text-sub); text-align: center; }
 .result-unlock {
   background: var(--card); border-radius: var(--radius);
@@ -339,6 +342,7 @@ html, body {
   box-shadow: var(--shadow);
 }
 .partner-room-card svg { width: 75px; height: 75px; flex-shrink: 0; }
+.partner-room-img { width: 90px; height: 90px; object-fit: contain; flex-shrink: 0; }
 .partner-room-info { flex: 1; }
 .partner-room-name { font-size: 19px; font-weight: 800; }
 .partner-room-lv { font-size: 13px; color: var(--text-sub); margin-top: 2px; }
@@ -359,6 +363,7 @@ html, body {
   padding: 8px 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.07);
 }
 .collection-item svg { width: 46px; height: 46px; }
+.coll-img { width: 60px; height: 60px; object-fit: contain; }
 .collection-item .c-name { font-size: 9px; text-align: center; color: var(--text); font-weight: 700; }
 .collection-item .c-rank { font-size: 10px; font-weight: 800; }
 .c-rank.rank-B { color: #90A4AE; }
@@ -396,6 +401,8 @@ html, body {
 }
 .zukan-item svg { width: 64px; height: 64px; }
 .zukan-item.locked svg { filter: brightness(0) opacity(0.2); }
+.zukan-img { width: 70px; height: 70px; object-fit: contain; }
+.zukan-item.locked .zukan-img, .zukan-silhouette .zukan-img { filter: brightness(0) opacity(0.25); }
 .zukan-item .z-name { font-size: 10px; font-weight: 700; text-align: center; }
 .zukan-item.locked .z-name { color: #CCC; }
 .zukan-item .z-rank {
@@ -429,6 +436,8 @@ html, body {
 .evo-before, .evo-after { width: 85px; height: 85px; }
 .evo-before svg, .evo-after svg { width: 100%; height: 100%; }
 .evo-after svg { animation: evo-pop 0.5s ease 0.3s both; }
+.evo-img { width: 90px; height: 90px; object-fit: contain; }
+.evo-after .evo-img { animation: evo-pop 0.5s ease 0.3s both; }
 .evo-arrow { font-size: 22px; color: var(--primary); animation: pulse 0.6s ease infinite; }
 .evo-name { font-size: 20px; font-weight: 800; margin: 12px 0 4px; }
 .evo-ok { margin-top: 10px; }
@@ -451,6 +460,7 @@ html, body {
 .unlock-title { font-size: 20px; font-weight: 800; color: var(--primary); margin-bottom: 14px; }
 .unlock-svg-wrap { width: 95px; height: 95px; margin: 0 auto 10px; }
 .unlock-svg-wrap svg { width: 100%; height: 100%; animation: evo-pop 0.4s ease; }
+.unlock-img { width: 95px; height: 95px; object-fit: contain; animation: evo-pop 0.4s ease; }
 .unlock-name { font-size: 19px; font-weight: 800; margin-bottom: 4px; }
 .unlock-rank-badge { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
 .unlock-ok { width: 100%; }

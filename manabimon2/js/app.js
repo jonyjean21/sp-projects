@@ -53,9 +53,13 @@ function getPartnerMonster() {
   return PARTNER_MONSTERS[line.stages[stageIdx]];
 }
 
+function monImg(id, cls = '') {
+  return `<img src="img/${id}.png" class="mon-img${cls ? ' ' + cls : ''}" alt="${id}">`;
+}
+
 function getPartnerSVG() {
   const m = getPartnerMonster();
-  return m ? PARTNER_SVG[m.id] : '';
+  return m ? monImg(m.id) : '';
 }
 
 function getEvoLevel() {
@@ -95,8 +99,8 @@ function addXP(amount) {
       p.stage++;
       const afterId = PARTNER_LINES[p.lineId].stages[p.stage];
       evolutions.push({
-        before: PARTNER_SVG[beforeId],
-        after: PARTNER_SVG[afterId],
+        before: monImg(beforeId, 'evo-img'),
+        after: monImg(afterId, 'evo-img'),
         name: PARTNER_MONSTERS[afterId].name
       });
     }
@@ -323,7 +327,7 @@ async function finishQuiz() {
   const unlockDiv = document.getElementById('result-unlock');
   if (newUnlocks.length > 0) {
     const mon = COLLECTION_MONSTERS[newUnlocks[newUnlocks.length - 1]];
-    document.getElementById('result-unlock-svg').innerHTML = mon.svg;
+    document.getElementById('result-unlock-svg').innerHTML = monImg(mon.id);
     document.getElementById('result-unlock-name').textContent = mon.name;
     unlockDiv.style.display = '';
   } else {
@@ -389,7 +393,7 @@ function spawnParticles() {
 function showUnlockOverlay(monsterId) {
   return new Promise(resolve => {
     const mon = COLLECTION_MONSTERS[monsterId];
-    document.getElementById('unlock-svg-wrap').innerHTML = mon.svg;
+    document.getElementById('unlock-svg-wrap').innerHTML = monImg(mon.id, 'unlock-img');
     document.getElementById('unlock-name').textContent = mon.name;
     const rankMap = { B: '⭐ Bランク', A: '⭐⭐ Aランク', S: '⭐⭐⭐ Sランク' };
     document.getElementById('unlock-rank-badge').textContent = rankMap[mon.rank];
@@ -416,7 +420,7 @@ function renderStarter() {
     card.className = 'starter-card';
     const m = PARTNER_MONSTERS[line.stages[0]];
     card.innerHTML = `
-      ${PARTNER_SVG[m.id]}
+      ${monImg(m.id, 'starter-mon-img')}
       <div class="starter-card-name">${m.name}</div>
       <div class="starter-card-type">${line.icon} ${line.name}</div>`;
     card.addEventListener('click', () => {
@@ -448,7 +452,7 @@ function renderMonsterRoom() {
   const needed = p.level < MAX_LEVEL ? xpForNextLevel(p.level) : 0;
   const pct = needed > 0 ? Math.min(100, (p.xp / needed) * 100) : 100;
   card.innerHTML = `
-    ${PARTNER_SVG[monster.id]}
+    ${monImg(monster.id, 'partner-room-img')}
     <div class="partner-room-info">
       <div class="partner-room-name">${monster.name}</div>
       <div class="partner-room-lv">Lv.${p.level}${p.level >= MAX_LEVEL ? ' MAX' : ''}</div>
@@ -471,7 +475,7 @@ function renderMonsterRoom() {
       const item = document.createElement('div');
       item.className = `collection-item rank-${mon.rank}`;
       item.innerHTML = `
-        ${mon.svg}
+        ${monImg(mon.id, 'coll-img')}
         <div class="c-name">${mon.name}</div>
         <div class="c-rank rank-${mon.rank}">${mon.rank}ランク</div>`;
       grid.appendChild(item);
@@ -508,7 +512,7 @@ function renderZukan(tab) {
     const item = document.createElement('div');
     item.className = `zukan-item${isUnlocked ? ` rank-${mon.rank}` : ' locked'}`;
     item.innerHTML = `
-      ${mon.svg}
+      ${isUnlocked ? monImg(mon.id, 'zukan-img') : `<div class="zukan-silhouette">${monImg(mon.id, 'zukan-img silhouette')}</div>`}
       <div class="z-name">${isUnlocked ? mon.name : '???'}</div>
       ${isUnlocked ? `<div class="z-rank">${mon.rank}ランク</div>` : ''}`;
     grid.appendChild(item);

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>まなびモン2 — 管理者プレビュー</title>
+  <style>
+    :root {
+      --bg: #0f0f1a;
+      --card: #1a1a2e;
+      --border: #2a2a4a;
+      --text: #e0e0f0;
+      --sub: #888aaa;
+      --primary: #FF6B6B;
+      --gold: #FFD700;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); color: var(--text); font-family: 'Hiragino Maru Gothic ProN', sans-serif; padding: 20px; }
+
+    h1 { font-size: 22px; color: var(--primary); margin-bottom: 4px; }
+    .sub-note { font-size: 12px; color: var(--sub); margin-bottom: 24px; }
+
+    /* セクション */
+    .section { margin-bottom: 36px; }
+    .section-title {
+      font-size: 16px; font-weight: 800;
+      color: var(--gold); border-bottom: 1px solid var(--border);
+      padding-bottom: 8px; margin-bottom: 16px;
+    }
+
+    /* パートナーライン */
+    .line-group { margin-bottom: 28px; }
+    .line-label {
+      font-size: 13px; font-weight: 700; color: var(--sub);
+      margin-bottom: 10px; letter-spacing: 0.05em;
+    }
+    .monster-row { display: flex; gap: 12px; flex-wrap: wrap; }
+
+    /* モンスターカード */
+    .mon-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 14px 12px;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      width: 130px; text-align: center;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .mon-card:hover { transform: translateY(-3px); border-color: var(--primary); }
+    .mon-card svg { width: 90px; height: 90px; }
+    .mon-name { font-size: 13px; font-weight: 800; }
+    .mon-meta { font-size: 10px; color: var(--sub); line-height: 1.5; }
+    .mon-lv {
+      font-size: 11px; font-weight: 700;
+      background: #FF6B6B22; color: var(--primary);
+      border-radius: 20px; padding: 2px 10px;
+    }
+
+    /* コレクショングリッド */
+    .coll-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .coll-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 10px 8px;
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      width: 90px; text-align: center;
+    }
+    .coll-card svg { width: 60px; height: 60px; }
+    .coll-name { font-size: 9px; font-weight: 700; }
+    .rank-tag {
+      font-size: 10px; font-weight: 800;
+      border-radius: 10px; padding: 1px 8px;
+    }
+    .rank-B .rank-tag { background: #90A4AE22; color: #90A4AE; }
+    .rank-A .rank-tag { background: #66BB6A22; color: #66BB6A; }
+    .rank-S .rank-tag { background: #FFD70022; color: #FFD700; }
+
+    /* 科目ラベル */
+    .subj-header {
+      font-size: 12px; font-weight: 700; color: var(--sub);
+      margin: 12px 0 6px; letter-spacing: 0.04em;
+    }
+
+    /* 進化情報 */
+    .evo-info {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px; background: #FFD70011;
+      border: 1px solid #FFD70033; border-radius: 10px;
+      font-size: 12px; color: #FFD700; margin-bottom: 16px;
+    }
+
+    /* 科目ランク説明 */
+    .rank-explain {
+      display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;
+    }
+    .rank-chip {
+      font-size: 11px; font-weight: 700;
+      padding: 4px 12px; border-radius: 20px;
+    }
+    .rank-chip.B { background: #90A4AE22; color: #90A4AE; }
+    .rank-chip.A { background: #66BB6A22; color: #66BB6A; }
+    .rank-chip.S { background: #FFD70022; color: #FFD700; }
+
+    /* 問題サマリ */
+    .q-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .q-table th { text-align: left; padding: 6px 10px; color: var(--sub); border-bottom: 1px solid var(--border); }
+    .q-table td { padding: 6px 10px; border-bottom: 1px solid var(--border); }
+    .q-table tr:last-child td { border-bottom: none; }
+  </style>
+</head>
+<body>
+  <h1>🐲 まなびモン2 — 管理者プレビュー</h1>
+  <p class="sub-note">全モンスター・コレクション・科目サマリの確認ページ</p>
+
+  <!-- パートナーモンスター -->
+  <div class="section">
+    <div class="section-title">🐣 パートナーモンスター（育成ライン × 3）</div>
+
+    <div class="evo-info">
+      ⚡ 進化タイミング: Lv3 でステージ1へ、Lv7 でステージ2（最終形）へ。最大レベルは Lv12。
+    </div>
+
+    <div id="partner-preview"></div>
+  </div>
+
+  <!-- コレクションモンスター -->
+  <div class="section">
+    <div class="section-title">✨ コレクションモンスター（7科目 × 3ランク = 21体）</div>
+
+    <div class="rank-explain">
+      <span class="rank-chip B">Bランク — 正解 1問以上</span>
+      <span class="rank-chip A">Aランク — 正解率 80%以上</span>
+      <span class="rank-chip S">Sランク — 全問正解（金色）</span>
+    </div>
+
+    <div id="coll-preview"></div>
+  </div>
+
+  <!-- 問題サマリ -->
+  <div class="section">
+    <div class="section-title">📚 収録問題サマリ</div>
+    <table class="q-table">
+      <thead>
+        <tr>
+          <th>科目</th>
+          <th>問題数</th>
+          <th>内容</th>
+          <th>XP（全問正解）</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>九九</td><td>15問</td><td>1〜9段のかけ算、4択</td><td>150 XP</td></tr>
+        <tr><td>たしひき算</td><td>15問</td><td>2桁±2桁、繰り上がり/下がり</td><td>150 XP</td></tr>
+        <tr><td>かんじ</td><td>15問</td><td>2年生漢字の読み、4択</td><td>150 XP</td></tr>
+        <tr><td>たんい</td><td>10問</td><td>cm/m/km/L/dL/g/kg換算</td><td>100 XP</td></tr>
+        <tr><td>さんすう文章</td><td>10問</td><td>1〜2ステップの文章題</td><td>100 XP</td></tr>
+        <tr><td>こくご文章</td><td>10問</td><td>短文読解・反対語</td><td>100 XP</td></tr>
+        <tr><td>えいご</td><td>10問</td><td>色・数・あいさつ・アルファベット</td><td>100 XP</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+<script src="js/data.js"></script>
+<script>
+// ── パートナープレビュー ──
+const partnerWrap = document.getElementById('partner-preview');
+
+const lineInfo = {
+  fire:  { label: '🔥 ホノライン（炎タイプ）',  stages: ['fire_0','fire_1','fire_2'],  stageLv: ['Lv1〜2','Lv3〜6','Lv7〜12'] },
+  water: { label: '💧 ミズライン（水タイプ）',  stages: ['water_0','water_1','water_2'], stageLv: ['Lv1〜2','Lv3〜6','Lv7〜12'] },
+  grass: { label: '🌿 クサライン（草タイプ）',  stages: ['grass_0','grass_1','grass_2'], stageLv: ['Lv1〜2','Lv3〜6','Lv7〜12'] }
+};
+const stageLabels = ['ステージ1（スタート）','ステージ2（第1進化）','ステージ3（最終形）'];
+
+for (const [lineId, info] of Object.entries(lineInfo)) {
+  const group = document.createElement('div');
+  group.className = 'line-group';
+  group.innerHTML = `<div class="line-label">${info.label}</div>`;
+  const row = document.createElement('div');
+  row.className = 'monster-row';
+  info.stages.forEach((stageId, i) => {
+    const mon = PARTNER_MONSTERS[stageId];
+    const card = document.createElement('div');
+    card.className = 'mon-card';
+    card.innerHTML = `
+      <img src="img/${stageId}.png" style="width:90px;height:90px;object-fit:contain">
+      <div class="mon-name">${mon.name}</div>
+      <div class="mon-meta">${stageLabels[i]}<br>${info.stageLv[i]}</div>
+      <div class="mon-lv">${i === 2 ? '最終形' : i === 0 ? 'スターター' : '進化1'}</div>
+    `;
+    row.appendChild(card);
+  });
+  group.appendChild(row);
+  partnerWrap.appendChild(group);
+}
+
+// ── コレクションプレビュー ──
+const collWrap = document.getElementById('coll-preview');
+const subjNames = {
+  kuku: '九九', tashihiki: 'たしひき算', kanji: 'かんじ',
+  tani: 'たんい', sansu: 'さんすう文章', kokugo: 'こくご文章', eigo: 'えいご'
+};
+const subjIcons = {
+  kuku: '✖️', tashihiki: '➕', kanji: '📝', tani: '📏', sansu: '📖', kokugo: '🖊️', eigo: '🔤'
+};
+
+for (const subj of ['kuku','tashihiki','kanji','tani','sansu','kokugo','eigo']) {
+  const header = document.createElement('div');
+  header.className = 'subj-header';
+  header.textContent = `${subjIcons[subj]} ${subjNames[subj]}`;
+  collWrap.appendChild(header);
+
+  const row = document.createElement('div');
+  row.className = 'coll-row';
+  for (const rank of ['B','A','S']) {
+    const mon = COLLECTION_MONSTERS[`${subj}_${rank}`];
+    const card = document.createElement('div');
+    card.className = `coll-card rank-${rank}`;
+    card.innerHTML = `
+      <img src="img/${mon.id}.png" style="width:60px;height:60px;object-fit:contain">
+      <div class="coll-name">${mon.name}</div>
+      <div class="rank-tag">${rank}ランク</div>
+    `;
+    row.appendChild(card);
+  }
+  collWrap.appendChild(row);
+}
+</script>
+</body>
+</html>
