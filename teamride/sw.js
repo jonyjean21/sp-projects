@@ -1,4 +1,4 @@
-const CACHE_NAME = 'teamride-v3';
+const CACHE_NAME = 'teamride-v4';
 const ASSETS = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', e => {
@@ -16,11 +16,10 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Network-first for everything: always try to get latest, fallback to cache for offline
+  // Network-first: bypass HTTP cache to always get latest from server
   e.respondWith(
-    fetch(e.request)
+    fetch(e.request, { cache: 'no-cache' })
       .then(res => {
-        // Cache successful responses for offline use
         if (res.ok && e.request.method === 'GET') {
           const clone = res.clone();
           caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
