@@ -229,57 +229,182 @@ const PARTNER_SVG = {
 
 // ── コレクションモンスター SVG 生成 ────────────────────────
 
-const COLL_COLORS = {
-  B: { body: '#90A4AE', hi: '#B0BEC5', eye: '#546E7A', text: '#ECEFF1' },
-  A: { kuku: { body: '#EF5350', hi: '#FF7043', eye: '#B71C1C' },
-       tashihiki: { body: '#26C6DA', hi: '#4DD0E1', eye: '#00838F' },
-       kanji: { body: '#AB47BC', hi: '#CE93D8', eye: '#6A1B9A' },
-       tani: { body: '#FFA726', hi: '#FFD54F', eye: '#E65100' },
-       sansu: { body: '#26A69A', hi: '#80CBC4', eye: '#00695C' },
-       kokugo: { body: '#42A5F5', hi: '#90CAF9', eye: '#1565C0' },
-       eigo: { body: '#EC407A', hi: '#F48FB1', eye: '#880E4F' } },
-  S: { body: '#FFD700', hi: '#FFF9C4', eye: '#FF6F00', text: '#FFF9C4' }
-};
-
 function makeCollSVG(type, rank) {
-  const symbols = {
-    kuku: '×', tashihiki: '±', kanji: '字',
-    tani: 'm', sansu: '?', kokugo: '文', eigo: 'A'
+  // ── カラーパレット ──
+  const aColors = {
+    kuku:      { m: '#EF5350', h: '#FF8A80', d: '#B71C1C' },
+    tashihiki: { m: '#29B6F6', h: '#E1F5FE', d: '#0277BD' },
+    kanji:     { m: '#AB47BC', h: '#E1BEE7', d: '#6A1B9A' },
+    tani:      { m: '#FF7043', h: '#FFCCBC', d: '#BF360C' },
+    sansu:     { m: '#26A69A', h: '#B2DFDB', d: '#004D40' },
+    kokugo:    { m: '#5C6BC0', h: '#C5CAE9', d: '#283593' },
+    eigo:      { m: '#EC407A', h: '#FCE4EC', d: '#880E4F' }
   };
-  const sym = symbols[type] || '★';
+  const c = rank === 'B' ? { m: '#78909C', h: '#CFD8DC', d: '#37474F' }
+          : rank === 'S' ? { m: '#FFD700', h: '#FFFDE7', d: '#E65100' }
+          : aColors[type];
 
-  let bc, hc, ec;
-  if (rank === 'B') {
-    bc = '#90A4AE'; hc = '#B0BEC5'; ec = '#546E7A';
-  } else if (rank === 'S') {
-    bc = '#FFD700'; hc = '#FFF9C4'; ec = '#FF6F00';
-  } else {
-    const c = COLL_COLORS.A[type];
-    bc = c.body; hc = c.hi; ec = c.eye;
-  }
-
-  const glow = rank === 'S' ? `<filter id="g${type}${rank}"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>` : '';
-  const glowAttr = rank === 'S' ? `filter="url(#g${type}${rank})"` : '';
-  const stars = rank === 'S'
-    ? `<circle cx="16" cy="16" r="4" fill="#FFF9C4" opacity="0.9"/>
-       <circle cx="80" cy="20" r="3" fill="#FFF9C4" opacity="0.8"/>
-       <circle cx="22" cy="76" r="3" fill="#FFF9C4" opacity="0.8"/>
-       <circle cx="78" cy="74" r="4" fill="#FFF9C4" opacity="0.9"/>`
+  // ── グローフィルタ（Sランク） ──
+  const fid = `f${type}${rank}`;
+  const glowDef = rank === 'S'
+    ? `<filter id="${fid}"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`
     : '';
+  const gA = rank === 'S' ? `filter="url(#${fid})"` : '';
+
+  // ── Sランクのキラキラ ──
+  const sp = rank === 'S' ? `
+    <circle cx="10" cy="10" r="3" fill="${c.h}" opacity="0.9"/>
+    <circle cx="84" cy="8"  r="2" fill="${c.h}" opacity="0.9"/>
+    <circle cx="8"  cy="82" r="2" fill="${c.h}" opacity="0.9"/>
+    <circle cx="85" cy="82" r="3" fill="${c.h}" opacity="0.9"/>
+    <path d="M82 14 L86 14 M84 12 L84 16" stroke="${c.h}" stroke-width="1.5" stroke-linecap="round"/>` : '';
+
+  // ── 目テンプレ（2目共通） ──
+  const E = (x1,y1,x2,y2,r=6.5,p=4) =>
+    `<ellipse cx="${x1}" cy="${y1}"     rx="${r}"   ry="${r+0.5}" fill="white"/>
+     <ellipse cx="${x2}" cy="${y2}"     rx="${r}"   ry="${r+0.5}" fill="white"/>
+     <ellipse cx="${x1}" cy="${y1+0.5}" rx="${p}"   ry="${p+0.5}" fill="${c.d}"/>
+     <ellipse cx="${x2}" cy="${y2+0.5}" rx="${p}"   ry="${p+0.5}" fill="${c.d}"/>
+     <circle  cx="${x1+1}" cy="${y1}"   r="1.5" fill="white"/>
+     <circle  cx="${x2+1}" cy="${y2}"   r="1.5" fill="white"/>`;
+
+  // ── 7種 ボディデザイン ──
+  const bodies = {
+
+    // ★ STAR FIGHTER（九九） — 6芒星ボディ、V眉、牙
+    kuku: `
+      <polygon points="48,14 57,36 80,32 66,52 80,72 57,67 48,88 39,67 16,72 30,52 16,32 39,36"
+               fill="${c.m}" ${gA}/>
+      <polygon points="48,22 54,38 72,36 62,50 72,66 54,63 48,79 42,63 24,66 34,50 24,36 42,38"
+               fill="${c.h}" opacity="0.22"/>
+      ${E(41,48,55,48,6,3.8)}
+      <path d="M33 41 L42 46" stroke="${c.d}" stroke-width="3" stroke-linecap="round"/>
+      <path d="M63 41 L54 46" stroke="${c.d}" stroke-width="3" stroke-linecap="round"/>
+      <path d="M40 59 L48 55 L56 59 L54 65 L42 65 Z" fill="${c.d}"/>
+      <line x1="44" y1="59" x2="44" y2="65" stroke="white" stroke-width="1.5"/>
+      <line x1="48" y1="59" x2="48" y2="65" stroke="white" stroke-width="1.5"/>
+      <line x1="52" y1="59" x2="52" y2="65" stroke="white" stroke-width="1.5"/>
+      <path d="M20 44 Q13 52 20 60" stroke="${c.d}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M76 44 Q83 52 76 60" stroke="${c.d}" stroke-width="2.5" fill="none" stroke-linecap="round"/>`,
+
+    // ❄ ICE CRYSTAL BEAST（たしひき算） — 14芒クリスタル、三角牙
+    tashihiki: `
+      <path d="M48 6 L62 28 L86 24 L74 46 L90 60 L66 62 L64 88 L48 70
+               L32 88 L30 62 L6 60 L22 46 L10 24 L34 28 Z"
+            fill="${c.d}" ${gA}/>
+      <path d="M48 18 L60 34 L80 32 L70 48 L82 58 L62 60 L60 80 L48 66
+               L36 80 L34 60 L14 58 L26 48 L16 32 L36 34 Z"
+            fill="${c.m}"/>
+      <polygon points="48,26 56,40 68,38 62,52 70,62 56,60 54,74 48,62
+                       42,74 40,60 26,62 34,52 28,38 40,40"
+               fill="${c.h}" opacity="0.28"/>
+      ${E(41,44,55,44,6,3.8)}
+      <path d="M33 37 L42 42" stroke="${c.d}" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M63 37 L54 42" stroke="${c.d}" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M39 56 Q48 64 57 56" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <polygon points="48,63 43,72 53,72" fill="white"/>`,
+
+    // 🥷 SCROLL NINJA（かんじ） — 丸ボディ+忍者フード+目スリット+巻物
+    kanji: `
+      <ellipse cx="48" cy="58" rx="28" ry="30" fill="${c.m}" ${gA}/>
+      <circle cx="48" cy="33" r="22" fill="${c.d}"/>
+      <rect x="26" y="27" width="44" height="16" rx="8" fill="${c.h}" opacity="0.7"/>
+      ${E(41,35,55,35,6.5,4.2)}
+      <path d="M32 27 L36 40 Q48 46 60 40 L64 27Z" fill="${c.d}"/>
+      <path d="M34 52 Q48 58 62 52" stroke="${c.h}" stroke-width="1.5" fill="none"/>
+      <path d="M34 60 Q48 66 62 60" stroke="${c.h}" stroke-width="1.5" fill="none"/>
+      <path d="M34 68 Q48 74 62 68" stroke="${c.h}" stroke-width="1.5" fill="none"/>
+      <circle cx="70" cy="44" r="9" fill="${c.d}"/>
+      <circle cx="70" cy="44" r="7" fill="${c.m}"/>
+      <path d="M70 38 L70 50 M64 44 L76 44" stroke="${c.h}" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M29 20 L24 7 L36 17Z" fill="${c.d}"/>
+      <path d="M67 20 L72 7 L60 17Z" fill="${c.d}"/>`,
+
+    // 🤖 MEASURE ROBO（たんい） — 箱ボディ+デジタル目+ものさしアーム
+    tani: `
+      <rect x="22" y="28" width="52" height="54" rx="10" fill="${c.d}" ${gA}/>
+      <rect x="26" y="32" width="44" height="46" rx="8"  fill="${c.m}"/>
+      <rect x="32" y="38" width="32" height="22" rx="5"  fill="${c.d}"/>
+      <rect x="34" y="40" width="28" height="18" rx="4"  fill="${c.h}" opacity="0.55"/>
+      <rect x="36" y="42" width="10" height="13" rx="2.5" fill="${c.d}"/>
+      <rect x="50" y="42" width="10" height="13" rx="2.5" fill="${c.d}"/>
+      <rect x="37" y="43" width="8"  height="11" rx="2"   fill="white"/>
+      <rect x="51" y="43" width="8"  height="11" rx="2"   fill="white"/>
+      <ellipse cx="41" cy="48" rx="3"   ry="4.5" fill="${c.d}"/>
+      <ellipse cx="55" cy="48" rx="3"   ry="4.5" fill="${c.d}"/>
+      <circle cx="41.5" cy="47" r="1.2" fill="white"/>
+      <circle cx="55.5" cy="47" r="1.2" fill="white"/>
+      <path d="M36 67 L40 62 L44 67 L48 62 L52 67 L56 62 L60 67"
+            stroke="${c.d}" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M34 75 L38 84 M44 77 L46 85 M50 77 L52 85 M58 75 L62 84"
+            stroke="${c.d}" stroke-width="3.5" stroke-linecap="round"/>
+      <rect x="13" y="42" width="11" height="22" rx="5.5" fill="${c.d}"/>
+      <rect x="72" y="42" width="11" height="22" rx="5.5" fill="${c.d}"/>
+      <line x1="13" y1="50" x2="24" y2="50" stroke="${c.h}" stroke-width="1.5"/>
+      <line x1="13" y1="56" x2="24" y2="56" stroke="${c.h}" stroke-width="1.5"/>
+      <line x1="72" y1="50" x2="83" y2="50" stroke="${c.h}" stroke-width="1.5"/>
+      <line x1="72" y1="56" x2="83" y2="56" stroke="${c.h}" stroke-width="1.5"/>
+      <rect x="32" y="22" width="32" height="8" rx="4" fill="${c.d}"/>`,
+
+    // ⚔ GEO KNIGHT（算数文章題） — 三角鎧+?シールド+ランス
+    sansu: `
+      <polygon points="48,6 88,80 8,80"  fill="${c.d}" ${gA}/>
+      <polygon points="48,16 82,76 14,76" fill="${c.m}"/>
+      <polygon points="48,26 74,72 22,72" fill="${c.d}" opacity="0.35"/>
+      ${E(41,42,55,42,6,3.8)}
+      <path d="M33 34 L43 40" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M63 34 L53 40" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M38 54 Q48 62 58 54" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <circle cx="48" cy="67" r="9" fill="${c.d}"/>
+      <text x="48" y="72" text-anchor="middle" font-size="12" font-weight="900"
+            fill="white" font-family="sans-serif">?</text>
+      <rect x="4" y="44" width="6" height="40" rx="3" fill="${c.d}"/>
+      <polygon points="4,44 10,44 7,32" fill="${c.d}"/>
+      <circle cx="7" cy="31" r="3" fill="${c.m}"/>`,
+
+    // 🐉 INK DRAGON（国語文章題） — ドラゴン頭+蛇身+ひれ翼+角
+    kokugo: `
+      <path d="M18 84 Q6 62 12 38 Q20 16 44 10 Q68 4 78 20
+               Q88 38 82 60 Q76 78 58 86
+               Q76 90 86 82 Q80 96 60 94
+               Q50 98 38 90 Q20 90 18 84Z"
+            fill="${c.m}" ${gA}/>
+      <circle cx="48" cy="36" r="24" fill="${c.m}"/>
+      <ellipse cx="48" cy="44" rx="15" ry="10" fill="${c.h}" opacity="0.4"/>
+      ${E(40,30,56,30,7.5,4.5)}
+      <path d="M31 22 L40 28" stroke="${c.d}" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M65 22 L56 28" stroke="${c.d}" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M37 47 Q48 56 59 47" stroke="${c.h}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M34 46 Q26 56 30 64 Q36 54 44 52Z" fill="${c.d}"/>
+      <path d="M62 46 Q70 56 66 64 Q60 54 52 52Z" fill="${c.d}"/>
+      <path d="M26 12 Q20 3  28 1  Q30 9  26 12Z" fill="${c.d}"/>
+      <path d="M36 8  Q34 -1 43 0  Q41 8  36 8Z"  fill="${c.d}"/>
+      <path d="M70 12 Q76 3  68 1  Q66 9  70 12Z" fill="${c.d}"/>`,
+
+    // 🌍 WORLD RIDER（えいご） — 地球儀+ゴーグル+翼
+    eigo: `
+      <circle cx="48" cy="50" r="34" fill="${c.d}" ${gA}/>
+      <circle cx="48" cy="50" r="30" fill="${c.m}"/>
+      <path d="M18 50 Q48 43 78 50 Q48 57 18 50Z" fill="${c.d}" opacity="0.5"/>
+      <path d="M20 36 Q48 30 76 36 Q48 42 20 36Z" fill="${c.d}" opacity="0.3"/>
+      <path d="M20 64 Q48 58 76 64 Q48 70 20 64Z" fill="${c.d}" opacity="0.3"/>
+      <path d="M48 20 Q54 35 54 50 Q54 65 48 80 Q42 65 42 50 Q42 35 48 20Z"
+            fill="${c.d}" opacity="0.5"/>
+      <rect x="25" y="37" width="46" height="20" rx="10" fill="${c.d}" opacity="0.88"/>
+      <ellipse cx="38" cy="47" rx="9.5" ry="8"   fill="white"/>
+      <ellipse cx="58" cy="47" rx="9.5" ry="8"   fill="white"/>
+      <ellipse cx="38" cy="48" rx="5.5" ry="5"   fill="${c.d}"/>
+      <ellipse cx="58" cy="48" rx="5.5" ry="5"   fill="${c.d}"/>
+      <circle cx="39" cy="46" r="2" fill="white"/>
+      <circle cx="59" cy="46" r="2" fill="white"/>
+      <rect x="46" y="39" width="4" height="14" rx="2" fill="${c.d}" opacity="0.7"/>
+      <path d="M38 59 Q48 66 58 59" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M4 44 Q10 30 20 34 Q16 46 14 54Z" fill="${c.d}"/>
+      <path d="M92 44 Q86 30 76 34 Q80 46 82 54Z" fill="${c.d}"/>`,
+  };
 
   return `<svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
-    <defs>${glow}</defs>
-    ${stars}
-    <ellipse cx="48" cy="56" rx="32" ry="30" fill="${bc}" ${glowAttr}/>
-    <ellipse cx="48" cy="62" rx="20" ry="15" fill="${hc}" opacity="0.5"/>
-    <circle cx="37" cy="48" r="7" fill="white"/>
-    <circle cx="59" cy="48" r="7" fill="white"/>
-    <circle cx="38" cy="49" r="4" fill="${ec}"/>
-    <circle cx="60" cy="49" r="4" fill="${ec}"/>
-    <circle cx="39" cy="48" r="1.5" fill="white"/>
-    <circle cx="61" cy="48" r="1.5" fill="white"/>
-    <text x="48" y="72" text-anchor="middle" font-size="18" font-weight="bold" fill="white" font-family="sans-serif">${sym}</text>
-    <path d="M38 60 Q48 66 58 60" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <defs>${glowDef}</defs>${sp}${bodies[type]}
   </svg>`;
 }
 
