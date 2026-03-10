@@ -76,15 +76,33 @@ WAF対策: mediumサイズ画像を使用、更新の間隔を空ける。
 |---------|------|
 | `tools/tokurashi-gen.py` | 記事生成スクリプト（Gemini+Pexels+WP全自動） |
 | `tools/tokurashi-rewrite.py` | リライトスクリプト（AI臭除去+画像挿入） |
+| `tools/tokurashi-killer.py` | キラーページ（成約記事）自動生成 |
+| `tools/tokurashi-embed-cta.py` | 既存記事にアフィリエイトCTA自動埋め込み |
+| `tools/tokurashi-affiliates.json` | ASPプログラム設定（リンク・CTA・対象カテゴリ） |
 
-## 記事生成コマンド
+## コマンド一覧
 
 ```bash
 # 記事を生成して公開
 python3 tools/tokurashi-gen.py --topic "節約術" --publish
 
-# リライト実行
+# リライト実行（SiteGuard対策済み: 10秒間隔）
 python3 tools/tokurashi-rewrite.py
+
+# キラーページ一覧表示
+python3 tools/tokurashi-killer.py --list
+
+# キラーページ生成（下書き）
+python3 tools/tokurashi-killer.py --program premium_water
+
+# キラーページ生成（公開）
+python3 tools/tokurashi-killer.py --program premium_water --publish
+
+# 既存記事にアフィリエイトCTA埋め込み（対象確認）
+python3 tools/tokurashi-embed-cta.py --dry-run
+
+# CTA埋め込み実行
+python3 tools/tokurashi-embed-cta.py --program premium_water
 ```
 
 環境変数はすべて `.env` に記載済み。
@@ -104,24 +122,53 @@ python3 tools/tokurashi-rewrite.py
 | マネードクター | 🔄 審査中 | 11,279円/件 |
 | 三井住友カード NL | 🔄 審査中 | 4,800円/件 |
 
-## 現在のTODO
+**リンク管理**: `tools/tokurashi-affiliates.json` で一元管理。ASP承認後にa8_linkを追加→各ツールが自動参照。
 
-- [ ] ペルソナ「ゆうこ」リライト再実行（SiteGuard 403で34/35本失敗 → 間隔空けて再実行）
-- [ ] プレミアムウォーター専用キラーページ作成（承認済みなので優先）
-- [ ] 承認済みASPのテキストリンク取得 → 記事埋め込み
-- [ ] 高単価キラーページ作成（保険見直し / クレカ比較 / ウォーターサーバー比較）
-- [ ] 審査中ASPの承認待ち → 承認次第テキストリンク取得
+## 全自動化ロードマップ
+
+### Phase 1: 足元固め（〜3/14）
+- [ ] リライト再実行（SiteGuard対策済み: sleep 10秒）
+- [ ] A8.netでプレミアムウォーターのアフィリンクURL取得 → affiliates.jsonに登録
+- [ ] プレミアムウォーター キラーページ生成・投稿（`tokurashi-killer.py`）
+- [ ] 既存35記事にプレミアムウォーターCTA埋め込み（`tokurashi-embed-cta.py`）
+
+### Phase 2: 高単価記事量産（3/15〜3/31）
+- [ ] A8.net審査状況確認 → 承認済みASPのリンク取得 → affiliates.json更新
+- [ ] 保険見直しラボ キラーページ生成（承認後）
+- [ ] マネードクター キラーページ生成（承認後）
+- [ ] 三井住友カードNL キラーページ生成（承認後）
+- [ ] 内部リンク最適化（集客記事→キラーページへの導線）
+
+### Phase 3: 自律運用（4月〜）
+- [ ] GASで週2記事の定期自動投稿
+- [ ] GA4 API連携 → PV上位記事にアフィリンク集中
+- [ ] Search Console分析 → 検索クエリからニーズ把握
+- [ ] リライト第2弾（検索流入ある記事を強化）
+- [ ] 新カテゴリ検討（格安SIM比較、電力会社乗り換え等）
+- [ ] 月次レポート自動生成
+
+## 収益シミュレーション
+
+| 案件 | 単価 | 月1件 | 月3件 |
+|------|------|-------|-------|
+| プレミアムウォーター | ¥12,000 | ¥12,000 | ¥36,000 |
+| 保険見直しラボ | ¥10,000 | ¥10,000 | ¥30,000 |
+| マネードクター | ¥11,279 | ¥11,279 | ¥33,837 |
+| 三井住友カードNL | ¥4,800 | ¥4,800 | ¥14,400 |
+
+**中期目標**: 高単価3件 × 月1件 = **¥33,279/月**
 
 ## 収益目標
 
-| フェーズ | 目標 | 主な施策 |
-|---------|------|---------|
-| 〜3ヶ月 | ASP初承認 + 初成約 | プレミアムウォーター記事 + リライト |
-| 3〜6ヶ月 | 月1〜3万円 | 高単価キラーページ + SEO強化 |
-| 6ヶ月〜 | 月5万円以上 | 記事拡充 + スポンサー |
+| フェーズ | 期間 | 目標 | 主な施策 |
+|---------|------|------|---------|
+| Phase 1 | 〜3月 | ASP初成約 | プレミアムウォーター集中 + リライト |
+| Phase 2 | 3〜6月 | 月1〜3万円 | 高単価キラーページ4本 + SEO強化 |
+| Phase 3 | 6月〜 | 月5万円以上 | 自律運用 + 記事拡充 |
 
 ## メモ
 
 - SPECIALな記事（保険・クレカ）はGoogleのYMYL評価対象 → ペルソナの実体験風に書く
 - ConoHa WINGはGoogleIP/MicrosoftIPをブロック → GASからの直接投稿不可
 - Gemini APIキーは `.env` の `GEMINI_API_KEY`
+- SiteGuard WAF対策: API呼び出しは10秒間隔、medium画像使用

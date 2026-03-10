@@ -276,8 +276,8 @@ def main():
         wp_update(post_id, {'content': full_body})
         print(f'  → 完了！')
 
-        # レートリミット回避
-        time.sleep(2)
+        # レートリミット回避（SiteGuard WAF対策: 10秒間隔）
+        time.sleep(10)
 
     print(f'\n全{len(posts)}記事のリライト完了！')
 
