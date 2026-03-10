@@ -1,34 +1,183 @@
-[
-  {
-    "firebase_key": "-OnI9gyf6XZLeb7DgiCi",
-    "action": "posted",
-    "post_id": 6573,
-    "title": "松本市モルック大会（20チーム出場）",
-    "event_date": "20260215",
-    "area": "nagano",
-    "source_url": "https://twitter.com/jicoco3144/status/2031025070580347303",
-    "processed_at": "2026-03-10"
-  },
-  {
-    "firebase_key": "-OnIItlOAjwfrGXOH4LA",
-    "action": "posted",
-    "post_id": 6574,
-    "title": "山形市モルック競技大会（小学生・23チーム）",
-    "event_date": "20260222",
-    "area": "yamagata",
-    "source_url": "https://twitter.com/NVawrYW8Ke24826/status/2031034834035060904",
-    "processed_at": "2026-03-10"
-  },
-  {
-    "firebase_key": "-OnIMOay9ZgrcxlWCOrw",
-    "action": "skipped",
-    "reason": "山形市記事の重複（NVawrYW8Ke24826と同一URL）",
-    "processed_at": "2026-03-10"
-  },
-  {
-    "firebase_key": "-OnJdjF0kr52tR56hsbO",
-    "action": "skipped",
-    "reason": "練習会のため対象外",
-    "processed_at": "2026-03-10"
-  }
-]
+{
+  "date": "2026-03-10",
+  "total": 33,
+  "posted": 7,
+  "skipped": 26,
+  "entries": [
+    {
+      "fb_key": "-OnMBFX3iNE0MUyYB1nD",
+      "action": "posted",
+      "post_id": 6575,
+      "title": "ファミリーカップ（モルックドーム）"
+    },
+    {
+      "fb_key": "-OnLcncfxoOmF8PLGeGf",
+      "action": "posted",
+      "post_id": 6576,
+      "title": "モルック・エグゼクティブサークル（モルエグ）第1回"
+    },
+    {
+      "fb_key": "-OnLn1O-OEZ9auDkk6NQ",
+      "action": "posted",
+      "post_id": 6577,
+      "title": "鉄モルin山梨県昭和町"
+    },
+    {
+      "fb_key": "-OnLkkwkEGbAChbpEbI2",
+      "action": "posted",
+      "post_id": 6578,
+      "title": "モルック体験会 at 町田シバヒロ"
+    },
+    {
+      "fb_key": "-OnKFg8DqoAz5N1P78hg",
+      "action": "posted",
+      "post_id": 6579,
+      "title": "第21回モルック世界大会（ヘルシンキ）"
+    },
+    {
+      "fb_key": "-OnLtvOl4KtvjziyEgaA",
+      "action": "skipped",
+      "reason": "個人募集"
+    },
+    {
+      "fb_key": "-OnMCLFQHhre4Uk2M6kI",
+      "action": "skipped",
+      "reason": "過去大会記事"
+    },
+    {
+      "fb_key": "-OnLaRx9KjBKCfoRCljf",
+      "action": "skipped",
+      "reason": "個人感想"
+    },
+    {
+      "fb_key": "-OnMBFTtMFRzzsInwqD3",
+      "action": "skipped",
+      "reason": "他スポーツイベント内体験"
+    },
+    {
+      "fb_key": "-OnMSPK66PWn-_MjAD5m",
+      "action": "skipped",
+      "reason": "未確定イベント"
+    },
+    {
+      "fb_key": "-OnKmz0sc4l_PIVyXsSn",
+      "action": "skipped",
+      "reason": "YouTube過去大会動画"
+    },
+    {
+      "fb_key": "-OnLR6xyijfTvsSZbT0N",
+      "action": "skipped",
+      "reason": "過去大会結果報告"
+    },
+    {
+      "fb_key": "-OnMDQmk5Klio92ynt7z",
+      "action": "skipped",
+      "reason": "日時不明の体験会告知"
+    },
+    {
+      "fb_key": "-OnKPsV_3eNByFRJcuOn",
+      "action": "skipped",
+      "reason": "既存大会ID:4385と重複"
+    },
+    {
+      "fb_key": "-OnKCG0JvKfveNUNOvAG",
+      "action": "skipped",
+      "reason": "継続体験会(日時不明)"
+    },
+    {
+      "fb_key": "-OnKSFqPGSodpn_YFxjf",
+      "action": "skipped",
+      "reason": "リプライ(企画提案)"
+    },
+    {
+      "fb_key": "-OnM8yUGSuQAeZ3jBb2q",
+      "action": "skipped",
+      "reason": "個人感想(世界大会向け英語勉強)"
+    },
+    {
+      "fb_key": "-OnLluJuKAnZW2_-BJEM",
+      "action": "skipped",
+      "reason": "過去イベントレポート"
+    },
+    {
+      "fb_key": "-OnKo4p6PpguFdHQndlo",
+      "action": "skipped",
+      "reason": "新聞記事(詳細不明)"
+    },
+    {
+      "fb_key": "-OnK4DQ1bsuBJp7uCOvZ",
+      "action": "skipped",
+      "reason": "バーイベント(今日限り)"
+    },
+    {
+      "fb_key": "-OnKtrq0efqRDuyHEyBs",
+      "action": "skipped",
+      "reason": "過去大会結果(3/7)"
+    },
+    {
+      "fb_key": "-OnMI1bfsGhifVmcfak9",
+      "action": "skipped",
+      "reason": "YouTube過去大会動画"
+    },
+    {
+      "fb_key": "-OnKv-_cA-VVS_wbwkTb",
+      "action": "skipped",
+      "reason": "過去大会結果(2/22)"
+    },
+    {
+      "fb_key": "-OnMTZWd7gwKRneiQmo0",
+      "action": "skipped",
+      "reason": "個人感想"
+    },
+    {
+      "fb_key": "-OnMpUmLtKf-4r8VcuSN",
+      "action": "posted",
+      "post_id": 6580,
+      "title": "岩泉・八幡平市 モルック大会 2026",
+      "source": "https://twitter.com/ohnodream_iwate/status/2031354028039545165"
+    },
+    {
+      "fb_key": "-OnMpUp_XZuuuypHsLa_",
+      "action": "posted",
+      "post_id": 6581,
+      "title": "会社対抗モルック2026春 西日本大会",
+      "source": "https://twitter.com/molkky_mania/status/2031354390246748463",
+      "note": "東日本大会(ID:6569)は重複のためスキップ"
+    },
+    {
+      "fb_key": "-OnMsrgnM9atJYK0bf2L",
+      "action": "skipped",
+      "reason": "過去大会写真(日時不明)"
+    },
+    {
+      "fb_key": "-OnMrdiulh1bZjbLv6Kh",
+      "action": "skipped",
+      "reason": "感謝投稿(新規大会情報なし)"
+    },
+    {
+      "fb_key": "-OnN0vGYvF4bq5d6M19y",
+      "action": "skipped",
+      "reason": "参戦報告(終了済み大会)"
+    },
+    {
+      "fb_key": "-OnMpUj7jgm09vbBGv7m",
+      "action": "skipped",
+      "reason": "試合動画(終了済み大会)"
+    },
+    {
+      "fb_key": "-OnMrddouSewdLD_fUY-",
+      "action": "skipped",
+      "reason": "モルック購入報告"
+    },
+    {
+      "fb_key": "-OnMn6qe-ua5fakJ2uo3",
+      "action": "skipped",
+      "reason": "遠征感想"
+    },
+    {
+      "fb_key": "-OnN4Rl-xsPQjWZ2M8wT",
+      "action": "skipped",
+      "reason": "エントリー備忘録画像のみ(情報不足)"
+    }
+  ]
+}
