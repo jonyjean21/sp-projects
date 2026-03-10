@@ -1236,7 +1236,7 @@ function renderMembers() {
     const numLabel = m.number != null ? '#' + m.number : '';
     const icons = [];
     if (m.can_carry_large) icons.push('🚛');
-    if (m.childseat_count > 0) icons.push('🪑' + m.childseat_count);
+    if (m.childseat_count > 0) icons.push('🧸' + m.childseat_count);
     return `<div class="list-item" onclick="showMemberDetail('${id}')">
       ${z ? '<span class="zone-dot" style="background:'+escapeHtml(z.color)+'"></span>' : '<span style="width:10px"></span>'}
       <div class="list-item-info">
@@ -1266,7 +1266,7 @@ function showMemberDetail(id) {
     <div class="card" style="padding:12px">`;
 
   if (car) html += `<div style="font-size:14px;padding:4px 0">🚗 ${escapeHtml(car)}${m.car_max_passengers ? '（空き'+m.car_max_passengers+'席）' : ''}</div>`;
-  if (m.childseat_count > 0) html += `<div style="font-size:14px;padding:4px 0">🪑 チャイルドシート ${m.childseat_count}台</div>`;
+  if (m.childseat_count > 0) html += `<div style="font-size:14px;padding:4px 0">🧸 チャイルドシート ${m.childseat_count}台</div>`;
   if (m.can_carry_large) html += `<div style="font-size:14px;padding:4px 0">🚛 大きい荷物運搬可</div>`;
   if (m.nearby_members && m.nearby_members.length > 0) {
     const nearbyNames = m.nearby_members.map(nid => membersData[nid]?.name || '').filter(Boolean);
