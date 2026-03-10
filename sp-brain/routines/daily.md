@@ -23,14 +23,21 @@
 
 ## 夕方（セッション終了時）
 
-### 1. 進捗記録
-- 今日やったことを `sp-brain/memory/learnings/` に記録
-- 重要な判断があれば `sp-brain/memory/decisions/` に保存
+### 1. セッションログ作成
+- `sp-brain/memory/sessions/YYYYMMDD.md` を作成（テンプレート: SESSION-TEMPLATE.md）
+- やったこと、判断、学び、未完了を記録
+- 重要な判断は別途 `sp-brain/memory/decisions/` にも保存
 
-### 2. コンテキスト更新
+### 2. 記憶への反映チェック
+- decisions/ に保存すべき判断があるか → 保存
+- learnings/ に保存すべき学びがあるか → 保存
+- people/ を更新すべき人物情報があるか → 更新
+- knowledge/ を更新すべきドメイン知識があるか → 更新
+
+### 3. コンテキスト更新
 - `sp-brain/context/current-priorities.md` を最新化
 - 明日のアクションを `tasks/current.md` に追記
 
-### 3. Inbox整理
+### 4. Inbox整理
 - 処理済みのメモを `inbox/done/` に移動
 - 未処理のSP向け相談があれば `[REVIEW]` で残す

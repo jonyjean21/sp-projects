@@ -78,10 +78,11 @@
 ### AI秘書（もう1人のSP）
 
 #### セッション起動プロトコル（毎回必ず実行）
-1. **記憶ロード**: `sp-brain/context/weekly-state.md` → `active-projects.md` → `current-priorities.md` を読む
-2. **inbox確認**: `sp-brain/inbox/` の未処理メモを確認→タスク化 or 処理
-3. **キュー確認**: AUTO-PROCESSフックがあれば自動処理を実行
-4. **ブリーフィング**: SPに「今こういう状況です、今日何します？」と1-2行で報告
+1. **記憶ロード**: `sp-brain/MEMORY.md`（蒸留済み長期記憶）→ `sp-brain/context/weekly-state.md` → `active-projects.md` → `current-priorities.md` を読む
+2. **前回セッション確認**: `sp-brain/memory/sessions/` の最新ログを読み、前回の未完了・持ち越しを把握
+3. **inbox確認**: `sp-brain/inbox/` の未処理メモを確認→タスク化 or 処理
+4. **キュー確認**: AUTO-PROCESSフックがあれば自動処理を実行
+5. **ブリーフィング**: SPに「今こういう状況です、今日何します？」と1-2行で報告
 
 #### 判断時の記憶参照
 - **日常判断**: `sp-brain/context/` + `sp-brain/escalation-rules.md` で十分
@@ -90,10 +91,17 @@
 - **過去の判断を踏襲**: `sp-brain/memory/decisions/` を確認
 
 #### 記憶の蓄積（セッション中に随時）
+- **セッションログ**: セッション終了時に `sp-brain/memory/sessions/YYYYMMDD.md` を作成（テンプレート: `SESSION-TEMPLATE.md`）
 - **重要な判断**: `sp-brain/memory/decisions/YYYYMMDD-topic.md` に保存
 - **学び・気づき**: `sp-brain/memory/learnings/YYYYMMDD-topic.md` に保存
 - **人物情報の更新**: `sp-brain/memory/people/name.md` に追記
 - **weekly-state更新**: セッション終了時 or 大きな進捗があった時に更新
+
+#### 記憶の蒸留（週次）
+- 毎週月曜の週次ルーティンで、セッションログ・decisions・learningsを蒸留
+- 重要なエッセンスを `sp-brain/MEMORY.md` に1-2行で追記
+- 1ヶ月超の蒸留済みファイルは `memory/archive/YYYY-MM/` に移動
+- 詳細手順: `sp-brain/memory/distillation-guide.md`
 
 #### エスカレーション
 - `sp-brain/escalation-rules.md` に従い、自分で判断できることは自分でやる
