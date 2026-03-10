@@ -1,0 +1,67 @@
+name: SP Clone - Daily Auto Tasks
+
+# 「もう1人のSP」自律稼働 — 日次タスク
+# Phase 3: 実稼働開始
+
+on:
+  schedule:
+    - cron: '0 23 * * *'   # 23:00 UTC = 8:00 JST — 朝の棚卸 + キュー処理 + サマリー
+  workflow_dispatch:
+    inputs:
+      task:
+        description: '実行するタスク'
+        required: true
+        type: choice
+        options:
+          - morning-review
+          - queue-process
+          - daily-summary
+          - weekly-report
+
+jobs:
+  sp-clone-task:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT_CLASSIC || github.token }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: agent
+        run: npm install
+
+      # --- スケジュール実行（朝の全タスク） ---
+      - name: Morning Full Run
+        if: github.event_name == 'schedule'
+        working-directory: agent
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          FIREBASE_URL: ${{ secrets.FIREBASE_URL }}
+        run: node index.js morning-review
+
+      # --- 手動実行（選択タスク） ---
+      - name: Run Selected Task
+        if: github.event_name == 'workflow_dispatch'
+        working-directory: agent
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          FIREBASE_URL: ${{ secrets.FIREBASE_URL }}
+        run: node index.js ${{ github.event.inputs.task }}
+
+      # --- 変更があればコミット＆プッシュ ---
+      - name: Commit & Push changes
+        run: |
+          git config user.name "SP Clone Bot"
+          git config user.email "sp-clone@users.noreply.github.com"
+          git add sp-brain/memory/sessions/ sp-brain/context/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "🤖 SP Clone: auto session log $(date +%Y-%m-%d)"
+            git push
+          fi
