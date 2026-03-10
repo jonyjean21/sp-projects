@@ -13,11 +13,10 @@
 | プロジェクト名 | 用途 |
 |-------------|------|
 | Inbox | ふとしたメモ全部ここ（デフォルト） |
-| MOLKKY HUB | HUB関連タスク |
-| マルタ村 | マルタ村/MACHAP関連 |
-| 収益化 | BOOTH/note/Crowdworks等 |
-| 開発 | GitHub Pages/GAS/Vercel |
-| SPクローン | AI秘書システム自体の改善 |
+| MOLKKY HUB | モルック関連全般 |
+| MACHAP | マルタ村含むコミュニティ運営 |
+| SP-projects | 収益化 + 開発 + AI秘書（SP活動全般） |
+| 日常/雑務 | 個人タスク、買い物、予定 |
 
 ## Step 3: Claude Code に MCP サーバー追加
 
@@ -46,11 +45,14 @@ Todoist は自然言語を理解する:
 明日 記事の構成案作る #MOLKKYHUB p1
 → 明日期限、MOLKKY HUBプロジェクト、優先度1 でタスク作成
 
-来週月曜 パートナー連絡 #収益化
-→ 来週月曜期限、収益化プロジェクト
+来週月曜 パートナー連絡 #SP-projects
+→ 来週月曜期限、SP-projectsプロジェクト
 
-毎週金曜 週次レポート確認 #SPクローン
+毎週金曜 週次レポート確認 #SP-projects
 → 繰り返しタスク
+
+中さんに日程確認 #MACHAP
+→ MACHAPプロジェクト
 ```
 
 ## 使い方（セットアップ後）

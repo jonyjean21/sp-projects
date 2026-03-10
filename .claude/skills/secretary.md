@@ -67,7 +67,7 @@ AI秘書が分類:
 
 ### Todoist Inbox（未分類）
 - 「来月ブースやりたい」→ #MOLKKYHUB に移動しますか？
-- 「〇〇さんに連絡」→ #マルタ村 に移動しますか？
+- 「〇〇さんに連絡」→ #MACHAP に移動しますか？
 
 ### キュー状況
 - チャプ議事録: X件待ち
@@ -99,9 +99,9 @@ AI秘書が分類:
 3. 優先度の再計算:
    - Todoist p1 or `#urgent` → 最上位
    - `#MOLKKYHUB` → 高（MOLKKY HUB優先の原則）
-   - `#マルタ村` → 中
-   - `#収益化` → 中
-   - それ以外 → 低
+   - `#MACHAP` → 中
+   - `#SP-projects` → 中
+   - `#日常/雑務` → 低
 4. 期限切れタスクのハイライト
 5. 更新した tasks/current.md を保存
 
@@ -111,10 +111,9 @@ AI秘書が分類:
 |-------------------|------------|-----------|
 | Inbox | 未分類（ブリーフィングで振り分け） | — |
 | MOLKKY HUB | tasks/current.md @hub | sp-brain/knowledge/molkky/ |
-| マルタ村 | tasks/current.md @marutamura | sp-brain/knowledge/ |
-| 収益化 | tasks/current.md @revenue | sp-brain/knowledge/business/ |
-| 開発 | tasks/current.md @dev | sp-brain/knowledge/tech/ |
-| SPクローン | tasks/current.md @clone | sp-brain/ 自体の改善 |
+| MACHAP | tasks/current.md @machap | sp-brain/knowledge/ |
+| SP-projects | tasks/current.md @sp | sp-brain/knowledge/business/ + tech/ |
+| 日常/雑務 | tasks/current.md @daily | — |
 
 ## エスカレーション判断
 
