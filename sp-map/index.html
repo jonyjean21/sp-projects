@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SP-Projects Map</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0a0f;
+  color: #e0e0e0;
+  font-family: 'Segoe UI', 'Hiragino Sans', sans-serif;
+  overflow-x: hidden;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  padding: 30px 20px 10px;
+}
+.header h1 {
+  font-size: 1.6rem;
+  color: #00ffd5;
+  text-shadow: 0 0 20px rgba(0,255,213,0.3);
+  letter-spacing: 2px;
+}
+.header p {
+  color: #666;
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+/* Tab Navigation */
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 20px;
+  flex-wrap: wrap;
+}
+.tab {
+  padding: 8px 18px;
+  border: 1px solid #333;
+  border-radius: 20px;
+  background: transparent;
+  color: #888;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.tab:hover { border-color: #00ffd5; color: #00ffd5; }
+.tab.active {
+  background: rgba(0,255,213,0.1);
+  border-color: #00ffd5;
+  color: #00ffd5;
+}
+
+/* View Container */
+.view { display: none; padding: 20px; max-width: 1200px; margin: 0 auto; }
+.view.active { display: block; }
+
+/* ===== 全体マップ (Tree) ===== */
+.tree-container {
+  position: relative;
+  padding: 20px 0;
+}
+.tree-node {
+  position: relative;
+  margin-left: 28px;
+  padding: 6px 0;
+}
+.tree-node::before {
+  content: '';
+  position: absolute;
+  left: -18px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #222;
+}
+.tree-node::after {
+  content: '';
+  position: absolute;
+  left: -18px;
+  top: 18px;
+  width: 14px;
+  height: 1px;
+  background: #222;
+}
+.tree-node:last-child::before { height: 18px; }
+.tree-root { margin-left: 0; }
+.tree-root::before, .tree-root::after { display: none; }
+
+.node-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+.node-label:hover { background: rgba(255,255,255,0.05); }
+.node-label .icon { font-size: 1rem; }
+.node-label .name { font-weight: 500; }
+.node-label .badge {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: rgba(0,255,213,0.15);
+  color: #00ffd5;
+}
+.node-label .badge.orange { background: rgba(255,165,0,0.15); color: #ffa500; }
+.node-label .badge.blue { background: rgba(100,149,237,0.15); color: #6495ed; }
+.node-label .badge.purple { background: rgba(180,130,255,0.15); color: #b482ff; }
+.node-label .badge.red { background: rgba(255,80,80,0.15); color: #ff5050; }
+.node-label .badge.gray { background: rgba(150,150,150,0.15); color: #999; }
+.node-detail {
+  display: none;
+  margin: 4px 0 4px 30px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.03);
+  border-left: 2px solid #333;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.8rem;
+  color: #999;
+  line-height: 1.6;
+}
+.node-detail.open { display: block; }
+
+/* ===== AI組織図 ===== */
+.org-chart {
+  text-align: center;
+  padding: 20px 0;
+}
+.org-level {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.org-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid #222;
+  border-radius: 12px;
+  padding: 14px 18px;
+  min-width: 140px;
+  max-width: 200px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+.org-card:hover {
+  border-color: #00ffd5;
+  box-shadow: 0 0 15px rgba(0,255,213,0.1);
+  transform: translateY(-2px);
+}
+.org-card .role { font-size: 0.75rem; color: #666; }
+.org-card .title { font-size: 0.95rem; font-weight: 600; margin: 4px 0; }
+.org-card .model {
+  font-size: 0.7rem;
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 8px;
+}
+.org-card.human { border-color: #ff6b6b; }
+.org-card.human .title { color: #ff6b6b; }
+.org-card.opus { border-color: #b482ff; }
+.org-card.opus .model { background: rgba(180,130,255,0.15); color: #b482ff; }
+.org-card.sonnet { border-color: #6495ed; }
+.org-card.sonnet .model { background: rgba(100,149,237,0.15); color: #6495ed; }
+.org-card.haiku { border-color: #555; }
+.org-card.haiku .model { background: rgba(150,150,150,0.15); color: #999; }
+.org-connector {
+  width: 1px;
+  height: 24px;
+  background: #333;
+  margin: 0 auto;
+}
+.org-branch {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  margin: 0 auto;
+  position: relative;
+}
+.org-branch::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  height: 1px;
+  background: #333;
+}
+.org-detail {
+  display: none;
+  text-align: left;
+  margin: 12px auto;
+  max-width: 600px;
+  padding: 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid #222;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  line-height: 1.7;
+  color: #aaa;
+}
+.org-detail.open { display: block; }
+.org-detail h4 { color: #00ffd5; margin-bottom: 8px; font-size: 0.9rem; }
+.org-detail ul { padding-left: 18px; }
+
+/* ===== 3層アーキテクチャ ===== */
+.layers {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 10px 0;
+}
+.layer {
+  border: 1px solid #222;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+.layer:hover { border-color: #444; }
+.layer-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  cursor: pointer;
+  background: rgba(255,255,255,0.02);
+}
+.layer-header .layer-icon { font-size: 1.4rem; }
+.layer-header .layer-name { font-size: 1.1rem; font-weight: 600; }
+.layer-header .layer-status {
+  margin-left: auto;
+  font-size: 0.75rem;
+  padding: 3px 10px;
+  border-radius: 10px;
+}
+.layer-body {
+  display: none;
+  padding: 0 20px 20px;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: #aaa;
+}
+.layer-body.open { display: block; }
+.layer.memory { border-color: rgba(180,130,255,0.3); }
+.layer.memory .layer-name { color: #b482ff; }
+.layer.memory .layer-status { background: rgba(180,130,255,0.15); color: #b482ff; }
+.layer.judge { border-color: rgba(0,255,213,0.3); }
+.layer.judge .layer-name { color: #00ffd5; }
+.layer.judge .layer-status { background: rgba(0,255,213,0.15); color: #00ffd5; }
+.layer.connect { border-color: rgba(100,149,237,0.3); }
+.layer.connect .layer-name { color: #6495ed; }
+.layer.connect .layer-status { background: rgba(100,149,237,0.15); color: #6495ed; }
+
+.layer-components {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+.layer-comp {
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px;
+  border-left: 3px solid #333;
+}
+.layer-comp .comp-name { font-weight: 500; color: #e0e0e0; font-size: 0.85rem; }
+.layer-comp .comp-desc { font-size: 0.75rem; color: #666; margin-top: 2px; }
+
+/* ===== 収益マップ ===== */
+.revenue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  padding: 10px 0;
+}
+.rev-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid #222;
+  border-radius: 12px;
+  padding: 18px;
+  transition: all 0.3s;
+}
+.rev-card:hover { border-color: #00ffd5; transform: translateY(-2px); }
+.rev-card .rev-name { font-size: 1rem; font-weight: 600; }
+.rev-card .rev-type { font-size: 0.75rem; color: #666; margin-top: 2px; }
+.rev-card .rev-auto {
+  margin-top: 10px;
+  display: flex;
+  gap: 3px;
+}
+.rev-card .rev-auto .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #333;
+}
+.rev-card .rev-auto .dot.on { background: #00ffd5; }
+.rev-card .rev-label { font-size: 0.7rem; color: #666; margin-top: 4px; }
+
+/* ===== アプリ一覧 ===== */
+.apps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+  padding: 10px 0;
+}
+.app-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid #1a1a1a;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 0.82rem;
+  transition: all 0.2s;
+}
+.app-card:hover { border-color: #444; background: rgba(255,255,255,0.05); }
+.app-card .app-name { font-weight: 600; color: #e0e0e0; }
+.app-card .app-cat {
+  font-size: 0.65rem;
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 6px;
+  margin-top: 4px;
+}
+.app-cat.molkky { background: rgba(0,255,213,0.1); color: #00ffd5; }
+.app-cat.machap { background: rgba(255,165,0,0.1); color: #ffa500; }
+.app-cat.tool { background: rgba(100,149,237,0.1); color: #6495ed; }
+.app-cat.content { background: rgba(180,130,255,0.1); color: #b482ff; }
+
+/* ===== Phase Roadmap ===== */
+.phases {
+  position: relative;
+  padding: 20px 0 20px 30px;
+}
+.phases::before {
+  content: '';
+  position: absolute;
+  left: 14px;
+  top: 30px;
+  bottom: 30px;
+  width: 2px;
+  background: linear-gradient(to bottom, #00ffd5, #6495ed, #b482ff, #666);
+}
+.phase-item {
+  position: relative;
+  margin-bottom: 28px;
+}
+.phase-dot {
+  position: absolute;
+  left: -22px;
+  top: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid;
+}
+.phase-dot.done { border-color: #00ffd5; background: #00ffd5; }
+.phase-dot.current { border-color: #00ffd5; background: transparent; box-shadow: 0 0 8px rgba(0,255,213,0.5); }
+.phase-dot.future { border-color: #444; background: transparent; }
+.phase-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.phase-title .num { color: #666; margin-right: 6px; }
+.phase-desc { font-size: 0.8rem; color: #888; line-height: 1.5; }
+.phase-tasks {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.phase-tag {
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.05);
+  color: #999;
+  border: 1px solid #222;
+}
+.phase-tag.done { border-color: rgba(0,255,213,0.3); color: #00ffd5; }
+.phase-tag.wip { border-color: rgba(255,165,0,0.3); color: #ffa500; }
+
+/* Arrow between levels */
+.arrow-down {
+  text-align: center;
+  color: #333;
+  font-size: 1.2rem;
+  padding: 4px 0;
+}
+
+@media (max-width: 600px) {
+  .org-level { flex-direction: column; align-items: center; }
+  .apps-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  .revenue-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>SP-PROJECTS MAP</h1>
+  <p>Updated 2026-03-10</p>
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-view="tree">全体ツリー</button>
+  <button class="tab" data-view="org">AI組織図</button>
+  <button class="tab" data-view="arch">3層アーキテクチャ</button>
+  <button class="tab" data-view="apps">アプリ一覧</button>
+  <button class="tab" data-view="revenue">収益マップ</button>
+  <button class="tab" data-view="roadmap">ロードマップ</button>
+</div>
+
+<!-- ===== 全体ツリー ===== -->
+<div class="view active" id="view-tree">
+<div class="tree-container">
+
+  <div class="tree-node tree-root">
+    <div class="node-label" onclick="toggleDetail(this)">
+      <span class="icon">&#x1f30f;</span>
+      <span class="name">SP-Projects</span>
+      <span class="badge gray">root</span>
+    </div>
+    <div class="node-detail">GitHub Pages + Firebase + Vercel + GAS のフルスタック。全40+アプリをClaude Codeが管理。</div>
+
+    <!-- MOLKKY HUB -->
+    <div class="tree-node">
+      <div class="node-label" onclick="toggleDetail(this)">
+        <span class="icon">&#x1f3af;</span>
+        <span class="name">MOLKKY HUB</span>
+        <span class="badge">最優先</span>
+      </div>
+      <div class="node-detail">WordPress + SWELL @ ConoHa / 月3Kセッション / 記事自動化・SEO・アフィリエイト最適化</div>
+      <div class="tree-node">
+        <div class="node-label"><span class="icon">&#x1f4f0;</span><span class="name">molkky-admin</span><span class="badge gray">管理画面</span></div>
+      </div>
+      <div class="tree-node">
+        <div class="node-label"><span class="icon">&#x1f3c6;</span><span class="name">championship / championship-admin</span><span class="badge gray">大会管理</span></div>
+      </div>
+      <div class="tree-node">
+        <div class="node-label"><span class="icon">&#x1f4cb;</span><span class="name">naimol-admin / naimol-result</span><span class="badge gray">内モル管理</span></div>
+      </div>
+      <div class="tree-node">
+        <div class="node-label"><span class="icon">&#x1f4e9;</span><span class="name">tournament-submit</span><span class="badge gray">大会投稿</span></div>
+      </div>
+      <div class="tree-node">
+        <div class="node-label"><span class="icon">&#x1f4ca;</span><span class="name">hub-dashboard</span><span class="badge gray">ダッシュボード</span></div>
+      </div>
+    </div>
+
+    <!-- マルタ村 / MACHAP -->
+    <div class="tree-node">
+      <div class="node-label" onclick="toggleDetail(this)">
+        <span class="icon">&#x1f3d8;&#xfe0f;</span>
+        <span class="name">マルタ村 / MACHAP</span>
+        <span class="badge orange">開発中</span>
+      </div>
+      <div class="node-detail">兵庫県川西市の地域経済プロジェクト。SP + 中さん + ししょー / React 19 + Express + tRPC</div>
+      <div class="tree-node">
+        <div class="node-label"><span class="icon">&#x1f310;</span><span class="name">machap-portal</span><span class="badge gray">ポータル</span></div>
+      </div>
+      <div class="tree-node">
+        <div class="node-label"><span class="icon">&#x1f91d;</span><span class="name">partner / partner-portal</span><span class="badge gray">パートナー</span></div>
+      </div>
+      <div class="tree-node">
+        <div class="node-label"><span class="icon">&#x1f393;</span><span class="name">manabimon</span><span class="badge gray">学びもん</span></div>
+      </div>
+      <div class="tree-node">
+        <div class="node-label"><span class="icon">&#x1f5fa;&#xfe0f;</span><span class="name">meguri</span><span class="badge gray">めぐり</span></div>
+      </div>
+    </div>
+
+    <!-- AIクローン -->
+    <div class="tree-node">
+      <div class="node-label" onclick="toggleDetail(this)">
+        <span class="icon">&#x1f9e0;</span>
+        <span class="name">AIクローン（もう1人のSP）</span>
+        <span class="badge purple">Phase 1</span>
+      </div>
+      <div class="node-detail">記憶層(sp-brain/) → 判断層(AI-SP+5部長) → 接続層(LINE/Webhook/Cron) の3層構造</div>
+      <div class="tree-node">
+        <div class="node-label" onclick="toggleDetail(this)">
+          <span class="icon">&#x1f4c2;</span>
+          <span class="name">sp-brain/</span>
+          <span class="badge purple">記憶層</span>
+        </div>
+        <div class="node-detail">identity/ (価値観・判断パターン) / knowledge/ (モルック・技術・収益) / memory/ (セッション・決定・学び) / context/ (今の状態)</div>
+      </div>
+      <div class="tree-node">
+        <div class="node-label"><span class="icon">&#x1f916;</span><span class="name">AI組織 (5部長 + 社員AI群)</span><span class="badge blue">判断層</span></div>
+      </div>
+      <div class="tree-node">
+        <div class="node-label"><span class="icon">&#x1f4f1;</span><span class="name">LINE Bot / Webhook / Cron</span><span class="badge gray">接続層</span></div>
+      </div>
+    </div>
+
+    <!-- 収益化 -->
+    <div class="tree-node">
+      <div class="node-label" onclick="toggleDetail(this)">
+        <span class="icon">&#x1f4b0;</span>
+        <span class="name">収益チャネル</span>
+        <span class="badge orange">月10万目標</span>
+      </div>
+      <div class="node-detail">Crowdworks / BOOTH / note / HUBアフィリエイト / 広告収益</div>
+    </div>
+
+    <!-- 自動化基盤 -->
+    <div class="tree-node">
+      <div class="node-label" onclick="toggleDetail(this)">
+        <span class="icon">&#x2699;&#xfe0f;</span>
+        <span class="name">自動化基盤</span>
+        <span class="badge blue">稼働中</span>
+      </div>
+      <div class="node-detail">GAS (議事録・大会情報) / Vercel API (Webhook) / GitHub Actions (定期実行) / agent/ (自律タスク)</div>
+      <div class="tree-node">
+        <div class="node-label"><span class="icon">&#x1f4dc;</span><span class="name">gas/</span><span class="badge gray">GAS群</span></div>
+      </div>
+      <div class="tree-node">
+        <div class="node-label"><span class="icon">&#x26a1;</span><span class="name">vercel-api/</span><span class="badge gray">Serverless</span></div>
+      </div>
+      <div class="tree-node">
+        <div class="node-label"><span class="icon">&#x1f504;</span><span class="name">agent/</span><span class="badge gray">自律エージェント</span></div>
+      </div>
+      <div class="tree-node">
+        <div class="node-label"><span class="icon">&#x1f3ad;</span><span class="name">.github/workflows/</span><span class="badge gray">Actions</span></div>
+      </div>
+    </div>
+
+    <!-- その他ツール -->
+    <div class="tree-node">
+      <div class="node-label" onclick="toggleDetail(this)">
+        <span class="icon">&#x1f6e0;&#xfe0f;</span>
+        <span class="name">その他ツール・ページ</span>
+        <span class="badge gray">40+</span>
+      </div>
+      <div class="node-detail">portal / inbox / viisi-master / teamride / recipe / youtube / repost / promote / side-project-plan / tokurashi etc.</div>
+    </div>
+
+  </div>
+
+</div>
+</div>
+
+<!-- ===== AI組織図 ===== -->
+<div class="view" id="view-org">
+
+  <div class="org-chart">
+    <div class="org-level">
+      <div class="org-card human" onclick="toggleOrgDetail('sp')">
+        <div class="role">HUMAN</div>
+        <div class="title">SP</div>
+        <div class="model" style="background:rgba(255,107,107,0.15);color:#ff6b6b;">最終判断</div>
+      </div>
+    </div>
+    <div id="org-sp" class="org-detail">
+      <h4>SP（人間）</h4>
+      <ul>
+        <li>最終判断・方針決定</li>
+        <li>70点 → 100点にする「残り30点」を担当</li>
+        <li>Telegram or Claude Codeで指示</li>
+      </ul>
+    </div>
+
+    <div class="arrow-down">|</div>
+
+    <div class="org-level">
+      <div class="org-card opus" onclick="toggleOrgDetail('aisp')">
+        <div class="role">CEO AI</div>
+        <div class="title">AI-SP</div>
+        <div class="model">Opus</div>
+      </div>
+    </div>
+    <div id="org-aisp" class="org-detail">
+      <h4>AI-SP（社長AI）</h4>
+      <ul>
+        <li>SPの思考DNAを搭載した判断エンジン</li>
+        <li>タスクの振り分け・品質管理</li>
+        <li>sp-brain/ を参照して自律判断</li>
+        <li>エスカレーションルールに従い、必要な時だけSPに確認</li>
+      </ul>
+    </div>
+
+    <div class="arrow-down">|</div>
+
+    <div class="org-level">
+      <div class="org-card sonnet" onclick="toggleOrgDetail('content')">
+        <div class="role">部長</div>
+        <div class="title">コンテンツ</div>
+        <div class="model">Sonnet</div>
+      </div>
+      <div class="org-card sonnet" onclick="toggleOrgDetail('dev')">
+        <div class="role">部長</div>
+        <div class="title">開発</div>
+        <div class="model">Sonnet</div>
+      </div>
+      <div class="org-card sonnet" onclick="toggleOrgDetail('sales')">
+        <div class="role">部長</div>
+        <div class="title">営業 & 収益</div>
+        <div class="model">Sonnet</div>
+      </div>
+      <div class="org-card sonnet" onclick="toggleOrgDetail('back')">
+        <div class="role">部長</div>
+        <div class="title">バックオフィス</div>
+        <div class="model">Sonnet</div>
+      </div>
+      <div class="org-card sonnet" onclick="toggleOrgDetail('strategy')">
+        <div class="role">部長</div>
+        <div class="title">戦略</div>
+        <div class="model">Sonnet</div>
+      </div>
+    </div>
+
+    <div id="org-content" class="org-detail">
+      <h4>コンテンツ部</h4>
+      <ul>
+        <li>MOLKKY HUB 記事作成・リライト</li>
+        <li>X投稿の企画・下書き</li>
+        <li>note有料マガジン</li>
+        <li>社員: リサーチャー / ライター / SNS担当 / SEOアナリスト</li>
+      </ul>
+    </div>
+    <div id="org-dev" class="org-detail">
+      <h4>開発部</h4>
+      <ul>
+        <li>GitHub Pages 40+アプリ開発・保守</li>
+        <li>GAS / Vercel API 改修</li>
+        <li>社員: アプリ開発 / インフラ / WP連携</li>
+      </ul>
+    </div>
+    <div id="org-sales" class="org-detail">
+      <h4>営業 & 収益部</h4>
+      <ul>
+        <li>アフィリエイト最適化</li>
+        <li>パートナー制度運用</li>
+        <li>収益レポート生成</li>
+        <li>社員: アフィリ担当 / パートナー管理 / SNS投稿</li>
+      </ul>
+    </div>
+    <div id="org-back" class="org-detail">
+      <h4>バックオフィス部（最も進んでいる部門）</h4>
+      <ul>
+        <li>チャプチェ会議事録（自動化済み）</li>
+        <li>大会情報収集（自動化済み）</li>
+        <li>GA4データ分析 / タスク管理</li>
+        <li>社員: 議事録担当 / 大会情報担当 / アナリスト / スケジューラー</li>
+      </ul>
+    </div>
+    <div id="org-strategy" class="org-detail">
+      <h4>戦略部</h4>
+      <ul>
+        <li>MACHAP 5STEPサイクル進行管理</li>
+        <li>モルハブ向上委員会 KPI管理</li>
+        <li>チーム連携（中さん・ししょー）</li>
+        <li>社員: リサーチャー / アジェンダ管理</li>
+      </ul>
+    </div>
+
+    <div class="arrow-down">|</div>
+
+    <div class="org-level">
+      <div class="org-card haiku">
+        <div class="role">社員AI群</div>
+        <div class="title">Haiku x30+</div>
+        <div class="model">実行レイヤー</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== 3層アーキテクチャ ===== -->
+<div class="view" id="view-arch">
+
+  <div class="layers">
+    <div class="layer memory">
+      <div class="layer-header" onclick="toggleLayer(this)">
+        <span class="layer-icon">&#x1f9e0;</span>
+        <span class="layer-name">記憶層 — sp-brain/</span>
+        <span class="layer-status">Phase 1 構築済み</span>
+      </div>
+      <div class="layer-body">
+        <p>SPの思考DNA・判断履歴・知識ベースをMarkdownで永続化。セッションを跨いで一貫した判断ができる。</p>
+        <div class="layer-components">
+          <div class="layer-comp" style="border-color:#b482ff;">
+            <div class="comp-name">identity/</div>
+            <div class="comp-desc">価値観・判断パターン・口癖・NGライン</div>
+          </div>
+          <div class="layer-comp" style="border-color:#b482ff;">
+            <div class="comp-name">knowledge/</div>
+            <div class="comp-desc">モルック / 技術 / 収益の専門知識</div>
+          </div>
+          <div class="layer-comp" style="border-color:#b482ff;">
+            <div class="comp-name">memory/</div>
+            <div class="comp-desc">セッションログ / 決定 / 学び / 人物</div>
+          </div>
+          <div class="layer-comp" style="border-color:#b482ff;">
+            <div class="comp-name">context/</div>
+            <div class="comp-desc">今の優先事項・進行中PJ・週次状態</div>
+          </div>
+          <div class="layer-comp" style="border-color:#b482ff;">
+            <div class="comp-name">routines/</div>
+            <div class="comp-desc">日次・週次のワークフロー定義</div>
+          </div>
+          <div class="layer-comp" style="border-color:#b482ff;">
+            <div class="comp-name">inbox/</div>
+            <div class="comp-desc">未処理メモの一時保管場所</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down" style="font-size:1.5rem;">&#x2B07;</div>
+
+    <div class="layer judge">
+      <div class="layer-header" onclick="toggleLayer(this)">
+        <span class="layer-icon">&#x26a1;</span>
+        <span class="layer-name">判断層 — AI-SP + 5部長</span>
+        <span class="layer-status">設計済み</span>
+      </div>
+      <div class="layer-body">
+        <p>Claude Code + スキル群。記憶を参照して自律判断。AI-SP(Opus)がタスク振り分け、5部長(Sonnet)が業務分解、社員AI(Haiku)が実行。</p>
+        <div class="layer-components">
+          <div class="layer-comp" style="border-color:#00ffd5;">
+            <div class="comp-name">AI-SP (Opus)</div>
+            <div class="comp-desc">社長AI / 判断・振り分け・品質管理</div>
+          </div>
+          <div class="layer-comp" style="border-color:#00ffd5;">
+            <div class="comp-name">CLAUDE.md</div>
+            <div class="comp-desc">思考DNA + 運用ルール</div>
+          </div>
+          <div class="layer-comp" style="border-color:#00ffd5;">
+            <div class="comp-name">カスタムスキル 7+</div>
+            <div class="comp-desc">molkkyhub-persona / promote / repost etc.</div>
+          </div>
+          <div class="layer-comp" style="border-color:#00ffd5;">
+            <div class="comp-name">エスカレーション</div>
+            <div class="comp-desc">自律判断 or SPに確認のルール</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down" style="font-size:1.5rem;">&#x2B07;</div>
+
+    <div class="layer connect">
+      <div class="layer-header" onclick="toggleLayer(this)">
+        <span class="layer-icon">&#x1f310;</span>
+        <span class="layer-name">接続層 — LINE / Webhook / Cron</span>
+        <span class="layer-status">Phase 2-3</span>
+      </div>
+      <div class="layer-body">
+        <p>外部世界とのインターフェース。LINEで外出先から指示、Webhookで自動トリガー、Cronで定期実行。</p>
+        <div class="layer-components">
+          <div class="layer-comp" style="border-color:#6495ed;">
+            <div class="comp-name">LINE Bot</div>
+            <div class="comp-desc">外出先からSPクローンに指示</div>
+          </div>
+          <div class="layer-comp" style="border-color:#6495ed;">
+            <div class="comp-name">Vercel API</div>
+            <div class="comp-desc">Webhook受信 + Serverless処理</div>
+          </div>
+          <div class="layer-comp" style="border-color:#6495ed;">
+            <div class="comp-name">GitHub Actions</div>
+            <div class="comp-desc">日次・週次の定期タスク実行</div>
+          </div>
+          <div class="layer-comp" style="border-color:#6495ed;">
+            <div class="comp-name">GAS トリガー</div>
+            <div class="comp-desc">議事録・大会情報の自動処理</div>
+          </div>
+          <div class="layer-comp" style="border-color:#6495ed;">
+            <div class="comp-name">Firebase</div>
+            <div class="comp-desc">キュー管理 + 会話ログ蓄積</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== アプリ一覧 ===== -->
+<div class="view" id="view-apps">
+
+  <div class="apps-grid">
+    <div class="app-card"><div class="app-name">molkky-portal</div><div class="app-cat molkky">Molkky</div></div>
+    <div class="app-card"><div class="app-name">molkky-admin</div><div class="app-cat molkky">Molkky</div></div>
+    <div class="app-card"><div class="app-name">championship</div><div class="app-cat molkky">Molkky</div></div>
+    <div class="app-card"><div class="app-name">championship-admin</div><div class="app-cat molkky">Molkky</div></div>
+    <div class="app-card"><div class="app-name">naimol-admin</div><div class="app-cat molkky">Molkky</div></div>
+    <div class="app-card"><div class="app-name">naimol-result</div><div class="app-cat molkky">Molkky</div></div>
+    <div class="app-card"><div class="app-name">tournament-submit</div><div class="app-cat molkky">Molkky</div></div>
+    <div class="app-card"><div class="app-name">hub-dashboard</div><div class="app-cat molkky">Molkky</div></div>
+    <div class="app-card"><div class="app-name">meguri</div><div class="app-cat molkky">Molkky</div></div>
+    <div class="app-card"><div class="app-name">machap-portal</div><div class="app-cat machap">MACHAP</div></div>
+    <div class="app-card"><div class="app-name">partner</div><div class="app-cat machap">MACHAP</div></div>
+    <div class="app-card"><div class="app-name">partner-portal</div><div class="app-cat machap">MACHAP</div></div>
+    <div class="app-card"><div class="app-name">manabimon</div><div class="app-cat machap">MACHAP</div></div>
+    <div class="app-card"><div class="app-name">portal</div><div class="app-cat tool">ツール</div></div>
+    <div class="app-card"><div class="app-name">inbox</div><div class="app-cat tool">ツール</div></div>
+    <div class="app-card"><div class="app-name">report-admin</div><div class="app-cat tool">ツール</div></div>
+    <div class="app-card"><div class="app-name">viisi-master</div><div class="app-cat tool">ツール</div></div>
+    <div class="app-card"><div class="app-name">teamride</div><div class="app-cat tool">ツール</div></div>
+    <div class="app-card"><div class="app-name">side-project-plan</div><div class="app-cat tool">ツール</div></div>
+    <div class="app-card"><div class="app-name">tokurashi</div><div class="app-cat tool">ツール</div></div>
+    <div class="app-card"><div class="app-name">youtube</div><div class="app-cat content">コンテンツ</div></div>
+    <div class="app-card"><div class="app-name">repost</div><div class="app-cat content">コンテンツ</div></div>
+    <div class="app-card"><div class="app-name">promote</div><div class="app-cat content">コンテンツ</div></div>
+    <div class="app-card"><div class="app-name">recipe</div><div class="app-cat content">コンテンツ</div></div>
+  </div>
+
+</div>
+
+<!-- ===== 収益マップ ===== -->
+<div class="view" id="view-revenue">
+
+  <div class="revenue-grid">
+    <div class="rev-card">
+      <div class="rev-name">MOLKKY HUB アフィリエイト</div>
+      <div class="rev-type">Amazon / 楽天 アフィリエイト</div>
+      <div class="rev-auto">
+        <div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+      <div class="rev-label">自動化レベル 3/5</div>
+    </div>
+    <div class="rev-card">
+      <div class="rev-name">Crowdworks</div>
+      <div class="rev-type">開発案件受注</div>
+      <div class="rev-auto">
+        <div class="dot on"></div><div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+      <div class="rev-label">自動化レベル 2/5</div>
+    </div>
+    <div class="rev-card">
+      <div class="rev-name">BOOTH</div>
+      <div class="rev-type">デジタルコンテンツ販売</div>
+      <div class="rev-auto">
+        <div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot"></div>
+      </div>
+      <div class="rev-label">自動化レベル 4/5</div>
+    </div>
+    <div class="rev-card">
+      <div class="rev-name">note</div>
+      <div class="rev-type">有料記事・マガジン</div>
+      <div class="rev-auto">
+        <div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+      <div class="rev-label">自動化レベル 3/5</div>
+    </div>
+  </div>
+
+  <div style="margin-top:20px;padding:16px;background:rgba(255,255,255,0.03);border-radius:12px;border:1px solid #222;">
+    <div style="font-size:0.85rem;color:#666;">判断基準</div>
+    <div style="font-size:0.9rem;margin-top:6px;line-height:1.7;">
+      <span style="color:#00ffd5;">月5,000円以下</span> → 即GO &nbsp;|&nbsp;
+      <span style="color:#ffa500;">2ヶ月で月1,000円未満</span> → 一旦停止 &nbsp;|&nbsp;
+      <span style="color:#b482ff;">月5,000円超</span> → 横展開検討
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== ロードマップ ===== -->
+<div class="view" id="view-roadmap">
+
+  <div class="phases">
+    <div class="phase-item">
+      <div class="phase-dot done"></div>
+      <div class="phase-title"><span class="num">Phase 1</span>記憶を作る</div>
+      <div class="phase-desc">sp-brain/ 基盤構築。SPの思考DNAを言語化し、セッション跨ぎで一貫した判断ができる状態に。</div>
+      <div class="phase-tasks">
+        <span class="phase-tag done">sp-brain/ 構造</span>
+        <span class="phase-tag done">identity/ 作成</span>
+        <span class="phase-tag done">context/ 記入</span>
+        <span class="phase-tag done">CLAUDE.md 参照追加</span>
+        <span class="phase-tag done">memory/ 運用開始</span>
+        <span class="phase-tag done">蒸留システム設計</span>
+      </div>
+    </div>
+
+    <div class="phase-item">
+      <div class="phase-dot current"></div>
+      <div class="phase-title"><span class="num">Phase 2</span>LINEで繋がる</div>
+      <div class="phase-desc">LINE Bot連携。外出先からSPクローンに指示・相談できる状態に。会話ログをFirebaseに蓄積。</div>
+      <div class="phase-tasks">
+        <span class="phase-tag">LINE Developers登録</span>
+        <span class="phase-tag">Webhook API作成</span>
+        <span class="phase-tag">基本対話実装</span>
+        <span class="phase-tag">sp-brain参照連携</span>
+        <span class="phase-tag">記憶保存コマンド</span>
+      </div>
+    </div>
+
+    <div class="phase-item">
+      <div class="phase-dot future"></div>
+      <div class="phase-title"><span class="num">Phase 3</span>自律稼働</div>
+      <div class="phase-desc">GitHub Actions + Vercel Cronで定期実行。朝起きたらタスク整理済み、異常時だけLINE通知。</div>
+      <div class="phase-tasks">
+        <span class="phase-tag">GitHub Actions拡張</span>
+        <span class="phase-tag">Vercel Cron Jobs</span>
+        <span class="phase-tag">自律判断ロジック</span>
+        <span class="phase-tag">LINE通知連携</span>
+      </div>
+    </div>
+
+    <div class="phase-item">
+      <div class="phase-dot future"></div>
+      <div class="phase-title"><span class="num">Phase 4</span>学習ループ</div>
+      <div class="phase-desc">判断ログの自動蓄積、記憶の定期棚卸、フィードバックループで精度が上がり続ける。</div>
+      <div class="phase-tasks">
+        <span class="phase-tag">判断ログ自動蓄積</span>
+        <span class="phase-tag">記憶の定期棚卸</span>
+        <span class="phase-tag">フィードバックループ</span>
+        <span class="phase-tag">精度トラッキング</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Tab switching
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('view-' + tab.dataset.view).classList.add('active');
+  });
+});
+
+// Tree node detail toggle
+function toggleDetail(el) {
+  const detail = el.nextElementSibling;
+  if (detail && detail.classList.contains('node-detail')) {
+    detail.classList.toggle('open');
+  }
+}
+
+// Layer toggle
+function toggleLayer(el) {
+  const body = el.nextElementSibling;
+  if (body) body.classList.toggle('open');
+}
+
+// Org chart detail toggle
+let openOrg = null;
+function toggleOrgDetail(id) {
+  const el = document.getElementById('org-' + id);
+  if (openOrg && openOrg !== el) openOrg.classList.remove('open');
+  el.classList.toggle('open');
+  openOrg = el.classList.contains('open') ? el : null;
+}
+</script>
+
+</body>
+</html>
