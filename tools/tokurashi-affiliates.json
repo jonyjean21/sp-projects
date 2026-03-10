@@ -1,0 +1,65 @@
+{
+  "programs": {
+    "premium_water": {
+      "name": "プレミアムウォーター",
+      "status": "approved",
+      "unit_price": 12000,
+      "a8_link": "",
+      "cta_text": "\\n公式サイトで詳細を見る",
+      "cta_description": "天然水ウォーターサーバー",
+      "target_categories": ["節約", "買い物"],
+      "target_keywords": ["水", "ウォーターサーバー", "子育て", "赤ちゃん", "ミルク", "飲料", "家計", "節約"]
+    },
+    "hoken_minaoshi": {
+      "name": "保険見直しラボ",
+      "status": "pending",
+      "unit_price": 10000,
+      "a8_link": "",
+      "cta_text": "\\n無料で保険相談する",
+      "cta_description": "保険の無料相談サービス",
+      "target_categories": ["節約"],
+      "target_keywords": ["保険", "家計", "節約", "見直し", "子育て", "教育費"]
+    },
+    "money_doctor": {
+      "name": "マネードクター",
+      "status": "pending",
+      "unit_price": 11279,
+      "a8_link": "",
+      "cta_text": "\\n無料でお金の相談をする",
+      "cta_description": "お金の専門家に無料相談",
+      "target_categories": ["節約", "副業"],
+      "target_keywords": ["家計", "お金", "貯金", "節約", "相談", "ライフプラン"]
+    },
+    "smcc_nl": {
+      "name": "三井住友カード(NL)",
+      "status": "pending",
+      "unit_price": 4800,
+      "a8_link": "",
+      "cta_text": "\\n公式サイトで詳細を見る",
+      "cta_description": "年会費永年無料のクレジットカード",
+      "target_categories": ["ポイ活", "買い物"],
+      "target_keywords": ["クレカ", "クレジットカード", "ポイント", "還元", "ポイ活", "キャッシュレス"]
+    },
+    "satofuru": {
+      "name": "さとふる",
+      "status": "pending",
+      "unit_price": 0,
+      "a8_link": "",
+      "cta_text": "\\nさとふるで返礼品を探す",
+      "cta_description": "ふるさと納税サイト",
+      "target_categories": ["ふるさと納税"],
+      "target_keywords": ["ふるさと納税", "返礼品", "節税", "寄付"]
+    },
+    "hapitas": {
+      "name": "ハピタス",
+      "status": "pending",
+      "unit_price": 0,
+      "a8_link": "",
+      "cta_text": "\\nハピタスに無料登録する",
+      "cta_description": "ポイントサイト",
+      "target_categories": ["ポイ活", "副業"],
+      "target_keywords": ["ポイ活", "ポイントサイト", "副業", "お小遣い"]
+    }
+  },
+  "cta_style": "<div style=\"background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border-radius:12px;padding:24px;margin:24px 0;text-align:center;\"><p style=\"color:#fff;font-size:18px;font-weight:700;margin:0 0 8px 0;\">{{description}}</p><a href=\"{{link}}\" rel=\"nofollow sponsored\" target=\"_blank\" style=\"display:inline-block;background:#fff;color:#764ba2;font-size:16px;font-weight:700;padding:14px 32px;border-radius:8px;text-decoration:none;margin-top:8px;\">{{cta_text}}</a></div>"
+}
