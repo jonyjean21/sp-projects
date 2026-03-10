@@ -505,11 +505,11 @@ textarea{resize:vertical;min-height:60px}
 
     <div class="form-group">
       <label class="form-label">選手名（ひらがな）</label>
-      <input type="text" id="memberName" placeholder="やまだ たろう">
+      <input type="text" id="memberName" placeholder="たろう">
     </div>
     <div class="form-group">
       <label class="form-label">選手名（漢字）</label>
-      <input type="text" id="memberNameKanji" placeholder="山田 太郎">
+      <input type="text" id="memberNameKanji" placeholder="太郎">
     </div>
     <div class="form-group">
       <label class="form-label">背番号</label>
@@ -1959,6 +1959,11 @@ function showEventDetail(id) {
 
   // 回答一覧
   html += renderRsvpList(id, e);
+
+  // 過去イベント（試合日経過後）→ LINE文テンプレートをインライン表示
+  if (isPast && e.assignments) {
+    html += renderInlineLineTemplates(id);
+  }
 
   c.innerHTML = html;
 }
@@ -3698,6 +3703,57 @@ function moveUnassignedToDriver(unassignedIdx, driverIdx) {
   if (a.unassigned.length > 0) a.warnings.push(`⚠ ${a.unassigned.length}人が未割り当てです`);
   closeModal('moveRiderModal');
   showAssignmentResult();
+}
+
+// ── Inline LINE Templates for Past Events ──
+function renderInlineLineTemplates(eventId) {
+  const templates = [
+    { key: 'assign', label: '配車決定後の連絡', fn: generateLineTemplateAssign },
+    { key: 'meetup', label: '担当→同乗者', fn: generateLineTemplateMeetup },
+    { key: 'parking', label: '同乗者→担当', fn: generateLineTemplateParking },
+    { key: 'accident', label: '事故連絡', fn: generateLineTemplateAccident }
+  ];
+  let html = '<div style="margin-top:16px">';
+  html += '<div class="section-title">📋 LINE連絡テンプレート</div>';
+  templates.forEach((t, i) => {
+    const text = t.fn(eventId);
+    const escaped = escapeHtml(text);
+    const isFirst = i === 0;
+    html += `<div class="card${isFirst?' info-open':''}" style="padding:0;overflow:hidden;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;cursor:pointer" onclick="this.parentElement.classList.toggle('info-open');this.querySelector('.info-arrow').classList.toggle('open')">
+        <span style="font-size:14px;font-weight:700;flex:1">${t.label}</span>
+        <span class="past-toggle-arrow info-arrow${isFirst?' open':''}" style="font-size:12px;color:var(--text-sub)">▶</span>
+      </div>
+      <div style="${isFirst?'':'display:none;'}padding:0 16px 12px">
+        <div class="line-preview" style="font-size:12px;line-height:1.6;max-height:300px" id="inlineLine_${t.key}_${eventId}">${escaped}</div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn btn-outline btn-small" onclick="copyInlineLineText('inlineLine_${t.key}_${eventId}')" style="flex:1;font-size:13px">📋 コピー</button>
+          <button class="btn btn-line btn-small" onclick="shareInlineLineText('inlineLine_${t.key}_${eventId}')" style="flex:1;font-size:13px">💬 LINE</button>
+        </div>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+function copyInlineLineText(elId) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const text = el.textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('コピーしました！')).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('コピーしました！');
+  });
+}
+
+function shareInlineLineText(elId) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  window.location.href = 'line://msg/text/' + encodeURIComponent(el.textContent);
 }
 
 // ── LINE Text Generation (4 templates) ──
