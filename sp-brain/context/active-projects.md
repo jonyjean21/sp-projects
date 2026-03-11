@@ -26,6 +26,12 @@
 - ブロッカー: GitHub Secrets設定（ANTHROPIC_API_KEY, FIREBASE_URL）未完了
 - 技術: sp-brain/(MD) + Vercel API + Firebase + LINE Messaging API
 
+## X個人ブランド（えすぴ / @esupi）
+- 状態: 戦略確定、アカウント未作成
+- コンセプト: AIで全自動化する一人ビジネスの過程を公開
+- 戦略ドキュメント: sp-brain/knowledge/x-personal-brand-strategy.md
+- 次: アカウント作成 → プロフィール設定 → 初投稿
+
 ## GitHub Pages アプリ群
 - 状態: 運用中（40+アプリ）
 - やること: 保守・機能追加（都度）
