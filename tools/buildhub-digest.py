@@ -142,8 +142,11 @@ def summarize(items, api_key):
         f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}",
         data=payload, headers={"Content-Type": "application/json"}
     )
-    with urllib.request.urlopen(req) as res:
-        result = json.loads(res.read())
+    try:
+        with urllib.request.urlopen(req) as res:
+            result = json.loads(res.read())
+    except urllib.error.HTTPError as e:
+        raise RuntimeError(f"Gemini API error {e.code}: {e.read().decode()[:200]}") from e
 
     text = result['candidates'][0]['content']['parts'][0]['text']
     match = re.search(r'\{[\s\S]*\}', text)
@@ -399,8 +402,11 @@ def main(dry_run=False):
         f"{BUILDHUB_URL}/wp-json/wp/v2/posts?slug={slug}",
         headers={"Authorization": f"Basic {creds_check}"}
     )
-    with urllib.request.urlopen(check_req) as res:
-        existing = json.loads(res.read())
+    try:
+        with urllib.request.urlopen(check_req) as res:
+            existing = json.loads(res.read())
+    except urllib.error.HTTPError as e:
+        raise RuntimeError(f"WP duplicate check error {e.code} for slug={slug}: {e.read().decode()[:200]}") from e
     if existing:
         print(f"本日の記事（{slug}）は既に投稿済みです。スキップ。")
         return

@@ -20,4 +20,5 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           BUILDHUB_WP_USER: buildhub260309
           BUILDHUB_WP_APP_PASS: ${{ secrets.BUILDHUB_WP_APP_PASS }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
         run: python3 tools/buildhub-digest.py
