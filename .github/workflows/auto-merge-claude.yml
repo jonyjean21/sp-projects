@@ -45,6 +45,6 @@ jobs:
             PR_NUMBER=$EXISTING_PR
           fi
 
-          # Merge PR
-          gh pr merge "$PR_NUMBER" --merge --auto --delete-branch
-          echo "Merge initiated for PR #$PR_NUMBER"
+          # Merge PR (--auto requires branch protection rules, so use direct merge)
+          gh pr merge "$PR_NUMBER" --merge --delete-branch
+          echo "Merged PR #$PR_NUMBER"
