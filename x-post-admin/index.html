@@ -123,6 +123,7 @@ a{color:var(--accent2);text-decoration:none}
     <button class="nav-btn active" data-panel="panel-queue">キュー</button>
     <button class="nav-btn" data-panel="panel-ideas">ネタ帳</button>
     <button class="nav-btn" data-panel="panel-posted">投稿済み</button>
+    <button class="nav-btn" data-panel="panel-import">インポート</button>
   </div>
 
   <!-- Queue Panel -->
@@ -147,6 +148,16 @@ a{color:var(--accent2);text-decoration:none}
   <!-- Posted Panel -->
   <div id="panel-posted" class="panel">
     <div id="postedList"></div>
+  </div>
+
+  <!-- Import Panel -->
+  <div id="panel-import" class="panel">
+    <p style="font-size:0.85rem;color:var(--dim);margin-bottom:12px">Claude Codeが生成したJSONを貼り付けて投入</p>
+    <textarea id="importJson" style="width:100%;min-height:200px;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:12px;border-radius:var(--radius-sm);font-family:monospace;font-size:0.8rem;resize:vertical" placeholder='[{"dayLabel":"Day 1","pillar":"自動化","content":"ポスト本文..."}]'></textarea>
+    <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+      <button class="btn btn-primary" onclick="importDrafts()">投入する</button>
+      <span id="importResult" style="font-size:0.8rem;color:var(--dim)"></span>
+    </div>
   </div>
 </div>
 
@@ -541,6 +552,35 @@ function toast(msg) {
   el.textContent = msg;
   el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// Import drafts from JSON
+async function importDrafts() {
+  const raw = document.getElementById('importJson').value.trim();
+  const result = document.getElementById('importResult');
+  if (!raw) { result.textContent = 'JSONを貼り付けてください'; return; }
+  let drafts;
+  try { drafts = JSON.parse(raw); } catch(e) { result.textContent = 'JSONが不正です: ' + e.message; return; }
+  if (!Array.isArray(drafts)) { result.textContent = '配列で指定してください'; return; }
+  const ts = new Date().toISOString();
+  let count = 0;
+  for (const d of drafts) {
+    if (!d.content) continue;
+    await db.ref('x-post-queue').push({
+      dayLabel: d.dayLabel || '',
+      pillar: d.pillar || 'その他',
+      status: 'draft',
+      content: d.content,
+      notes: d.notes || '',
+      order: d.order != null ? d.order : 100,
+      createdAt: ts,
+      updatedAt: ts
+    });
+    count++;
+  }
+  result.textContent = count + '件投入しました';
+  document.getElementById('importJson').value = '';
+  toast(count + '件の下書きを投入しました');
 }
 
 // Close modal on overlay click
