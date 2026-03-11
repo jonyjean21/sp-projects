@@ -184,6 +184,41 @@ tr:hover { background: rgba(255,255,255,0.02); }
 .phase-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
 .phase-tasks { font-size: 12px; color: var(--sub); margin-top: 6px; }
 
+/* ===== Overview Map ===== */
+.overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+@media (max-width: 768px) { .overview-grid { grid-template-columns: 1fr; } }
+.overview-full { grid-column: 1 / -1; }
+
+.project-map-item { display: flex; align-items: flex-start; gap: 12px; padding: 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; transition: border-color 0.15s; }
+.project-map-item:hover { border-color: var(--border-active); }
+.project-map-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.project-map-body { flex: 1; min-width: 0; }
+.project-map-name { font-size: 14px; font-weight: 600; margin-bottom: 2px; display: flex; align-items: center; gap: 8px; }
+.project-map-desc { font-size: 12px; color: var(--sub); line-height: 1.5; }
+.project-map-tasks { margin-top: 8px; font-size: 12px; }
+.project-map-tasks li { color: var(--sub); margin-bottom: 3px; list-style: none; padding-left: 14px; position: relative; }
+.project-map-tasks li::before { content: '▸'; position: absolute; left: 0; color: var(--dim); }
+.project-map-tasks li.done { text-decoration: line-through; color: var(--dim); }
+.project-map-tasks li.done::before { content: '✓'; color: var(--green); }
+
+.revenue-bar-track { height: 24px; background: var(--border); border-radius: 12px; overflow: hidden; position: relative; }
+.revenue-bar-fill { height: 100%; border-radius: 12px; transition: width 0.6s ease; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; font-size: 11px; font-weight: 700; color: #fff; min-width: 40px; }
+.revenue-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.revenue-row:last-child { border-bottom: none; }
+.revenue-label { width: 120px; flex-shrink: 0; color: var(--sub); }
+.revenue-amount { width: 80px; text-align: right; font-weight: 600; flex-shrink: 0; }
+
+.blocker-item { display: flex; gap: 10px; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; font-size: 13px; }
+.blocker-item .blocker-icon { flex-shrink: 0; font-size: 16px; }
+.blocker-item .blocker-text { flex: 1; }
+.blocker-item .blocker-owner { font-size: 11px; color: var(--dim); white-space: nowrap; }
+
+.health-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.health-row:last-child { border-bottom: none; }
+.health-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.health-name { flex: 1; }
+.health-detail { font-size: 11px; color: var(--sub); }
+
 /* Queue list */
 .queue-item { padding: 12px; border-bottom: 1px solid var(--border); }
 .queue-item:last-child { border-bottom: none; }
@@ -300,6 +335,9 @@ tr:hover { background: rgba(255,255,255,0.02); }
       <div class="nav-group-label">Overview</div>
       <div class="nav-item active" data-section="dashboard" onclick="showSection('dashboard')">
         <span class="nav-icon">&#9632;</span> ダッシュボード
+      </div>
+      <div class="nav-item" data-section="overview" onclick="showSection('overview')">
+        <span class="nav-icon">&#127758;</span> 全貌マップ
       </div>
     </div>
 
@@ -455,6 +493,257 @@ tr:hover { background: rgba(255,255,255,0.02); }
         </div>
       </div>
 
+
+      <!-- ===== OVERVIEW MAP ===== -->
+      <div class="section" id="sec-overview">
+
+        <!-- Focus & Revenue KPI row -->
+        <div class="overview-grid">
+          <div class="card">
+            <h3>&#127919; 今週のフォーカス</h3>
+            <div style="font-size:13px;line-height:1.8;color:var(--sub)">
+              <div style="font-weight:600;color:var(--text);margin-bottom:4px">「もう1人のSP」Phase 2 準備</div>
+              <div>Phase 1（記憶レイヤー）完了 → LINE Bot 統合を準備中</div>
+              <div style="margin-top:8px;font-weight:600;color:var(--text)">3月バトルプラン実行中</div>
+              <div>収益目標 ¥100,000/月 に向けて推進</div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>&#128176; 3月 収益トラッカー</h3>
+            <div style="margin-bottom:12px">
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+                <span style="color:var(--sub)">目標 ¥100,000</span>
+                <span style="font-weight:700" id="revTotal">集計中...</span>
+              </div>
+              <div class="revenue-bar-track">
+                <div class="revenue-bar-fill" id="revBar" style="width:0%;background:linear-gradient(90deg,var(--accent),var(--cyan))">0%</div>
+              </div>
+            </div>
+            <div id="revBreakdown">
+              <div class="revenue-row"><span class="revenue-label">Crowdworks</span><div style="flex:1"><div class="revenue-bar-track" style="height:8px"><div class="revenue-bar-fill" style="height:100%;width:0%;background:var(--blue);min-width:0;padding:0" id="revCw"></div></div></div><span class="revenue-amount">¥0 / 50K</span></div>
+              <div class="revenue-row"><span class="revenue-label">BOOTH</span><div style="flex:1"><div class="revenue-bar-track" style="height:8px"><div class="revenue-bar-fill" style="height:100%;width:0%;background:var(--purple);min-width:0;padding:0" id="revBooth"></div></div></div><span class="revenue-amount">¥0 / 39.6K</span></div>
+              <div class="revenue-row"><span class="revenue-label">HUB Affiliate</span><div style="flex:1"><div class="revenue-bar-track" style="height:8px"><div class="revenue-bar-fill" style="height:100%;width:0%;background:var(--green);min-width:0;padding:0" id="revHub"></div></div></div><span class="revenue-amount">¥0 / 15K</span></div>
+              <div class="revenue-row"><span class="revenue-label">note</span><div style="flex:1"><div class="revenue-bar-track" style="height:8px"><div class="revenue-bar-fill" style="height:100%;width:0%;background:var(--orange);min-width:0;padding:0" id="revNote"></div></div></div><span class="revenue-amount">¥0 / 19.8K</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Project Map -->
+        <div class="card overview-full">
+          <div class="card-header">
+            <h3>&#128506; プロジェクト全貌マップ</h3>
+            <span class="pill pill-green">5 Active</span>
+            <span class="pill pill-orange">1 Preparing</span>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px">
+
+            <!-- MOLKKY HUB -->
+            <div class="project-map-item" style="border-left:3px solid var(--green)">
+              <div class="project-map-icon" style="background:#2a2117">📰</div>
+              <div class="project-map-body">
+                <div class="project-map-name">
+                  MOLKKY HUB
+                  <span class="pill pill-green" style="font-size:9px">稼働中</span>
+                  <span class="pill pill-dim" style="font-size:9px">最優先</span>
+                </div>
+                <div class="project-map-desc">モルック総合情報メディア — 月間3Kセッション</div>
+                <ul class="project-map-tasks">
+                  <li>記事自動化パイプラインの改善</li>
+                  <li>SEO改善（内部リンク・構造化データ）</li>
+                  <li>アフィリエイト最適化</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- MACHAP -->
+            <div class="project-map-item" style="border-left:3px solid var(--cyan)">
+              <div class="project-map-icon" style="background:#0F2A4A">⚡</div>
+              <div class="project-map-body">
+                <div class="project-map-name">
+                  MACHAP / マルタ村
+                  <span class="pill pill-cyan" style="font-size:9px">開発中</span>
+                </div>
+                <div class="project-map-desc">3人チーム事業 — SP + なかさん + ししょー</div>
+                <ul class="project-map-tasks">
+                  <li>ポータルMVP完成</li>
+                  <li>週次チャプ会ミーティング運営</li>
+                  <li>事業計画の詰め</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Revenue -->
+            <div class="project-map-item" style="border-left:3px solid var(--orange)">
+              <div class="project-map-icon" style="background:linear-gradient(135deg,#F97316,#FBBF24)">💰</div>
+              <div class="project-map-body">
+                <div class="project-map-name">
+                  収益プロジェクト
+                  <span class="pill pill-orange" style="font-size:9px">推進中</span>
+                </div>
+                <div class="project-map-desc">3月バトルプラン — ¥100,000/月目標</div>
+                <ul class="project-map-tasks">
+                  <li>Crowdworks 案件応募</li>
+                  <li>BOOTH テンプレ出品</li>
+                  <li>note 有料記事</li>
+                  <li>HUBアフィリエイト最適化</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- AI Clone -->
+            <div class="project-map-item" style="border-left:3px solid var(--accent)">
+              <div class="project-map-icon" style="background:linear-gradient(135deg,#1a1a3a,#6366f1)">🤖</div>
+              <div class="project-map-body">
+                <div class="project-map-name">
+                  もう1人のSP（AI Clone）
+                  <span class="pill pill-accent" style="font-size:9px">Phase 2 準備</span>
+                </div>
+                <div class="project-map-desc">AI秘書 → LINE Bot → 自律エージェント</div>
+                <ul class="project-map-tasks">
+                  <li class="done">Phase 1: 記憶レイヤー構築</li>
+                  <li class="done">Phase 3: 自律エージェント基盤</li>
+                  <li>Phase 2: LINE Bot 統合（ブロッカーあり）</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- X Brand -->
+            <div class="project-map-item" style="border-left:3px solid var(--blue)">
+              <div class="project-map-icon" style="background:#101a2a">📱</div>
+              <div class="project-map-body">
+                <div class="project-map-name">
+                  X パーソナルブランド
+                  <span class="pill pill-blue" style="font-size:9px">準備中</span>
+                </div>
+                <div class="project-map-desc">えすぴ @esupi — 副業リアルタイム共有</div>
+                <ul class="project-map-tasks">
+                  <li class="done">戦略確定・投稿12本下書き</li>
+                  <li>アカウント作成待ち</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- GitHub Pages -->
+            <div class="project-map-item" style="border-left:3px solid var(--purple)">
+              <div class="project-map-icon" style="background:linear-gradient(135deg,#1a1a2e,#a78bfa)">🌐</div>
+              <div class="project-map-body">
+                <div class="project-map-name">
+                  GitHub Pages アプリ群
+                  <span class="pill pill-green" style="font-size:9px">稼働中</span>
+                </div>
+                <div class="project-map-desc">40+アプリ運用中 — バニラJS + Firebase</div>
+                <ul class="project-map-tasks">
+                  <li>メンテナンス・機能追加</li>
+                  <li>レシピBOX UI修正（保留）</li>
+                  <li>まなびモン スケーリング（保留）</li>
+                </ul>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Blockers & System Health -->
+        <div class="overview-grid">
+          <div class="card">
+            <h3>&#128679; ブロッカー</h3>
+            <div class="blocker-item" style="border-left:3px solid var(--red)">
+              <span class="blocker-icon">🔑</span>
+              <div class="blocker-text">
+                <div style="font-weight:600">GitHub Secrets 未設定</div>
+                <div style="font-size:11px;color:var(--sub)">ANTHROPIC_API_KEY, FIREBASE_URL — AI Clone起動に必要</div>
+              </div>
+              <span class="blocker-owner">SP手動</span>
+            </div>
+            <div class="blocker-item" style="border-left:3px solid var(--red)">
+              <span class="blocker-icon">📱</span>
+              <div class="blocker-text">
+                <div style="font-weight:600">LINE Developers 登録</div>
+                <div style="font-size:11px;color:var(--sub)">Phase 2（LINE Bot統合）のブロッカー</div>
+              </div>
+              <span class="blocker-owner">SP手動</span>
+            </div>
+            <div class="blocker-item" style="border-left:3px solid var(--orange)">
+              <span class="blocker-icon">📝</span>
+              <div class="blocker-text">
+                <div style="font-weight:600">X アカウント作成</div>
+                <div style="font-size:11px;color:var(--sub)">えすぴ @esupi — パーソナルブランド開始待ち</div>
+              </div>
+              <span class="blocker-owner">SP手動</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>&#128994; システム健全性</h3>
+            <div id="overviewHealth">
+              <div class="health-row">
+                <div class="health-dot" style="background:var(--green)"></div>
+                <span class="health-name">GitHub Pages</span>
+                <span class="health-detail">40+ apps deployed</span>
+              </div>
+              <div class="health-row">
+                <div class="health-dot" id="healthFirebase" style="background:var(--sub)"></div>
+                <span class="health-name">Firebase RTDB</span>
+                <span class="health-detail" id="healthFirebaseDetail">確認中...</span>
+              </div>
+              <div class="health-row">
+                <div class="health-dot" id="healthQueue" style="background:var(--sub)"></div>
+                <span class="health-name">大会キュー</span>
+                <span class="health-detail" id="healthQueueDetail">確認中...</span>
+              </div>
+              <div class="health-row">
+                <div class="health-dot" style="background:var(--green)"></div>
+                <span class="health-name">GAS 自動化</span>
+                <span class="health-detail">3パイプライン稼働</span>
+              </div>
+              <div class="health-row">
+                <div class="health-dot" style="background:var(--green)"></div>
+                <span class="health-name">Vercel Proxy</span>
+                <span class="health-detail">Gemini / marutamura-bot</span>
+              </div>
+              <div class="health-row">
+                <div class="health-dot" style="background:var(--green)"></div>
+                <span class="health-name">WordPress (ConoHa)</span>
+                <span class="health-detail">MOLKKY HUB</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tech Stack Map -->
+        <div class="card">
+          <h3>&#128736; テックスタック全貌</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">
+            <div style="padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px">
+              <div style="font-size:12px;font-weight:600;margin-bottom:6px;color:var(--accent)">Frontend</div>
+              <div style="font-size:12px;color:var(--sub);line-height:1.8">HTML / CSS / JS（バニラ）<br>GitHub Pages ホスティング<br>PWA（INBOX）</div>
+            </div>
+            <div style="padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px">
+              <div style="font-size:12px;font-weight:600;margin-bottom:6px;color:var(--purple)">Data / Backend</div>
+              <div style="font-size:12px;color:var(--sub);line-height:1.8">Firebase RTDB<br>WordPress REST API<br>Google Apps Script</div>
+            </div>
+            <div style="padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px">
+              <div style="font-size:12px;font-weight:600;margin-bottom:6px;color:var(--cyan)">Automation</div>
+              <div style="font-size:12px;color:var(--sub);line-height:1.8">GAS（RSS・議事録・日報）<br>IFTTT（X検索）<br>Claude Code スキル</div>
+            </div>
+            <div style="padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px">
+              <div style="font-size:12px;font-weight:600;margin-bottom:6px;color:var(--green)">Infra / API</div>
+              <div style="font-size:12px;color:var(--sub);line-height:1.8">Vercel（Proxy/Bot）<br>ConoHa（WP）<br>Gemini API / Claude API</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Daily Activity (from Firebase) -->
+        <div class="card">
+          <div class="card-header">
+            <h3>&#128197; 最近のアクティビティ</h3>
+            <button class="btn btn-sm btn-outline" onclick="loadOverviewActivity()">更新</button>
+          </div>
+          <div id="overviewActivity"><div class="empty"><span class="spinner"></span> 読み込み中...</div></div>
+        </div>
+
+      </div>
 
       <!-- ===== INBOX ===== -->
       <div class="section" id="sec-inbox">
@@ -672,12 +961,13 @@ function showSection(id) {
   const navItem = document.querySelector(`.nav-item[data-section="${id}"]`);
   if (navItem) navItem.classList.add('active');
 
-  const titles = { dashboard:'ダッシュボード', inbox:'INBOX', products:'プロダクト一覧', automation:'自動化パイプライン', settings:'設定' };
+  const titles = { dashboard:'ダッシュボード', overview:'全貌マップ', inbox:'INBOX', products:'プロダクト一覧', automation:'自動化パイプライン', settings:'設定' };
   document.getElementById('pageTitle').textContent = titles[id] || id;
 
   // Lazy load data
   if (id === 'automation') loadAutomationStatus();
   if (id === 'inbox') loadInboxItems();
+  if (id === 'overview') loadOverviewData();
 
   // Close mobile sidebar
   document.getElementById('sidebar').classList.remove('open');
@@ -1125,6 +1415,68 @@ function swipeEnd(e, key) {
   if (dx > 80) { routeItem(key); }
   else if (dx < -80) { dismissItem(key); }
   swipeState = {};
+}
+
+// ===== Overview Map =====
+let overviewLoaded = false;
+async function loadOverviewData() {
+  if (overviewLoaded) return;
+  overviewLoaded = true;
+  loadOverviewHealth();
+  loadOverviewActivity();
+}
+
+async function loadOverviewHealth() {
+  try {
+    const r = await fetch(FB + '/tournament-queue.json?orderBy="status"&equalTo="pending"&shallow=true');
+    const d = await r.json();
+    const pending = d ? Object.keys(d).length : 0;
+    document.getElementById('healthFirebase').style.background = 'var(--green)';
+    document.getElementById('healthFirebaseDetail').textContent = '接続OK';
+    document.getElementById('healthQueue').style.background = pending > 10 ? 'var(--orange)' : 'var(--green)';
+    document.getElementById('healthQueueDetail').textContent = pending + '件 pending';
+  } catch(e) {
+    document.getElementById('healthFirebase').style.background = 'var(--red)';
+    document.getElementById('healthFirebaseDetail').textContent = '接続失敗';
+  }
+}
+
+async function loadOverviewActivity() {
+  const box = document.getElementById('overviewActivity');
+  try {
+    // Fetch last 5 days of activity
+    const today = new Date();
+    const dates = [];
+    for (let i = 0; i < 5; i++) {
+      const d = new Date(today); d.setDate(d.getDate() - i);
+      dates.push(d.toISOString().split('T')[0]);
+    }
+    const results = await Promise.all(dates.map(dt =>
+      fetch(FB + '/daily-activities/' + dt + '.json').then(r => r.json()).then(d => ({ date: dt, data: d }))
+    ));
+
+    let html = '';
+    for (const { date, data } of results) {
+      if (!data) continue;
+      const entries = typeof data === 'object' ? Object.values(data) : [data];
+      for (const entry of entries) {
+        const items = entry.items || [];
+        const time = entry.time || '';
+        for (const item of items) {
+          html += `<div class="activity-item">
+            <div class="activity-dot" style="background:var(--green)"></div>
+            <div style="flex:1">
+              <div style="font-size:13px">${escapeHtml(item)}</div>
+              <div class="activity-time">${date}${time ? ' ' + time : ''}</div>
+            </div>
+          </div>`;
+        }
+      }
+    }
+    box.innerHTML = html || '<div class="empty">直近のアクティビティなし</div>';
+  } catch(e) {
+    box.innerHTML = '<div class="empty" style="color:var(--sub)">アクティビティを取得できませんでした</div>';
+  }
 }
 
 // ===== Utility =====
