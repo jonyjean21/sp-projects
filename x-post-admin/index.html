@@ -25,15 +25,6 @@ a{color:var(--accent2);text-decoration:none}
 .conn-badge.on{color:var(--ok);border-color:var(--ok)}
 .conn-badge.off{color:var(--err);border-color:var(--err)}
 
-/* Auth */
-#auth-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;height:80vh;gap:12px}
-#auth-screen h2{font-size:1rem;color:var(--dim)}
-#pw-input{background:var(--card);border:1px solid var(--border);color:var(--text);padding:10px 16px;border-radius:var(--radius-sm);font-size:1rem;width:240px;text-align:center}
-#pw-input:focus{outline:none;border-color:var(--accent)}
-#auth-error{color:var(--err);font-size:0.8rem;display:none}
-.auth-btn{background:var(--accent);color:#fff;border:none;padding:8px 24px;border-radius:var(--radius-sm);cursor:pointer;font-size:0.9rem;font-weight:600}
-.auth-btn:hover{opacity:0.85}
-
 /* Tabs */
 .nav{display:flex;gap:0;border-bottom:1px solid var(--border);padding:0 16px;overflow-x:auto}
 .nav-btn{background:none;border:none;color:var(--dim);padding:10px 16px;font-size:0.85rem;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;font-weight:500}
@@ -123,16 +114,8 @@ a{color:var(--accent2);text-decoration:none}
   <span class="conn-badge off" id="connBadge">offline</span>
 </div>
 
-<!-- Auth -->
-<div id="auth-screen">
-  <h2>Admin Access</h2>
-  <input type="password" id="pw-input" placeholder="password" autocomplete="off">
-  <button class="auth-btn" onclick="tryAuth()">Enter</button>
-  <div id="auth-error">パスワードが違います</div>
-</div>
-
 <!-- Main -->
-<div id="main-screen" style="display:none">
+<div id="main-screen">
   <div class="stats" id="statsBar"></div>
 
   <div class="nav">
@@ -148,8 +131,9 @@ a{color:var(--accent2);text-decoration:none}
       <button class="filter-btn" data-filter="draft">下書き</button>
       <button class="filter-btn" data-filter="queued">待機中</button>
     </div>
-    <div style="margin-bottom:12px">
+    <div style="margin-bottom:12px;display:flex;gap:8px">
       <button class="btn btn-primary" onclick="openModal()">+ 新規ポスト</button>
+      <button class="btn btn-secondary" onclick="seedDrafts()">下書き一括投入</button>
     </div>
     <div id="queueList"></div>
   </div>
@@ -259,25 +243,6 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-
-// Auth
-const ADMIN_HASH = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'; // "admin"
-async function sha256(text) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-}
-async function tryAuth() {
-  const pw = document.getElementById('pw-input').value;
-  const hash = await sha256(pw);
-  if (hash === ADMIN_HASH) {
-    document.getElementById('auth-screen').style.display = 'none';
-    document.getElementById('main-screen').style.display = 'block';
-    init();
-  } else {
-    document.getElementById('auth-error').style.display = 'block';
-  }
-}
-document.getElementById('pw-input').addEventListener('keydown', e => { if (e.key === 'Enter') tryAuth(); });
 
 // State
 let posts = [];
@@ -586,6 +551,40 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
     if (e.target === overlay) overlay.classList.remove('show');
   });
 });
+
+// Seed data - queue.md drafts
+async function seedDrafts() {
+  const snap = await db.ref('x-post-queue').once('value');
+  if (snap.exists() && snap.numChildren() > 0) {
+    toast('既にデータがあります（' + snap.numChildren() + '件）');
+    return;
+  }
+  const drafts = [
+    { dayLabel:"固定ツイート", pillar:"その他", status:"draft", content:"副業で収益化を本気で目指してるやつです。\n\n・本業あり。副業で5つのWebメディアを同時運営\n・モルック（フィンランドのスポーツ）で日本最大のメディア作った\n・Claude Codeを右腕にして記事生成→投稿まで全自動化\n・40個のWebアプリもバニラJSで全部作った\n・1日の実作業は約30分\n\nここまでの過程が全部ネタになるんで、\n自動化の仕組み、収益の成長、失敗談、全部出します。\n70点で出して改善していくスタイル。", notes:"固定ツイート用", order:1 },
+    { dayLabel:"Day 1", pillar:"その他", status:"draft", content:"副業で収益化、本気で目指すことにした。\n\n本業あり。でも副業で5つのWebメディア運営してる。\nAIを右腕にして記事生成も投稿も大会情報の更新も全部自動化した。\n\nここまで作ってきた仕組みを全部公開していく。\n収益も成長率も失敗も全部出す。\n\n70点で出して改善する。完璧は目指さん。", notes:"宣言ポスト", order:10 },
+    { dayLabel:"Day 2-1", pillar:"自動化", status:"draft", content:"【副業の仕組み、全部自動化した話】\n\n記事を書く → AI\n記事を投稿する → GAS\n大会情報を集める → GAS\nデータを管理する → Firebase\nサイトをホスト → Vercel + GitHub Pages\n日報を書く → AI\n\n俺がやってるのは「判断」だけ。\nこれで5メディア回してる。所要時間、1日30分。", notes:"柱1: 自動化の全体像", order:20 },
+    { dayLabel:"Day 2-2", pillar:"失敗談", status:"draft", content:"Claude Codeで記事5本を自動投稿しようとしたら、ConoHaのWAFに弾かれた。\n\n「攻撃か？」って判定されてAPI全部403。\n3時間溶かした。\n\n解決法：投稿間隔を10秒空けるだけ。\n\n自動化の敵は技術じゃなくてセキュリティ設定。", notes:"柱7: WAFに弾かれた話", order:21 },
+    { dayLabel:"Day 3-1", pillar:"Claude Code", status:"draft", content:"Claude Code、3つの使い方がある。\n\nWeb版: ブラウザでチャット。普通のAI\nCLI版: ターミナルで動く。ファイル操作、git、デプロイ全部やる\nCowork: バックグラウンドで勝手に作業してくれる\n\n俺が使ってるのはCLI版。\n「このファイル直して」「push して」「日報書いて」\n全部テキストで指示するだけ。VSCode開かん日もある。", notes:"柱3: Claude Code解説", order:30 },
+    { dayLabel:"Day 3-2", pillar:"哲学", status:"draft", content:"完璧を目指すな。動くものを出せ。\n\n3時間悩むなら30分で作って出して反応見ろ。\nフレームワーク選定に3日使うなら、その3日でバニラJSで完成する。\n月5000円以下の投資は即GO。考えるのは超えてからでいい。\n\n実際にこれで40個のアプリ作った。\nReact使ってたら多分10個で止まってた。", notes:"柱6: 70点哲学", order:31 },
+    { dayLabel:"Day 4-1", pillar:"モルック", status:"draft", content:"モルックって知ってる？\n\nフィンランド発のスポーツで、木の棒を投げて木のピンを倒す。\nルールは簡単やけど戦略が深い。日本でいま急成長中。\n\nで、そのモルックの日本最大のWebメディアを1人で運営してる。\n月間3000セッション超え。\n\nなんでそうなったかというと、\nニッチ × テック = 競合ゼロ。\nSEOも楽勝。1位取り放題。", notes:"柱4: モルックって何？", order:40 },
+    { dayLabel:"Day 4-2", pillar:"AIクローン", status:"draft", content:"AIに「記憶」を持たせた。\n\nClaude Codeはセッションが切れると全部忘れる。\nだから記憶システムを作った。\n\n短期記憶: セッションごとのログ\n中期記憶: 判断・学びの記録\n長期記憶: 週次で「蒸留」して本質だけ残す\n\n人間の脳と同じ構造。\nこれで1ヶ月前の文脈も引き継げる右腕になった。", notes:"柱2: AIの記憶システム", order:41 },
+    { dayLabel:"Day 5-1", pillar:"自動化", status:"draft", content:"1人なのに日報がある。しかも自動生成。\n\n仕組み:\n1. 作業するたびにFirebaseにログをPOST\n2. gitのコミット履歴も自動取得\n3. 毎朝4時にGASが起動\n4. ログ＋コミットをGeminiが要約\n5. 完成した日報が届く\n\n誰に報告してんねん？って話やけど、\n翌日のAIセッションでこの日報を読み込ませたら\n前回の続きから完璧に再開する。引き継ぎゼロ。", notes:"柱1: 日報自動生成", order:50 },
+    { dayLabel:"Day 5-2", pillar:"哲学", status:"draft", content:"マイナージャンルを攻めろ。\n\n競合がいないところで1位を取るのが最短ルート。\n「モルック メディア」で検索したら、うちが1位。\nなぜなら他に本気でやってるメディアがないから。\n\n大きな市場で100位になるより、\n小さな市場で1位のほうが収益になる。\n\n「そのジャンル、誰もやってないやん」は\nチャンスの合図。", notes:"柱6: マイナージャンル攻めろ", order:51 },
+    { dayLabel:"Day 6-1", pillar:"失敗談", status:"draft", content:"自動化したら逆に手間が増えたパターン。\n\nGASの定期実行、たまにコケる。\nコケた時の調査に毎回30分取られる。\n原因は大体「API側の仕様変更」か「タイムアウト」。\n\n手動なら5分で終わる作業を\n自動化するのに3時間かけて、\n月1回のエラー調査に30分取られてる。\n\n…でもまあ、10回に9回は自動で回ってるから勝ち。\nトータルで見たら黒字や。", notes:"柱7: 自動化で逆に手間増えた話", order:60 },
+    { dayLabel:"Day 6-2", pillar:"AIクローン", status:"draft", content:"AIに渡す仕事、レベル分けしてる。\n\nLv.0: 勝手にやれ（ファイル操作、コミット、定型処理）\nLv.1: やっていいけど報告しろ（記事投稿、データ更新）\nLv.2: 24時間以内に聞け（新機能の設計）\nLv.3: 今すぐ聞け（5000円以上の支出、外部API契約）\n\n全部マニュアルに書いてある。\n200行のルールファイルを毎回読み込ませてる。\nだから判断がブレない。", notes:"柱2: AIへの委任レベル", order:61 },
+    { dayLabel:"Day 7", pillar:"振り返り", status:"draft", content:"【Week 1 振り返り】\n\nXアカウント開始して1週間。\n\nフォロワー: ◯人\n一番反応良かったポスト: ◯◯\n投稿数: ◯本\n学び: ◯◯\n\n来週は◯◯をテーマに出していく。\n数字は毎週出します。盛らん。", notes:"柱5: 週次振り返りテンプレ", order:70 }
+  ];
+  const ts = new Date().toISOString();
+  for (const d of drafts) {
+    d.createdAt = ts;
+    d.updatedAt = ts;
+    await db.ref('x-post-queue').push(d);
+  }
+  toast(drafts.length + '件の下書きを投入しました');
+}
+
+// Auto init
+init();
 </script>
 </body>
 </html>
