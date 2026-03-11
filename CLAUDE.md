@@ -38,12 +38,11 @@
 - **ブランチ作成**: `git checkout -b <branch>` → `git push -u origin <branch>`
 - **コードの開発・コミット**: 通常のgit操作は全てトークン不要
 
-#### トークンが必要（mainへのマージ時のみ）
-- mainへの直接pushはプロキシが403でブロックする
-- **mainへマージするには**: GitHub API で PR作成・マージが必要
-- トークンはセッション開始時にユーザーに1回だけ確認する
-- GitHub Secrets に PAT を保存済み（`GH_PAT_CLASSIC`, `GH_PAT_FINEGRAINED`）
-  - ただしSecretsは読み出し不可。ユーザーからの提供が必要
+#### mainへのマージ（完全自動・トークン不要）
+- `claude/**` ブランチにpushすると、GitHub Actions（`.github/workflows/auto-merge-claude.yml`）が自動でPR作成→マージ→ブランチ削除を行う
+- **トークンもPR手動作成も不要。pushするだけでmainに反映される**
+- Actions内では `GH_PAT_FINEGRAINED` シークレットを使用
+- mainへの直接pushはプロキシが403でブロックするが、この仕組みにより問題なし
 
 ### セキュリティルール
 - `.env` ファイルは `.gitignore` に含め、絶対にコミットしない
