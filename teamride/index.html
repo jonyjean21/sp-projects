@@ -206,6 +206,19 @@ textarea{resize:vertical;min-height:60px}
 .rsvp-seats-ok{background:#e8f5e9;color:var(--success)}
 .rsvp-seats-zero{background:var(--bg);color:var(--text-light)}
 
+/* RSVP Table */
+.rsvp-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+.rsvp-table th{padding:6px 4px;font-size:11px;font-weight:700;color:var(--text-sub);
+  border-bottom:2px solid var(--border);text-align:center;white-space:nowrap}
+.rsvp-table td{padding:6px 4px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle}
+.rsvp-table td:first-child{text-align:left;font-weight:600;white-space:nowrap;padding-left:8px}
+.rsvp-table td:last-child{text-align:left;font-size:12px;color:var(--text-sub)}
+.rsvp-table .rsvp-mark-ok{color:#2e7d32;font-size:18px;font-weight:700}
+.rsvp-table .rsvp-mark-ng{color:#c62828;font-size:18px;font-weight:700}
+.rsvp-table .rsvp-mark-maybe{color:#ef6c00;font-size:16px;font-weight:700}
+.rsvp-table .rsvp-mark-text{font-size:11px;font-weight:600;color:var(--text-sub)}
+.rsvp-table-section{font-size:12px;font-weight:700;color:var(--text-sub);padding:8px;background:var(--bg);border-bottom:1px solid var(--border)}
+
 /* Event form */
 .event-type-toggle{display:flex;gap:8px;margin-bottom:16px}
 .event-type-btn{flex:1;padding:12px;border:2px solid var(--border);border-radius:12px;
@@ -719,34 +732,7 @@ textarea{resize:vertical;min-height:60px}
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title">📋 共有情報を編集</div>
-    <div class="form-group">
-      <label class="form-label">持ち物</label>
-      <textarea id="infoMochimono" rows="8" placeholder="水筒、タオル、着替え..."></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">試合当日</label>
-      <textarea id="infoMatchDay" rows="6" placeholder="試合当日の注意事項"></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">当日までの流れ</label>
-      <textarea id="infoSchedule" rows="8" placeholder="8:30 集合&#10;9:00 試合開始..."></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">ユニフォーム取扱</label>
-      <textarea id="infoUniform" rows="6" placeholder="白のユニフォーム着用、予備を持参"></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">帯同・配車の説明</label>
-      <textarea id="infoTaido" rows="6" placeholder="配車はアプリで回答。締切後の変更はLINEで連絡"></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">学年荷物（当番等）</label>
-      <textarea id="infoGakunen" rows="6" placeholder="3年生：テント、タープ&#10;4年生：ゴール"></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">その他（自由記述）</label>
-      <textarea id="infoOther" rows="6" placeholder=""></textarea>
-    </div>
+    <div id="infoEditorSortableContainer"></div>
     <div id="infoCustomSections"></div>
     <button class="btn btn-outline btn-small" onclick="addInfoSection()" style="margin-bottom:16px">+ セクション追加</button>
     <button class="btn btn-primary" onclick="saveTeamInfo()">保存</button>
@@ -793,16 +779,25 @@ textarea{resize:vertical;min-height:60px}
     </div>
     <div class="form-group">
       <label class="form-label">チーム順位</label>
-      <div style="display:flex;gap:8px">
+      <div style="display:flex;gap:8px;align-items:center">
         <input type="number" id="tournamentRank" min="1" placeholder="順位" inputmode="numeric" style="flex:1">
+        <select id="tournamentRankTie" style="width:80px;padding:8px">
+          <option value="">位</option>
+          <option value="tie">位タイ</option>
+        </select>
         <div style="display:flex;align-items:center;font-size:14px;color:var(--text-sub)">/ </div>
-        <input type="number" id="tournamentTotalTeams" min="1" placeholder="参加チーム数" inputmode="numeric" style="flex:1">
+        <input type="number" id="tournamentTotalTeams" min="1" placeholder="チーム数" inputmode="numeric" style="flex:1">
       </div>
     </div>
     <div class="form-group">
       <label class="form-label">試合結果</label>
       <div id="tournamentMatchesContainer"></div>
       <button class="btn btn-outline btn-small" onclick="addTournamentMatch()" style="margin-top:8px">+ 試合追加</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">YouTubeリンク</label>
+      <div id="tournamentYoutubeContainer"></div>
+      <button class="btn btn-outline btn-small" onclick="addTournamentYoutube()" style="margin-top:8px">+ リンク追加</button>
     </div>
     <div class="form-group">
       <label class="form-label">MVP</label>
@@ -2287,7 +2282,8 @@ function renderMyRsvpSummary(r) {
       ${r.not_attending_reason ? '<div class="rsvp-summary-detail">理由: '+escapeHtml(r.not_attending_reason)+'</div>' : ''}
     </div>`;
   }
-  const transport = r.transport === 'drive' ? '配車可' : r.transport === 'ride' ? '乗せてほしい' : '現地集合';
+  const transport = r.transport === 'drive' ? '配車可' : r.transport === 'ride' ? '乗せてほしい' : r.transport === 'direct' ? '現地集合' : '検討中';
+  const accompanyStr = r.accompany === true ? '帯同○' : r.accompany === false ? '帯同✕' : r.accompany === 'maybe' ? '帯同△' : (r.parent_coming ? '帯同○' : '帯同✕');
   // New split counts
   let peopleStr = '';
   if (r.adult_count != null) {
@@ -2301,6 +2297,7 @@ function renderMyRsvpSummary(r) {
     peopleStr = parent + ((r.family_count || 1) > 1 ? ' '+r.family_count+'人' : '');
   }
   const childOnlyStr = r.child_only_ride ? ' / 子だけ乗車' : '';
+  const nearParkingStr = r.near_parking ? ' / 近隣駐車場希望' : '';
   const extra = r.transport === 'drive' && r.extra_seats > 0 ? ` / 他${r.extra_seats}人OK` : '';
   const eqNames = r.bring_equipment ? Object.keys(r.bring_equipment)
     .filter(k => r.bring_equipment[k] && equipmentTypesData[k])
@@ -2308,7 +2305,7 @@ function renderMyRsvpSummary(r) {
   const eqStr = eqNames.length ? ' / ' + eqNames.join('・') : '';
   return `<div class="rsvp-summary" style="margin-top:10px">
     <div class="rsvp-summary-title">✅ 回答済み</div>
-    <div class="rsvp-summary-detail">参加（${peopleStr}・${transport}${childOnlyStr}${extra}${eqStr}）</div>
+    <div class="rsvp-summary-detail">参加（${accompanyStr}・${peopleStr}・${transport}${childOnlyStr}${nearParkingStr}${extra}${eqStr}）</div>
     ${r.note ? '<div class="rsvp-summary-detail">備考: '+escapeHtml(r.note)+'</div>' : ''}
   </div>`;
 }
@@ -2319,146 +2316,120 @@ function renderRsvpList(eventId, e) {
   if (activeMembers.length === 0) return '';
 
   // Partition into groups
-  const groups = { drivers: [], riders: [], directs: [], maybe: [], unanswered: [], declined: [] };
+  const groups = { attending: [], maybe: [], unanswered: [], declined: [] };
   activeMembers.forEach(([mid, m]) => {
     const r = rsvp[mid];
     if (!r) { groups.unanswered.push([mid, m, r]); return; }
     if (r.attending === 'maybe') { groups.maybe.push([mid, m, r]); return; }
     if (!r.attending) { groups.declined.push([mid, m, r]); return; }
-    if (r.transport === 'drive') groups.drivers.push([mid, m, r]);
-    else if (r.transport === 'ride') groups.riders.push([mid, m, r]);
-    else if (r.transport === 'direct') groups.directs.push([mid, m, r]);
-    else groups.unanswered.push([mid, m, r]);
+    groups.attending.push([mid, m, r]);
   });
 
-  // Sort
-  groups.drivers.sort((a, b) => {
-    const aEq = a[2].bring_equipment && Object.values(a[2].bring_equipment).some(v => v) ? 1 : 0;
-    const bEq = b[2].bring_equipment && Object.values(b[2].bring_equipment).some(v => v) ? 1 : 0;
-    if (bEq !== aEq) return bEq - aEq;
-    return (b[2].extra_seats || 0) - (a[2].extra_seats || 0);
+  // Sort attending: drivers first, then riders, then direct
+  const transportOrder = { drive: 0, ride: 1, direct: 2, considering: 3 };
+  groups.attending.sort((a, b) => {
+    const ta = transportOrder[a[2].transport] ?? 9;
+    const tb = transportOrder[b[2].transport] ?? 9;
+    if (ta !== tb) return ta - tb;
+    return a[1].name.localeCompare(b[1].name);
   });
-  groups.riders.sort((a, b) => calcSeatsNeeded(b[0], b[2]) - calcSeatsNeeded(a[0], a[2]));
   const alpha = (a, b) => a[1].name.localeCompare(b[1].name);
-  groups.directs.sort(alpha);
   groups.maybe.sort(alpha);
   groups.unanswered.sort(alpha);
   groups.declined.sort(alpha);
 
-  function zoneDot(m) {
-    const z = m.zone_id && zonesData[m.zone_id] ? zonesData[m.zone_id] : null;
-    return z ? '<span class="zone-dot" style="background:'+escapeHtml(z.color)+'"></span>' : '';
+  function markHtml(val, isMaybe) {
+    if (val === true) return '<span class="rsvp-mark-ok">○</span>';
+    if (val === false) return '<span class="rsvp-mark-ng">✕</span>';
+    if (val === 'maybe' || isMaybe) return '<span class="rsvp-mark-maybe">△</span>';
+    return '<span class="rsvp-mark-text">-</span>';
   }
 
-  let html = '<div style="margin-top:10px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">';
+  function getTransportMark(r) {
+    if (r.transport === 'drive') return '<span class="rsvp-mark-ok">○</span>';
+    if (r.transport === 'ride') return '<span class="rsvp-mark-ok">○</span>';
+    if (r.transport === 'direct') return '<span class="rsvp-mark-text">現地集合</span>';
+    if (r.transport === 'considering') return '<span class="rsvp-mark-maybe">△</span>';
+    return '<span class="rsvp-mark-text">-</span>';
+  }
 
-  // Drivers
-  if (groups.drivers.length) {
-    const maxC = e.max_cars || 0;
-    const limitLabel = maxC > 0 ? ` / 上限${maxC}台` : '';
-    html += `<div class="rsvp-section-header">🚗 配車可 <span class="rsvp-section-count">(${groups.drivers.length}台${limitLabel})</span></div>`;
-    const allEquipItems = [];
-    groups.drivers.forEach(([mid, m, r]) => {
-      const fc = r.family_count || (r.parent_coming ? 2 : 1);
-      const seats = r.extra_seats || 0;
-      const carLabel = m.car_type && CAR_TYPES[m.car_type] ? CAR_TYPES[m.car_type].label : '';
-      if (r.bring_equipment) {
-        Object.keys(r.bring_equipment).filter(k => r.bring_equipment[k] && equipmentTypesData[k]).forEach(k => {
-          allEquipItems.push({ icon: getEquipIcon(k), name: m.name });
-        });
-      }
-      const seatsCls = seats > 0 ? 'rsvp-seats-ok' : 'rsvp-seats-zero';
-      const seatsText = seats > 0 ? '空'+seats+'席' : '満席';
-      html += `<div class="rsvp-status-item" style="flex-wrap:wrap">
-        ${zoneDot(m)}
-        <div class="rsvp-status-name">${escapeHtml(m.name)}</div>
-        <span class="rsvp-seats-badge rsvp-seats-zero" style="font-size:11px">乗車${fc}人</span>
-        <span class="rsvp-seats-badge ${seatsCls}">${seatsText}</span>
-        ${carLabel ? `<div class="rsvp-detail-line">${escapeHtml(carLabel)}</div>` : ''}
-      </div>`;
-    });
-    if (allEquipItems.length > 0) {
-      html += '<div style="padding:6px 12px;font-size:13px;color:var(--text-sub);display:flex;flex-wrap:wrap;gap:4px 12px;border-bottom:1px solid var(--border)">';
-      allEquipItems.forEach(item => {
-        html += `<span>${item.icon}${escapeHtml(item.name)}</span>`;
+  function getAccompanyMark(r) {
+    if (r.accompany === true) return markHtml(true);
+    if (r.accompany === false) return markHtml(false);
+    if (r.accompany === 'maybe') return markHtml('maybe');
+    // Fallback: use parent_coming
+    if (r.parent_coming === true) return markHtml(true);
+    if (r.parent_coming === false) return markHtml(false);
+    return '<span class="rsvp-mark-text">-</span>';
+  }
+
+  function getRiderCount(mid, r) {
+    if (r.transport === 'direct') return '-';
+    return calcSeatsNeeded(mid, r);
+  }
+
+  function getRemarks(mid, m, r) {
+    const parts = [];
+    // Equipment icons
+    if (r.bring_equipment) {
+      Object.keys(r.bring_equipment).filter(k => r.bring_equipment[k] && equipmentTypesData[k]).forEach(k => {
+        parts.push(getEquipIcon(k));
       });
-      html += '</div>';
     }
+    if (r.child_only_ride) parts.push('<span style="font-size:11px">※人数オーバー時→子のみ乗せて！</span>');
+    if (r.near_parking) parts.push('<span style="font-size:11px">※近隣駐車場希望！</span>');
+    if (r.note) parts.push(escapeHtml(r.note));
+    return parts.join(' ');
   }
 
-  // Riders
-  if (groups.riders.length) {
-    html += `<div class="rsvp-section-header">🙋 乗せて <span class="rsvp-section-count">(${groups.riders.length}人)</span></div>`;
-    groups.riders.forEach(([mid, m, r]) => {
-      const sn = calcSeatsNeeded(mid, r);
-      let detailParts = [];
-      if (r.adult_count != null) {
-        if (r.adult_count > 0) detailParts.push('大人'+r.adult_count);
-        if (r.child_count > 0) detailParts.push('子'+r.child_count);
-        if (r.preschool_count > 0) detailParts.push('未就学'+r.preschool_count);
-      } else {
-        detailParts.push(r.parent_coming ? '親子' : '子のみ');
-        if ((r.family_count || 1) > 1) detailParts.push(r.family_count+'人');
-      }
-      const childOnlyLabel = r.child_only_ride ? ' <span style="font-size:11px;background:#fff3e0;color:#c45000;padding:1px 6px;border-radius:6px">子だけ乗車</span>' : '';
-      html += `<div class="rsvp-status-item">
-        ${zoneDot(m)}
-        <div class="rsvp-status-name">${escapeHtml(m.name)}${childOnlyLabel}</div>
-        <div class="rsvp-status-detail">${detailParts.join(' ')} (${sn}席)</div>
-      </div>`;
-    });
-  }
+  // Build table
+  let html = '<div style="margin-top:10px;overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius)">';
+  html += '<table class="rsvp-table"><thead><tr>';
+  html += '<th></th><th>参加可否</th><th>帯同可否</th><th>配車可否</th><th>乗車人数<br><span style="font-weight:400;font-size:10px">(選手含)</span></th><th>備考</th>';
+  html += '</tr></thead><tbody>';
 
-  // Direct
-  if (groups.directs.length) {
-    html += `<div class="rsvp-section-header">🏃 現地集合 <span class="rsvp-section-count">(${groups.directs.length}人)</span></div>`;
-    groups.directs.forEach(([mid, m]) => {
-      html += `<div class="rsvp-status-item">
-        ${zoneDot(m)}
-        <div class="rsvp-status-name">${escapeHtml(m.name)}</div>
-      </div>`;
-    });
-  }
+  // Attending
+  groups.attending.forEach(([mid, m, r]) => {
+    html += `<tr>
+      <td>${escapeHtml(m.name)}</td>
+      <td>${markHtml(true)}</td>
+      <td>${getAccompanyMark(r)}</td>
+      <td>${getTransportMark(r)}</td>
+      <td>${getRiderCount(mid, r)}</td>
+      <td>${getRemarks(mid, m, r)}</td>
+    </tr>`;
+  });
 
-  // Maybe (△)
-  if (groups.maybe.length) {
-    html += `<div class="rsvp-section-header">△ 検討中 <span class="rsvp-section-count">(${groups.maybe.length}人)</span></div>`;
-    groups.maybe.forEach(([mid, m, r]) => {
-      html += `<div class="rsvp-status-item" style="opacity:0.8">
-        <div class="rsvp-status-icon">△</div>
-        ${zoneDot(m)}
-        <div class="rsvp-status-name">${escapeHtml(m.name)}</div>
-        ${r && r.note ? '<div class="rsvp-status-detail">'+escapeHtml(r.note)+'</div>' : ''}
-      </div>`;
-    });
-  }
+  // Maybe
+  groups.maybe.forEach(([mid, m, r]) => {
+    html += `<tr style="opacity:0.7">
+      <td>${escapeHtml(m.name)}</td>
+      <td><span class="rsvp-mark-maybe">△</span></td>
+      <td>-</td><td>-</td><td>-</td>
+      <td>${r && r.note ? escapeHtml(r.note) : ''}</td>
+    </tr>`;
+  });
 
   // Unanswered
-  if (groups.unanswered.length) {
-    html += `<div class="rsvp-section-header">⚠ 未回答 <span class="rsvp-section-count">(${groups.unanswered.length}人)</span></div>`;
-    groups.unanswered.forEach(([mid, m]) => {
-      html += `<div class="rsvp-status-item" style="opacity:0.6">
-        <div class="rsvp-status-icon">⚠</div>
-        ${zoneDot(m)}
-        <div class="rsvp-status-name">${escapeHtml(m.name)}</div>
-      </div>`;
-    });
-  }
+  groups.unanswered.forEach(([mid, m]) => {
+    html += `<tr style="opacity:0.5">
+      <td>${escapeHtml(m.name)}</td>
+      <td><span class="rsvp-mark-text">⚠</span></td>
+      <td>-</td><td>-</td><td>-</td><td></td>
+    </tr>`;
+  });
 
   // Declined
-  if (groups.declined.length) {
-    html += `<div class="rsvp-section-header">❌ 不参加 <span class="rsvp-section-count">(${groups.declined.length}人)</span></div>`;
-    groups.declined.forEach(([mid, m, r]) => {
-      html += `<div class="rsvp-status-item" style="opacity:0.6">
-        <div class="rsvp-status-icon">❌</div>
-        ${zoneDot(m)}
-        <div class="rsvp-status-name">${escapeHtml(m.name)}</div>
-        ${r && r.not_attending_reason ? '<div class="rsvp-status-detail">'+escapeHtml(r.not_attending_reason)+'</div>' : ''}
-      </div>`;
-    });
-  }
+  groups.declined.forEach(([mid, m, r]) => {
+    html += `<tr style="opacity:0.5">
+      <td>${escapeHtml(m.name)}</td>
+      <td><span class="rsvp-mark-ng">✕</span></td>
+      <td>-</td><td>-</td><td>-</td>
+      <td>${r && r.not_attending_reason ? escapeHtml(r.not_attending_reason) : ''}</td>
+    </tr>`;
+  });
 
-  html += '</div>';
+  html += '</tbody></table></div>';
   return html;
 }
 
@@ -2754,28 +2725,18 @@ function renderRsvpForm() {
     <!-- 参加の場合の詳細 -->
     <div id="rsvpAttendSection" style="display:${att===true?'':'none'}">
 
-      <!-- 帯同人数 -->
-      <div class="form-label">帯同人数</div>
-      <div style="margin-bottom:12px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-          <span style="font-size:12px;color:var(--text-sub);min-width:90px">大人</span>
-          <div class="rsvp-number-choices" id="rsvpAdultChoices" style="gap:6px">
-            ${[0,1,2,3].map(n => `<div class="rsvp-num ${adultCount===n?'selected':''}" onclick="rsvpPickCount('adult',${n})" style="width:40px;height:40px">${n}</div>`).join('')}
-          </div>
+      <!-- 帯同可否 -->
+      <div class="form-label">帯同可否</div>
+      <div style="display:flex;gap:6px;margin-bottom:12px" id="rsvpAccompanyChoices">
+        <div class="rsvp-choice ${parentComing===true?'selected':''}" onclick="rsvpPickAccompany(true)" style="flex:1;min-width:0;padding:10px 8px">
+          <div class="rsvp-choice-icon" style="font-size:22px">⭕</div><span style="font-size:13px">帯同する</span>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-          <span style="font-size:12px;color:var(--text-sub);min-width:90px">小学生(選手含)</span>
-          <div class="rsvp-number-choices" id="rsvpChildChoices" style="gap:6px">
-            ${[0,1,2,3,4].map(n => `<div class="rsvp-num ${childCount===n?'selected':''}" onclick="rsvpPickCount('child',${n})" style="width:40px;height:40px">${n}</div>`).join('')}
-          </div>
+        <div class="rsvp-choice ${parentComing==='maybe'?'selected':''}" onclick="rsvpPickAccompany('maybe')" style="flex:1;min-width:0;padding:10px 8px">
+          <div class="rsvp-choice-icon" style="font-size:22px">△</div><span style="font-size:13px">検討中</span>
         </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:12px;color:var(--text-sub);min-width:90px">未就学児</span>
-          <div class="rsvp-number-choices" id="rsvpPreschoolChoices" style="gap:6px">
-            ${[0,1,2,3].map(n => `<div class="rsvp-num ${preschoolCount===n?'selected':''}" onclick="rsvpPickCount('preschool',${n})" style="width:40px;height:40px">${n}</div>`).join('')}
-          </div>
+        <div class="rsvp-choice ${parentComing===false?'selected':''}" onclick="rsvpPickAccompany(false)" style="flex:1;min-width:0;padding:10px 8px">
+          <div class="rsvp-choice-icon" style="font-size:22px">✕</div><span style="font-size:13px">帯同しない</span>
         </div>
-        <div style="font-size:11px;color:var(--warning);margin-top:4px">※未就学児はチャイルドシート必須</div>
       </div>
 
       <!-- 配車可否 -->
@@ -2797,21 +2758,7 @@ function renderRsvpForm() {
         </div>
       </div>
 
-      <!-- オプション（乗せて選択時） -->
-      <div id="rsvpChildOnlySection" style="display:${transport==='ride'?'':'none'}">
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
-          <div class="checkbox-item ${childOnlyRide?'checked':''}" id="rsvpChildOnlyRide"
-            onclick="this.classList.toggle('checked');document.getElementById('rsvpContent').dataset.childOnlyRide=this.classList.contains('checked')" style="font-size:13px">
-            ※人数オーバー時→子のみ
-          </div>
-          <div class="checkbox-item" id="rsvpNearParking"
-            onclick="this.classList.toggle('checked');document.getElementById('rsvpContent').dataset.nearParking=this.classList.contains('checked')" style="font-size:13px">
-            ※近隣駐車場希望
-          </div>
-        </div>
-      </div>
-
-      <!-- 車出しの詳細 -->
+      <!-- 車出しの詳細（配車可の場合） -->
       <div id="rsvpDriverSection" style="display:${transport==='drive'?'':'none'}">
         <div class="form-label">あと何人乗せられますか？</div>
         <div class="rsvp-number-choices" style="margin-bottom:12px;flex-wrap:wrap;gap:6px" id="rsvpSeatChoices">
@@ -2820,13 +2767,53 @@ function renderRsvpForm() {
         </div>
       </div>
 
-      <!-- 荷物タグ -->
+      <!-- オプション（配車可 or 乗せて選択時） -->
+      <div id="rsvpChildOnlySection" style="display:${(transport==='ride'||transport==='drive')?'':'none'}">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+          <div class="checkbox-item ${childOnlyRide?'checked':''}" id="rsvpChildOnlyRide"
+            onclick="this.classList.toggle('checked');document.getElementById('rsvpContent').dataset.childOnlyRide=this.classList.contains('checked')" style="font-size:13px">
+            ※人数オーバー時→子のみ乗せて
+          </div>
+          <div class="checkbox-item ${existing?.near_parking?'checked':''}" id="rsvpNearParking"
+            onclick="this.classList.toggle('checked');document.getElementById('rsvpContent').dataset.nearParking=this.classList.contains('checked')" style="font-size:13px">
+            ※近隣駐車場希望
+          </div>
+        </div>
+      </div>
+
+      <!-- 乗車人数（現地集合以外） -->
+      <div id="rsvpRiderCountSection" style="display:${transport!=='direct'?'':'none'}">
+        <div class="form-label">乗車人数（選手含む）</div>
+        <div style="margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span style="font-size:12px;color:var(--text-sub);min-width:90px">大人</span>
+            <div class="rsvp-number-choices" id="rsvpAdultChoices" style="gap:6px">
+              ${[0,1,2,3].map(n => `<div class="rsvp-num ${adultCount===n?'selected':''}" onclick="rsvpPickCount('adult',${n})" style="width:40px;height:40px">${n}</div>`).join('')}
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span style="font-size:12px;color:var(--text-sub);min-width:90px">小学生(選手含)</span>
+            <div class="rsvp-number-choices" id="rsvpChildChoices" style="gap:6px">
+              ${[0,1,2,3,4].map(n => `<div class="rsvp-num ${childCount===n?'selected':''}" onclick="rsvpPickCount('child',${n})" style="width:40px;height:40px">${n}</div>`).join('')}
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:12px;color:var(--text-sub);min-width:90px">未就学児</span>
+            <div class="rsvp-number-choices" id="rsvpPreschoolChoices" style="gap:6px">
+              ${[0,1,2,3].map(n => `<div class="rsvp-num ${preschoolCount===n?'selected':''}" onclick="rsvpPickCount('preschool',${n})" style="width:40px;height:40px">${n}</div>`).join('')}
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--warning);margin-top:4px">※未就学児はチャイルドシート必須</div>
+        </div>
+      </div>
+
+      <!-- 荷物の有無 -->
       ${allEq.length > 0 ? `
-        <div class="form-label">荷物</div>
+        <div class="form-label">荷物の有無</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px" id="rsvpEquipGroup">
           ${allEq.map(([eid, eq]) => {
             const icon = getEquipIcon(eid);
-            return `<div class="checkbox-item ${bringEq[eid]?'checked':''}" data-eq="${eid}" onclick="this.classList.toggle('checked')" style="padding:6px 12px;font-size:13px">
+            return `<div class="checkbox-item ${bringEq[eid]?'checked':''}" data-eq="${eid}" onclick="this.classList.toggle('checked')" style="padding:6px 10px;font-size:13px;flex:0 0 auto">
               ${icon} ${escapeHtml(eq.name)}</div>`;
           }).join('')}
         </div>` : ''}
@@ -2852,7 +2839,9 @@ function renderRsvpForm() {
   c.dataset.childCount = childCount;
   c.dataset.preschoolCount = preschoolCount;
   c.dataset.childOnlyRide = childOnlyRide;
+  c.dataset.nearParking = existing?.near_parking ?? false;
   if (parentComing !== null) c.dataset.parentComing = parentComing;
+  c.dataset.accompany = existing?.accompany ?? (parentComing === true ? true : parentComing === false ? false : '');
   c.dataset.familyCount = familyCount;
   if (transport) c.dataset.transport = transport;
   c.dataset.extraSeats = existing?.extra_seats ?? 0;
@@ -2879,13 +2868,22 @@ function rsvpPickCount(type, n) {
   c.dataset.familyCount = total || 1;
 }
 
+function rsvpPickAccompany(val) {
+  document.querySelectorAll('#rsvpAccompanyChoices .rsvp-choice').forEach((el, i) => {
+    el.classList.toggle('selected', (i === 0 && val === true) || (i === 1 && val === 'maybe') || (i === 2 && val === false));
+  });
+  document.getElementById('rsvpContent').dataset.accompany = val;
+}
+
 function rsvpPickTransport(t) {
   document.querySelectorAll('#rsvpTransportSection .rsvp-choice').forEach(el => {
     el.classList.toggle('selected', el.dataset.transport === t);
   });
   document.getElementById('rsvpDriverSection').style.display = t === 'drive' ? '' : 'none';
   const childOnlySec = document.getElementById('rsvpChildOnlySection');
-  if (childOnlySec) childOnlySec.style.display = t === 'ride' ? '' : 'none';
+  if (childOnlySec) childOnlySec.style.display = (t === 'ride' || t === 'drive') ? '' : 'none';
+  const riderCountSec = document.getElementById('rsvpRiderCountSection');
+  if (riderCountSec) riderCountSec.style.display = t !== 'direct' ? '' : 'none';
   document.getElementById('rsvpContent').dataset.transport = t;
 }
 
@@ -2930,15 +2928,18 @@ async function rsvpSubmit() {
     }
 
     // 参加
+    const accompanyVal = c.dataset.accompany;
+    const accompany = accompanyVal === 'true' ? true : accompanyVal === 'false' ? false : accompanyVal === 'maybe' ? 'maybe' : null;
     const adultCount = parseInt(c.dataset.adultCount) || 0;
     const rawChild = parseInt(c.dataset.childCount);
     const childCount = isNaN(rawChild) ? 1 : rawChild;
     const preschoolCount = parseInt(c.dataset.preschoolCount) || 0;
     const totalFamily = adultCount + childCount + preschoolCount;
-    const parentComing = adultCount > 0;
+    const parentComing = accompany === true || adultCount > 0;
     let transport = c.dataset.transport || 'ride';
     const extraSeats = parseInt(c.dataset.extraSeats) || 0;
-    const childOnlyRide = transport === 'ride' && (c.dataset.childOnlyRide === 'true');
+    const childOnlyRide = (transport === 'ride' || transport === 'drive') && (c.dataset.childOnlyRide === 'true');
+    const nearParking = (transport === 'ride' || transport === 'drive') && (c.dataset.nearParking === 'true');
 
     // Collect equipment
     const bringEquipment = {};
@@ -2948,15 +2949,17 @@ async function rsvpSubmit() {
 
     const data = {
       attending: true,
+      accompany: accompany,
       parent_coming: parentComing,
       adult_count: adultCount,
       child_count: childCount,
       preschool_count: preschoolCount,
       family_count: totalFamily || 1,
       child_only_ride: childOnlyRide,
+      near_parking: nearParking,
       transport,
       extra_seats: transport === 'drive' ? extraSeats : 0,
-      bring_equipment: transport === 'drive' ? bringEquipment : {},
+      bring_equipment: bringEquipment,
       note: document.getElementById('rsvpNote')?.value.trim() || '',
       answered_at: new Date().toISOString()
     };
@@ -4124,10 +4127,12 @@ function renderTournamentCard(id, t) {
     eventInfo = `<div style="font-size:11px;color:var(--accent);margin-top:4px">⚽ ${attending}人参加 🚗${driverCount}台</div>`;
   }
 
+  const rankSuffix = t.rank_tie ? '位タイ' : '位';
+  const youtubeCount = (t.youtube_links || []).length;
   return `<div class="tournament-card" onclick="editTournament('${id}')">
     <div style="display:flex;align-items:flex-start;gap:12px">
       <div style="text-align:center;min-width:50px">
-        ${t.team_rank ? `<div class="tournament-rank">${t.team_rank}<span class="tournament-rank-sub">位</span></div>
+        ${t.team_rank ? `<div class="tournament-rank">${t.team_rank}<span class="tournament-rank-sub">${rankSuffix}</span></div>
         <div style="font-size:11px;color:var(--text-sub)">${t.total_teams || '?'}チーム中</div>` :
         `<div class="tournament-rank" style="font-size:18px;color:var(--text-light)">-</div>`}
       </div>
@@ -4139,12 +4144,14 @@ function renderTournamentCard(id, t) {
         <div style="font-size:12px;color:var(--text-sub)">
           <span class="badge" style="background:#e3f2fd;color:#1976d2">${typeLabels[t.type] || '大会'}</span>
           ${t.mvp ? ' MVP: '+escapeHtml(t.mvp) : ''}
+          ${youtubeCount > 0 ? ' <span style="color:#c00">▶</span> '+youtubeCount+'本' : ''}
         </div>
         ${scores.length > 0 ? `<div class="tournament-matches">
           ${scores.map(s => {
             const cls = s.result === 'win' ? 'match-win' : s.result === 'lose' ? 'match-lose' : 'match-draw';
             const mark = s.result === 'win' ? '○' : s.result === 'lose' ? '●' : '△';
-            return `<span class="match-result ${cls}">${mark} ${s.score || ''} ${escapeHtml(s.opponent || '')}</span>`;
+            const scorersStr = s.scorers ? ' ('+escapeHtml(s.scorers)+')' : '';
+            return `<span class="match-result ${cls}">${mark} VS ${escapeHtml(s.opponent || '')} ${s.score || ''}${scorersStr}</span>`;
           }).join('')}
           <span style="font-size:11px;color:var(--text-sub)">${wins}勝${losses}敗${draws > 0 ? draws+'分' : ''}</span>
         </div>` : ''}
@@ -4174,13 +4181,19 @@ function openTournamentModal(id) {
     document.getElementById('tournamentLocation').value = t.location || '';
     document.getElementById('tournamentType').value = t.type || 'official';
     document.getElementById('tournamentRank').value = t.team_rank || '';
+    document.getElementById('tournamentRankTie').value = t.rank_tie ? 'tie' : '';
     document.getElementById('tournamentTotalTeams').value = t.total_teams || '';
     document.getElementById('tournamentMvp').value = t.mvp || '';
     document.getElementById('tournamentMemo').value = t.memo || '';
     const mc = document.getElementById('tournamentMatchesContainer');
     mc.innerHTML = '';
     if (t.scores && t.scores.length) {
-      t.scores.forEach(s => addTournamentMatch(s.score, s.opponent, s.result));
+      t.scores.forEach(s => addTournamentMatch(s.score, s.opponent, s.result, s.scorers));
+    }
+    const yc = document.getElementById('tournamentYoutubeContainer');
+    yc.innerHTML = '';
+    if (t.youtube_links && t.youtube_links.length) {
+      t.youtube_links.forEach(url => addTournamentYoutube(url));
     }
   } else {
     document.getElementById('tournamentEventId').value = '';
@@ -4189,10 +4202,12 @@ function openTournamentModal(id) {
     document.getElementById('tournamentLocation').value = '';
     document.getElementById('tournamentType').value = 'official';
     document.getElementById('tournamentRank').value = '';
+    document.getElementById('tournamentRankTie').value = '';
     document.getElementById('tournamentTotalTeams').value = '';
     document.getElementById('tournamentMvp').value = '';
     document.getElementById('tournamentMemo').value = '';
     document.getElementById('tournamentMatchesContainer').innerHTML = '';
+    document.getElementById('tournamentYoutubeContainer').innerHTML = '';
   }
   openModal('tournamentModal');
 }
@@ -4209,18 +4224,34 @@ async function createTournamentForEvent(eventId) {
   openTournamentModal(newRef.key);
 }
 
-function addTournamentMatch(score, opponent, result) {
+function addTournamentMatch(score, opponent, result, scorers) {
   const c = document.getElementById('tournamentMatchesContainer');
   const row = document.createElement('div');
   row.className = 'match-input-row';
+  row.style.cssText = 'display:flex;flex-direction:column;gap:4px;padding:8px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px';
   row.innerHTML = `
-    <select class="match-result-sel" style="width:60px;padding:8px 4px">
-      <option value="win" ${result==='win'?'selected':''}>○勝</option>
-      <option value="lose" ${result==='lose'?'selected':''}>●負</option>
-      <option value="draw" ${result==='draw'?'selected':''}>△分</option>
-    </select>
-    <input type="text" class="match-score" placeholder="スコア" value="${escapeHtml(score || '')}" style="width:70px">
-    <input type="text" class="match-opponent" placeholder="対戦相手" value="${escapeHtml(opponent || '')}">
+    <div style="display:flex;gap:6px;align-items:center">
+      <select class="match-result-sel" style="width:60px;padding:8px 4px">
+        <option value="win" ${result==='win'?'selected':''}>○勝</option>
+        <option value="lose" ${result==='lose'?'selected':''}>●負</option>
+        <option value="draw" ${result==='draw'?'selected':''}>△分</option>
+      </select>
+      <span style="font-size:13px;color:var(--text-sub)">VS</span>
+      <input type="text" class="match-opponent" placeholder="対戦相手" value="${escapeHtml(opponent || '')}" style="flex:1">
+      <input type="text" class="match-score" placeholder="□-□" value="${escapeHtml(score || '')}" style="width:60px;text-align:center">
+      <button class="btn-icon btn-outline" onclick="this.closest('.match-input-row').remove()" style="font-size:14px;width:36px;height:36px;flex-shrink:0">✕</button>
+    </div>
+    <input type="text" class="match-scorers" placeholder="得点者（例: りょうま、いっさ）" value="${escapeHtml(scorers || '')}" style="font-size:13px">`;
+  c.appendChild(row);
+}
+
+function addTournamentYoutube(url) {
+  const c = document.getElementById('tournamentYoutubeContainer');
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex;gap:6px;align-items:center;margin-bottom:4px';
+  row.innerHTML = `
+    <span style="font-size:16px">▶️</span>
+    <input type="url" class="youtube-link" placeholder="https://youtube.com/..." value="${escapeHtml(url || '')}" style="flex:1">
     <button class="btn-icon btn-outline" onclick="this.parentElement.remove()" style="font-size:14px;width:36px;height:36px;flex-shrink:0">✕</button>`;
   c.appendChild(row);
 }
@@ -4234,20 +4265,30 @@ async function saveTournament() {
     const result = row.querySelector('.match-result-sel').value;
     const score = row.querySelector('.match-score').value.trim();
     const opponent = row.querySelector('.match-opponent').value.trim();
-    if (opponent || score) scores.push({ result, score, opponent });
+    const scorers = row.querySelector('.match-scorers')?.value.trim() || '';
+    if (opponent || score) scores.push({ result, score, opponent, scorers });
+  });
+
+  const youtubeLinks = [];
+  document.querySelectorAll('#tournamentYoutubeContainer .youtube-link').forEach(el => {
+    const url = el.value.trim();
+    if (url) youtubeLinks.push(url);
   });
 
   const eventId = document.getElementById('tournamentEventId').value || null;
+  const rankTie = document.getElementById('tournamentRankTie').value === 'tie';
   const data = {
     name,
     date: document.getElementById('tournamentDate').value,
     location: document.getElementById('tournamentLocation').value.trim(),
     type: document.getElementById('tournamentType').value,
     team_rank: parseInt(document.getElementById('tournamentRank').value) || null,
+    rank_tie: rankTie || null,
     total_teams: parseInt(document.getElementById('tournamentTotalTeams').value) || null,
     mvp: document.getElementById('tournamentMvp').value,
     memo: document.getElementById('tournamentMemo').value.trim(),
     scores,
+    youtube_links: youtubeLinks.length > 0 ? youtubeLinks : null,
     event_id: eventId
   };
 
@@ -4287,18 +4328,20 @@ function showResultCard(id) {
   const losses = scores.filter(s => s.result === 'lose').length;
   const draws = scores.filter(s => s.result === 'draw').length;
 
+  const rankSuffix = t.rank_tie ? '位タイ' : '位';
   const cardHtml = `<div class="result-card-render" id="resultCardEl">
     <div class="team-name">${escapeHtml(configData.team_name || 'チームライド')}</div>
     <div class="tournament-name">${escapeHtml(t.name)}</div>
     <div style="font-size:13px;opacity:.7">📅 ${dateStr} ${t.location ? '📍 '+escapeHtml(t.location) : ''}</div>
-    ${t.team_rank ? `<div class="rank-display">${t.team_rank}<span style="font-size:20px">位</span></div>
+    ${t.team_rank ? `<div class="rank-display">${t.team_rank}<span style="font-size:20px">${rankSuffix}</span></div>
       <div class="rank-label">${t.total_teams || '?'}チーム中 · ${typeLabels[t.type] || ''}</div>` :
       `<div class="rank-display" style="font-size:24px">${typeLabels[t.type] || '大会'}</div>`}
     ${scores.length > 0 ? `<div class="matches-row">
       ${scores.map(s => {
         const cls = s.result === 'win' ? 'w' : s.result === 'lose' ? 'l' : 'd';
         const mark = s.result === 'win' ? '○' : s.result === 'lose' ? '●' : '△';
-        return `<span class="match-pill ${cls}">${mark} ${escapeHtml(s.score || '')} ${escapeHtml(s.opponent || '')}</span>`;
+        const scorersStr = s.scorers ? ' ('+escapeHtml(s.scorers)+')' : '';
+        return `<span class="match-pill ${cls}">${mark} VS ${escapeHtml(s.opponent || '')} ${escapeHtml(s.score || '')}${scorersStr}</span>`;
       }).join('')}
     </div>
     <div style="font-size:13px;text-align:center;opacity:.8">${wins}勝${losses}敗${draws > 0 ? draws+'分' : ''}</div>` : ''}
@@ -4450,10 +4493,8 @@ function renderInfoPage() {
     if (!meta) return;
     const val = info[key] || '';
     if (!val && !alwaysShow.includes(key) && !isAdmin) return;
-    const handle = isAdmin ? '<div class="info-drag-handle" style="touch-action:none">≡</div>' : '';
     html += `<div class="card info-sortable-item" data-section-key="${key}" style="padding:0;overflow:hidden;margin-bottom:8px">
       <div style="display:flex;align-items:center;gap:0">
-        ${handle}
         <div style="display:flex;align-items:center;gap:8px;padding:12px 14px;flex:1;cursor:pointer" onclick="this.closest('.card').classList.toggle('info-open');this.querySelector('.info-arrow').classList.toggle('open')">
           <span style="font-size:18px">${meta.icon}</span>
           <span style="font-size:15px;font-weight:700;flex:1">${escapeHtml(meta.label)}</span>
@@ -4465,9 +4506,6 @@ function renderInfoPage() {
   });
 
   c.innerHTML = html || '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">共有情報はまだ登録されていません</div></div>';
-
-  // Admin: タッチドラッグ並び替え初期化
-  if (isAdmin) initInfoDragSort(c);
 
   // Admin controls
   const adminCtrl = document.getElementById('infoAdminControls');
@@ -4566,50 +4604,93 @@ function initInfoDragSort(container) {
 
 function openInfoEditor() {
   const info = Object.keys(teamInfoData).length > 0 ? teamInfoData : TEAM_INFO_TEMPLATE;
-  document.getElementById('infoMochimono').value = info.mochimono || '';
-  document.getElementById('infoMatchDay').value = info.match_day || '';
-  document.getElementById('infoSchedule').value = info.schedule || '';
-  document.getElementById('infoUniform').value = info.uniform || '';
-  document.getElementById('infoTaido').value = info.taido || '';
-  document.getElementById('infoGakunen').value = info.gakunen || '';
-  document.getElementById('infoOther').value = info.other || '';
-  // Render custom section textareas
-  const customContainer = document.getElementById('infoCustomSections');
-  if (customContainer) {
-    let customHtml = '';
-    const sortedSections = Object.entries(infoSectionsData).sort((a,b) => (a[1].order||0) - (b[1].order||0));
-    sortedSections.forEach(([sid, sec], idx) => {
-      customHtml += `<div class="form-group">
-        <label class="form-label" style="display:flex;align-items:center;gap:4px">
-          <span>${escapeHtml(sec.icon || '📝')} ${escapeHtml(sec.name)}</span>
-          <span style="flex:1"></span>
-          ${idx > 0 ? `<button onclick="moveInfoSection('${sid}',-1)" style="background:none;border:none;cursor:pointer;font-size:16px;padding:0 4px">⬆</button>` : ''}
-          ${idx < sortedSections.length - 1 ? `<button onclick="moveInfoSection('${sid}',1)" style="background:none;border:none;cursor:pointer;font-size:16px;padding:0 4px">⬇</button>` : ''}
-          <button onclick="deleteInfoSection('${sid}')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:12px;margin-left:4px">削除</button>
-        </label>
-        <textarea id="infoCustom_${sid}" rows="6" placeholder="${escapeHtml(sec.name)}の内容">${escapeHtml(info['custom_' + sid] || '')}</textarea>
-      </div>`;
-    });
-    customContainer.innerHTML = customHtml;
-  }
+  const keys = getInfoSectionKeys();
+  const fixedFieldMap = {
+    mochimono: { placeholder: '水筒、タオル、着替え...', rows: 8 },
+    match_day: { placeholder: '試合当日の注意事項', rows: 6 },
+    schedule: { placeholder: '8:30 集合\n9:00 試合開始...', rows: 8 },
+    uniform: { placeholder: '白のユニフォーム着用、予備を持参', rows: 6 },
+    taido: { placeholder: '配車はアプリで回答。締切後の変更はLINEで連絡', rows: 6 },
+    gakunen: { placeholder: '3年生：テント、タープ\n4年生：ゴール', rows: 6 },
+    other: { placeholder: '', rows: 6 }
+  };
+
+  // Build sortable sections in order
+  const container = document.getElementById('infoEditorSortableContainer');
+  let html = '';
+  keys.forEach((key, idx) => {
+    const meta = getInfoSectionMeta(key);
+    if (!meta) return;
+    const isCustom = key.startsWith('custom_');
+    const sid = isCustom ? key.replace('custom_', '') : null;
+    const field = fixedFieldMap[key];
+    const val = info[key] || '';
+    const rows = field ? field.rows : 6;
+    const placeholder = field ? field.placeholder : (meta.label + 'の内容');
+    const textareaId = isCustom ? 'infoCustom_' + sid : 'info' + key.charAt(0).toUpperCase() + key.slice(1).replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+
+    html += `<div class="form-group info-editor-item" data-section-key="${key}" style="border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px">
+      <label class="form-label" style="display:flex;align-items:center;gap:4px;margin-bottom:6px">
+        <span>${meta.icon} ${escapeHtml(meta.label)}</span>
+        <span style="flex:1"></span>
+        ${idx > 0 ? `<button onclick="moveInfoEditorSection(this,-1)" style="background:none;border:none;cursor:pointer;font-size:16px;padding:0 4px">⬆</button>` : ''}
+        ${idx < keys.length - 1 ? `<button onclick="moveInfoEditorSection(this,1)" style="background:none;border:none;cursor:pointer;font-size:16px;padding:0 4px">⬇</button>` : ''}
+        ${isCustom ? `<button onclick="deleteInfoSection('${sid}')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:12px;margin-left:4px">削除</button>` : ''}
+      </label>
+      <textarea id="${textareaId}" rows="${rows}" placeholder="${escapeHtml(placeholder)}">${escapeHtml(val)}</textarea>
+    </div>`;
+  });
+  container.innerHTML = html;
+  // Clear custom sections container (now integrated above)
+  document.getElementById('infoCustomSections').innerHTML = '';
   openModal('infoEditorModal');
 }
 
+function moveInfoEditorSection(btn, direction) {
+  const item = btn.closest('.info-editor-item');
+  const container = item.parentElement;
+  const items = [...container.querySelectorAll('.info-editor-item')];
+  const idx = items.indexOf(item);
+  const targetIdx = idx + direction;
+  if (targetIdx < 0 || targetIdx >= items.length) return;
+
+  if (direction === -1) {
+    container.insertBefore(item, items[targetIdx]);
+  } else {
+    container.insertBefore(items[targetIdx], item);
+  }
+
+  // Update up/down button visibility
+  const updatedItems = [...container.querySelectorAll('.info-editor-item')];
+  updatedItems.forEach((el, i) => {
+    const btns = el.querySelectorAll('label button');
+    // Re-render buttons would be complex; just save order on save
+  });
+
+  // Save order immediately
+  const newOrder = [...container.querySelectorAll('.info-editor-item')].map(el => el.dataset.sectionKey).filter(Boolean);
+  db.ref(ROOT + '/info_section_order').set(newOrder);
+}
+
 async function saveTeamInfo() {
-  const data = {
-    mochimono: document.getElementById('infoMochimono').value.trim(),
-    match_day: document.getElementById('infoMatchDay').value.trim(),
-    schedule: document.getElementById('infoSchedule').value.trim(),
-    uniform: document.getElementById('infoUniform').value.trim(),
-    taido: document.getElementById('infoTaido').value.trim(),
-    gakunen: document.getElementById('infoGakunen').value.trim(),
-    other: document.getElementById('infoOther').value.trim()
-  };
+  const fixedKeys = ['mochimono', 'match_day', 'schedule', 'uniform', 'taido', 'gakunen', 'other'];
+  const data = {};
+  fixedKeys.forEach(key => {
+    const id = 'info' + key.charAt(0).toUpperCase() + key.slice(1).replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+    const el = document.getElementById(id);
+    if (el) data[key] = el.value.trim();
+  });
   // Save custom section values
   Object.keys(infoSectionsData).forEach(sid => {
     const el = document.getElementById('infoCustom_' + sid);
     if (el) data['custom_' + sid] = el.value.trim();
   });
+  // Save section order from editor
+  const orderEls = document.querySelectorAll('#infoEditorSortableContainer .info-editor-item');
+  if (orderEls.length > 0) {
+    const newOrder = [...orderEls].map(el => el.dataset.sectionKey).filter(Boolean);
+    await db.ref(ROOT + '/info_section_order').set(newOrder);
+  }
   try {
     await db.ref(ROOT + '/team_info').set(data);
     closeModal('infoEditorModal');
