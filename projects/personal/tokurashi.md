@@ -79,6 +79,9 @@ WAF対策: mediumサイズ画像を使用、更新の間隔を空ける。
 | `tools/tokurashi-killer.py` | キラーページ（成約記事）自動生成 |
 | `tools/tokurashi-embed-cta.py` | 既存記事にアフィリエイトCTA自動埋め込み |
 | `tools/tokurashi-affiliates.json` | ASPプログラム設定（リンク・CTA・対象カテゴリ） |
+| `tools/tokurashi-pinterest.py` | Pinterestピン画像自動生成＋投稿 |
+| `tools/tokurashi-internal-links.py` | 内部リンク自動最適化（集客→キラーページ導線） |
+| `tools/tokurashi-x-post.py` | X(Twitter)自動投稿 |
 
 ## コマンド一覧
 
