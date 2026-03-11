@@ -656,7 +656,7 @@ textarea{resize:vertical;min-height:60px}
     </div>
     <div class="form-group">
       <label class="form-label">集合時間</label>
-      <input type="time" id="eventMeetTime">
+      <input type="time" id="eventMeetTime" step="300">
     </div>
     <div class="form-group">
       <label class="form-label">会場名</label>
@@ -1882,25 +1882,20 @@ function showEventDetail(id) {
   </div>`;
 
   // ① 試合の概要
+  const statusLabel = isPast ? '<span style="font-size:11px;background:#eee;color:#666;padding:2px 8px;border-radius:10px">終了</span>'
+    : e.status === 'assigned' ? '<span style="font-size:11px;background:#E8F5E9;color:#2E7D32;padding:2px 8px;border-radius:10px">配車確定</span>'
+    : isRsvpPastDeadline(e) ? '<span style="font-size:11px;background:#FFEBEE;color:#C62828;padding:2px 8px;border-radius:10px">締切終了</span>'
+    : '<span style="font-size:11px;background:#E3F2FD;color:#1565C0;padding:2px 8px;border-radius:10px">回答受付中</span>';
   html += `<div class="card" style="border-left:4px solid ${isMatch?'var(--match)':'var(--practice)'}">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
       <span class="badge ${isMatch?'badge-match':'badge-practice'}">${typeLabel}</span>
       <span style="font-size:16px;font-weight:700">${escapeHtml(e.title) || 'イベント'}</span>
+      ${statusLabel}
     </div>
     <div style="font-size:14px;color:var(--text-sub)">
-      ${dateStr} ${e.meet_time ? escapeHtml(e.meet_time) : ''} ${e.location ? escapeHtml(e.location) : ''}
+      ${dateStr} ${e.meet_time ? escapeHtml(e.meet_time)+'集合' : ''} ${e.location ? escapeHtml(e.location) : ''}
       ${e.rsvp_deadline ? '<br>回答締切: '+formatEventDate(e.rsvp_deadline)+(isRsvpPastDeadline(e)?' <span style="color:var(--danger);font-weight:600">締切済み</span>':'') : ''}
     </div>
-    ${isMatch ? `<div style="text-align:right;margin-top:4px">
-      ${(() => {
-        const lt = Object.entries(tournamentsData).find(([, t]) => t.event_id === id);
-        if (lt) {
-          return `<button class="btn btn-outline btn-small" onclick="showTournamentDetail('${lt[0]}')" style="font-size:11px;padding:4px 10px;width:auto">🏆 記録を見る</button>`;
-        } else {
-          return `<button class="btn btn-outline btn-small" onclick="createTournamentForEvent('${id}')" style="font-size:11px;padding:4px 10px;width:auto">🏆 記録入力</button>`;
-        }
-      })()}
-    </div>` : ''}
   </div>`;
 
   // ② 出欠回答ボタン
@@ -1938,8 +1933,8 @@ function showEventDetail(id) {
         <button class="btn btn-secondary btn-small" onclick="viewAssignment('${id}')" style="flex:1">🚗 配車表を見る</button>
       </div>
       <div style="display:flex;gap:8px;margin-top:6px">
-        <button class="btn btn-outline btn-small" onclick="resetAssignment('${id}')" style="flex:1;font-size:12px">配車をやり直す</button>
-        <button class="btn btn-outline btn-small" onclick="showLineText('${id}')" style="flex:1;font-size:12px">配車決定後のLINEテンプレ</button>
+        <button class="btn btn-outline btn-small" onclick="resetAssignment('${id}')" style="flex:1;font-size:12px;line-height:1.3">配車を<br>やり直す</button>
+        <button class="btn btn-outline btn-small" onclick="showLineText('${id}')" style="flex:1;font-size:12px;line-height:1.3">配車決定後の<br>LINEテンプレ</button>
       </div>`;
     }
 
@@ -1951,8 +1946,8 @@ function showEventDetail(id) {
         <button class="btn btn-secondary btn-small" onclick="viewAssignment('${id}')" style="flex:1">🚗 配車表</button>
       </div>
       <div style="display:flex;gap:8px;margin-top:6px">
-        <button class="btn btn-outline btn-small" onclick="resetAssignment('${id}')" style="flex:1;font-size:12px">配車をやり直す</button>
-        <button class="btn btn-outline btn-small" onclick="showLineText('${id}')" style="flex:1;font-size:12px">配車決定後のLINEテンプレ</button>
+        <button class="btn btn-outline btn-small" onclick="resetAssignment('${id}')" style="flex:1;font-size:12px;line-height:1.3">配車を<br>やり直す</button>
+        <button class="btn btn-outline btn-small" onclick="showLineText('${id}')" style="flex:1;font-size:12px;line-height:1.3">配車決定後の<br>LINEテンプレ</button>
       </div></div>`;
     } else if (drivers > 0) {
       html += `<div class="card"><button class="btn btn-secondary" onclick="showDriverSelection('${id}')" style="width:100%">🚗 配車を決める</button></div>`;
@@ -1967,11 +1962,13 @@ function showEventDetail(id) {
 
     // 備品担当一覧（荷物のアイコン付き）
     let equipStr = '';
+    let hasEquipment = false;
+    let hasUnassignedEquip = false;
     if (e.equipment_needed) {
       const eqEntries = Object.entries(e.equipment_needed).filter(([,q]) => q > 0);
       if (eqEntries.length) {
+        hasEquipment = true;
         const eqAssignees = {};
-        let hasUnassigned = false;
         Object.entries(rsvp).forEach(([mid, r]) => {
           if (r.attending !== true || !r.bring_equipment) return;
           Object.keys(r.bring_equipment).forEach(eid => {
@@ -1983,13 +1980,18 @@ function showEventDetail(id) {
         });
         const eqParts = [];
         eqEntries.forEach(([eid, qty]) => {
-          const icon = getEquipIcon(eid);
+          const eq = equipmentTypesData[eid];
+          const icon = eq?.icon || getEquipIcon(eid);
           const assignees = eqAssignees[eid] || [];
           for (let i = 0; i < qty; i++) {
             const person = assignees[i];
-            eqParts.push(person ? `${icon}${person}` : `${icon}所在確認中`);
+            if (person) {
+              eqParts.push(`${icon}${escapeHtml(person)}`);
+            } else {
+              eqParts.push(`${icon}所在確認中`);
+              hasUnassignedEquip = true;
+            }
           }
-          if (assignees.length < qty) hasUnassigned = true;
         });
         equipStr = eqParts.join('　');
       }
@@ -2007,8 +2009,8 @@ function showEventDetail(id) {
       <div style="display:flex;gap:8px;margin-top:8px">
         ${e.status === 'open' && drivers > 0 ? `<button class="btn btn-primary btn-small" onclick="showDriverSelection('${id}')" style="flex:2;font-size:14px">🚗 配車を決める</button>` : '<div style="flex:2"></div>'}
         <div style="flex:1;display:flex;flex-direction:column;gap:4px">
-          ${unansweredCount > 0 && e.status === 'open' ? `<button class="btn btn-outline btn-small" onclick="generateNudgeText('${id}')" style="font-size:11px;padding:6px 8px">📢 未回答に催促</button>` : ''}
-          ${equipStr.includes('所在確認中') ? `<button class="btn btn-outline btn-small" onclick="generateEquipNudgeText('${id}')" style="font-size:11px;padding:6px 8px">📦 荷物の所在確認</button>` : ''}
+          ${unansweredCount > 0 && e.status === 'open' ? `<button class="btn btn-outline btn-small" onclick="generateNudgeText('${id}')" style="font-size:11px;padding:6px 8px">📢 未回答に<br>催促</button>` : ''}
+          ${hasEquipment ? `<button class="btn btn-outline btn-small" onclick="generateEquipNudgeText('${id}')" style="font-size:11px;padding:6px 8px">📦 荷物の<br>所在確認</button>` : ''}
         </div>
       </div>
     </div>`;
@@ -2238,8 +2240,8 @@ function renderEventCard(id, e, isPast) {
         <button class="btn btn-secondary btn-small" onclick="viewAssignment('${id}')" style="flex:1">🚗 配車表を見る</button>
       </div>
       <div style="display:flex;gap:8px;margin-top:6px">
-        <button class="btn btn-outline btn-small" onclick="resetAssignment('${id}')" style="flex:1;font-size:12px">配車をやり直す</button>
-        <button class="btn btn-outline btn-small" onclick="showLineText('${id}')" style="flex:1;font-size:12px">配車決定後のLINEテンプレ</button>
+        <button class="btn btn-outline btn-small" onclick="resetAssignment('${id}')" style="flex:1;font-size:12px;line-height:1.3">配車を<br>やり直す</button>
+        <button class="btn btn-outline btn-small" onclick="showLineText('${id}')" style="flex:1;font-size:12px;line-height:1.3">配車決定後の<br>LINEテンプレ</button>
       </div>`;
       html += `<button class="btn btn-outline btn-small" onclick="startRsvp('${id}')" style="margin-top:8px;font-size:12px">回答内容を変更する</button>`;
     }
@@ -3225,7 +3227,7 @@ function showDriverSelection(eventId) {
       <div>💺 確保席数：<strong style="color:${totalSeats < ridersNeedSeats ? 'var(--danger)' : 'var(--success)'}">${totalSeats}席</strong></div>
       <div>👥 必要席数：<strong>${ridersNeedSeats}席</strong></div>
       <div>📦 荷物車：<strong>${equipCars}台</strong></div>
-      <div>🧸 CS：<strong style="color:${csTotal < csNeeded ? 'var(--danger)' : 'var(--text)'}">${csTotal}</strong> / 必要${csNeeded}</div>
+      <div>🧸 チャイルドシート：<strong style="color:${csTotal < csNeeded ? 'var(--danger)' : 'var(--text)'}">${csTotal}</strong> / 必要${csNeeded}</div>
     </div>
     ${overLimit ? `<div style="color:var(--danger);font-weight:600;margin-top:6px">⚠ 会場駐車${venueCount - maxCars}台超過！</div>` : ''}
     ${totalSeats < ridersNeedSeats ? `<div style="color:var(--danger);font-weight:600;margin-top:6px">⚠ ${ridersNeedSeats - totalSeats}席不足！</div>` : ''}
@@ -3239,9 +3241,15 @@ function showDriverSelection(eventId) {
     const parkChoice = window._parkingChoices[c.id] || 'venue';
     const zone = c.zone;
     const zoneDot = zone ? `<span class="zone-dot" style="background:${escapeHtml(zone.color)}"></span>` : '';
-    const eqBadge = c.hasNeededEquip ? '<span style="font-size:11px;background:#FEF3C7;color:#B45309;padding:1px 6px;border-radius:6px;margin-left:4px">📦機材</span>' : '';
+    // Equipment badges with actual icons
+    let eqBadge = '';
+    if (c.hasNeededEquip) {
+      const eqNeeded = e.equipment_needed ? Object.keys(e.equipment_needed) : [];
+      const eqIcons = eqNeeded.filter(eid => rsvp[c.id]?.bring_equipment?.[eid] || membersData[c.id]?.equipment?.[eid]).map(eid => getEquipIcon(eid)).join('');
+      eqBadge = `<span style="font-size:11px;background:#FEF3C7;color:#B45309;padding:1px 6px;border-radius:6px;margin-left:4px">${eqIcons || '📦'}荷物</span>`;
+    }
     const largeBadge = c.canCarryLarge ? '<span style="font-size:11px;background:#FEF3C7;color:#B45309;padding:1px 6px;border-radius:6px;margin-left:4px">🚛荷物可</span>' : '';
-    const csBadge = c.csCount > 0 ? `<span style="font-size:11px;background:#E3F2FD;color:#1565C0;padding:1px 6px;border-radius:6px;margin-left:4px">🧸CS${c.csCount}</span>` : '';
+    const csBadge = c.csCount > 0 ? `<span style="font-size:11px;background:#E3F2FD;color:#1565C0;padding:1px 6px;border-radius:6px;margin-left:4px">🧸チャイルドシート${c.csCount}</span>` : '';
     const nearParkBadge = c.nearParking ? '<span style="font-size:11px;background:#FCE4EC;color:#C62828;padding:1px 6px;border-radius:6px;margin-left:4px">近隣希望</span>' : '';
     const seatsFull = c.seats === 0;
 
@@ -3434,18 +3442,17 @@ function renderManualAssignUI(eventId) {
 
   // Driver seat summary with CS info
   html += '<div style="margin-bottom:16px">';
-  html += '<div style="font-size:13px;font-weight:700;color:var(--text-sub);margin-bottom:8px">🚗 車の空き席状況</div>';
+  html += '<div style="font-size:13px;font-weight:700;color:var(--text-sub);margin-bottom:8px">車の空き席状況</div>';
   drivers.forEach(d => {
     const avail = d.available_seats - seatUsed[d.id];
     const color = avail < 0 ? 'var(--danger)' : avail === 0 ? 'var(--text-sub)' : 'var(--success)';
     const zone = d.zone_id && zonesData[d.zone_id] ? zonesData[d.zone_id] : null;
     const zoneDot = zone ? `<span class="zone-dot" style="background:${escapeHtml(zone.color)}"></span>` : '';
     const mem = membersData[d.id];
-    const csInfo = mem?.childseat_count > 0 ? `　CS${mem.childseat_count}席` : '';
     html += `<div style="background:var(--bg);border-radius:var(--radius);padding:8px 12px;font-size:13px;margin-bottom:4px">
-      ${zoneDot}🚗 <strong>${escapeHtml(d.name)}</strong>
+      ${zoneDot}<strong>${escapeHtml(d.name)}号</strong>
       <span style="color:${color};margin-left:6px">空き${avail}席</span>
-      ${d.available_seats > 0 ? `<span style="color:var(--text-light);font-size:11px">（内CS空き${mem?.childseat_count || 0}席）</span>` : ''}
+      ${mem?.childseat_count > 0 ? `<span style="color:var(--text-light);font-size:11px">（🧸チャイルドシート${mem.childseat_count}席）</span>` : ''}
     </div>`;
   });
   html += '</div>';
@@ -3453,7 +3460,7 @@ function renderManualAssignUI(eventId) {
   // Rider list - sorted by seats_needed desc
   const sortedRiders = [...riders].sort((a, b) => (b.seats_needed || b.family_count || 1) - (a.seats_needed || a.family_count || 1));
 
-  html += '<div style="font-size:13px;font-weight:700;color:var(--text-sub);margin-bottom:8px">🧑 どの車に乗るか選んでください</div>';
+  html += '<div style="font-size:13px;font-weight:700;color:var(--text-sub);margin-bottom:8px">🧑 どの車に乗るか選択</div>';
   sortedRiders.forEach(r => {
     const selected = assign[r.id] || '';
     const mem = membersData[r.id];
@@ -3471,10 +3478,10 @@ function renderManualAssignUI(eventId) {
     if (children > 0) detailParts.push(`子${children}`);
     if (preschool > 0) detailParts.push(`未就学${preschool}`);
     let detailStr = detailParts.length > 0 ? `${detailParts.join('')}（${totalSeats}席）` : `${totalSeats}席`;
-    if (preschool > 0) detailStr += ` 内CS${preschool}席`;
+    if (preschool > 0) detailStr += ` 🧸${preschool}席`;
     if (rsvpR.bring_equipment && Object.keys(rsvpR.bring_equipment).length > 0) {
-      const eqNames = Object.keys(rsvpR.bring_equipment).map(eid => equipmentTypesData[eid]?.name || '').filter(Boolean);
-      if (eqNames.length > 0) detailStr += ` ${eqNames.join('・')}あり`;
+      const eqIcons = Object.keys(rsvpR.bring_equipment).filter(eid => rsvpR.bring_equipment[eid]).map(eid => getEquipIcon(eid)).filter(Boolean);
+      if (eqIcons.length > 0) detailStr += ` ${eqIcons.join('')}`;
     }
 
     html += `<div style="padding:8px 0;border-bottom:1px solid var(--border)">
@@ -3492,9 +3499,10 @@ function renderManualAssignUI(eventId) {
           const driverMem = membersData[d.id];
           const isNearby = mem?.nearby_members?.includes(d.id) || driverMem?.nearby_members?.includes(r.id);
           const dZone = d.zone_id && zonesData[d.zone_id] ? zonesData[d.zone_id] : null;
+          const zoneMark = dZone ? '●' : '';
           const nearLabel = isNearby ? '　近い' : '';
-          const csLabel = driverMem?.childseat_count > 0 ? `　CS${driverMem.childseat_count}席` : '';
-          return `<option value="${d.id}" ${isCurrent ? 'selected' : ''} ${wouldOverflow ? 'disabled' : ''}>${escapeHtml(d.name)}（空き${avail}席）${csLabel}${nearLabel}${wouldOverflow ? '※満席' : ''}</option>`;
+          const csLabel = driverMem?.childseat_count > 0 ? `　🧸${driverMem.childseat_count}席` : '';
+          return `<option value="${d.id}" ${isCurrent ? 'selected' : ''} ${wouldOverflow ? 'disabled' : ''}>${zoneMark}${escapeHtml(d.name)}号（空き${avail}席）${csLabel}${nearLabel}${wouldOverflow ? '※満席' : ''}</option>`;
         }).join('')}
       </select>
     </div>`;
@@ -4137,16 +4145,17 @@ function generateLineTemplateAssign(eventId) {
 
   const NUM_EMOJIS = ['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
 
-  // Build passenger text for a driver (with equipment icons)
+  // Build passenger text for a driver (with equipment icons+names)
   function driverLine(d) {
-    // Equipment icons for this driver
-    let equipIcons = '';
+    // Equipment icons+names for this driver
+    let equipStr = '';
     if (d.assigned_equipment && d.assigned_equipment.length > 0) {
-      equipIcons = d.assigned_equipment.map(eid => {
+      equipStr = d.assigned_equipment.map(eid => {
         const eq = equipmentTypesData[eid];
-        return eq ? getEquipIcon(eid) : '';
+        if (!eq) return '';
+        return getEquipIcon(eid) + (eq.name || '');
       }).filter(Boolean).join('');
-      if (equipIcons) equipIcons = '　' + equipIcons;
+      if (equipStr) equipStr = '　' + equipStr;
     }
     const passengers = [];
     d.passengers.forEach(p => {
@@ -4156,7 +4165,7 @@ function generateLineTemplateAssign(eventId) {
       passengers.push(label);
     });
     const passengerStr = passengers.length > 0 ? `同乗者：${passengers.join('、')}` : '同乗者：なし';
-    return passengerStr + equipIcons;
+    return passengerStr + equipStr;
   }
 
   // Separate venue parking vs no-parking drivers
