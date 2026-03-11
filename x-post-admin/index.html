@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>X Post Queue - Admin</title>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0f;--card:#12121a;--card2:#1a1a28;--border:#2a2a3a;
+  --text:#e0e0e0;--dim:#888;--accent:#6366f1;--accent2:#818cf8;
+  --ok:#22c55e;--err:#ef4444;--warn:#f59e0b;--info:#3b82f6;
+  --radius:12px;--radius-sm:8px;
+}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
+a{color:var(--accent2);text-decoration:none}
+
+/* Header */
+.header{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+.header h1{font-size:1.1rem;font-weight:700;letter-spacing:0.02em}
+.header h1 span{color:var(--accent2)}
+.conn-badge{font-size:0.7rem;padding:3px 8px;border-radius:20px;border:1px solid var(--border)}
+.conn-badge.on{color:var(--ok);border-color:var(--ok)}
+.conn-badge.off{color:var(--err);border-color:var(--err)}
+
+/* Auth */
+#auth-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;height:80vh;gap:12px}
+#auth-screen h2{font-size:1rem;color:var(--dim)}
+#pw-input{background:var(--card);border:1px solid var(--border);color:var(--text);padding:10px 16px;border-radius:var(--radius-sm);font-size:1rem;width:240px;text-align:center}
+#pw-input:focus{outline:none;border-color:var(--accent)}
+#auth-error{color:var(--err);font-size:0.8rem;display:none}
+.auth-btn{background:var(--accent);color:#fff;border:none;padding:8px 24px;border-radius:var(--radius-sm);cursor:pointer;font-size:0.9rem;font-weight:600}
+.auth-btn:hover{opacity:0.85}
+
+/* Tabs */
+.nav{display:flex;gap:0;border-bottom:1px solid var(--border);padding:0 16px;overflow-x:auto}
+.nav-btn{background:none;border:none;color:var(--dim);padding:10px 16px;font-size:0.85rem;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;font-weight:500}
+.nav-btn.active{color:var(--accent2);border-bottom-color:var(--accent)}
+.nav-btn:hover{color:var(--text)}
+
+/* Stats bar */
+.stats{display:flex;gap:12px;padding:12px 16px;flex-wrap:wrap}
+.stat{background:var(--card);padding:8px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);font-size:0.8rem}
+.stat .num{font-size:1.2rem;font-weight:700;color:var(--accent2)}
+.stat .label{color:var(--dim);font-size:0.7rem}
+
+/* Panels */
+.panel{display:none;padding:12px 16px}
+.panel.active{display:block}
+
+/* Filters */
+.filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.filter-btn{background:var(--card);border:1px solid var(--border);color:var(--dim);padding:5px 12px;border-radius:20px;font-size:0.75rem;cursor:pointer}
+.filter-btn.active{color:var(--accent2);border-color:var(--accent)}
+
+/* Post cards */
+.post-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;position:relative;transition:border-color 0.2s}
+.post-card:hover{border-color:var(--accent)}
+.post-card .meta{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.post-card .day-label{font-weight:700;font-size:0.85rem;color:var(--accent2)}
+.post-card .pillar{font-size:0.7rem;padding:2px 8px;border-radius:12px;background:rgba(99,102,241,0.15);color:var(--accent2)}
+.post-card .content-preview{font-size:0.85rem;line-height:1.6;white-space:pre-wrap;color:var(--text);margin-bottom:8px;max-height:120px;overflow:hidden}
+.post-card .content-preview.expanded{max-height:none}
+.post-card .footer{display:flex;justify-content:space-between;align-items:center}
+.post-card .char-count{font-size:0.7rem;color:var(--dim)}
+.post-card .actions{display:flex;gap:6px}
+
+/* Status badges */
+.status{font-size:0.7rem;padding:2px 8px;border-radius:12px;font-weight:600}
+.status.draft{background:rgba(136,136,136,0.2);color:var(--dim)}
+.status.queued{background:rgba(99,102,241,0.2);color:var(--accent2)}
+.status.posted{background:rgba(34,197,94,0.2);color:var(--ok)}
+.status.archived{background:rgba(136,136,136,0.1);color:#666}
+
+/* Buttons */
+.btn{border:none;padding:5px 10px;border-radius:var(--radius-sm);font-size:0.75rem;cursor:pointer;font-weight:500;transition:opacity 0.2s}
+.btn:hover{opacity:0.8}
+.btn-edit{background:var(--card2);color:var(--text);border:1px solid var(--border)}
+.btn-status{background:rgba(99,102,241,0.2);color:var(--accent2)}
+.btn-delete{background:rgba(239,68,68,0.15);color:var(--err)}
+.btn-primary{background:var(--accent);color:#fff;padding:8px 20px;font-size:0.85rem}
+.btn-secondary{background:var(--card2);color:var(--text);border:1px solid var(--border);padding:8px 20px;font-size:0.85rem}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.show{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);width:100%;max-width:560px;max-height:90vh;overflow-y:auto;padding:20px}
+.modal h3{font-size:1rem;margin-bottom:16px}
+.modal label{display:block;font-size:0.75rem;color:var(--dim);margin-bottom:4px;margin-top:12px}
+.modal input,.modal select,.modal textarea{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:var(--radius-sm);font-size:0.85rem;font-family:inherit}
+.modal textarea{min-height:160px;resize:vertical;line-height:1.6}
+.modal input:focus,.modal select:focus,.modal textarea:focus{outline:none;border-color:var(--accent)}
+.modal .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+.modal .char-info{font-size:0.7rem;color:var(--dim);margin-top:4px}
+
+/* Ideas panel */
+.idea-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.idea-card .idea-text{font-size:0.85rem;flex:1}
+.idea-card .idea-cat{font-size:0.7rem;color:var(--dim);padding:2px 8px;border-radius:12px;background:var(--card2);margin-left:8px;white-space:nowrap}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);color:var(--text);padding:10px 20px;border-radius:var(--radius-sm);font-size:0.85rem;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:300}
+.toast.show{opacity:1}
+
+/* Empty state */
+.empty{text-align:center;padding:40px;color:var(--dim);font-size:0.85rem}
+
+/* Responsive */
+@media(max-width:480px){
+  .header h1{font-size:0.95rem}
+  .nav-btn{padding:8px 12px;font-size:0.8rem}
+  .modal{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <h1>X <span>Post Queue</span></h1>
+  <span class="conn-badge off" id="connBadge">offline</span>
+</div>
+
+<!-- Auth -->
+<div id="auth-screen">
+  <h2>Admin Access</h2>
+  <input type="password" id="pw-input" placeholder="password" autocomplete="off">
+  <button class="auth-btn" onclick="tryAuth()">Enter</button>
+  <div id="auth-error">パスワードが違います</div>
+</div>
+
+<!-- Main -->
+<div id="main-screen" style="display:none">
+  <div class="stats" id="statsBar"></div>
+
+  <div class="nav">
+    <button class="nav-btn active" data-panel="panel-queue">キュー</button>
+    <button class="nav-btn" data-panel="panel-ideas">ネタ帳</button>
+    <button class="nav-btn" data-panel="panel-posted">投稿済み</button>
+  </div>
+
+  <!-- Queue Panel -->
+  <div id="panel-queue" class="panel active">
+    <div class="filters" id="queueFilters">
+      <button class="filter-btn active" data-filter="all">すべて</button>
+      <button class="filter-btn" data-filter="draft">下書き</button>
+      <button class="filter-btn" data-filter="queued">待機中</button>
+    </div>
+    <div style="margin-bottom:12px">
+      <button class="btn btn-primary" onclick="openModal()">+ 新規ポスト</button>
+    </div>
+    <div id="queueList"></div>
+  </div>
+
+  <!-- Ideas Panel -->
+  <div id="panel-ideas" class="panel">
+    <div style="margin-bottom:12px;display:flex;gap:8px">
+      <button class="btn btn-primary" onclick="openIdeaModal()">+ ネタ追加</button>
+    </div>
+    <div id="ideasList"></div>
+  </div>
+
+  <!-- Posted Panel -->
+  <div id="panel-posted" class="panel">
+    <div id="postedList"></div>
+  </div>
+</div>
+
+<!-- Post Edit Modal -->
+<div class="modal-overlay" id="postModal">
+  <div class="modal">
+    <h3 id="modalTitle">新規ポスト</h3>
+    <input type="hidden" id="editKey">
+
+    <label>ラベル（Day 1, Day 2-1 など）</label>
+    <input type="text" id="fDayLabel" placeholder="Day 1">
+
+    <label>カテゴリ（柱）</label>
+    <select id="fPillar">
+      <option value="自動化">柱1: 自動化の仕組み</option>
+      <option value="AIクローン">柱2: AIクローン</option>
+      <option value="Claude Code">柱3: Claude Code活用</option>
+      <option value="モルック">柱4: モルック/ニッチ戦略</option>
+      <option value="振り返り">柱5: 数字と振り返り</option>
+      <option value="哲学">柱6: 70点哲学/マインド</option>
+      <option value="失敗談">柱7: 失敗・リアル</option>
+      <option value="その他">その他</option>
+    </select>
+
+    <label>ステータス</label>
+    <select id="fStatus">
+      <option value="draft">下書き</option>
+      <option value="queued">待機中（投稿OK）</option>
+      <option value="posted">投稿済み</option>
+    </select>
+
+    <label>本文</label>
+    <textarea id="fContent" placeholder="ポストの本文を入力..."></textarea>
+    <div class="char-info" id="charInfo">0文字（X上限: 280文字 / 日本語約140文字）</div>
+
+    <label>メモ（内部用）</label>
+    <input type="text" id="fNotes" placeholder="補足メモ">
+
+    <label>順番（数字が小さい方が上）</label>
+    <input type="number" id="fOrder" value="100">
+
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">キャンセル</button>
+      <button class="btn btn-primary" onclick="savePost()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Idea Modal -->
+<div class="modal-overlay" id="ideaModal">
+  <div class="modal">
+    <h3 id="ideaModalTitle">ネタ追加</h3>
+    <input type="hidden" id="ideaEditKey">
+
+    <label>ネタ内容</label>
+    <textarea id="fIdeaText" style="min-height:80px" placeholder="ネタの内容..."></textarea>
+
+    <label>カテゴリ</label>
+    <select id="fIdeaCat">
+      <option value="自動化">自動化</option>
+      <option value="AIクローン">AIクローン</option>
+      <option value="Claude Code">Claude Code</option>
+      <option value="モルック">モルック</option>
+      <option value="メディア">メディア運営</option>
+      <option value="収益化">収益化</option>
+      <option value="失敗談">失敗談</option>
+      <option value="哲学">哲学・マインド</option>
+      <option value="技術">技術ネタ</option>
+      <option value="その他">その他</option>
+    </select>
+
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeIdeaModal()">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveIdea()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyALYXDVMecauxwozKtueJBc-6AJXv_CyQc",
+  authDomain: "viisi-master-app.firebaseapp.com",
+  databaseURL: "https://viisi-master-app-default-rtdb.firebaseio.com",
+  projectId: "viisi-master-app",
+  storageBucket: "viisi-master-app.firebasestorage.app",
+  messagingSenderId: "634488531014",
+  appId: "1:634488531014:web:e2f7d7360e5d8b1414c247"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// Auth
+const ADMIN_HASH = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'; // "admin"
+async function sha256(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+async function tryAuth() {
+  const pw = document.getElementById('pw-input').value;
+  const hash = await sha256(pw);
+  if (hash === ADMIN_HASH) {
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('main-screen').style.display = 'block';
+    init();
+  } else {
+    document.getElementById('auth-error').style.display = 'block';
+  }
+}
+document.getElementById('pw-input').addEventListener('keydown', e => { if (e.key === 'Enter') tryAuth(); });
+
+// State
+let posts = [];
+let ideas = [];
+let currentFilter = 'all';
+
+// Init
+function init() {
+  // Connection status
+  db.ref('.info/connected').on('value', snap => {
+    const el = document.getElementById('connBadge');
+    if (snap.val()) { el.textContent = 'online'; el.className = 'conn-badge on'; }
+    else { el.textContent = 'offline'; el.className = 'conn-badge off'; }
+  });
+
+  // Load posts
+  db.ref('x-post-queue').orderByChild('order').on('value', snap => {
+    posts = [];
+    snap.forEach(c => posts.push({ ...c.val(), _key: c.key }));
+    renderAll();
+  });
+
+  // Load ideas
+  db.ref('x-post-ideas').on('value', snap => {
+    ideas = [];
+    snap.forEach(c => ideas.push({ ...c.val(), _key: c.key }));
+    renderIdeas();
+  });
+}
+
+// Tab navigation
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(this.dataset.panel).classList.add('active');
+    this.classList.add('active');
+  });
+});
+
+// Queue filters
+document.querySelectorAll('#queueFilters .filter-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('#queueFilters .filter-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    currentFilter = this.dataset.filter;
+    renderQueue();
+  });
+});
+
+// Render
+function renderAll() {
+  renderStats();
+  renderQueue();
+  renderPosted();
+}
+
+function renderStats() {
+  const draft = posts.filter(p => p.status === 'draft').length;
+  const queued = posts.filter(p => p.status === 'queued').length;
+  const posted = posts.filter(p => p.status === 'posted').length;
+  document.getElementById('statsBar').innerHTML = `
+    <div class="stat"><div class="num">${posts.length}</div><div class="label">全ポスト</div></div>
+    <div class="stat"><div class="num">${draft}</div><div class="label">下書き</div></div>
+    <div class="stat"><div class="num">${queued}</div><div class="label">待機中</div></div>
+    <div class="stat"><div class="num">${posted}</div><div class="label">投稿済み</div></div>
+    <div class="stat"><div class="num">${ideas.length}</div><div class="label">ネタ</div></div>
+  `;
+}
+
+function renderQueue() {
+  const filtered = posts.filter(p => {
+    if (currentFilter === 'all') return p.status !== 'posted';
+    return p.status === currentFilter;
+  });
+  if (!filtered.length) {
+    document.getElementById('queueList').innerHTML = '<div class="empty">ポストがありません</div>';
+    return;
+  }
+  document.getElementById('queueList').innerHTML = filtered.map(p => `
+    <div class="post-card">
+      <div class="meta">
+        ${p.dayLabel ? `<span class="day-label">${esc(p.dayLabel)}</span>` : ''}
+        ${p.pillar ? `<span class="pillar">${esc(p.pillar)}</span>` : ''}
+        <span class="status ${p.status}">${statusLabel(p.status)}</span>
+      </div>
+      <div class="content-preview" onclick="this.classList.toggle('expanded')">${esc(p.content)}</div>
+      <div class="footer">
+        <span class="char-count">${p.content ? p.content.length : 0}文字</span>
+        <div class="actions">
+          <button class="btn btn-edit" onclick="editPost('${p._key}')">編集</button>
+          <button class="btn btn-status" onclick="cycleStatus('${p._key}','${p.status}')">${nextStatusLabel(p.status)}</button>
+          <button class="btn btn-delete" onclick="deletePost('${p._key}')">削除</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderPosted() {
+  const posted = posts.filter(p => p.status === 'posted');
+  if (!posted.length) {
+    document.getElementById('postedList').innerHTML = '<div class="empty">投稿済みポストはありません</div>';
+    return;
+  }
+  document.getElementById('postedList').innerHTML = posted.map(p => `
+    <div class="post-card">
+      <div class="meta">
+        ${p.dayLabel ? `<span class="day-label">${esc(p.dayLabel)}</span>` : ''}
+        ${p.pillar ? `<span class="pillar">${esc(p.pillar)}</span>` : ''}
+        <span class="status posted">投稿済み</span>
+        ${p.postedAt ? `<span style="font-size:0.7rem;color:var(--dim)">${p.postedAt}</span>` : ''}
+      </div>
+      <div class="content-preview" onclick="this.classList.toggle('expanded')">${esc(p.content)}</div>
+      <div class="footer">
+        <span class="char-count">${p.content ? p.content.length : 0}文字</span>
+        <div class="actions">
+          <button class="btn btn-edit" onclick="editPost('${p._key}')">編集</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderIdeas() {
+  renderStats();
+  if (!ideas.length) {
+    document.getElementById('ideasList').innerHTML = '<div class="empty">ネタがありません</div>';
+    return;
+  }
+  document.getElementById('ideasList').innerHTML = ideas.map(i => `
+    <div class="idea-card">
+      <span class="idea-text">${esc(i.text)}</span>
+      <span class="idea-cat">${esc(i.category || '')}</span>
+      <div class="actions" style="display:flex;gap:4px;margin-left:8px">
+        <button class="btn btn-status" onclick="promoteIdea('${i._key}')">→ポスト化</button>
+        <button class="btn btn-edit" onclick="editIdea('${i._key}')">編集</button>
+        <button class="btn btn-delete" onclick="deleteIdea('${i._key}')">削除</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Helpers
+function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function statusLabel(s) { return { draft:'下書き', queued:'待機中', posted:'投稿済み' }[s] || s; }
+function nextStatusLabel(s) {
+  if (s === 'draft') return '→ 待機中';
+  if (s === 'queued') return '→ 投稿済み';
+  return '→ 下書き';
+}
+
+// Status cycle
+async function cycleStatus(key, current) {
+  const next = current === 'draft' ? 'queued' : current === 'queued' ? 'posted' : 'draft';
+  const updates = { status: next };
+  if (next === 'posted') updates.postedAt = new Date().toISOString().split('T')[0];
+  await db.ref('x-post-queue/' + key).update(updates);
+  toast(statusLabel(next) + ' に変更');
+}
+
+// Post modal
+function openModal(key) {
+  document.getElementById('editKey').value = '';
+  document.getElementById('modalTitle').textContent = '新規ポスト';
+  document.getElementById('fDayLabel').value = '';
+  document.getElementById('fPillar').value = '自動化';
+  document.getElementById('fStatus').value = 'draft';
+  document.getElementById('fContent').value = '';
+  document.getElementById('fNotes').value = '';
+  document.getElementById('fOrder').value = '100';
+  updateCharInfo();
+  document.getElementById('postModal').classList.add('show');
+}
+
+function editPost(key) {
+  const p = posts.find(x => x._key === key);
+  if (!p) return;
+  document.getElementById('editKey').value = key;
+  document.getElementById('modalTitle').textContent = 'ポスト編集';
+  document.getElementById('fDayLabel').value = p.dayLabel || '';
+  document.getElementById('fPillar').value = p.pillar || '自動化';
+  document.getElementById('fStatus').value = p.status || 'draft';
+  document.getElementById('fContent').value = p.content || '';
+  document.getElementById('fNotes').value = p.notes || '';
+  document.getElementById('fOrder').value = p.order != null ? p.order : 100;
+  updateCharInfo();
+  document.getElementById('postModal').classList.add('show');
+}
+
+function closeModal() { document.getElementById('postModal').classList.remove('show'); }
+
+async function savePost() {
+  const key = document.getElementById('editKey').value;
+  const data = {
+    dayLabel: document.getElementById('fDayLabel').value.trim(),
+    pillar: document.getElementById('fPillar').value,
+    status: document.getElementById('fStatus').value,
+    content: document.getElementById('fContent').value.trim(),
+    notes: document.getElementById('fNotes').value.trim(),
+    order: parseInt(document.getElementById('fOrder').value) || 100,
+    updatedAt: new Date().toISOString()
+  };
+  if (!data.content) { toast('本文を入力してください'); return; }
+  if (key) {
+    await db.ref('x-post-queue/' + key).update(data);
+    toast('更新しました');
+  } else {
+    data.createdAt = new Date().toISOString();
+    await db.ref('x-post-queue').push(data);
+    toast('追加しました');
+  }
+  closeModal();
+}
+
+// Char count
+document.getElementById('fContent').addEventListener('input', updateCharInfo);
+function updateCharInfo() {
+  const len = document.getElementById('fContent').value.length;
+  document.getElementById('charInfo').textContent = `${len}文字（X上限: 280文字 / 日本語約140文字）`;
+}
+
+// Delete
+async function deletePost(key) {
+  if (!confirm('このポストを削除しますか？')) return;
+  await db.ref('x-post-queue/' + key).remove();
+  toast('削除しました');
+}
+
+// Idea modal
+function openIdeaModal() {
+  document.getElementById('ideaEditKey').value = '';
+  document.getElementById('ideaModalTitle').textContent = 'ネタ追加';
+  document.getElementById('fIdeaText').value = '';
+  document.getElementById('fIdeaCat').value = '自動化';
+  document.getElementById('ideaModal').classList.add('show');
+}
+
+function editIdea(key) {
+  const i = ideas.find(x => x._key === key);
+  if (!i) return;
+  document.getElementById('ideaEditKey').value = key;
+  document.getElementById('ideaModalTitle').textContent = 'ネタ編集';
+  document.getElementById('fIdeaText').value = i.text || '';
+  document.getElementById('fIdeaCat').value = i.category || '自動化';
+  document.getElementById('ideaModal').classList.add('show');
+}
+
+function closeIdeaModal() { document.getElementById('ideaModal').classList.remove('show'); }
+
+async function saveIdea() {
+  const key = document.getElementById('ideaEditKey').value;
+  const data = {
+    text: document.getElementById('fIdeaText').value.trim(),
+    category: document.getElementById('fIdeaCat').value,
+    updatedAt: new Date().toISOString()
+  };
+  if (!data.text) { toast('内容を入力してください'); return; }
+  if (key) {
+    await db.ref('x-post-ideas/' + key).update(data);
+    toast('更新しました');
+  } else {
+    data.createdAt = new Date().toISOString();
+    await db.ref('x-post-ideas').push(data);
+    toast('追加しました');
+  }
+  closeIdeaModal();
+}
+
+async function deleteIdea(key) {
+  if (!confirm('このネタを削除しますか？')) return;
+  await db.ref('x-post-ideas/' + key).remove();
+  toast('削除しました');
+}
+
+async function promoteIdea(key) {
+  const idea = ideas.find(x => x._key === key);
+  if (!idea) return;
+  // Create draft post from idea
+  await db.ref('x-post-queue').push({
+    dayLabel: '',
+    pillar: idea.category || 'その他',
+    status: 'draft',
+    content: idea.text,
+    notes: 'ネタ帳から変換',
+    order: 100,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  });
+  // Remove from ideas
+  await db.ref('x-post-ideas/' + key).remove();
+  toast('ポスト化しました');
+}
+
+// Toast
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('show');
+  });
+});
+</script>
+</body>
+</html>
