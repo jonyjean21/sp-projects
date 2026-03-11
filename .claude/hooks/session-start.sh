@@ -10,10 +10,15 @@ fi
 
 FIREBASE_URL="https://viisi-master-app-default-rtdb.firebaseio.com"
 
-# --- .env 自動復元（Firebaseから） ---
+# --- .env 自動復元（Firebase暗号化保存から） ---
+# $CLAUDE_ENV_FILE対応: 復元した変数は全bashコマンドで自動利用可能
 if [ ! -f ".env" ]; then
-  ENV_DATA=$(curl -sf "${FIREBASE_URL}/config/env-store.json" 2>/dev/null || echo "null")
-  if [ "$ENV_DATA" != "null" ] && [ -n "$ENV_DATA" ]; then
+  # v2（PBKDF2+HMAC）を優先、v1にフォールバック
+  ENV_V2=$(curl -sf --max-time 5 "${FIREBASE_URL}/config/env-store-v2.json" 2>/dev/null || echo "null")
+  ENV_V1=$(curl -sf --max-time 5 "${FIREBASE_URL}/config/env-store.json" 2>/dev/null || echo "null")
+
+  if { [ "$ENV_V2" != "null" ] && [ -n "$ENV_V2" ] && [ "$ENV_V2" != "{}" ]; } || \
+     { [ "$ENV_V1" != "null" ] && [ -n "$ENV_V1" ] && [ "$ENV_V1" != "{}" ]; }; then
     python3 tools/env-setup.py --restore 2>/dev/null && \
       echo "[env] .env を自動復元しました" || true
   fi

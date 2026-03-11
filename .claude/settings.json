@@ -16,7 +16,9 @@
       "Bash(git push --force:*)",
       "Bash(git reset --hard:*)",
       "Bash(git clean:*)",
-      "Bash(git branch -D:*)"
+      "Bash(git branch -D:*)",
+      "Read(.env)",
+      "Read(.env.*)"
     ]
   },
   "hooks": {
