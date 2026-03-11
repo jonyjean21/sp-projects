@@ -1836,11 +1836,12 @@ function renderHomeCard(id, e) {
   if (!isPast) {
     const pct = totalMembers > 0 ? Math.round(answeredCount / totalMembers * 100) : 0;
     html += `<div style="display:flex;align-items:center;gap:8px;margin-top:6px;font-size:12px;color:var(--text-sub)">
-      <span>回答 ${answeredCount}/${totalMembers}</span>
-      <span>🚗${drivers}台</span><span>🙋${riders}人</span>
-      ${seatAlert ? '<span style="color:var(--danger)">⚠席不足</span>' : ''}
-    </div>
-    <div class="progress-bar" style="margin-top:4px"><div class="progress-fill" style="width:${pct}%"></div></div>`;
+      <span style="white-space:nowrap">回答 ${answeredCount}/${totalMembers}</span>
+      <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;min-width:40px">
+        <div style="height:100%;width:${pct}%;background:var(--accent);border-radius:3px"></div>
+      </div>
+      ${seatAlert ? '<span style="color:var(--danger);white-space:nowrap">⚠席不足</span>' : ''}
+    </div>`;
   }
   html += '</div>';
   return html;
@@ -1880,169 +1881,141 @@ function showEventDetail(id) {
     ${isAdmin ? `<button class="btn btn-outline btn-small" onclick="openEventModal('${id}')">✏️ 編集</button>` : ''}
   </div>`;
 
-  // イベント情報カード
+  // ① 試合の概要
   html += `<div class="card" style="border-left:4px solid ${isMatch?'var(--match)':'var(--practice)'}">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
       <span class="badge ${isMatch?'badge-match':'badge-practice'}">${typeLabel}</span>
       <span style="font-size:16px;font-weight:700">${escapeHtml(e.title) || 'イベント'}</span>
     </div>
     <div style="font-size:14px;color:var(--text-sub)">
-      📅 ${dateStr} ${e.meet_time ? '🕗 '+escapeHtml(e.meet_time) : ''} ${e.location ? '📍 '+escapeHtml(e.location) : ''}
-      ${e.rsvp_deadline ? '<br>📝 回答締切: '+formatEventDate(e.rsvp_deadline)+(isRsvpPastDeadline(e)?' <span style="color:var(--danger);font-weight:600">締切済み</span>':'') : ''}
+      ${dateStr} ${e.meet_time ? escapeHtml(e.meet_time) : ''} ${e.location ? escapeHtml(e.location) : ''}
+      ${e.rsvp_deadline ? '<br>回答締切: '+formatEventDate(e.rsvp_deadline)+(isRsvpPastDeadline(e)?' <span style="color:var(--danger);font-weight:600">締切済み</span>':'') : ''}
     </div>
+    ${isMatch ? `<div style="text-align:right;margin-top:4px">
+      ${(() => {
+        const lt = Object.entries(tournamentsData).find(([, t]) => t.event_id === id);
+        if (lt) {
+          return `<button class="btn btn-outline btn-small" onclick="showTournamentDetail('${lt[0]}')" style="font-size:11px;padding:4px 10px;width:auto">🏆 記録を見る</button>`;
+        } else {
+          return `<button class="btn btn-outline btn-small" onclick="createTournamentForEvent('${id}')" style="font-size:11px;padding:4px 10px;width:auto">🏆 記録入力</button>`;
+        }
+      })()}
+    </div>` : ''}
   </div>`;
 
-  // 回答状況
+  // ② 出欠回答ボタン
   if (!isPast) {
-    const pct = totalMembers > 0 ? Math.round(answeredCount / totalMembers * 100) : 0;
-    const seatBalance = driverSeats - riderSeats;
-    const maxCars = e.max_cars || 0;
-    const overCars = maxCars > 0 && drivers > maxCars;
-    html += `<div class="card">
-      <div style="font-size:13px;color:var(--text-sub)">回答: ${answeredCount}/${totalMembers}</div>
-      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-      <div style="font-size:13px;margin:8px 0;display:flex;flex-wrap:wrap;gap:8px">
-        <span>🚗 ${drivers}台(${driverSeats}席)${maxCars > 0 ? ' <span style="font-size:11px;color:'+(overCars?'var(--danger)':'var(--text-light)')+'">/ 上限'+maxCars+'台</span>' : ''}</span>
-        <span>🙋 ${riders}人(${riderSeats}席)</span>
-        <span>🏃 ${directs}人</span>
-      </div>
-      ${riderSeats > 0 ? (seatBalance >= 0
-        ? '<div style="font-size:13px;color:var(--success)">✅ 席OK ('+seatBalance+'席余裕)</div>'
-        : '<div style="font-size:13px;color:var(--danger)">⚠ '+Math.abs(seatBalance)+'席不足</div>') : ''}
-      ${overCars ? '<div style="font-size:12px;color:var(--danger);margin-top:4px">⚠ 台数制限'+maxCars+'台に対し'+drivers+'台</div>' : ''}
-    </div>`;
-  }
-
-  // 備品状況
-  if (e.equipment_needed) {
-    const eqEntries = Object.entries(e.equipment_needed).filter(([,q]) => q > 0);
-    if (eqEntries.length) {
-      const eqAssignees = {};
-      Object.entries(rsvp).forEach(([mid, r]) => {
-        if (r.attending !== true || !r.bring_equipment) return;
-        Object.keys(r.bring_equipment).forEach(eid => {
-          if (r.bring_equipment[eid]) {
-            if (!eqAssignees[eid]) eqAssignees[eid] = [];
-            eqAssignees[eid].push(membersData[mid]?.name || mid);
-          }
-        });
-      });
-      html += '<div class="equip-btn-grid">';
-      let hasUnassigned = false;
-      eqEntries.forEach(([eid, qty]) => {
-        const eq = equipmentTypesData[eid];
-        const name = eq?.name || eid;
-        const icon = getEquipIcon(eid);
-        const assignees = eqAssignees[eid] || [];
-        for (let i = 0; i < qty; i++) {
-          const person = assignees[i] || null;
-          const cls = person ? 'assigned' : 'unassigned';
-          if (!person) hasUnassigned = true;
-          html += `<div class="equip-btn ${cls}">
-            <div class="equip-btn-icon">${icon}</div>
-            <div class="equip-btn-name">${escapeHtml(name)}</div>
-            <div class="equip-btn-assignee">${person ? escapeHtml(person) : '未定'}</div>
-          </div>`;
-        }
-      });
-      html += '</div>';
-      if (!isPast && hasUnassigned) {
-        html += `<button class="btn btn-outline btn-small" onclick="generateEquipNudgeText('${id}')" style="margin-top:4px;font-size:12px;color:var(--danger)">📦 備品不足 → LINE催促文を作成</button>`;
-      }
-    }
-  }
-
-  // アクションボタン
-  html += '<div class="card">';
-  if (!isPast) {
-    // 自分の出欠
+    html += '<div class="card">';
     if (selectedMemberId && e.status === 'open') {
       if (myRsvp) {
-        html += renderMyRsvpSummary(myRsvp);
-        if (!isRsvpPastDeadline(e)) {
-          html += `<button class="btn btn-secondary btn-small" onclick="startRsvp('${id}')" style="margin-top:8px">回答を変更</button>`;
-        } else {
-          html += '<div style="font-size:13px;color:var(--danger);margin-top:8px">🔒 回答締切済み（変更はLINEで配車担当者へ）</div>';
+        const rsvpLabel = myRsvp.attending === true ? '✅ 回答済み' : myRsvp.attending === 'maybe' ? '△ 検討中' : '❌ 不参加';
+        html += `<div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:15px;font-weight:600">${rsvpLabel}</span>
+          <span style="flex:1"></span>
+          ${!isRsvpPastDeadline(e) ? `<button class="btn btn-outline btn-small" onclick="startRsvp('${id}')" style="width:auto;font-size:12px;padding:6px 12px">回答内容を変更する</button>` : ''}
+        </div>`;
+        if (isRsvpPastDeadline(e)) {
+          html += '<div style="font-size:12px;color:var(--danger);margin-top:4px">🔒 締切済み（変更はLINEで配車担当者へ）</div>';
         }
       } else if (!isRsvpPastDeadline(e)) {
         html += `<button class="btn btn-primary" onclick="startRsvp('${id}')">出欠を回答する</button>`;
       } else {
-        html += '<div style="font-size:13px;color:var(--danger);margin-top:8px">🔒 回答締切済み</div>';
+        html += '<div style="font-size:13px;color:var(--danger)">🔒 回答締切済み</div>';
       }
     }
-
-    // 配車を決める
-    if (e.status === 'open' && drivers > 0) {
-      html += `<button class="btn btn-secondary" onclick="showDriverSelection('${id}')" style="margin-top:12px;width:100%">🚗 配車を決める</button>`;
+    if (selectedMemberId && e.status === 'assigned') {
+      const rsvpLabel = myRsvp?.attending === true ? '✅ 回答済み' : '回答確認';
+      html += `<div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:15px;font-weight:600">${rsvpLabel}</span>
+        <span style="flex:1"></span>
+        <button class="btn btn-outline btn-small" onclick="startRsvp('${id}')" style="width:auto;font-size:12px;padding:6px 12px">回答内容を変更する</button>
+      </div>`;
     }
 
     // 配車確定後
     if (e.status === 'assigned') {
-      if (selectedMemberId && myRsvp) html += renderMyRsvpSummary(myRsvp);
-      html += `<div class="btn-row" style="margin-top:10px">
-        <button class="btn btn-secondary btn-small" onclick="viewAssignment('${id}')">🚗 配車表を見る</button>
-        <button class="btn btn-outline btn-small" onclick="showLineText('${id}')">📋 配車決定後の連絡</button>
+      html += `<div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn btn-secondary btn-small" onclick="viewAssignment('${id}')" style="flex:1">🚗 配車表を見る</button>
       </div>
-      <button class="btn btn-line btn-small" onclick="shareLineDirect('${id}')" style="margin-top:8px;width:100%">💬 LINEで共有</button>`;
-      if (selectedMemberId) {
-        html += `<button class="btn btn-outline btn-small" onclick="startRsvp('${id}')" style="margin-top:8px">回答を変更 ⚠</button>`;
-      }
+      <div style="display:flex;gap:8px;margin-top:6px">
+        <button class="btn btn-outline btn-small" onclick="resetAssignment('${id}')" style="flex:1;font-size:12px">配車をやり直す</button>
+        <button class="btn btn-outline btn-small" onclick="showLineText('${id}')" style="flex:1;font-size:12px">配車決定後のLINEテンプレ</button>
+      </div>`;
     }
 
-    // 未回答催促
-    if (answeredCount < totalMembers && e.status === 'open') {
-      html += `<button class="btn btn-outline btn-small" onclick="generateNudgeText('${id}')" style="margin-top:8px;font-size:13px">📢 未回答に催促（${totalMembers - answeredCount}人）</button>`;
-    }
+    html += '</div>';
   } else {
     // 過去イベント
     if (e.assignments) {
-      html += `<div class="btn-row">
-        <button class="btn btn-secondary btn-small" onclick="viewAssignment('${id}')">🚗 配車表</button>
-        <button class="btn btn-outline btn-small" onclick="showLineText('${id}')">📋 LINE共有</button>
-      </div>`;
+      html += `<div class="card"><div style="display:flex;gap:8px">
+        <button class="btn btn-secondary btn-small" onclick="viewAssignment('${id}')" style="flex:1">🚗 配車表</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:6px">
+        <button class="btn btn-outline btn-small" onclick="resetAssignment('${id}')" style="flex:1;font-size:12px">配車をやり直す</button>
+        <button class="btn btn-outline btn-small" onclick="showLineText('${id}')" style="flex:1;font-size:12px">配車決定後のLINEテンプレ</button>
+      </div></div>`;
     } else if (drivers > 0) {
-      html += `<button class="btn btn-secondary" onclick="showDriverSelection('${id}')" style="margin-top:12px">🚗 配車を決める</button>`;
+      html += `<div class="card"><button class="btn btn-secondary" onclick="showDriverSelection('${id}')" style="width:100%">🚗 配車を決める</button></div>`;
     }
   }
 
-  // 試合イベント → 大会記録リンク
-  if (isMatch) {
-    const linkedTournament = Object.entries(tournamentsData).find(([, t]) => t.event_id === id);
-    if (linkedTournament) {
-      const [tid, t] = linkedTournament;
-      const scores = t.scores || [];
-      const wld = `${scores.filter(s=>s.result==='win').length}勝${scores.filter(s=>s.result==='lose').length}敗`;
-      html += `<div class="card" style="border-left:4px solid #1976d2;cursor:pointer" onclick="editTournament('${tid}')">
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:18px">🏆</span>
-          <div style="flex:1">
-            <div style="font-size:13px;font-weight:700">大会記録</div>
-            <div style="font-size:12px;color:var(--text-sub)">${t.team_rank ? t.team_rank+'位/'+( t.total_teams||'?')+'チーム' : '順位未入力'} ${scores.length > 0 ? wld : ''}</div>
-          </div>
-          <div style="font-size:12px;color:var(--text-light)">✏️</div>
-        </div>
-      </div>`;
-    } else {
-      // 試合イベントなのにリンクされた大会記録がない（手動作成分）→ 作成ボタン
-      html += `<div class="card" style="border-left:4px solid #ccc;cursor:pointer;opacity:0.7" onclick="createTournamentForEvent('${id}')">
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:18px">🏆</span>
-          <div style="flex:1;font-size:13px;color:var(--text-sub)">大会記録を入力する</div>
-          <div style="font-size:12px;color:var(--text-light)">＋</div>
-        </div>
-      </div>`;
+  // ③ 回答状況
+  if (!isPast) {
+    const pct = totalMembers > 0 ? Math.round(answeredCount / totalMembers * 100) : 0;
+    const unansweredCount = totalMembers - answeredCount;
+    const unansweredNames = Object.entries(membersData).filter(([mid, m]) => m.active !== false && !rsvp[mid]).map(([, m]) => m.name);
+
+    // 備品担当一覧（荷物のアイコン付き）
+    let equipStr = '';
+    if (e.equipment_needed) {
+      const eqEntries = Object.entries(e.equipment_needed).filter(([,q]) => q > 0);
+      if (eqEntries.length) {
+        const eqAssignees = {};
+        let hasUnassigned = false;
+        Object.entries(rsvp).forEach(([mid, r]) => {
+          if (r.attending !== true || !r.bring_equipment) return;
+          Object.keys(r.bring_equipment).forEach(eid => {
+            if (r.bring_equipment[eid]) {
+              if (!eqAssignees[eid]) eqAssignees[eid] = [];
+              eqAssignees[eid].push(membersData[mid]?.name || mid);
+            }
+          });
+        });
+        const eqParts = [];
+        eqEntries.forEach(([eid, qty]) => {
+          const icon = getEquipIcon(eid);
+          const assignees = eqAssignees[eid] || [];
+          for (let i = 0; i < qty; i++) {
+            const person = assignees[i];
+            eqParts.push(person ? `${icon}${person}` : `${icon}所在確認中`);
+          }
+          if (assignees.length < qty) hasUnassigned = true;
+        });
+        equipStr = eqParts.join('　');
+      }
     }
+
+    html += `<div class="card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap">
+        <span style="font-size:14px;font-weight:700">回答 ${answeredCount}/${totalMembers}</span>
+        <div style="flex:1;min-width:40px;height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:var(--accent);border-radius:3px"></div>
+        </div>
+        ${unansweredCount > 0 ? `<span style="font-size:12px;color:var(--danger);font-weight:600">❗️未回答${unansweredCount}人</span>` : ''}
+      </div>
+      ${equipStr ? `<div style="font-size:12px;color:var(--text-sub);margin-bottom:6px">${equipStr}</div>` : ''}
+      <div style="display:flex;gap:8px;margin-top:8px">
+        ${e.status === 'open' && drivers > 0 ? `<button class="btn btn-primary btn-small" onclick="showDriverSelection('${id}')" style="flex:2;font-size:14px">🚗 配車を決める</button>` : '<div style="flex:2"></div>'}
+        <div style="flex:1;display:flex;flex-direction:column;gap:4px">
+          ${unansweredCount > 0 && e.status === 'open' ? `<button class="btn btn-outline btn-small" onclick="generateNudgeText('${id}')" style="font-size:11px;padding:6px 8px">📢 未回答に催促</button>` : ''}
+          ${equipStr.includes('所在確認中') ? `<button class="btn btn-outline btn-small" onclick="generateEquipNudgeText('${id}')" style="font-size:11px;padding:6px 8px">📦 荷物の所在確認</button>` : ''}
+        </div>
+      </div>
+    </div>`;
   }
 
-  html += '</div>';
-
-  // 回答一覧
+  // ④ 回答一覧
   html += renderRsvpList(id, e);
-
-  // 配車決定後 → LINE文テンプレートをインライン表示（過去・アクティブ問わず）
-  if (e.assignments) {
-    html += renderInlineLineTemplates(id);
-  }
 
   c.innerHTML = html;
 }
@@ -2214,25 +2187,21 @@ function renderEventCard(id, e, isPast) {
   // Progress bar (active only)
   if (!isPast) {
     const pct = totalMembers > 0 ? Math.round(answeredCount / totalMembers * 100) : 0;
-    html += `<div style="font-size:13px;color:var(--text-sub)">回答: ${answeredCount}/${totalMembers}</div>
-      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>`;
+    const seatBalance = driverSeats - riderSeats;
+    const seatAlert = riderSeats > 0 && seatBalance < 0;
+    html += `<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-sub);margin-top:4px">
+      <span style="white-space:nowrap">回答 ${answeredCount}/${totalMembers}</span>
+      <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;min-width:40px">
+        <div style="height:100%;width:${pct}%;background:var(--accent);border-radius:3px"></div>
+      </div>
+      ${seatAlert ? '<span style="color:var(--danger);white-space:nowrap">⚠席不足</span>' : ''}
+    </div>`;
   }
 
-  // Seat dashboard
+  // Seat dashboard (simplified)
   {
     const maxCars = e.max_cars || 0;
     const overCars = maxCars > 0 && drivers > maxCars;
-    const seatBalance = driverSeats - riderSeats;
-    const seatStatus = !isPast ? (seatBalance >= 0
-      ? `<span style="color:var(--success)">✅ 席OK (${seatBalance}席余裕)</span>`
-      : `<span style="color:var(--danger)">⚠ ${Math.abs(seatBalance)}席不足</span>`) : '';
-    const carLimit = maxCars > 0 ? ` <span style="font-size:11px;color:${overCars?'var(--danger)':'var(--text-light)'}">/ 上限${maxCars}台</span>` : '';
-    html += `<div style="font-size:13px;margin:8px 0;display:flex;flex-wrap:wrap;gap:8px">
-      <span>🚗 ${drivers}台(${driverSeats}席)${carLimit}</span>
-      <span>🙋 ${riders}人</span>
-      <span>🏃 ${directs}人</span>
-      ${seatStatus}
-    </div>`;
     if (!isPast && overCars) {
       html += `<div style="font-size:12px;color:var(--danger);margin-bottom:6px">⚠ 台数制限${maxCars}台に対し${drivers}台回答（自動配車で${maxCars}台に絞り込みます）</div>`;
     }
@@ -2263,13 +2232,16 @@ function renderEventCard(id, e, isPast) {
       }
     }
     if (selectedMemberId && e.status === 'assigned') {
-      if (myRsvp) html += renderMyRsvpSummary(myRsvp);
-      html += `<div class="btn-row" style="margin-top:10px">
-        <button class="btn btn-secondary btn-small" onclick="viewAssignment('${id}')">🚗 配車表</button>
-        <button class="btn btn-outline btn-small" onclick="showLineText('${id}')">📋 LINE共有</button>
+      const rsvpLabel = myRsvp?.attending === true ? '✅ 回答済み' : '';
+      if (rsvpLabel) html += `<div style="font-size:14px;font-weight:600;margin-top:8px">${rsvpLabel}</div>`;
+      html += `<div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-secondary btn-small" onclick="viewAssignment('${id}')" style="flex:1">🚗 配車表を見る</button>
       </div>
-      <button class="btn btn-line btn-small" onclick="shareLineDirect('${id}')" style="margin-top:8px">💬 LINEで共有</button>`;
-      html += `<button class="btn btn-outline btn-small" onclick="startRsvp('${id}')" style="margin-top:8px">回答を変更 ⚠</button>`;
+      <div style="display:flex;gap:8px;margin-top:6px">
+        <button class="btn btn-outline btn-small" onclick="resetAssignment('${id}')" style="flex:1;font-size:12px">配車をやり直す</button>
+        <button class="btn btn-outline btn-small" onclick="showLineText('${id}')" style="flex:1;font-size:12px">配車決定後のLINEテンプレ</button>
+      </div>`;
+      html += `<button class="btn btn-outline btn-small" onclick="startRsvp('${id}')" style="margin-top:8px;font-size:12px">回答内容を変更する</button>`;
     }
 
     // Assign button
@@ -2279,9 +2251,9 @@ function renderEventCard(id, e, isPast) {
   } else {
     // 過去イベント: 配車ボタン
     if (e.assignments) {
-      html += `<div class="btn-row" style="margin-top:10px">
-        <button class="btn btn-secondary btn-small" onclick="viewAssignment('${id}')">🚗 配車表</button>
-        <button class="btn btn-outline btn-small" onclick="showLineText('${id}')">📋 LINE共有</button>
+      html += `<div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn btn-secondary btn-small" onclick="viewAssignment('${id}')" style="flex:1">🚗 配車表</button>
+        <button class="btn btn-outline btn-small" onclick="showLineText('${id}')" style="flex:1;font-size:12px">LINEテンプレ</button>
       </div>`;
     } else if (drivers > 0) {
       html += `<button class="btn btn-secondary" onclick="showDriverSelection('${id}')" style="margin-top:12px">🚗 配車を決める</button>`;
@@ -2342,8 +2314,6 @@ function renderMyRsvpSummary(r) {
   const eqStr = eqNames.length ? ' / ' + eqNames.join('・') : '';
   return `<div class="rsvp-summary" style="margin-top:10px">
     <div class="rsvp-summary-title">✅ 回答済み</div>
-    <div class="rsvp-summary-detail">参加（${accompanyStr}・${peopleStr}・${transport}${childOnlyStr}${nearParkingStr}${extra}${eqStr}）</div>
-    ${r.note ? '<div class="rsvp-summary-detail">備考: '+escapeHtml(r.note)+'</div>' : ''}
   </div>`;
 }
 
@@ -2729,13 +2699,13 @@ function renderRsvpForm() {
     <div class="form-label">参加可否</div>
     <div style="display:flex;gap:6px;margin-bottom:12px" id="rsvpAttendChoices">
       <div class="rsvp-choice ${att===true?'selected':''}" onclick="rsvpToggleAttending(true)" style="flex:1;min-width:0;padding:10px 8px">
-        <div class="rsvp-choice-icon" style="font-size:22px">✅</div><span style="font-size:13px">参加</span>
+        <div class="rsvp-choice-icon" style="font-size:22px">○</div><span style="font-size:13px">参加</span>
       </div>
       <div class="rsvp-choice ${att==='maybe'?'selected':''}" onclick="rsvpToggleAttending('maybe')" style="flex:1;min-width:0;padding:10px 8px">
         <div class="rsvp-choice-icon" style="font-size:22px">△</div><span style="font-size:13px">検討中</span>
       </div>
       <div class="rsvp-choice ${att===false?'selected':''}" onclick="rsvpToggleAttending(false)" style="flex:1;min-width:0;padding:10px 8px">
-        <div class="rsvp-choice-icon" style="font-size:22px">❌</div><span style="font-size:13px">不参加</span>
+        <div class="rsvp-choice-icon" style="font-size:22px">✕</div><span style="font-size:13px">不参加</span>
       </div>
     </div>
 
@@ -2766,7 +2736,7 @@ function renderRsvpForm() {
       <div class="form-label">帯同可否</div>
       <div style="display:flex;gap:6px;margin-bottom:12px" id="rsvpAccompanyChoices">
         <div class="rsvp-choice ${parentComing===true?'selected':''}" onclick="rsvpPickAccompany(true)" style="flex:1;min-width:0;padding:10px 8px">
-          <div class="rsvp-choice-icon" style="font-size:22px">⭕</div><span style="font-size:13px">帯同する</span>
+          <div class="rsvp-choice-icon" style="font-size:22px">○</div><span style="font-size:13px">帯同する</span>
         </div>
         <div class="rsvp-choice ${parentComing==='maybe'?'selected':''}" onclick="rsvpPickAccompany('maybe')" style="flex:1;min-width:0;padding:10px 8px">
           <div class="rsvp-choice-icon" style="font-size:22px">△</div><span style="font-size:13px">検討中</span>
@@ -2804,8 +2774,8 @@ function renderRsvpForm() {
         </div>
       </div>
 
-      <!-- オプション（配車可 or 乗せて選択時） -->
-      <div id="rsvpChildOnlySection" style="display:${(transport==='ride'||transport==='drive')?'':'none'}">
+      <!-- オプション（配車可 or 乗せて or 検討中選択時） -->
+      <div id="rsvpChildOnlySection" style="display:${(transport==='ride'||transport==='drive'||transport==='considering')?'':'none'}">
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
           <div class="checkbox-item ${childOnlyRide?'checked':''}" id="rsvpChildOnlyRide"
             onclick="this.classList.toggle('checked');document.getElementById('rsvpContent').dataset.childOnlyRide=this.classList.contains('checked')" style="font-size:13px">
@@ -2918,7 +2888,7 @@ function rsvpPickTransport(t) {
   });
   document.getElementById('rsvpDriverSection').style.display = t === 'drive' ? '' : 'none';
   const childOnlySec = document.getElementById('rsvpChildOnlySection');
-  if (childOnlySec) childOnlySec.style.display = (t === 'ride' || t === 'drive') ? '' : 'none';
+  if (childOnlySec) childOnlySec.style.display = (t === 'ride' || t === 'drive' || t === 'considering') ? '' : 'none';
   const riderCountSec = document.getElementById('rsvpRiderCountSection');
   if (riderCountSec) riderCountSec.style.display = t !== 'direct' ? '' : 'none';
   document.getElementById('rsvpContent').dataset.transport = t;
@@ -3248,9 +3218,9 @@ function showDriverSelection(eventId) {
 
   // ── 上部サマリー ──
   let html = `<div style="background:var(--bg);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px">
-    <div style="font-size:13px;font-weight:700;margin-bottom:8px">📊 配車サマリー</div>
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px">📊 配車状況</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px">
-      <div>🅿️ 会場駐車：<strong style="color:${maxCars > 0 && venueCount > maxCars ? 'var(--danger)' : 'var(--text)'}">${venueCount}台</strong>${maxCars ? ` / 上限${maxCars}台` : ''}</div>
+      <div>🅿️ 会場：<strong style="color:${maxCars > 0 && venueCount > maxCars ? 'var(--danger)' : 'var(--text)'}">${venueCount}台</strong>${maxCars ? `/${maxCars}台` : ''}</div>
       <div>🅿️ 近隣駐車：<strong>${nearbyCount}台</strong></div>
       <div>💺 確保席数：<strong style="color:${totalSeats < ridersNeedSeats ? 'var(--danger)' : 'var(--success)'}">${totalSeats}席</strong></div>
       <div>👥 必要席数：<strong>${ridersNeedSeats}席</strong></div>
@@ -4167,8 +4137,17 @@ function generateLineTemplateAssign(eventId) {
 
   const NUM_EMOJIS = ['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
 
-  // Build passenger text for a driver
+  // Build passenger text for a driver (with equipment icons)
   function driverLine(d) {
+    // Equipment icons for this driver
+    let equipIcons = '';
+    if (d.assigned_equipment && d.assigned_equipment.length > 0) {
+      equipIcons = d.assigned_equipment.map(eid => {
+        const eq = equipmentTypesData[eid];
+        return eq ? getEquipIcon(eid) : '';
+      }).filter(Boolean).join('');
+      if (equipIcons) equipIcons = '　' + equipIcons;
+    }
     const passengers = [];
     d.passengers.forEach(p => {
       let label = p.name;
@@ -4176,7 +4155,8 @@ function generateLineTemplateAssign(eventId) {
       if (r?.preschool_count > 0) label += `　※内未就学児${r.preschool_count}名`;
       passengers.push(label);
     });
-    return passengers.length > 0 ? `同乗者：${passengers.join('、')}` : '同乗者：なし';
+    const passengerStr = passengers.length > 0 ? `同乗者：${passengers.join('、')}` : '同乗者：なし';
+    return passengerStr + equipIcons;
   }
 
   // Separate venue parking vs no-parking drivers
@@ -4239,7 +4219,7 @@ function generateLineTemplateAssign(eventId) {
   }
 
   // 注意事項
-  text += `※割り当て車両に乗らない場合は、ご連絡ください。\n`;
+  text += `※学年荷物が割り当て車両に積めない場合は、ご連絡ください。\n`;
   text += `※会場駐車場利用の同乗者の方も、各家庭でご相談のうえ、ご都合に合わせて各自で車を出し、周辺パーキングをご利用いただいても大丈夫です。\n`;
   if (maxCars > 0) {
     text += `※会場駐車場を利用する方は、駐車整理券を印刷のうえ、当日ご提示ください。印刷が難しい方は、ご連絡ください。`;
@@ -4458,35 +4438,25 @@ function renderTournamentCard(id, t) {
 
   const rankSuffix = t.rank_tie ? '位タイ' : '位';
   const youtubeCount = (t.youtube_links || []).length;
+  const wldStr = scores.length > 0 ? `${wins}勝${losses}敗${draws > 0 ? draws+'分' : ''}` : '';
   return `<div class="tournament-card" onclick="showTournamentDetail('${id}')">
     <div style="display:flex;align-items:flex-start;gap:12px">
       <div style="text-align:center;min-width:50px">
         ${t.team_rank ? `<div class="tournament-rank">${t.team_rank}<span class="tournament-rank-sub">${rankSuffix}</span></div>
         <div style="font-size:11px;color:var(--text-sub)">${t.total_teams || '?'}チーム中</div>` :
         `<div class="tournament-rank" style="font-size:18px;color:var(--text-light)">-</div>`}
+        ${wldStr ? `<div style="font-size:11px;color:var(--text-sub);margin-top:2px">${wldStr}</div>` : ''}
       </div>
       <div style="flex:1;min-width:0">
-        <div style="font-size:15px;font-weight:700">${escapeHtml(t.name || '大会')}</div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:15px;font-weight:700">${escapeHtml(t.name || '大会')}</span>
+          <span class="badge" style="background:#e3f2fd;color:#1976d2;font-size:10px">${typeLabels[t.type] || '大会'}</span>
+        </div>
         <div style="font-size:12px;color:var(--text-sub);margin-top:2px">
-          📅 ${dateStr} ${t.location ? '📍 '+escapeHtml(t.location) : ''}
+          ${dateStr}${t.mvp ? '　MVP: '+escapeHtml(t.mvp) : ''}${youtubeCount > 0 ? '　<span style="color:#c00">▶</span>'+youtubeCount+'本' : ''}
         </div>
-        <div style="font-size:12px;color:var(--text-sub)">
-          <span class="badge" style="background:#e3f2fd;color:#1976d2">${typeLabels[t.type] || '大会'}</span>
-          ${t.mvp ? ' MVP: '+escapeHtml(t.mvp) : ''}
-          ${youtubeCount > 0 ? ' <span style="color:#c00">▶</span> '+youtubeCount+'本' : ''}
-        </div>
-        ${scores.length > 0 ? `<div class="tournament-matches">
-          ${scores.map(s => {
-            const cls = s.result === 'win' ? 'match-win' : s.result === 'lose' ? 'match-lose' : 'match-draw';
-            const mark = s.result === 'win' ? '○' : s.result === 'lose' ? '●' : '△';
-            const scorersStr = s.scorers ? ' ('+escapeHtml(s.scorers)+')' : '';
-            return `<span class="match-result ${cls}">${mark} VS ${escapeHtml(s.opponent || '')} ${s.score || ''}${scorersStr}</span>`;
-          }).join('')}
-          <span style="font-size:11px;color:var(--text-sub)">${wins}勝${losses}敗${draws > 0 ? draws+'分' : ''}</span>
-        </div>` : ''}
         ${eventInfo}
       </div>
-      <div style="color:var(--text-light);font-size:14px">✏️</div>
     </div>
   </div>`;
 }
@@ -5023,7 +4993,7 @@ function openInfoEditor() {
         <span style="flex:1"></span>
         ${idx > 0 ? `<button onclick="moveInfoEditorSection(this,-1)" style="background:none;border:none;cursor:pointer;font-size:16px;padding:0 4px">⬆</button>` : ''}
         ${idx < keys.length - 1 ? `<button onclick="moveInfoEditorSection(this,1)" style="background:none;border:none;cursor:pointer;font-size:16px;padding:0 4px">⬇</button>` : ''}
-        ${isCustom ? `<button onclick="deleteInfoSection('${sid}')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:12px;margin-left:4px">削除</button>` : ''}
+        ${isCustom ? `<button onclick="deleteInfoSection('${sid}')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:12px;margin-left:4px">削除</button>` : `<button onclick="removeFixedInfoSection('${key}')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:12px;margin-left:4px">削除</button>`}
       </label>
       <textarea id="${textareaId}" rows="${rows}" placeholder="${escapeHtml(placeholder)}">${escapeHtml(val)}</textarea>
     </div>`;
@@ -5113,6 +5083,17 @@ async function moveInfoSection(sid, direction) {
   updates['/info_sections/' + idB + '/order'] = orderA;
   await db.ref(ROOT).update(updates);
   openInfoEditor();
+}
+
+function removeFixedInfoSection(key) {
+  if (!confirm('このセクションを削除しますか？')) return;
+  const item = document.querySelector(`.info-editor-item[data-section-key="${key}"]`);
+  if (item) item.remove();
+  // Update order
+  const newOrder = [...document.querySelectorAll('#infoEditorSortableContainer .info-editor-item')].map(el => el.dataset.sectionKey).filter(Boolean);
+  db.ref(ROOT + '/info_section_order').set(newOrder);
+  // Clear the content
+  db.ref(ROOT + '/team_info/' + key).remove();
 }
 
 async function deleteInfoSection(sid) {
