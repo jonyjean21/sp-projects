@@ -26,6 +26,7 @@
 - Phase 3（自律稼働エージェント）も実装済み
 - 次はPhase 2（LINE Bot連携）だがLINE Developers登録がブロッカー
 - 積みタスク: トクラシ方針、レシピボックスUI修正、まなびモンスケール
+- X個人ブランディング戦略確定（えすぴ / @esupi）→ アカウント作成待ち
 
 ## 次のアクション
 - [ ] Phase 2: LINE Bot設計・実装（LINE Developers登録待ち）
