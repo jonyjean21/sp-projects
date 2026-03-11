@@ -700,6 +700,30 @@ textarea{resize:vertical;min-height:60px}
   </div>
 </div>
 
+<!-- Modal: Priority Rules -->
+<div class="modal-overlay" id="priorityRulesModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📋 優先ルール</div>
+    <div style="font-size:14px">
+      <div style="font-weight:700;margin-bottom:8px;color:var(--accent)">🚗 車を選ぶ時</div>
+      <ol style="padding-left:20px;margin-bottom:16px;line-height:2">
+        <li>上限台数内に収める</li>
+        <li>多く乗れる車を優先</li>
+        <li>荷物が載る車を優先</li>
+        <li>近隣駐車希望は近隣を優先</li>
+        <li>CS必要者を対応車に優先</li>
+        <li>家が近い組み合わせを優先</li>
+      </ol>
+      <div style="font-weight:700;margin-bottom:8px;color:var(--secondary)">🧑 人を乗せる時</div>
+      <ol style="padding-left:20px;line-height:2">
+        <li>家が近い人を優先</li>
+      </ol>
+    </div>
+    <button class="btn btn-outline" onclick="closeModal('priorityRulesModal')" style="margin-top:12px">閉じる</button>
+  </div>
+</div>
+
 <!-- Modal: Move Rider -->
 <div class="modal-overlay" id="moveRiderModal">
   <div class="modal">
@@ -749,6 +773,19 @@ textarea{resize:vertical;min-height:60px}
   </div>
 </div>
 
+
+<!-- Modal: Tournament Detail -->
+<div class="modal-overlay" id="tournamentDetailModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div class="modal-title" style="margin:0">大会記録</div>
+      <button class="btn btn-small btn-outline" id="tournamentDetailEditBtn" style="width:auto;padding:8px 14px;font-size:13px">✏️ 編集</button>
+    </div>
+    <div id="tournamentDetailContent" style="margin-top:12px"></div>
+    <button class="btn btn-outline" onclick="closeModal('tournamentDetailModal')" style="margin-top:12px">閉じる</button>
+  </div>
+</div>
 
 <!-- Modal: Tournament -->
 <div class="modal-overlay" id="tournamentModal">
@@ -3121,12 +3158,13 @@ function showDriverSelection(eventId) {
   const rsvp = e.rsvp || {};
   currentAssignEventId = eventId;
 
-  // Collect all attending members (both drive & ride)
-  const candidates = [];
-  const directs = [];
+  // Collect all attending members
+  const driveCapable = []; // 配車可能メンバー
+  const rideOnly = []; // 乗車メンバー
+  const directs = []; // 現地集合メンバー
 
   Object.entries(rsvp).forEach(([mid, r]) => {
-    if (r.attending !== true) return; // skip false, 'maybe', undefined
+    if (r.attending !== true) return;
     const mem = membersData[mid];
     if (!mem || mem.active === false) return;
 
@@ -3139,92 +3177,177 @@ function showDriverSelection(eventId) {
     const eqNeeded = e.equipment_needed ? Object.keys(e.equipment_needed) : [];
     const hasNeededEquip = eqNeeded.some(eid => r.bring_equipment?.[eid] || mem.equipment?.[eid]);
     const fc = calcSeatsNeeded(mid, r);
+    const zone = mem.zone_id && zonesData[mem.zone_id] ? zonesData[mem.zone_id] : null;
+    const nearbyMemberIds = mem.nearby_members || [];
+    const csCount = mem.childseat_count || 0;
+    const canCarryLarge = !!mem.can_carry_large;
+    const nearParking = !!r.near_parking;
 
-    // Priority score (for sorting)
+    // おすすめスコア計算
     let priority = 0;
-    priority += seats * 10; // more seats = higher priority
-    if (hasNeededEquip) priority += 50; // equipment carrier = big bonus
-    if (r.transport === 'drive') priority += 5; // originally offered to drive
+    priority += seats * 10; // 多く乗れる
+    if (canCarryLarge) priority += 40; // 荷物が載る
+    if (csCount > 0) priority += 25; // CS対応
+    if (nearbyMemberIds.length > 0) priority += 15; // 家が近い人がいる
+    if (!nearParking) priority += 10; // 近隣希望ではない
+    if (hasNeededEquip) priority += 50; // 機材
+    if (r.transport === 'drive') priority += 5; // 配車申し出
 
-    candidates.push({
+    const entry = {
       id: mid, name: mem.name, zone_id: mem.zone_id || '',
-      seats, hasNeededEquip, priority,
-      transport: r.transport,
-      family_count: fc,
-      with_parent: r.parent_coming || false
-    });
+      zone, seats, hasNeededEquip, priority,
+      transport: r.transport, family_count: fc,
+      with_parent: r.parent_coming || false,
+      canCarryLarge, csCount, nearParking,
+      nearbyMemberIds, hasCar: !!(mem.car_type)
+    };
+
+    // 車を持っている or 配車可能→ driveCapable
+    if (mem.car_type || r.transport === 'drive') {
+      driveCapable.push(entry);
+    } else {
+      rideOnly.push(entry);
+    }
   });
 
-  // Sort by priority (highest first)
-  candidates.sort((a, b) => b.priority - a.priority);
+  // おすすめ順にソート
+  driveCapable.sort((a, b) => b.priority - a.priority);
+  rideOnly.sort((a, b) => a.name.localeCompare(b.name, 'ja'));
 
+  const candidates = [...driveCapable, ...rideOnly];
   const maxCars = e.max_cars || 0;
 
-  // Only pre-select on first open, preserve manual changes on re-render
+  // Initialize parking choices
+  if (!window._parkingChoices) window._parkingChoices = {};
   if (!_driverSelectionInitialized || currentAssignEventId !== eventId) {
-    const driveWillers = candidates.filter(c => c.transport === 'drive');
+    const driveWillers = driveCapable.filter(c => c.transport === 'drive');
     selectedDriverIds = new Set(driveWillers.slice(0, maxCars || driveWillers.length).map(c => c.id));
+    // Default parking: near_parking → 'nearby', else 'venue'
+    window._parkingChoices = {};
+    selectedDriverIds.forEach(id => {
+      const c = candidates.find(x => x.id === id);
+      window._parkingChoices[id] = c?.nearParking ? 'nearby' : 'venue';
+    });
     _driverSelectionInitialized = true;
   }
-  // Remove any IDs that are no longer in candidates
   const candidateIds = new Set(candidates.map(c => c.id));
   selectedDriverIds.forEach(id => { if (!candidateIds.has(id)) selectedDriverIds.delete(id); });
 
-  // Render driver selection UI
-  const maxLabel = maxCars ? `（上限${maxCars}台）` : '';
-  let html = `<div style="font-size:14px;color:var(--text-sub);margin-bottom:12px">車を出すメンバーを選んでください${maxLabel}</div>`;
-
-  const totalRiders = candidates.filter(c => !selectedDriverIds.has(c.id)).reduce((s, c) => s + c.family_count, 0);
-  const totalSeats = candidates.filter(c => selectedDriverIds.has(c.id)).reduce((s, c) => s + c.seats, 0);
+  // Calculate stats
+  const selectedCandidates = candidates.filter(c => selectedDriverIds.has(c.id));
+  const venueCount = selectedCandidates.filter(c => window._parkingChoices[c.id] === 'venue').length;
+  const nearbyCount = selectedCandidates.filter(c => window._parkingChoices[c.id] === 'nearby').length;
+  const totalSeats = selectedCandidates.reduce((s, c) => s + c.seats, 0);
+  const totalRiders = candidates.filter(c => !selectedDriverIds.has(c.id)).reduce((s, c) => s + c.family_count, 0) + directs.length * 0; // directs don't need seats
+  const ridersNeedSeats = candidates.filter(c => !selectedDriverIds.has(c.id)).reduce((s, c) => s + c.family_count, 0);
+  const equipCars = selectedCandidates.filter(c => c.canCarryLarge).length;
+  const csTotal = selectedCandidates.reduce((s, c) => s + c.csCount, 0);
+  // CS needed from all riders
+  const csNeeded = Object.entries(rsvp).filter(([, r]) => r.attending === true && r.transport !== 'direct').reduce((s, [, r]) => s + (r.preschool_count || 0), 0);
   const overLimit = maxCars > 0 && selectedDriverIds.size > maxCars;
-  html += `<div id="driverSelectionStats" style="background:var(--bg);border-radius:var(--radius);padding:10px 14px;margin-bottom:12px;font-size:13px">
-    🚗 <strong>${selectedDriverIds.size}台</strong>${maxCars ? `<span style="color:${overLimit ? 'var(--danger)' : 'var(--text-sub)'}"> / 上限${maxCars}台</span>` : ''}（${totalSeats}席）← 🧑 <strong>${totalRiders}人</strong>が乗車希望
-    ${overLimit ? `<span style="color:var(--danger)"> ⚠ ${selectedDriverIds.size - maxCars}台超過</span>` : totalSeats < totalRiders ? `<span style="color:var(--danger)"> ⚠ ${totalRiders - totalSeats}席不足</span>` : `<span style="color:var(--success)"> ✅ 席は足りています</span>`}
+
+  // ── 上部サマリー ──
+  let html = `<div style="background:var(--bg);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px">
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px">📊 配車サマリー</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px">
+      <div>🅿️ 会場駐車：<strong style="color:${maxCars > 0 && venueCount > maxCars ? 'var(--danger)' : 'var(--text)'}">${venueCount}台</strong>${maxCars ? ` / 上限${maxCars}台` : ''}</div>
+      <div>🅿️ 近隣駐車：<strong>${nearbyCount}台</strong></div>
+      <div>💺 確保席数：<strong style="color:${totalSeats < ridersNeedSeats ? 'var(--danger)' : 'var(--success)'}">${totalSeats}席</strong></div>
+      <div>👥 必要席数：<strong>${ridersNeedSeats}席</strong></div>
+      <div>📦 荷物車：<strong>${equipCars}台</strong></div>
+      <div>🧸 CS：<strong style="color:${csTotal < csNeeded ? 'var(--danger)' : 'var(--text)'}">${csTotal}</strong> / 必要${csNeeded}</div>
+    </div>
+    ${overLimit ? `<div style="color:var(--danger);font-weight:600;margin-top:6px">⚠ 会場駐車${venueCount - maxCars}台超過！</div>` : ''}
+    ${totalSeats < ridersNeedSeats ? `<div style="color:var(--danger);font-weight:600;margin-top:6px">⚠ ${ridersNeedSeats - totalSeats}席不足！</div>` : ''}
   </div>`;
 
-  html += '<div id="driverCandidateList">';
-  candidates.forEach(c => {
+  // ── 配車可能メンバー ──
+  html += `<div style="font-size:13px;font-weight:700;color:var(--text-sub);margin-bottom:8px">🚗 配車可能メンバー（${driveCapable.length}人）</div>`;
+  html += '<div id="driverCandidateList" style="margin-bottom:16px">';
+  driveCapable.forEach(c => {
     const isSelected = selectedDriverIds.has(c.id);
-    const atLimit = maxCars > 0 && !isSelected && selectedDriverIds.size >= maxCars;
-    const zone = c.zone_id && zonesData[c.zone_id] ? zonesData[c.zone_id] : null;
+    const parkChoice = window._parkingChoices[c.id] || 'venue';
+    const zone = c.zone;
+    const zoneDot = zone ? `<span class="zone-dot" style="background:${escapeHtml(zone.color)}"></span>` : '';
     const eqBadge = c.hasNeededEquip ? '<span style="font-size:11px;background:#FEF3C7;color:#B45309;padding:1px 6px;border-radius:6px;margin-left:4px">📦機材</span>' : '';
-    const recBadge = c.priority >= 50 ? '<span style="font-size:11px;background:#ECFDF5;color:#059669;padding:1px 6px;border-radius:6px;margin-left:4px">おすすめ</span>' : '';
+    const largeBadge = c.canCarryLarge ? '<span style="font-size:11px;background:#FEF3C7;color:#B45309;padding:1px 6px;border-radius:6px;margin-left:4px">🚛荷物可</span>' : '';
+    const csBadge = c.csCount > 0 ? `<span style="font-size:11px;background:#E3F2FD;color:#1565C0;padding:1px 6px;border-radius:6px;margin-left:4px">🧸CS${c.csCount}</span>` : '';
+    const nearParkBadge = c.nearParking ? '<span style="font-size:11px;background:#FCE4EC;color:#C62828;padding:1px 6px;border-radius:6px;margin-left:4px">近隣希望</span>' : '';
+    const seatsFull = c.seats === 0;
 
-    html += `<div class="list-item" style="cursor:${atLimit ? 'not-allowed' : 'pointer'};opacity:${atLimit ? '0.4' : '1'};${isSelected ? 'background:var(--primary-light);border:1.5px solid var(--primary)' : 'border:1.5px solid transparent'};border-radius:var(--radius);padding:10px 12px;margin-bottom:6px"
-      onclick="${atLimit ? '' : `toggleDriverCandidate('${c.id}','${eventId}')`}">
-      <div style="display:flex;align-items:center;gap:8px;width:100%">
+    html += `<div style="border-radius:var(--radius);padding:10px 12px;margin-bottom:6px;${isSelected ? 'background:var(--accent-light);border:1.5px solid var(--accent)' : 'background:var(--bg-card);border:1.5px solid var(--border)'};${seatsFull && !isSelected ? 'opacity:0.6' : ''}">
+      <div style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="toggleDriverCandidate('${c.id}','${eventId}')">
         <span style="font-size:18px">${isSelected ? '☑️' : '⬜'}</span>
         <div style="flex:1">
-          <div style="font-weight:600;font-size:14px">${escapeHtml(c.name)}${zone ? ' <span style="font-size:11px;color:var(--text-sub)">(' + escapeHtml(zone.name) + ')</span>' : ''}</div>
+          <div style="font-weight:600;font-size:14px">${zoneDot}${escapeHtml(c.name)}${zone ? ' <span style="font-size:11px;color:var(--text-sub)">(' + escapeHtml(zone.name) + ')</span>' : ''}</div>
           <div style="font-size:12px;color:var(--text-sub);margin-top:2px">
-            ${c.seats}席空き${c.family_count > 1 ? ' / 家族' + c.family_count + '人' : ''}
-            ${eqBadge}${recBadge}
+            ${c.seats}席空き${seatsFull ? '（満席）' : ''}${c.family_count > 1 ? ' / 家族' + c.family_count + '人' : ''}
+            ${eqBadge}${largeBadge}${csBadge}${nearParkBadge}
           </div>
         </div>
       </div>
+      ${isSelected ? `<div style="display:flex;gap:8px;margin-top:8px;margin-left:30px">
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;padding:4px 10px;border-radius:8px;${parkChoice === 'venue' ? 'background:#E3F2FD;color:#1565C0;font-weight:600' : 'background:var(--bg);color:var(--text-sub)'}" onclick="event.stopPropagation();setParking('${c.id}','venue','${eventId}')">🅿️会場</label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;padding:4px 10px;border-radius:8px;${parkChoice === 'nearby' ? 'background:#FFF3E0;color:#E65100;font-weight:600' : 'background:var(--bg);color:var(--text-sub)'}" onclick="event.stopPropagation();setParking('${c.id}','nearby','${eventId}')">🅿️近隣</label>
+      </div>` : ''}
     </div>`;
   });
   html += '</div>';
 
+  // ── 乗車メンバー ──
+  if (rideOnly.length > 0) {
+    html += `<div style="font-size:13px;font-weight:700;color:var(--text-sub);margin-bottom:8px">🧑 乗車メンバー（${rideOnly.length}人）</div>`;
+    rideOnly.forEach(c => {
+      const zone = c.zone;
+      const zoneDot = zone ? `<span class="zone-dot" style="background:${escapeHtml(zone.color)}"></span>` : '';
+      html += `<div style="background:var(--bg);border-radius:var(--radius);padding:8px 12px;margin-bottom:4px;font-size:13px">
+        ${zoneDot}${escapeHtml(c.name)} <span style="color:var(--text-sub)">${c.family_count}人</span>
+        ${c.nearParking ? '<span style="font-size:11px;background:#FCE4EC;color:#C62828;padding:1px 6px;border-radius:6px;margin-left:4px">近隣希望</span>' : ''}
+      </div>`;
+    });
+  }
+
+  // ── 現地集合メンバー ──
+  if (directs.length > 0) {
+    html += `<div style="font-size:13px;font-weight:700;color:var(--text-sub);margin:12px 0 8px">🏃 現地集合（${directs.length}人）</div>`;
+    directs.forEach(d => {
+      html += `<div style="background:var(--bg);border-radius:var(--radius);padding:8px 12px;margin-bottom:4px;font-size:13px">${escapeHtml(d.name)}</div>`;
+    });
+  }
+
   document.getElementById('assignContent').innerHTML = html;
-  const overLimitNow = maxCars > 0 && selectedDriverIds.size > maxCars;
+  const venueOverLimit = maxCars > 0 && venueCount > maxCars;
   document.getElementById('assignActions').innerHTML = `
-    <button class="btn btn-primary" onclick="runAssignmentWithSelected('${eventId}')" ${selectedDriverIds.size === 0 || overLimitNow ? 'disabled' : ''}>🚗 乗客を割り振る（${selectedDriverIds.size}台）</button>
+    <button class="btn btn-secondary btn-small" onclick="showPriorityRules()" style="margin-bottom:8px;width:100%">📋 優先ルール</button>
+    <button class="btn btn-primary" onclick="runAssignmentWithSelected('${eventId}')" ${selectedDriverIds.size === 0 || venueOverLimit ? 'disabled' : ''}>🚗 乗客を割り振る（${selectedDriverIds.size}台）</button>
     <button class="btn btn-outline" onclick="closeModal('assignModal')" style="margin-top:8px">キャンセル</button>`;
 
-  // Store candidates & directs for later
   window._driverCandidates = candidates;
   window._directMembers = directs;
   openModal('assignModal');
 }
 
+function setParking(memberId, type, eventId) {
+  if (!window._parkingChoices) window._parkingChoices = {};
+  window._parkingChoices[memberId] = type;
+  showDriverSelection(eventId);
+}
+
+function showPriorityRules() {
+  openModal('priorityRulesModal');
+}
+
 function toggleDriverCandidate(memberId, eventId) {
   if (selectedDriverIds.has(memberId)) {
     selectedDriverIds.delete(memberId);
+    if (window._parkingChoices) delete window._parkingChoices[memberId];
   } else {
     selectedDriverIds.add(memberId);
+    // Default parking based on near_parking preference
+    if (!window._parkingChoices) window._parkingChoices = {};
+    const rsvp = eventsData[eventId]?.rsvp?.[memberId];
+    window._parkingChoices[memberId] = rsvp?.near_parking ? 'nearby' : 'venue';
   }
-  // Re-render without resetting selection
   showDriverSelection(eventId);
 }
 
@@ -3279,15 +3402,43 @@ function showManualAssignUI(eventId, drivers, riders, directs) {
   window._manualRiders = riders;
   window._manualDirects = directs;
   window._manualAssign = {};
+
+  // Generate AI suggestions
+  generateAISuggestion(drivers, riders);
   renderManualAssignUI(eventId);
+}
+
+function generateAISuggestion(drivers, riders) {
+  window._aiSuggestion = {};
+  const tempDrivers = drivers.map(d => ({ ...d, tempSeats: d.available_seats }));
+  const sortedRiders = [...riders].sort((a, b) => (b.seats_needed || b.family_count || 1) - (a.seats_needed || a.family_count || 1));
+
+  sortedRiders.forEach(r => {
+    let bestDriver = null, bestScore = -Infinity;
+    tempDrivers.forEach(d => {
+      if (d.tempSeats < (r.seats_needed || r.family_count || 1)) return;
+      const score = calcPairScore(d, r);
+      // Bonus for nearby members
+      const mem = membersData[r.id];
+      const driverMem = membersData[d.id];
+      let nearBonus = 0;
+      if (mem?.nearby_members?.includes(d.id) || driverMem?.nearby_members?.includes(r.id)) nearBonus = 25;
+      if (score + nearBonus > bestScore) { bestScore = score + nearBonus; bestDriver = d; }
+    });
+    if (bestDriver) {
+      window._aiSuggestion[r.id] = bestDriver.id;
+      bestDriver.tempSeats -= (r.seats_needed || r.family_count || 1);
+    }
+  });
 }
 
 function renderManualAssignUI(eventId) {
   const drivers = window._manualDrivers;
   const riders = window._manualRiders;
   const assign = window._manualAssign;
+  const e = eventsData[eventId];
+  const rsvp = e?.rsvp || {};
 
-  // Calculate seat usage per driver
   const seatUsed = {};
   drivers.forEach(d => { seatUsed[d.id] = 0; });
   riders.forEach(r => {
@@ -3297,52 +3448,107 @@ function renderManualAssignUI(eventId) {
 
   let html = '';
 
-  // Driver seat summary
+  // AI suggestion banner
+  if (window._aiSuggestion && Object.keys(window._aiSuggestion).length > 0 && Object.keys(assign).length === 0) {
+    html += `<div style="background:#E8F5E9;border:1px solid var(--accent);border-radius:var(--radius);padding:10px 14px;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:6px">🤖 AI候補</div>`;
+    drivers.forEach(d => {
+      const suggestedRiders = riders.filter(r => window._aiSuggestion[r.id] === d.id);
+      if (suggestedRiders.length > 0) {
+        html += `<div style="font-size:12px;margin-bottom:2px">🚗 ${escapeHtml(d.name)}号　${suggestedRiders.map(r => escapeHtml(r.name)).join('、')}</div>`;
+      }
+    });
+    html += `<button class="btn btn-small btn-secondary" onclick="applyAISuggestion('${eventId}')" style="margin-top:8px;width:100%">AI候補を適用</button>
+    </div>`;
+  }
+
+  // Driver seat summary with CS info
   html += '<div style="margin-bottom:16px">';
-  html += '<div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">🚗 車の空き席状況</div>';
-  html += '<div style="display:flex;flex-wrap:wrap;gap:8px">';
+  html += '<div style="font-size:13px;font-weight:700;color:var(--text-sub);margin-bottom:8px">🚗 車の空き席状況</div>';
   drivers.forEach(d => {
     const avail = d.available_seats - seatUsed[d.id];
     const color = avail < 0 ? 'var(--danger)' : avail === 0 ? 'var(--text-sub)' : 'var(--success)';
-    html += `<div style="background:var(--bg);border-radius:var(--radius);padding:6px 12px;font-size:13px">
-      🚗 <strong>${escapeHtml(d.name)}</strong>
+    const zone = d.zone_id && zonesData[d.zone_id] ? zonesData[d.zone_id] : null;
+    const zoneDot = zone ? `<span class="zone-dot" style="background:${escapeHtml(zone.color)}"></span>` : '';
+    const mem = membersData[d.id];
+    const csInfo = mem?.childseat_count > 0 ? `　CS${mem.childseat_count}席` : '';
+    html += `<div style="background:var(--bg);border-radius:var(--radius);padding:8px 12px;font-size:13px;margin-bottom:4px">
+      ${zoneDot}🚗 <strong>${escapeHtml(d.name)}</strong>
       <span style="color:${color};margin-left:6px">空き${avail}席</span>
+      ${d.available_seats > 0 ? `<span style="color:var(--text-light);font-size:11px">（内CS空き${mem?.childseat_count || 0}席）</span>` : ''}
     </div>`;
   });
-  html += '</div></div>';
+  html += '</div>';
 
-  // Rider assignment dropdowns
-  html += '<div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">🧑 どの車に乗るか選んでください</div>';
-  riders.forEach(r => {
+  // Rider list - sorted by seats_needed desc
+  const sortedRiders = [...riders].sort((a, b) => (b.seats_needed || b.family_count || 1) - (a.seats_needed || a.family_count || 1));
+
+  html += '<div style="font-size:13px;font-weight:700;color:var(--text-sub);margin-bottom:8px">🧑 どの車に乗るか選んでください</div>';
+  sortedRiders.forEach(r => {
     const selected = assign[r.id] || '';
-    html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
-      <span style="font-size:14px">${escapeHtml(r.name)}${r.family_count > 1 ? `<span style="font-size:11px;color:var(--text-sub);margin-left:4px">(${r.family_count}人)</span>` : ''}</span>
+    const mem = membersData[r.id];
+    const rsvpR = rsvp[r.id] || {};
+    const zone = mem?.zone_id && zonesData[mem.zone_id] ? zonesData[mem.zone_id] : null;
+    const zoneDot = zone ? `<span class="zone-dot" style="background:${escapeHtml(zone.color)}"></span>` : '';
+
+    // Build detail string: 親2子1（3席）内CS1席 テントあり
+    const adults = rsvpR.adult_count || 0;
+    const children = rsvpR.child_count || (r.family_count > 0 ? 1 : 0);
+    const preschool = rsvpR.preschool_count || 0;
+    const totalSeats = r.seats_needed || r.family_count || 1;
+    let detailParts = [];
+    if (adults > 0) detailParts.push(`親${adults}`);
+    if (children > 0) detailParts.push(`子${children}`);
+    if (preschool > 0) detailParts.push(`未就学${preschool}`);
+    let detailStr = detailParts.length > 0 ? `${detailParts.join('')}（${totalSeats}席）` : `${totalSeats}席`;
+    if (preschool > 0) detailStr += ` 内CS${preschool}席`;
+    if (rsvpR.bring_equipment && Object.keys(rsvpR.bring_equipment).length > 0) {
+      const eqNames = Object.keys(rsvpR.bring_equipment).map(eid => equipmentTypesData[eid]?.name || '').filter(Boolean);
+      if (eqNames.length > 0) detailStr += ` ${eqNames.join('・')}あり`;
+    }
+
+    html += `<div style="padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:14px">${zoneDot}<strong>${escapeHtml(r.name)}</strong> <span style="font-size:11px;color:var(--text-sub)">${detailStr}</span></span>
+      </div>
       <select onchange="setManualAssign('${r.id}', this.value, '${eventId}')"
-        style="background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:13px">
+        style="width:100%;background:var(--bg-card);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px">
         <option value="">-- 車を選択 --</option>
         ${drivers.map(d => {
           const avail = d.available_seats - seatUsed[d.id];
           const isCurrent = selected === d.id;
-          const riderSeats = r.family_count || 1;
+          const riderSeats = r.seats_needed || r.family_count || 1;
           const wouldOverflow = !isCurrent && avail < riderSeats;
-          return `<option value="${d.id}" ${isCurrent ? 'selected' : ''} ${wouldOverflow ? 'disabled' : ''}>${escapeHtml(d.name)}（空き${avail}席）${wouldOverflow ? '※満席' : ''}</option>`;
+          const driverMem = membersData[d.id];
+          const isNearby = mem?.nearby_members?.includes(d.id) || driverMem?.nearby_members?.includes(r.id);
+          const dZone = d.zone_id && zonesData[d.zone_id] ? zonesData[d.zone_id] : null;
+          const nearLabel = isNearby ? '　近い' : '';
+          const csLabel = driverMem?.childseat_count > 0 ? `　CS${driverMem.childseat_count}席` : '';
+          return `<option value="${d.id}" ${isCurrent ? 'selected' : ''} ${wouldOverflow ? 'disabled' : ''}>${escapeHtml(d.name)}（空き${avail}席）${csLabel}${nearLabel}${wouldOverflow ? '※満席' : ''}</option>`;
         }).join('')}
       </select>
     </div>`;
   });
 
   if (window._manualDirects && window._manualDirects.length > 0) {
-    html += `<div style="margin-top:12px;font-size:12px;color:var(--text-sub)">🚶 直接現地: ${window._manualDirects.map(d => escapeHtml(d.name)).join('、')}</div>`;
+    html += `<div style="margin-top:12px;font-size:12px;color:var(--text-sub)">🏃 現地集合: ${window._manualDirects.map(d => escapeHtml(d.name)).join('、')}</div>`;
   }
 
   document.getElementById('assignContent').innerHTML = html;
 
   const unassignedCount = riders.filter(r => !assign[r.id]).length;
   document.getElementById('assignActions').innerHTML = `
-    <button class="btn btn-primary" onclick="confirmManualAssign('${eventId}')" ${unassignedCount > 0 ? 'disabled' : ''}>
-      🚗 配車を確定する${unassignedCount > 0 ? `（${unassignedCount}人未割り当て）` : ''}
+    <button class="btn btn-secondary btn-small" onclick="showPriorityRules()" style="margin-bottom:8px;width:100%">📋 優先ルール</button>
+    <button class="btn btn-primary" onclick="showAssignConfirmation('${eventId}')" ${unassignedCount > 0 ? 'disabled' : ''}>
+      ✅ 確認する${unassignedCount > 0 ? `（${unassignedCount}人未割り当て）` : ''}
     </button>
     <button class="btn btn-outline" onclick="showDriverSelection('${eventId}')" style="margin-top:8px">← ドライバー選択に戻る</button>`;
+}
+
+function applyAISuggestion(eventId) {
+  const suggestion = window._aiSuggestion || {};
+  window._manualAssign = { ...suggestion };
+  renderManualAssignUI(eventId);
 }
 
 function setManualAssign(riderId, driverId, eventId) {
@@ -3354,7 +3560,125 @@ function setManualAssign(riderId, driverId, eventId) {
   renderManualAssignUI(eventId);
 }
 
-function confirmManualAssign(eventId) {
+function showAssignConfirmation(eventId) {
+  const drivers = window._manualDrivers;
+  const riders = window._manualRiders;
+  const directs = window._manualDirects || [];
+  const assign = window._manualAssign;
+  const e = eventsData[eventId];
+  const rsvp = e?.rsvp || {};
+
+  const driverMap = {};
+  drivers.forEach(d => { driverMap[d.id] = { ...d, passengers: [] }; });
+
+  const unassigned = [];
+  riders.forEach(r => {
+    const dId = assign[r.id];
+    if (dId && driverMap[dId]) {
+      driverMap[dId].passengers.push(r);
+    } else {
+      unassigned.push(r);
+    }
+  });
+
+  Object.values(driverMap).forEach(d => {
+    d.available_seats = d.original_seats - d.passengers.reduce((s, p) => s + (p.family_count || 1), 0);
+  });
+
+  // ── チェック項目 ──
+  const maxCars = e?.max_cars || 0;
+  const parkingChoices = window._parkingChoices || {};
+  const venueCount = Object.values(driverMap).filter(d => parkingChoices[d.id] === 'venue' || !parkingChoices[d.id]).length;
+  const nearbyParkCount = Object.values(driverMap).filter(d => parkingChoices[d.id] === 'nearby').length;
+  const totalEmptySeats = Object.values(driverMap).reduce((s, d) => s + Math.max(0, d.available_seats), 0);
+
+  // 荷物車チェック
+  const eqNeeded = e?.equipment_needed ? Object.entries(e.equipment_needed).filter(([,q]) => q > 0) : [];
+  const equipDrivers = Object.values(driverMap).filter(d => {
+    const mem = membersData[d.id];
+    return mem?.can_carry_large;
+  });
+  const hasEquipCar = eqNeeded.length === 0 || equipDrivers.length > 0;
+
+  // CSチェック
+  const csNeeded = riders.reduce((s, r) => {
+    const rv = rsvp[r.id];
+    return s + (rv?.preschool_count || 0);
+  }, 0);
+  const csAvailable = Object.values(driverMap).reduce((s, d) => {
+    const mem = membersData[d.id];
+    return s + (mem?.childseat_count || 0);
+  }, 0);
+
+  // 近隣希望チェック
+  const nearParkingRiders = riders.filter(r => rsvp[r.id]?.near_parking);
+  const nearParkingOk = nearParkingRiders.length === 0 || nearParkCount > 0;
+
+  const checks = [
+    { label: '未割当', value: `${unassigned.length}人`, ok: unassigned.length === 0 },
+    { label: '会場駐車', value: maxCars > 0 ? `${venueCount}/${maxCars}` : `${venueCount}台`, ok: maxCars === 0 || venueCount <= maxCars },
+    { label: '近隣駐車', value: `${nearbyParkCount}台`, ok: true },
+    { label: '荷物車', value: hasEquipCar ? 'OK' : '不足', ok: hasEquipCar },
+    { label: 'チャイルドシート', value: csNeeded > 0 ? (csAvailable >= csNeeded ? 'OK' : `${csAvailable}/${csNeeded}`) : '不要', ok: csNeeded === 0 || csAvailable >= csNeeded },
+    { label: '空席合計', value: `${totalEmptySeats}席`, ok: totalEmptySeats <= drivers.length * 2 },
+  ];
+
+  let html = `<div style="font-size:15px;font-weight:700;margin-bottom:12px">📋 配車確認</div>`;
+
+  // Check items
+  html += '<div style="background:var(--bg);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px">';
+  checks.forEach(c => {
+    const color = c.ok ? 'var(--text)' : 'var(--danger)';
+    const icon = c.ok ? '✅' : '❌';
+    html += `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:14px;color:${color}">
+      <span>${icon} ${c.label}</span>
+      <strong>${c.value}</strong>
+    </div>`;
+  });
+  html += '</div>';
+
+  // Assignment preview
+  Object.values(driverMap).forEach(d => {
+    const zone = d.zone_id && zonesData[d.zone_id] ? zonesData[d.zone_id] : null;
+    const zoneDot = zone ? `<span class="zone-dot" style="background:${escapeHtml(zone.color)}"></span>` : '';
+    const usedSeats = d.original_seats - d.available_seats;
+    const parkType = parkingChoices[d.id] === 'nearby' ? '🅿️近隣' : '🅿️会場';
+    html += `<div style="background:var(--bg-card);border-radius:var(--radius);padding:10px 14px;margin-bottom:8px;border-left:3px solid var(--accent)">
+      <div style="font-weight:700;font-size:14px">${zoneDot}🚗 ${escapeHtml(d.name)}家 <span style="font-size:12px;color:var(--text-sub)">${usedSeats}/${d.original_seats}席 ${parkType}</span></div>
+      ${d.passengers.length > 0 ? d.passengers.map(p => {
+        const pZone = p.zone_id && zonesData[p.zone_id] ? zonesData[p.zone_id] : null;
+        const pZoneDot = pZone ? `<span class="zone-dot" style="background:${escapeHtml(pZone.color)}"></span>` : '';
+        return `<div style="padding-left:20px;font-size:13px;color:var(--text-sub)">${pZoneDot}${escapeHtml(p.name)}（${p.family_count || 1}人）</div>`;
+      }).join('') : '<div style="padding-left:20px;font-size:13px;color:var(--text-light)">乗客なし</div>'}
+    </div>`;
+  });
+
+  if (directs.length > 0) {
+    html += `<div style="background:var(--bg);border-radius:var(--radius);padding:10px 14px;margin-bottom:8px">
+      <div style="font-weight:700;font-size:13px">🏃 現地集合</div>
+      <div style="font-size:13px;color:var(--text-sub)">${directs.map(d => escapeHtml(d.name)).join('、')}</div>
+    </div>`;
+  }
+
+  if (unassigned.length > 0) {
+    html += `<div style="background:#fce4ec;border-radius:var(--radius);padding:10px 14px;margin-bottom:8px">
+      <div style="font-weight:700;font-size:13px;color:var(--danger)">❌ 未割り当て</div>
+      <div style="font-size:13px">${unassigned.map(r => escapeHtml(r.name)).join('、')}</div>
+    </div>`;
+  }
+
+  document.getElementById('assignContent').innerHTML = html;
+
+  const hasProblems = checks.some(c => !c.ok);
+  document.getElementById('assignActions').innerHTML = `
+    <button class="btn btn-primary" onclick="finalizeAssignment('${eventId}')" style="${hasProblems ? 'background:var(--warning)' : ''}">
+      ${hasProblems ? '⚠ 問題ありで確定する' : '✅ 配車を確定'}
+    </button>
+    <button class="btn btn-outline" onclick="renderManualAssignUI('${eventId}')" style="margin-top:8px">← 割り振りに戻る</button>
+    <button class="btn btn-outline" onclick="closeModal('assignModal')" style="margin-top:8px">キャンセル</button>`;
+}
+
+function finalizeAssignment(eventId) {
   const drivers = window._manualDrivers;
   const riders = window._manualRiders;
   const directs = window._manualDirects || [];
@@ -3384,7 +3708,12 @@ function confirmManualAssign(eventId) {
     warnings: unassigned.length > 0 ? [`⚠ ${unassigned.length}人が未割り当て`] : []
   };
   currentAssignEventId = eventId;
-  showAssignmentResult();
+  confirmAssignment(eventId);
+}
+
+function confirmManualAssign(eventId) {
+  // Legacy: redirect to new flow
+  showAssignConfirmation(eventId);
 }
 
 // Scoring function: driver × rider pair
@@ -4129,7 +4458,7 @@ function renderTournamentCard(id, t) {
 
   const rankSuffix = t.rank_tie ? '位タイ' : '位';
   const youtubeCount = (t.youtube_links || []).length;
-  return `<div class="tournament-card" onclick="editTournament('${id}')">
+  return `<div class="tournament-card" onclick="showTournamentDetail('${id}')">
     <div style="display:flex;align-items:flex-start;gap:12px">
       <div style="text-align:center;min-width:50px">
         ${t.team_rank ? `<div class="tournament-rank">${t.team_rank}<span class="tournament-rank-sub">${rankSuffix}</span></div>
@@ -4214,6 +4543,65 @@ function openTournamentModal(id) {
 
 function editTournament(id) { openTournamentModal(id); }
 
+function showTournamentDetail(id) {
+  const t = tournamentsData[id];
+  if (!t) return;
+  const typeLabels = { official: '公式', friendly: '練習試合', practice: '紅白戦' };
+  const dateStr = formatEventDate(t.date);
+  const scores = t.scores || [];
+
+  let html = '';
+  html += `<div style="font-size:18px;font-weight:800;margin-bottom:8px">${escapeHtml(t.name || '大会')}</div>`;
+  html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:4px">📅 ${dateStr}${t.location ? ' 📍 '+escapeHtml(t.location) : ''}</div>`;
+  html += `<div style="margin-bottom:12px"><span class="badge" style="background:#e3f2fd;color:#1976d2">${typeLabels[t.type] || '大会'}</span></div>`;
+
+  if (t.team_rank) {
+    const rankSuffix = t.rank_tie ? '位タイ' : '位';
+    html += `<div style="font-size:15px;font-weight:700;margin-bottom:12px">🏆 ${t.team_rank}${rankSuffix}${t.total_teams ? ' / '+t.total_teams+'チーム中' : ''}</div>`;
+  }
+
+  if (scores.length > 0) {
+    html += '<div style="margin-bottom:12px">';
+    html += '<div style="font-size:13px;font-weight:700;color:var(--text-sub);margin-bottom:6px">試合結果</div>';
+    scores.forEach((s, i) => {
+      const cls = s.result === 'win' ? 'color:var(--success)' : s.result === 'lose' ? 'color:var(--danger)' : 'color:var(--warning)';
+      const mark = s.result === 'win' ? '○' : s.result === 'lose' ? '●' : '△';
+      html += `<div style="padding:8px 12px;background:var(--bg);border-radius:8px;margin-bottom:4px;cursor:pointer" onclick="this.querySelector('.match-detail-expand').classList.toggle('hidden')">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="${cls};font-weight:700">${mark} VS ${escapeHtml(s.opponent || '?')}</span>
+          <span style="font-size:14px;font-weight:600">${escapeHtml(s.score || '')}</span>
+        </div>
+        <div class="match-detail-expand hidden" style="margin-top:6px;font-size:12px;color:var(--text-sub)">
+          ${s.scorers ? '⚽ 得点者: '+escapeHtml(s.scorers) : 'データなし'}
+        </div>
+      </div>`;
+    });
+    const wins = scores.filter(s => s.result === 'win').length;
+    const losses = scores.filter(s => s.result === 'lose').length;
+    const draws = scores.filter(s => s.result === 'draw').length;
+    html += `<div style="font-size:12px;color:var(--text-sub);margin-top:4px">${wins}勝${losses}敗${draws > 0 ? draws+'分' : ''}</div>`;
+    html += '</div>';
+  }
+
+  if (t.mvp) html += `<div style="font-size:14px;margin-bottom:8px">🌟 MVP: <strong>${escapeHtml(t.mvp)}</strong></div>`;
+  if (t.memo) html += `<div style="font-size:13px;color:var(--text-sub);background:var(--bg);border-radius:8px;padding:10px;margin-bottom:8px">${escapeHtml(t.memo)}</div>`;
+
+  if (t.youtube_links && t.youtube_links.length > 0) {
+    html += '<div style="margin-bottom:8px">';
+    t.youtube_links.forEach(url => {
+      html += `<a href="${escapeHtml(url)}" target="_blank" style="display:block;font-size:13px;color:#c00;margin-bottom:4px">▶ ${escapeHtml(url)}</a>`;
+    });
+    html += '</div>';
+  }
+
+  document.getElementById('tournamentDetailContent').innerHTML = html;
+  document.getElementById('tournamentDetailEditBtn').onclick = () => {
+    closeModal('tournamentDetailModal');
+    setTimeout(() => editTournament(id), 200);
+  };
+  openModal('tournamentDetailModal');
+}
+
 async function createTournamentForEvent(eventId) {
   const ev = eventsData[eventId];
   if (!ev) return;
@@ -4241,7 +4629,7 @@ function addTournamentMatch(score, opponent, result, scorers) {
       <input type="text" class="match-score" placeholder="□-□" value="${escapeHtml(score || '')}" style="width:60px;text-align:center">
       <button class="btn-icon btn-outline" onclick="this.closest('.match-input-row').remove()" style="font-size:14px;width:36px;height:36px;flex-shrink:0">✕</button>
     </div>
-    <input type="text" class="match-scorers" placeholder="得点者（例: りょうま、いっさ）" value="${escapeHtml(scorers || '')}" style="font-size:13px">`;
+    <input type="text" class="match-scorers" placeholder="得点者（例：たろう、じろう）" value="${escapeHtml(scorers || '')}" style="font-size:13px">`;
   c.appendChild(row);
 }
 
