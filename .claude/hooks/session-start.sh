@@ -10,6 +10,15 @@ fi
 
 FIREBASE_URL="https://viisi-master-app-default-rtdb.firebaseio.com"
 
+# --- .env 自動復元（Firebaseから） ---
+if [ ! -f ".env" ]; then
+  ENV_DATA=$(curl -sf "${FIREBASE_URL}/config/env-store.json" 2>/dev/null || echo "null")
+  if [ "$ENV_DATA" != "null" ] && [ -n "$ENV_DATA" ]; then
+    python3 tools/env-setup.py --restore 2>/dev/null && \
+      echo "[env] .env を自動復元しました" || true
+  fi
+fi
+
 # --- 汎用キューチェック関数 ---
 check_queue() {
   local path="$1" name="$2" python_fmt="$3" instructions="$4"
