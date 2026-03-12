@@ -2,6 +2,10 @@
 """
 Todoist Inbox 自動トリアージ
 macOS launchd から2時間おきに実行される
+
+ルール:
+  「メモ: 〜」→ sp-brain/inbox/に転記 → Todoistから削除
+  それ以外   → 内容でGemini判定 → 適切なプロジェクトへ移動
 """
 
 import os
@@ -9,6 +13,7 @@ import json
 import urllib.request
 import urllib.error
 from pathlib import Path
+from datetime import datetime
 
 # .envから読み込み
 env_path = Path(__file__).parent.parent / '.env'
@@ -39,6 +44,35 @@ def todoist_get(path):
     with urllib.request.urlopen(req) as r:
         data = json.loads(r.read())
         return data.get('results', data) if isinstance(data, dict) else data
+
+INBOX_DIR = Path(__file__).parent.parent / 'sp-brain' / 'inbox'
+MEMO_PREFIXES = ('メモ:', 'メモ：', 'memo:', 'MEMO:')
+
+def is_memo(content):
+    return any(content.startswith(p) for p in MEMO_PREFIXES)
+
+def save_memo(content, description=''):
+    """sp-brain/inbox/にメモを保存"""
+    body = content
+    for p in MEMO_PREFIXES:
+        if body.startswith(p):
+            body = body[len(p):].strip()
+            break
+    date = datetime.now().strftime('%Y%m%d-%H%M')
+    slug = body[:20].replace(' ', '-').replace('/', '-')
+    filename = f'memo-{date}-{slug}.md'
+    text = f'# {body}\n\n{description}\n' if description else f'# {body}\n'
+    (INBOX_DIR / filename).write_text(text, encoding='utf-8')
+    return filename
+
+def todoist_delete(task_id):
+    req = urllib.request.Request(
+        f'{TODOIST_API}/tasks/{task_id}',
+        headers={'Authorization': f'Bearer {TODOIST_TOKEN}'},
+        method='DELETE'
+    )
+    with urllib.request.urlopen(req) as r:
+        return r.status
 
 def todoist_move(task_id, project_id):
     body = json.dumps({'project_id': project_id}).encode()
@@ -104,10 +138,15 @@ def main():
         content = task.get('content', '')
         description = task.get('description', '')
         try:
-            key = classify(content, description)
-            project_id = PROJECTS[key]
-            todoist_move(task['id'], project_id)
-            print(f'✓ 「{content}」→ {key}')
+            if is_memo(content):
+                filename = save_memo(content, description)
+                todoist_delete(task['id'])
+                print(f'📝 メモ保存: {filename}')
+            else:
+                key = classify(content, description)
+                project_id = PROJECTS[key]
+                todoist_move(task['id'], project_id)
+                print(f'✓ 「{content}」→ {key}')
         except Exception as e:
             print(f'✗ 「{content}」エラー: {e}')
 
