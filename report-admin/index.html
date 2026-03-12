@@ -448,8 +448,9 @@ function renderCalendar() {
     let cls = 'cal-day current-month';
     if (hasData) cls += ' has-report';
     if (isToday) cls += ' today';
-    const onclick = hasData ? `onclick="openReport('${dateStr}')"` : '';
-    const headline = hasData && report?.summary?.headline ? `<span class="cal-headline">${esc(report.summary.headline)}</span>` : '';
+    const onclick = (hasData || isToday) ? `onclick="openReport('${dateStr}')" style="cursor:pointer"` : '';
+    const headline = hasData && report?.summary?.headline ? `<span class="cal-headline">${esc(report.summary.headline)}</span>`
+                   : isToday && !hasData ? `<span class="cal-headline" style="color:var(--warn)">集計中</span>` : '';
     html += `<div class="${cls}" ${onclick}>${d}${headline}</div>`;
   }
 
@@ -479,12 +480,41 @@ function reportNav(dir) {
   loadReport(input.value);
 }
 
-function loadReport(dateStr) {
+async function loadReport(dateStr) {
   const container = document.getElementById('reportContent');
   const report = allReports[dateStr];
 
   if (!report || (report.stats?.total_commits || 0) === 0) {
-    container.innerHTML = `<div class="empty">${report ? 'この日はオフ' : 'データなし'}（${dateStr}）</div>`;
+    // daily-activities フォールバック
+    container.innerHTML = `<div class="empty"><span class="spinner"></span> 活動ログを確認中...</div>`;
+    try {
+      const r = await fetch(`${FIREBASE_URL}/daily-activities/${dateStr}.json`);
+      const acts = await r.json();
+      if (acts && Object.keys(acts).length > 0) {
+        const entries = Object.values(acts).sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+        let html = `<div class="headline-card" style="border-left:4px solid var(--warn)">
+          <h2>📋 ${dateStr} の活動ログ</h2>
+          <div class="summary-body" style="color:var(--dim);font-size:0.8rem">Gitコミットなし・セッション活動のみ（GAS日報は翌4時生成）</div>
+        </div>
+        <div class="card"><h3>活動タイムライン</h3>`;
+        entries.forEach(e => {
+          html += `<div class="product-card"><div class="product-header">
+            <div class="product-dot" style="background:var(--warn)"></div>
+            <div class="product-name" style="color:var(--warn)">${esc(e.time || '--:--')}</div>
+          </div><ul class="product-items">`;
+          (e.items || []).forEach(item => {
+            html += `<li><span class="feat-label">+</span> ${esc(item)}</li>`;
+          });
+          html += `</ul></div>`;
+        });
+        html += `</div>`;
+        container.innerHTML = html;
+      } else {
+        container.innerHTML = `<div class="empty">${report ? 'この日はオフ' : '活動なし'}（${dateStr}）</div>`;
+      }
+    } catch {
+      container.innerHTML = `<div class="empty">${report ? 'この日はオフ' : 'データなし'}（${dateStr}）</div>`;
+    }
     return;
   }
 
