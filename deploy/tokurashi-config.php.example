@@ -1,0 +1,8 @@
+<?php
+/**
+ * トクラシ設定ファイル（テンプレート）
+ * 実際のファイルは tokurashi-config.php として ConoHa WING サーバーに配置
+ * ※ gitignore済み
+ */
+define('GEMINI_API_KEY', 'your-gemini-api-key-here');
+define('PEXELS_API_KEY', 'your-pexels-api-key-here');
