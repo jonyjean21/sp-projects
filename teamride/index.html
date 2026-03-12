@@ -2213,7 +2213,8 @@ function renderTeamStats(active, past) {
       if (r.transport === 'drive') {
         driverCount++;
         totalDriverSeats += r.extra_seats || 0;
-        csAvailable += mem.childseat_count || 0;
+        const driverPreschool = r.preschool_count || 0;
+        csAvailable += Math.max(0, (mem.childseat_count || 0) - driverPreschool);
       } else if (r.transport === 'ride') {
         totalRiderSeats += calcSeatsNeeded(mid, r);
         preschoolNeeds += r.preschool_count || 0;
@@ -3477,9 +3478,13 @@ function showDriverSelection(eventId) {
   const totalRiders = candidates.filter(c => !selectedDriverIds.has(c.id)).reduce((s, c) => s + c.family_count, 0) + directs.length * 0; // directs don't need seats
   const ridersNeedSeats = candidates.filter(c => !selectedDriverIds.has(c.id)).reduce((s, c) => s + c.family_count, 0);
   const equipCars = selectedCandidates.filter(c => c.canCarryLarge).length;
-  const csTotal = selectedCandidates.reduce((s, c) => s + c.csCount, 0);
-  // CS needed from all riders
-  const csNeeded = Object.entries(rsvp).filter(([, r]) => r.attending === true && r.transport !== 'direct').reduce((s, [, r]) => s + (r.preschool_count || 0), 0);
+  // CS: ドライバー自身の未就学児分を差し引いた「ライダーに提供可能なCS数」
+  const csTotal = selectedCandidates.reduce((s, c) => {
+    const driverPreschool = rsvp[c.id]?.preschool_count || 0;
+    return s + Math.max(0, c.csCount - driverPreschool);
+  }, 0);
+  // CS必要数: ライダー（非ドライバー・非現地集合）の未就学児のみ
+  const csNeeded = candidates.filter(c => !selectedDriverIds.has(c.id)).reduce((s, c) => s + (rsvp[c.id]?.preschool_count || 0), 0);
   const overLimit = maxCars > 0 && selectedDriverIds.size > maxCars;
 
   // ── 上部サマリー ──
@@ -3718,10 +3723,12 @@ function renderManualAssignUI(eventId) {
     const zone = d.zone_id && zonesData[d.zone_id] ? zonesData[d.zone_id] : null;
     const zoneDot = zone ? `<span class="zone-dot" style="background:${escapeHtml(zone.color)}"></span>` : '';
     const mem = membersData[d.id];
+    const driverPreschool = rsvp[d.id]?.preschool_count || 0;
+    const availCS = Math.max(0, (mem?.childseat_count || 0) - driverPreschool);
     html += `<div style="background:var(--bg);border-radius:var(--radius);padding:8px 12px;font-size:13px;margin-bottom:4px">
       ${zoneDot}<strong>${escapeHtml(d.name)}号</strong>
       <span style="color:${color};margin-left:6px">空き${avail}席</span>
-      ${mem?.childseat_count > 0 ? `<span style="color:var(--text-light);font-size:11px">（🧸チャイルドシート${mem.childseat_count}席）</span>` : ''}
+      ${availCS > 0 ? `<span style="color:var(--text-light);font-size:11px">（🧸CS空き${availCS}席）</span>` : ''}
     </div>`;
   });
   html += '</div>';
@@ -3772,9 +3779,10 @@ function renderManualAssignUI(eventId) {
           const wouldOverflow = !isCurrent && avail < riderSeats;
           const driverMem = membersData[d.id];
           const isNearby = mem?.nearby_members?.includes(d.id) || driverMem?.nearby_members?.includes(r.id);
-          const dZone = d.zone_id && zonesData[d.zone_id] ? zonesData[d.zone_id] : null;
           const nearLabel = isNearby ? '　近い' : '';
-          const csLabel = driverMem?.childseat_count > 0 ? `　🧸${driverMem.childseat_count}席` : '';
+          const dPreschool = rsvp[d.id]?.preschool_count || 0;
+          const dAvailCS = Math.max(0, (driverMem?.childseat_count || 0) - dPreschool);
+          const csLabel = dAvailCS > 0 ? `　🧸CS${dAvailCS}席` : '';
           return `<option value="${d.id}" ${isCurrent ? 'selected' : ''} ${wouldOverflow ? 'disabled' : ''}>${escapeHtml(d.name)}号（空き${avail}席）${csLabel}${nearLabel}${wouldOverflow ? '※満席' : ''}</option>`;
         }).join('')}
       </select>
@@ -3858,7 +3866,8 @@ function showAssignConfirmation(eventId) {
   }, 0);
   const csAvailable = Object.values(driverMap).reduce((s, d) => {
     const mem = membersData[d.id];
-    return s + (mem?.childseat_count || 0);
+    const driverPreschool = rsvp[d.id]?.preschool_count || 0;
+    return s + Math.max(0, (mem?.childseat_count || 0) - driverPreschool);
   }, 0);
 
   // 近隣希望チェック
