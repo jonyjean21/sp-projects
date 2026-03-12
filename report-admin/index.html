@@ -131,6 +131,19 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
 
 .empty { text-align: center; padding: 3rem; color: var(--dim); font-size: 0.9rem; }
 
+/* ===== Daily Summary Cards ===== */
+.ds-headline { background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(6,182,212,0.1)); border: 1px solid rgba(99,102,241,0.4); border-radius: 14px; padding: 1.4rem; margin-bottom: 1rem; }
+.ds-headline h2 { font-size: 1.15rem; color: var(--accent); margin-bottom: 0.4rem; line-height: 1.4; }
+.ds-headline .ds-date { font-size: 0.75rem; color: var(--dim); }
+.ds-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 0.75rem; }
+.ds-card-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.7rem; }
+.ds-card-icon { font-size: 1.1rem; }
+.ds-card-title { font-size: 0.92rem; font-weight: 700; color: var(--text); }
+.ds-card-bar { flex: 1; height: 3px; border-radius: 2px; }
+.ds-items { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+.ds-items li { font-size: 0.84rem; color: var(--dim); padding-left: 1rem; position: relative; line-height: 1.5; }
+.ds-items li::before { content: '›'; position: absolute; left: 0; color: var(--accent); }
+
 @media (max-width: 640px) {
   .stat-grid { grid-template-columns: repeat(2, 1fr); }
   .area-bar-label, .h-bar-label { width: 80px; font-size: 0.7rem; }
@@ -173,6 +186,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
       <button class="btn btn-sm btn-outline" onclick="reportNav(-1)">&lt; 前日</button>
       <input type="date" id="reportDate" onchange="loadReport(this.value)">
       <button class="btn btn-sm btn-outline" onclick="reportNav(1)">翌日 &gt;</button>
+      <button class="btn btn-sm btn-primary" id="genSummaryBtn" onclick="generateDailySummary()" style="margin-left:auto">✨ サマリー生成</button>
     </div>
     <div id="reportContent"><div class="empty">日付を選択してください</div></div>
   </div>
@@ -330,6 +344,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
 <script>
 const FIREBASE_URL = 'https://viisi-master-app-default-rtdb.firebaseio.com';
 const REPORT_PATH = '/daily-reports';
+const GEMINI_PROXY = 'https://vercel-api-orpin-one.vercel.app/api/gemini';
 const AREA_COLORS = ['var(--accent)','var(--ok)','var(--cyan)','var(--purple)','var(--warn)','var(--blue)','var(--err)','#e879f9','#fb923c','#94a3b8'];
 
 let allReports = {};
@@ -480,9 +495,115 @@ function reportNav(dir) {
   loadReport(input.value);
 }
 
+async function generateDailySummary() {
+  const dateStr = document.getElementById('reportDate').value;
+  if (!dateStr) return;
+  const btn = document.getElementById('genSummaryBtn');
+  btn.disabled = true; btn.textContent = '生成中...';
+  const container = document.getElementById('reportContent');
+  container.innerHTML = `<div class="empty"><span class="spinner"></span> Geminiがサマリーを生成中...</div>`;
+
+  try {
+    // daily-activities 取得
+    const r = await fetch(`${FIREBASE_URL}/daily-activities/${dateStr}.json`);
+    const acts = await r.json();
+    if (!acts || Object.keys(acts).length === 0) {
+      container.innerHTML = `<div class="empty">活動ログがないためサマリーを生成できません</div>`;
+      return;
+    }
+    const entries = Object.values(acts).sort((a, b) => (a.time||'').localeCompare(b.time||''));
+    const logText = entries.map(e => `[${e.time}] ${(e.items||[]).join(' / ')}`).join('\n');
+
+    // Gemini でサマリー生成
+    const prompt = `以下は ${dateStr} の作業ログです。これをもとに日次サマリーをJSON形式で生成してください。
+
+作業ログ:
+${logText}
+
+出力形式（このJSONのみ出力してください）:
+{
+  "headline": "今日を一言で表すキャッチーなタイトル（20文字以内）",
+  "categories": [
+    {
+      "name": "プロジェクト名（BuildHub, トクラシ, MOLKKY HUB, SP運営 など）",
+      "emoji": "適切な絵文字1つ",
+      "color": "#16進数カラーコード（プロジェクトに合う色）",
+      "items": ["やったこと1（簡潔に）", "やったこと2"]
+    }
+  ]
+}
+
+ルール:
+- 同じプロジェクトのことはまとめる
+- items は各20文字程度で簡潔に
+- 技術的な固有名詞はそのまま使う`;
+
+    const res = await fetch(GEMINI_PROXY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, temperature: 0.3 })
+    });
+    const data = await res.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const summary = JSON.parse(text);
+
+    // Firebase に保存
+    await fetch(`${FIREBASE_URL}/daily-summaries/${dateStr}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(summary)
+    });
+
+    container.innerHTML = renderDailySummary(dateStr, summary);
+  } catch(e) {
+    container.innerHTML = `<div class="empty">生成エラー: ${esc(e.message)}</div>`;
+  } finally {
+    btn.disabled = false; btn.textContent = '✨ サマリー生成';
+  }
+}
+
+function renderDailySummary(dateStr, s) {
+  let html = `<div class="ds-headline">
+    <div class="ds-date">${dateStr}</div>
+    <h2>${esc(s.headline || '作業サマリー')}</h2>
+  </div>`;
+  (s.categories || []).forEach(cat => {
+    const color = cat.color || 'var(--accent)';
+    html += `<div class="ds-card">
+      <div class="ds-card-header">
+        <span class="ds-card-icon">${esc(cat.emoji || '')}</span>
+        <span class="ds-card-title">${esc(cat.name)}</span>
+        <div class="ds-card-bar" style="background:${color};opacity:0.4"></div>
+      </div>
+      <ul class="ds-items">
+        ${(cat.items||[]).map(item => `<li>${esc(item)}</li>`).join('')}
+      </ul>
+    </div>`;
+  });
+  return html;
+}
+
 async function loadReport(dateStr) {
   const container = document.getElementById('reportContent');
   const report = allReports[dateStr];
+
+  // daily-summaries を先にチェック
+  try {
+    const sr = await fetch(`${FIREBASE_URL}/daily-summaries/${dateStr}.json`);
+    const summary = await sr.json();
+    if (summary && summary.headline) {
+      container.innerHTML = renderDailySummary(dateStr, summary);
+      // GAS日報がある日はその後に続けて表示
+      if (report && (report.stats?.total_commits || 0) > 0) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = container.innerHTML;
+        container.innerHTML = '';
+        container.appendChild(tmp.firstChild); // サマリーカード
+        renderGasReport(dateStr, report, container);
+      }
+      return;
+    }
+  } catch {}
 
   if (!report || (report.stats?.total_commits || 0) === 0) {
     container.innerHTML = `<div class="empty"><span class="spinner"></span> 活動ログを確認中...</div>`;
@@ -499,6 +620,11 @@ async function loadReport(dateStr) {
     }
     return;
   }
+
+  renderGasReport(dateStr, report, container);
+}
+
+async function renderGasReport(dateStr, report, container) {
 
   const s = report.stats || {};
   const sum = report.summary || {};
