@@ -64,7 +64,43 @@ function syncAll() {
     position_7d: data.gsc.position_7d || 0
   });
 
+  // 記事一覧キャッシュ（autopilot GASの重複チェック用）
+  try {
+    const articles = fetchAllArticles();
+    firebasePut(FIREBASE_PATH + '/articles.json', articles);
+    Logger.log('記事一覧キャッシュ完了: ' + articles.length + '件');
+  } catch (e) {
+    Logger.log('記事一覧キャッシュ エラー: ' + e.message);
+  }
+
   Logger.log('Firebase 保存完了');
+}
+
+/**
+ * WP REST API で全公開記事を取得（ページネーション対応）
+ */
+function fetchAllArticles() {
+  const articles = [];
+  let page = 1;
+  while (true) {
+    const url = SITE_URL + '/wp-json/wp/v2/posts?per_page=100&status=publish&_fields=id,title,slug,categories&page=' + page;
+    const options = { method: 'get', muteHttpExceptions: true };
+    const res = UrlFetchApp.fetch(url, options);
+    if (res.getResponseCode() !== 200) break;
+    const data = JSON.parse(res.getContentText());
+    if (!data.length) break;
+    data.forEach(p => {
+      articles.push({
+        id: p.id,
+        title: p.title.rendered,
+        slug: p.slug,
+        categories: p.categories
+      });
+    });
+    if (data.length < 100) break;
+    page++;
+  }
+  return articles;
 }
 
 // ============================================

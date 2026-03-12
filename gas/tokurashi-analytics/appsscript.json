@@ -4,7 +4,9 @@
   "oauthScopes": [
     "https://www.googleapis.com/auth/analytics.readonly",
     "https://www.googleapis.com/auth/webmasters.readonly",
-    "https://www.googleapis.com/auth/script.external_request"
+    "https://www.googleapis.com/auth/script.external_request",
+    "https://www.googleapis.com/auth/script.scriptapp",
+    "https://www.googleapis.com/auth/analytics.edit"
   ],
   "exceptionLogging": "STACKDRIVER",
   "runtimeVersion": "V8"
