@@ -93,6 +93,11 @@
     "daily-activities": {
       ".read": true,
       ".write": true
+    },
+    "buildhub-x-queue": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": ["status", "created_at"]
     }
   }
 }
