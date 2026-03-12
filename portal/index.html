@@ -473,17 +473,20 @@ tr:hover { background: rgba(0,0,0,0.02); }
         <div class="stat-grid" id="dashStats">
           <div class="stat-card" style="cursor:pointer" onclick="showSection('inbox')">
             <div class="stat-value" style="color:var(--orange)" id="dInbox">-</div>
-            <div class="stat-label">INBOX Pending</div>
+            <div class="stat-label">未処理のメモ・タスク</div>
+            <div class="stat-change" style="color:var(--sub)">↗ クリックで処理へ</div>
           </div>
           <div class="stat-card">
             <div class="stat-value" style="color:var(--purple)" id="dProducts">29</div>
-            <div class="stat-label">プロダクト数</div>
+            <div class="stat-label">管理中のアプリ・ツール</div>
+            <div class="stat-change" style="color:var(--sub)">一覧で確認</div>
           </div>
         </div>
 
         <!-- Quick Actions -->
         <div class="card">
-          <h3>クイックアクション</h3>
+          <h3>よく使う画面</h3>
+          <p style="font-size:12px;color:var(--sub);margin-bottom:12px">各プロジェクトの管理画面へすぐ移動できます</p>
           <div class="links-grid">
             <a class="link-card" href="https://jonyjean21.github.io/sp-projects/molkky-portal/" target="_blank">
               <span class="link-icon">&#9878;</span>
@@ -519,7 +522,8 @@ tr:hover { background: rgba(0,0,0,0.02); }
         <!-- Recent Activity -->
         <div class="card">
           <div class="card-header">
-            <h3>最近のアクティビティ</h3>
+            <h3>最近やったこと</h3>
+            <span style="font-size:11px;color:var(--sub)">Claude Codeとのセッション記録</span>
           </div>
           <div id="dashActivity" style="font-size:12px;color:var(--sub)">
             <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>MOLKKY HUB専用ポータル独立化</div><div class="activity-time">2026.03.05</div></div></div>
@@ -532,7 +536,8 @@ tr:hover { background: rgba(0,0,0,0.02); }
 
         <!-- Build History -->
         <div class="card">
-          <h3>ビルド履歴</h3>
+          <h3>これまでの作業記録</h3>
+          <p style="font-size:12px;color:var(--sub);margin-bottom:12px">いつ何を作ったかのログ</p>
           <div style="font-size:12px;color:var(--sub)">
             <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>トクラシ（お得な暮らしブログ）構築、種記事10本生成</div><div class="activity-time">2026.03.09</div></div></div>
             <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>副業ロードマップ2026作成、appsカタログをSP Portalに統合</div><div class="activity-time">2026.03.09</div></div></div>
@@ -567,6 +572,13 @@ tr:hover { background: rgba(0,0,0,0.02); }
 
       <!-- ===== OVERVIEW MAP ===== -->
       <div class="section" id="sec-overview">
+        <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
+          <span style="font-size:1.4rem">🗺️</span>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text)">今 SP が取り組んでいること、全部まとめてここに</div>
+            <div style="font-size:12px;color:var(--sub);margin-top:2px">優先順位・進捗・ブロッカー（止まってる原因）が一目でわかります</div>
+          </div>
+        </div>
 
         <!-- ━━━ L0: 今の状況 ━━━ -->
         <div class="ov-layer">
@@ -793,14 +805,14 @@ tr:hover { background: rgba(0,0,0,0.02); }
           <div class="overview-grid" style="margin-bottom:0">
             <!-- System Health -->
             <div class="card" style="margin-bottom:0">
-              <h3 style="font-size:13px">システム稼働状況</h3>
+              <h3 style="font-size:13px">システム稼働状況 <span style="font-size:11px;font-weight:400;color:var(--sub)">— 各サービスが正常に動いているか</span></h3>
               <div id="overviewHealth">
-                <div class="health-row"><div class="health-dot" style="background:var(--green)"></div><span class="health-name">GitHub Pages</span><span class="health-detail">40+ apps</span></div>
-                <div class="health-row"><div class="health-dot" id="healthFirebase" style="background:var(--sub)"></div><span class="health-name">Firebase RTDB</span><span class="health-detail" id="healthFirebaseDetail">確認中...</span></div>
-                <div class="health-row"><div class="health-dot" id="healthQueue" style="background:var(--sub)"></div><span class="health-name">大会キュー</span><span class="health-detail" id="healthQueueDetail">確認中...</span></div>
-                <div class="health-row"><div class="health-dot" style="background:var(--green)"></div><span class="health-name">GAS 自動化</span><span class="health-detail">3パイプライン</span></div>
-                <div class="health-row"><div class="health-dot" style="background:var(--green)"></div><span class="health-name">Vercel Proxy</span><span class="health-detail">Gemini / Bot</span></div>
-                <div class="health-row"><div class="health-dot" style="background:var(--green)"></div><span class="health-name">WordPress</span><span class="health-detail">ConoHa</span></div>
+                <div class="health-row"><div class="health-dot" style="background:var(--green)"></div><span class="health-name">GitHub Pages（サイト公開）</span><span class="health-detail">40+ アプリ</span></div>
+                <div class="health-row"><div class="health-dot" id="healthFirebase" style="background:var(--sub)"></div><span class="health-name">Firebase（データ保管庫）</span><span class="health-detail" id="healthFirebaseDetail">確認中...</span></div>
+                <div class="health-row"><div class="health-dot" id="healthQueue" style="background:var(--sub)"></div><span class="health-name">大会キュー（未処理件数）</span><span class="health-detail" id="healthQueueDetail">確認中...</span></div>
+                <div class="health-row"><div class="health-dot" style="background:var(--green)"></div><span class="health-name">GAS（自動収集スクリプト）</span><span class="health-detail">5フロー稼働中</span></div>
+                <div class="health-row"><div class="health-dot" style="background:var(--green)"></div><span class="health-name">Vercel（APIつなぎ役）</span><span class="health-detail">Gemini / Bot</span></div>
+                <div class="health-row"><div class="health-dot" style="background:var(--green)"></div><span class="health-name">WordPress（ブログ・メディア）</span><span class="health-detail">ConoHa WING</span></div>
               </div>
             </div>
 
