@@ -4,324 +4,456 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>4/12 気球イベント - 確認事項</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0e1117;
-  --card: #161b22;
-  --card-hover: #1c2129;
-  --border: #30363d;
-  --text: #e6edf3;
-  --dim: #8b949e;
-  --accent: #4a9eff;
-  --accent-hover: #6db3ff;
-  --green: #3fb950;
-  --yellow: #d29922;
-  --red: #f85149;
-  --orange: #db6d28;
-  --purple: #a371f7;
-  --radius: 12px;
+  --bg: #FAFAF8;
+  --card: #FFFFFF;
+  --border: #E8E5DE;
+  --border-light: #F0EDE6;
+  --text: #2C2C2C;
+  --dim: #9B9590;
+  --accent: #C4704B;
+  --accent-light: #FDF5F1;
+  --accent-hover: #B35F3C;
+  --green: #6B9E78;
+  --green-light: #F2F8F3;
+  --blue: #7B9EB8;
+  --blue-light: #F3F7FA;
+  --warm-gray: #F5F3EF;
+  --shadow: 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.06);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans JP', sans-serif;
+  font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
-  line-height: 1.6;
+  line-height: 1.7;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
 }
 
 .container {
-  max-width: 640px;
+  max-width: 560px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 0 20px 40px;
 }
 
-/* Header */
-.header {
+/* Hero */
+.hero {
   text-align: center;
-  padding: 24px 0 16px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 20px;
-}
-
-.header h1 {
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
-
-.header p {
-  color: var(--dim);
-  font-size: 0.85rem;
-}
-
-/* Progress */
-.top-progress {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
-  margin-bottom: 20px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.top-progress-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
-  font-size: 0.85rem;
-}
-
-.progress-bar {
-  background: var(--border);
-  border-radius: 6px;
-  height: 8px;
+  padding: 40px 0 32px;
+  position: relative;
   overflow: hidden;
 }
 
-.progress-fill {
-  height: 100%;
-  border-radius: 6px;
-  background: linear-gradient(90deg, var(--accent), var(--green));
-  transition: width 0.4s ease;
+.hero-illust {
+  margin-bottom: 16px;
 }
 
-/* Category tabs */
-.cat-tabs {
+.hero-illust svg {
+  width: 200px;
+  height: 140px;
+}
+
+.hero h1 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-bottom: 6px;
+}
+
+.hero-sub {
+  font-size: 0.82rem;
+  color: var(--dim);
+  font-weight: 300;
+  line-height: 1.6;
+}
+
+.hero-date {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 4px 14px;
+  background: var(--warm-gray);
+  border-radius: 20px;
+  font-size: 0.75rem;
+  color: var(--dim);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
+/* Sticky progress */
+.sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(250, 250, 248, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 12px 0;
+  margin-bottom: 8px;
+}
+
+.prog-row {
   display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
+  align-items: center;
+  gap: 12px;
+}
+
+.prog-bar-wrap {
+  flex: 1;
+  height: 4px;
+  background: var(--border-light);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.prog-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.prog-label {
+  font-size: 0.72rem;
+  color: var(--dim);
+  font-weight: 400;
+  white-space: nowrap;
+  min-width: 44px;
+  text-align: right;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 4px;
+  scrollbar-width: none;
+  padding-bottom: 2px;
 }
 
-.cat-tab {
-  padding: 8px 16px;
+.tabs::-webkit-scrollbar { display: none; }
+
+.tab {
+  padding: 6px 14px;
   border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  border: 1px solid var(--border);
-  background: var(--card);
+  font-size: 0.72rem;
+  font-weight: 400;
   color: var(--dim);
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.2s;
+  background: transparent;
+  border: 1px solid transparent;
 }
 
-.cat-tab.active {
-  background: var(--accent);
-  color: #000;
-  border-color: var(--accent);
+.tab:hover {
+  color: var(--text);
+  background: var(--warm-gray);
 }
 
-.cat-tab .tab-count {
-  display: inline-block;
-  margin-left: 4px;
-  background: rgba(0,0,0,0.2);
-  padding: 1px 6px;
-  border-radius: 10px;
-  font-size: 0.7rem;
+.tab.active {
+  color: var(--accent);
+  background: var(--accent-light);
+  border-color: rgba(196, 112, 75, 0.15);
+  font-weight: 500;
+}
+
+.tab-num {
+  margin-left: 3px;
+  opacity: 0.5;
+}
+
+/* Category section */
+.cat-section {
+  margin-bottom: 32px;
+}
+
+.cat-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.cat-icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.cat-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.cat-title {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--dim);
+  letter-spacing: 0.03em;
 }
 
 /* Question card */
 .q-card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
-  margin-bottom: 12px;
-  transition: border-color 0.2s;
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow);
+  transition: all 0.25s ease;
+}
+
+.q-card:hover {
+  box-shadow: var(--shadow-md);
 }
 
 .q-card.answered {
   border-color: var(--green);
-  opacity: 0.85;
+  background: var(--green-light);
 }
 
-.q-card.answered .q-label::after {
-  content: ' ✓';
-  color: var(--green);
+.q-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
 }
 
 .q-num {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: var(--dim);
-  margin-bottom: 4px;
+  font-weight: 300;
 }
 
+.q-badge {
+  font-size: 0.6rem;
+  padding: 2px 7px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.q-badge-high {
+  background: #FEF1EC;
+  color: #C4704B;
+}
+
+.q-badge-mid {
+  background: #FEF8EC;
+  color: #B8943E;
+}
+
+.q-badge-low {
+  background: var(--warm-gray);
+  color: var(--dim);
+}
+
+.q-done-mark {
+  display: none;
+  font-size: 0.65rem;
+  color: var(--green);
+  font-weight: 500;
+}
+
+.q-card.answered .q-done-mark { display: inline; }
+.q-card.answered .q-badge { display: none; }
+
 .q-label {
-  font-size: 0.95rem;
-  font-weight: 600;
-  margin-bottom: 10px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  margin: 6px 0 4px;
+  line-height: 1.5;
 }
 
 .q-hint {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--dim);
   margin-bottom: 10px;
+  font-weight: 300;
 }
 
-/* Input styles */
+/* Inputs */
 .q-input {
   width: 100%;
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 12px;
+  border-radius: 10px;
+  padding: 10px 14px;
   color: var(--text);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-family: inherit;
-  resize: vertical;
-  min-height: 42px;
+  font-weight: 400;
+  resize: none;
+  min-height: 40px;
   transition: border-color 0.2s;
+  line-height: 1.6;
 }
 
 .q-input:focus {
   outline: none;
   border-color: var(--accent);
+  background: #fff;
 }
 
 .q-input::placeholder {
-  color: var(--dim);
-}
-
-/* Quick answer buttons */
-.quick-btns {
-  display: flex;
-  gap: 6px;
-  margin-top: 8px;
-  flex-wrap: wrap;
-}
-
-.quick-btn {
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--dim);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.quick-btn:hover {
-  border-color: var(--accent);
-  color: var(--text);
-}
-
-.quick-btn.selected {
-  background: var(--accent);
-  color: #000;
-  border-color: var(--accent);
+  color: #C5C0BA;
+  font-weight: 300;
 }
 
 /* Select options */
 .q-options {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   gap: 6px;
+  margin-bottom: 6px;
 }
 
-.q-option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  background: var(--bg);
+.q-opt {
+  padding: 7px 14px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  color: var(--text);
   cursor: pointer;
-  font-size: 0.85rem;
   transition: all 0.2s;
+  background: var(--card);
+  font-weight: 400;
+  user-select: none;
 }
 
-.q-option:hover {
+.q-opt:hover {
   border-color: var(--accent);
+  background: var(--accent-light);
 }
 
-.q-option.selected {
+.q-opt.selected {
+  background: var(--accent);
+  color: #fff;
   border-color: var(--accent);
-  background: rgba(74, 158, 255, 0.1);
+  font-weight: 500;
 }
 
-.q-option input[type="radio"] {
-  accent-color: var(--accent);
+/* Quick buttons */
+.q-quick {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
 }
 
-/* Priority badge */
-.priority-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 0.65rem;
-  font-weight: 600;
-  margin-left: 6px;
-  vertical-align: middle;
-}
-
-.priority-high {
-  background: rgba(248, 81, 73, 0.15);
-  color: var(--red);
-}
-
-.priority-mid {
-  background: rgba(210, 153, 34, 0.15);
-  color: var(--yellow);
-}
-
-.priority-low {
-  background: rgba(139, 148, 158, 0.15);
+.q-quick-btn {
+  padding: 4px 10px;
+  border: 1px solid var(--border-light);
+  border-radius: 14px;
+  font-size: 0.68rem;
   color: var(--dim);
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.2s;
+  font-weight: 400;
+  font-family: inherit;
 }
 
-/* Section divider */
-.section-divider {
-  padding: 12px 0;
-  font-size: 0.8rem;
-  color: var(--dim);
-  font-weight: 600;
-  display: none;
+.q-quick-btn:hover {
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.q-quick-btn.selected {
+  background: var(--blue-light);
+  color: var(--blue);
+  border-color: rgba(123, 158, 184, 0.3);
+  font-weight: 500;
+}
+
+/* Free text under select */
+.q-free {
+  margin-top: 6px;
+}
+
+.q-free-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-light);
+  padding: 6px 2px;
+  color: var(--text);
+  font-size: 0.78rem;
+  font-family: inherit;
+  font-weight: 400;
+  transition: border-color 0.2s;
+}
+
+.q-free-input:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+
+.q-free-input::placeholder {
+  color: #D0CBC5;
+  font-weight: 300;
+}
+
+/* Divider illustration */
+.section-illust {
+  text-align: center;
+  padding: 8px 0 0;
+  opacity: 0.35;
+}
+
+.section-illust svg {
+  width: 120px;
+  height: 24px;
 }
 
 /* Submit */
 .submit-area {
   text-align: center;
-  padding: 24px 0;
+  padding: 32px 0 16px;
 }
 
 .submit-btn {
-  padding: 14px 40px;
-  border-radius: var(--radius);
-  font-size: 1rem;
-  font-weight: 700;
+  padding: 13px 48px;
+  border-radius: 28px;
+  font-size: 0.88rem;
+  font-weight: 500;
   background: var(--accent);
-  color: #000;
+  color: #fff;
   border: none;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s;
+  font-family: inherit;
+  letter-spacing: 0.02em;
 }
 
 .submit-btn:hover {
   background: var(--accent-hover);
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(196, 112, 75, 0.25);
 }
 
 .submit-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
 }
 
-.submit-msg {
-  margin-top: 12px;
-  font-size: 0.85rem;
+.submit-note {
+  margin-top: 10px;
+  font-size: 0.73rem;
   color: var(--dim);
+  font-weight: 300;
 }
 
 /* Toast */
@@ -329,78 +461,84 @@ body {
   position: fixed;
   bottom: 24px;
   left: 50%;
-  transform: translateX(-50%) translateY(100px);
+  transform: translateX(-50%) translateY(80px);
   background: var(--green);
-  color: #000;
-  padding: 12px 24px;
-  border-radius: var(--radius);
-  font-weight: 600;
-  font-size: 0.9rem;
+  color: #fff;
+  padding: 10px 24px;
+  border-radius: 24px;
+  font-weight: 500;
+  font-size: 0.82rem;
   z-index: 1000;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(107, 158, 120, 0.3);
 }
 
 .toast.show {
   transform: translateX(-50%) translateY(0);
 }
 
-/* Admin view toggle */
+/* Admin */
 .admin-toggle {
   position: fixed;
-  bottom: 16px;
-  right: 16px;
-  padding: 8px 12px;
+  bottom: 12px;
+  right: 12px;
+  padding: 6px 10px;
   border-radius: 8px;
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   background: var(--card);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   color: var(--dim);
   cursor: pointer;
   z-index: 50;
+  font-family: inherit;
+  opacity: 0.5;
+  transition: opacity 0.2s;
 }
 
-/* Admin results view */
-.admin-panel {
-  display: none;
-}
+.admin-toggle:hover { opacity: 1; }
 
-.admin-panel.visible {
-  display: block;
-}
+.admin-panel { display: none; }
+.admin-panel.visible { display: block; }
 
 .result-item {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 8px;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 6px;
 }
 
 .result-q {
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   color: var(--dim);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
+  font-weight: 400;
 }
 
 .result-a {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 500;
 }
 
 .result-a.empty {
   color: var(--dim);
   font-style: italic;
-}
-
-@media (max-width: 640px) {
-  .container { padding: 12px; }
-  .q-card { padding: 14px; }
+  font-weight: 300;
 }
 
 .footer {
   text-align: center;
-  padding: 20px 0;
+  padding: 24px 0;
+  font-size: 0.65rem;
   color: var(--dim);
-  font-size: 0.7rem;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 480px) {
+  .container { padding: 0 16px 32px; }
+  .hero { padding: 28px 0 24px; }
+  .q-card { padding: 16px; }
 }
 </style>
 </head>
@@ -408,74 +546,126 @@ body {
 
 <div class="container">
 
-  <div class="header">
+  <!-- Hero with balloon illustration -->
+  <div class="hero">
+    <div class="hero-illust">
+      <svg viewBox="0 0 200 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Hot air balloon -->
+        <ellipse cx="100" cy="52" rx="32" ry="38" stroke="#C4704B" stroke-width="0.8" fill="none"/>
+        <path d="M68 52 C68 52 80 90 84 95 L116 95 C120 90 132 52 132 52" stroke="#C4704B" stroke-width="0.6" fill="none"/>
+        <line x1="84" y1="95" x2="86" y2="108" stroke="#C4704B" stroke-width="0.5"/>
+        <line x1="116" y1="95" x2="114" y2="108" stroke="#C4704B" stroke-width="0.5"/>
+        <rect x="85" y="108" width="30" height="12" rx="2" stroke="#C4704B" stroke-width="0.6" fill="none"/>
+        <!-- Balloon pattern lines -->
+        <path d="M100 14 L100 90" stroke="#C4704B" stroke-width="0.3" opacity="0.4"/>
+        <path d="M84 22 C84 22 88 58 84 90" stroke="#C4704B" stroke-width="0.3" opacity="0.4"/>
+        <path d="M116 22 C116 22 112 58 116 90" stroke="#C4704B" stroke-width="0.3" opacity="0.4"/>
+        <!-- Clouds -->
+        <ellipse cx="38" cy="40" rx="16" ry="7" stroke="#D0CBC5" stroke-width="0.5" fill="none"/>
+        <ellipse cx="32" cy="38" rx="8" ry="5" stroke="#D0CBC5" stroke-width="0.5" fill="none"/>
+        <ellipse cx="162" cy="55" rx="14" ry="6" stroke="#D0CBC5" stroke-width="0.5" fill="none"/>
+        <ellipse cx="168" cy="53" rx="7" ry="4" stroke="#D0CBC5" stroke-width="0.5" fill="none"/>
+        <!-- Small cloud -->
+        <ellipse cx="150" cy="28" rx="10" ry="4" stroke="#D0CBC5" stroke-width="0.4" fill="none"/>
+        <!-- Birds -->
+        <path d="M52 24 C54 22 56 24 58 22" stroke="#9B9590" stroke-width="0.5" fill="none"/>
+        <path d="M56 20 C58 18 60 20 62 18" stroke="#9B9590" stroke-width="0.4" fill="none"/>
+        <!-- Ground line -->
+        <path d="M10 130 C40 126 70 128 100 126 C130 124 160 127 190 130" stroke="#E8E5DE" stroke-width="0.5" fill="none"/>
+        <!-- Small trees -->
+        <line x1="30" y1="130" x2="30" y2="124" stroke="#D0CBC5" stroke-width="0.5"/>
+        <circle cx="30" cy="122" r="3" stroke="#D0CBC5" stroke-width="0.4" fill="none"/>
+        <line x1="170" y1="129" x2="170" y2="123" stroke="#D0CBC5" stroke-width="0.5"/>
+        <circle cx="170" cy="121" r="3" stroke="#D0CBC5" stroke-width="0.4" fill="none"/>
+        <line x1="145" y1="128" x2="145" y2="123" stroke="#D0CBC5" stroke-width="0.4"/>
+        <circle cx="145" cy="121" r="2.5" stroke="#D0CBC5" stroke-width="0.4" fill="none"/>
+        <!-- People silhouettes (simple) -->
+        <circle cx="90" cy="126" r="1.5" stroke="#C5C0BA" stroke-width="0.4" fill="none"/>
+        <line x1="90" y1="127.5" x2="90" y2="131" stroke="#C5C0BA" stroke-width="0.4"/>
+        <circle cx="110" cy="125" r="1.5" stroke="#C5C0BA" stroke-width="0.4" fill="none"/>
+        <line x1="110" y1="126.5" x2="110" y2="130" stroke="#C5C0BA" stroke-width="0.4"/>
+      </svg>
+    </div>
     <h1>4/12 気球イベント 確認事項</h1>
-    <p>中さんへ - わかるものだけでOK。サクッと答えてください</p>
+    <div class="hero-sub">わかるものだけでOK。<br>「わからん」も立派な回答です。</div>
+    <div class="hero-date">2026.4.12 SUN</div>
   </div>
 
-  <div class="top-progress">
-    <div class="top-progress-header">
-      <span>回答進捗</span>
-      <span id="prog-text">0 / 0</span>
-    </div>
-    <div class="progress-bar">
-      <div class="progress-fill" id="prog-fill" style="width: 0%"></div>
+  <!-- Sticky progress -->
+  <div class="sticky-bar">
+    <div class="prog-row">
+      <div class="prog-bar-wrap">
+        <div class="prog-bar-fill" id="prog-fill" style="width: 0%"></div>
+      </div>
+      <div class="prog-label" id="prog-text">0/35</div>
     </div>
   </div>
 
-  <div class="cat-tabs" id="cat-tabs"></div>
+  <!-- Tabs -->
+  <div class="tabs" id="cat-tabs"></div>
 
+  <!-- Questions -->
   <div id="questions-area"></div>
 
+  <!-- Submit -->
   <div class="submit-area">
     <button class="submit-btn" id="submit-btn" onclick="submitAnswers()">回答を送信</button>
-    <div class="submit-msg">途中でも送信OK。後から追加・修正もできます</div>
+    <div class="submit-note">途中でも送信OK。あとから修正もできます</div>
   </div>
 
-  <!-- Admin results panel -->
+  <!-- Admin -->
   <div class="admin-panel" id="admin-panel">
-    <h2 style="margin-bottom: 16px; font-size: 1.1rem;">回答一覧（管理者ビュー）</h2>
+    <h2 style="margin-bottom: 16px; font-size: 0.95rem; font-weight: 500;">回答一覧</h2>
     <div id="admin-results"></div>
   </div>
 
-  <div class="footer">MACHAP Events | SP × 中さん</div>
+  <div class="footer">MACHAP Events</div>
 </div>
 
 <div class="toast" id="toast"></div>
-<button class="admin-toggle" id="admin-toggle" onclick="toggleAdmin()">管理者</button>
+<button class="admin-toggle" id="admin-toggle" onclick="toggleAdmin()">admin</button>
 
 <script>
 const FB_URL = 'https://viisi-master-app-default-rtdb.firebaseio.com/machap-events/20260412-balloon';
 const STORAGE_KEY = 'machap-balloon-0412-answers';
 
+// Category icons (thin line SVGs)
+const catIcons = {
+  venue: `<svg viewBox="0 0 28 28" fill="none"><circle cx="14" cy="12" r="4" stroke="#C4704B" stroke-width="0.8"/><path d="M14 4C9.6 4 6 7.4 6 11.6 6 17.2 14 24 14 24S22 17.2 22 11.6C22 7.4 18.4 4 14 4Z" stroke="#C4704B" stroke-width="0.8"/></svg>`,
+  organizer: `<svg viewBox="0 0 28 28" fill="none"><circle cx="14" cy="10" r="4" stroke="#C4704B" stroke-width="0.8"/><path d="M7 23C7 19.1 10.1 16 14 16S21 19.1 21 23" stroke="#C4704B" stroke-width="0.8"/></svg>`,
+  balloon: `<svg viewBox="0 0 28 28" fill="none"><ellipse cx="14" cy="11" rx="6" ry="8" stroke="#C4704B" stroke-width="0.8"/><path d="M10 18L11 22H17L18 18" stroke="#C4704B" stroke-width="0.6"/><rect x="11" y="22" width="6" height="3" rx="1" stroke="#C4704B" stroke-width="0.6"/></svg>`,
+  money: `<svg viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="8" stroke="#C4704B" stroke-width="0.8"/><text x="14" y="18" text-anchor="middle" font-size="10" fill="#C4704B" font-weight="300">¥</text></svg>`,
+  guests: `<svg viewBox="0 0 28 28" fill="none"><circle cx="10" cy="10" r="3" stroke="#C4704B" stroke-width="0.7"/><circle cx="18" cy="10" r="3" stroke="#C4704B" stroke-width="0.7"/><path d="M4 22C4 18.7 6.7 16 10 16" stroke="#C4704B" stroke-width="0.7"/><path d="M24 22C24 18.7 21.3 16 18 16" stroke="#C4704B" stroke-width="0.7"/><path d="M10 16C10 16 12 15 14 16 16 15 18 16 18 16" stroke="#C4704B" stroke-width="0.5"/></svg>`,
+  staff: `<svg viewBox="0 0 28 28" fill="none"><rect x="6" y="6" width="16" height="16" rx="3" stroke="#C4704B" stroke-width="0.8"/><path d="M10 13L13 16L18 11" stroke="#C4704B" stroke-width="0.8"/></svg>`,
+  safety: `<svg viewBox="0 0 28 28" fill="none"><path d="M14 4L6 8V14C6 19.5 9.4 24.3 14 26 18.6 24.3 22 19.5 22 14V8L14 4Z" stroke="#C4704B" stroke-width="0.8"/></svg>`,
+  content: `<svg viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="8" stroke="#C4704B" stroke-width="0.7"/><path d="M14 9V14L17 17" stroke="#C4704B" stroke-width="0.7"/><circle cx="14" cy="14" r="1" fill="#C4704B"/></svg>`,
+  other: `<svg viewBox="0 0 28 28" fill="none"><circle cx="9" cy="14" r="1.5" stroke="#C4704B" stroke-width="0.8"/><circle cx="14" cy="14" r="1.5" stroke="#C4704B" stroke-width="0.8"/><circle cx="19" cy="14" r="1.5" stroke="#C4704B" stroke-width="0.8"/></svg>`
+};
+
 const questions = [
-  // A. 最優先 - 会場
   { id: 'a1_venue', cat: 'venue', catLabel: '会場', priority: 'high',
-    q: '会場はどこ？', hint: '場所の名前や住所がわかれば', type: 'text', placeholder: '例: ○○公園、△△河川敷 など' },
+    q: '会場はどこ？', hint: '場所の名前や住所がわかれば', type: 'text', placeholder: '○○公園、△△河川敷 など' },
   { id: 'a1_parking', cat: 'venue', catLabel: '会場', priority: 'high',
-    q: '駐車場はある？', type: 'select', options: ['ある（十分）', 'ある（少なめ）', 'ない', 'わからん'] },
+    q: '駐車場はある？', type: 'select', options: ['ある（十分）', 'ある（少なめ）', 'ない'] },
   { id: 'a1_reserved', cat: 'venue', catLabel: '会場', priority: 'high',
-    q: '会場は確定済み？', type: 'select', options: ['確定済み', '仮押さえ', 'まだ決まってない', 'わからん'] },
+    q: '会場は確定済み？', type: 'select', options: ['確定済み', '仮押さえ', 'まだ決まってない'] },
 
-  // A. 最優先 - 主催者
   { id: 'a2_organizer', cat: 'organizer', catLabel: '主催者', priority: 'high',
-    q: '主催者は誰？', hint: '個人名でも団体名でもOK', type: 'text', placeholder: '例: ○○さん、△△実行委員会' },
+    q: '主催者は誰？', hint: '個人名でも団体名でもOK', type: 'text', placeholder: '○○さん、△△実行委員会' },
   { id: 'a2_role_split', cat: 'organizer', catLabel: '主催者', priority: 'high',
-    q: '主催者と中さんの役割分担は？', hint: '主催者が何をやって、こっちが何をやるか', type: 'text', placeholder: '例: 主催者が会場手配、こっちが集客と運営' },
+    q: '主催者とこっちの役割分担は？', hint: '主催者が何をやって、こっちが何をやるか', type: 'text', placeholder: '主催者が会場手配、こっちが集客と運営' },
   { id: 'a2_contact', cat: 'organizer', catLabel: '主催者', priority: 'mid',
-    q: '主催者との連絡手段は？', type: 'select', options: ['LINE', '電話', 'メール', 'その他'] },
+    q: '主催者との連絡手段は？', type: 'select', options: ['LINE', '電話', 'メール'] },
 
-  // A. 最優先 - 気球
   { id: 'a3_balloons', cat: 'balloon', catLabel: '気球', priority: 'high',
     q: '今回は何機飛ばす？', type: 'select', options: ['1機', '2機', 'まだ未定'] },
   { id: 'a3_vendor', cat: 'balloon', catLabel: '気球', priority: 'high',
-    q: '気球業者はどこ？手配済み？', type: 'text', placeholder: '例: ○○バルーン、手配済み / これから' },
+    q: '気球業者はどこ？手配済み？', type: 'text', placeholder: '○○バルーン / 手配済み or これから' },
   { id: 'a3_vendor_deadline', cat: 'balloon', catLabel: '気球', priority: 'mid',
-    q: '業者への発注期限は？', type: 'text', placeholder: '例: 3月末まで / もう発注済み' },
+    q: '業者への発注期限は？', type: 'text', placeholder: '3月末まで / もう発注済み' },
   { id: 'a3_cancel', cat: 'balloon', catLabel: '気球', priority: 'mid',
-    q: 'キャンセル料が発生するタイミングは？', type: 'text', placeholder: '例: 1週間前から / わからん' },
+    q: 'キャンセル料が発生するタイミングは？', type: 'text', placeholder: '1週間前から / わからん' },
 
-  // A. 最優先 - お金
   { id: 'a4_advance', cat: 'money', catLabel: 'お金', priority: 'high',
     q: '初期費用（気球代）は誰が立て替える？', type: 'select', options: ['主催者', '中さん', '折半', 'まだ決めてない'] },
   { id: 'a4_adult_price', cat: 'money', catLabel: 'お金', priority: 'high',
@@ -485,339 +675,237 @@ const questions = [
   { id: 'a4_payment', cat: 'money', catLabel: 'お金', priority: 'mid',
     q: '乗船料の決済方法は？', type: 'select', options: ['現金のみ', '現金 + PayPay等', 'まだ決めてない'] },
   { id: 'a4_split', cat: 'money', catLabel: 'お金', priority: 'high',
-    q: 'SPと中さんの収益按分、どうする？', hint: 'ざっくりでOK', type: 'text', placeholder: '例: 折半、3:7、後で決める' },
+    q: 'SPとの収益按分、どうする？', hint: 'ざっくりでOK', type: 'text', placeholder: '折半、3:7、後で決める' },
 
-  // B. 集客
   { id: 'b1_target_visitors', cat: 'guests', catLabel: '集客', priority: 'mid',
-    q: '目標の来場者数は？', type: 'select', options: ['50人以下', '50〜100人', '100〜200人', '200人以上', '特に決めてない'] },
+    q: '来場者は何人くらいを想定？', type: 'select', options: ['50人以下', '50〜100人', '100〜200人', '200人以上'] },
   { id: 'b1_target_audience', cat: 'guests', catLabel: '集客', priority: 'mid',
-    q: 'メインターゲットは？', type: 'select', options: ['ファミリー層', '地域住民全般', '特に絞ってない', 'その他'] },
+    q: 'メインターゲットは？', type: 'select', options: ['ファミリー層', '地域住民全般', '特に絞ってない'] },
   { id: 'b1_promo', cat: 'guests', catLabel: '集客', priority: 'mid',
-    q: '集客チャネルは何を使う？', hint: '複数あれば全部書いて', type: 'text', placeholder: '例: SNS、口コミ、チラシ、自治体広報' },
+    q: '集客チャネルは？', hint: '複数あれば全部', type: 'text', placeholder: 'SNS、口コミ、チラシ' },
   { id: 'b1_reservation', cat: 'guests', catLabel: '集客', priority: 'mid',
-    q: '予約制？当日先着順？', type: 'select', options: ['予約制', '当日先着順', '両方（枠を分ける）', 'まだ決めてない'] },
+    q: '予約制？当日先着順？', type: 'select', options: ['予約制', '当日先着順', '両方', 'まだ決めてない'] },
 
-  // B. スタッフ
   { id: 'b2_staff_target', cat: 'staff', catLabel: 'スタッフ', priority: 'mid',
-    q: 'スタッフは何人集めたい？', type: 'select', options: ['10人以下', '10〜15人', '15〜20人', '20人以上', 'まだ決めてない'] },
+    q: 'スタッフは何人集めたい？', type: 'select', options: ['10人以下', '10〜15人', '15〜20人', '20人以上'] },
   { id: 'b2_staff_recruit', cat: 'staff', catLabel: 'スタッフ', priority: 'mid',
-    q: 'スタッフの募集方法は？', type: 'text', placeholder: '例: 中さんのつながりで声かけ、SNS募集' },
+    q: 'スタッフの募集方法は？', type: 'text', placeholder: 'つながりで声かけ、SNS募集' },
   { id: 'b2_staff_recruit_start', cat: 'staff', catLabel: 'スタッフ', priority: 'mid',
-    q: 'スタッフ募集はいつから始める？', type: 'select', options: ['もう始めてる', '今週中に', '来週以降', 'まだ決めてない'] },
+    q: 'スタッフ募集はいつから？', type: 'select', options: ['もう始めてる', '今週中に', '来週以降', 'まだ決めてない'] },
   { id: 'b2_tshirt', cat: 'staff', catLabel: 'スタッフ', priority: 'low',
-    q: 'スタッフTシャツは作る？', type: 'select', options: ['作る', '作らない', 'スタッフの希望次第'] },
+    q: 'スタッフTシャツは作る？', type: 'select', options: ['作る', '作らない', 'スタッフ次第'] },
 
-  // B. 天候・安全
   { id: 'b3_rain', cat: 'safety', catLabel: '天候・安全', priority: 'high',
-    q: '雨天の場合は？', type: 'select', options: ['中止（予備日あり）', '中止（予備日なし）', '屋内に変更', 'まだ決めてない'] },
+    q: '雨天の場合は？', type: 'select', options: ['中止（予備日あり）', '中止（予備日なし）', 'まだ決めてない'] },
   { id: 'b3_rain_date', cat: 'safety', catLabel: '天候・安全', priority: 'mid',
-    q: '予備日はある？あるならいつ？', type: 'text', placeholder: '例: 4/19、なし' },
+    q: '予備日はある？あるならいつ？', type: 'text', placeholder: '4/19 / なし' },
   { id: 'b3_insurance', cat: 'safety', catLabel: '天候・安全', priority: 'mid',
-    q: 'イベント保険は加入する？', type: 'select', options: ['加入する（こちら側で）', '主催者が手配', '業者の保険でカバー', 'わからん'] },
+    q: 'イベント保険は？', type: 'select', options: ['こちらで加入', '主催者が手配', '業者の保険でカバー'] },
   { id: 'b3_cancel_judge', cat: 'safety', catLabel: '天候・安全', priority: 'mid',
-    q: '中止判断はいつする？', type: 'select', options: ['前日の夜', '当日の早朝（集合前）', '当日現地で', 'まだ決めてない'] },
+    q: '中止判断はいつする？', type: 'select', options: ['前日の夜', '当日の早朝', '当日現地で', 'まだ決めてない'] },
 
-  // C. コンテンツ
   { id: 'c1_extra', cat: 'content', catLabel: 'コンテンツ', priority: 'low',
-    q: '気球以外にやりたいことある？', hint: '飲食、出店、体験、音楽、モルック体験とか', type: 'text', placeholder: '自由に書いて' },
+    q: '気球以外にやりたいことある？', hint: '飲食、出店、体験、モルック体験とか', type: 'text', placeholder: '自由に' },
   { id: 'c1_kitchen_car', cat: 'content', catLabel: 'コンテンツ', priority: 'low',
-    q: 'キッチンカーは呼ぶ？', type: 'select', options: ['呼ぶ', '呼ばない', 'スタッフ費次第', 'まだ決めてない'] },
+    q: 'キッチンカーは呼ぶ？', type: 'select', options: ['呼ぶ', '呼ばない', 'スタッフ費次第'] },
   { id: 'c1_event_name', cat: 'content', catLabel: 'コンテンツ', priority: 'low',
-    q: 'イベント名は決まってる？', type: 'text', placeholder: '仮でもOK。なければ空欄で' },
+    q: 'イベント名は決まってる？', type: 'text', placeholder: '仮でもOK' },
 
-  // C. その他
   { id: 'c2_line_group', cat: 'other', catLabel: 'その他', priority: 'low',
-    q: '関係者のLINEグループはある？', type: 'select', options: ['ある', 'ない（これから作る）', 'ない（個別連絡）'] },
+    q: '関係者のLINEグループはある？', type: 'select', options: ['ある', 'これから作る', '個別連絡'] },
   { id: 'c2_past_exp', cat: 'other', catLabel: 'その他', priority: 'low',
-    q: '過去の気球イベントで来場者は大体何人くらいだった？', type: 'text', placeholder: '例: 100人くらい / 覚えてない' },
+    q: '過去の気球イベント、来場者は何人くらいだった？', type: 'text', placeholder: '100人くらい / 覚えてない' },
   { id: 'c2_past_lesson', cat: 'other', catLabel: 'その他', priority: 'low',
-    q: '過去のイベントで「これは良かった」「これは改善したい」があれば', type: 'text', placeholder: '自由に書いて' },
+    q: '過去イベントの良かったこと、改善したいこと', type: 'text', placeholder: '自由に' },
   { id: 'c2_next_mtg', cat: 'other', catLabel: 'その他', priority: 'mid',
-    q: '次の打ち合わせはいつ？', type: 'text', placeholder: '例: 来週○曜日、未定' },
+    q: '次の打ち合わせはいつ？', type: 'text', placeholder: '来週○曜日 / 未定' },
   { id: 'c2_anything', cat: 'other', catLabel: 'その他', priority: 'low',
-    q: 'その他、SPに伝えておきたいこと', type: 'text', placeholder: '何でも自由に' },
+    q: 'その他、伝えておきたいこと', type: 'text', placeholder: '何でも' },
 ];
 
-// State
 let answers = {};
 let currentCat = 'all';
-let isAdmin = false;
 
-// Init
 function init() {
-  loadSaved();
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) answers = JSON.parse(saved);
   renderTabs();
   renderQuestions();
   updateProgress();
   loadFromFirebase();
 }
 
-function loadSaved() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) answers = JSON.parse(saved);
-}
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(answers)); }
 
-function saveLocal() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(answers));
-}
-
-// Categories
-function getCategories() {
-  const cats = [];
-  const seen = new Set();
+function getCats() {
+  const cats = [], seen = new Set();
   for (const q of questions) {
-    if (!seen.has(q.cat)) {
-      seen.add(q.cat);
-      cats.push({ id: q.cat, label: q.catLabel });
-    }
+    if (!seen.has(q.cat)) { seen.add(q.cat); cats.push({ id: q.cat, label: q.catLabel }); }
   }
   return cats;
 }
 
 function renderTabs() {
-  const cats = getCategories();
   const area = document.getElementById('cat-tabs');
-  let html = `<div class="cat-tab ${currentCat === 'all' ? 'active' : ''}" onclick="switchCat('all')">すべて<span class="tab-count">${questions.length}</span></div>`;
+  const cats = getCats();
+  let h = `<div class="tab ${currentCat === 'all' ? 'active' : ''}" onclick="switchCat('all')">すべて<span class="tab-num">${questions.length}</span></div>`;
   for (const c of cats) {
-    const count = questions.filter(q => q.cat === c.id).length;
-    html += `<div class="cat-tab ${currentCat === c.id ? 'active' : ''}" onclick="switchCat('${c.id}')">${c.label}<span class="tab-count">${count}</span></div>`;
+    const n = questions.filter(q => q.cat === c.id).length;
+    h += `<div class="tab ${currentCat === c.id ? 'active' : ''}" onclick="switchCat('${c.id}')">${c.label}<span class="tab-num">${n}</span></div>`;
   }
-  area.innerHTML = html;
+  area.innerHTML = h;
 }
 
-function switchCat(cat) {
-  currentCat = cat;
-  renderTabs();
-  renderQuestions();
-}
+function switchCat(c) { currentCat = c; renderTabs(); renderQuestions(); }
 
-// Render
 function renderQuestions() {
   const area = document.getElementById('questions-area');
-  const filtered = currentCat === 'all' ? questions : questions.filter(q => q.cat === currentCat);
-  let html = '';
+  const list = currentCat === 'all' ? questions : questions.filter(q => q.cat === currentCat);
+  let h = '', lastCat = '';
   let num = 0;
 
-  for (const q of filtered) {
+  for (const q of list) {
     num++;
-    const ans = answers[q.id] || '';
-    const isAnswered = ans && ans.trim() !== '';
-    const pLabel = q.priority === 'high' ? '重要' : q.priority === 'mid' ? '確認' : 'あれば';
-    const pClass = q.priority === 'high' ? 'priority-high' : q.priority === 'mid' ? 'priority-mid' : 'priority-low';
+    // Category header
+    if (currentCat === 'all' && q.cat !== lastCat) {
+      if (lastCat) h += `<div class="section-illust"><svg viewBox="0 0 120 24" fill="none"><path d="M0 12 C20 8 40 16 60 12 C80 8 100 16 120 12" stroke="#E8E5DE" stroke-width="0.6"/></svg></div>`;
+      h += `<div class="cat-section"><div class="cat-header"><div class="cat-icon">${catIcons[q.cat] || ''}</div><div class="cat-title">${q.catLabel}</div></div></div>`;
+      lastCat = q.cat;
+    }
 
-    html += `<div class="q-card ${isAnswered ? 'answered' : ''}" id="card-${q.id}">`;
-    html += `<div class="q-num">${q.catLabel} #${num}<span class="priority-badge ${pClass}">${pLabel}</span></div>`;
-    html += `<div class="q-label">${q.q}</div>`;
-    if (q.hint) html += `<div class="q-hint">${q.hint}</div>`;
+    const ans = answers[q.id] || '';
+    const done = ans.trim() !== '';
+    const bCls = q.priority === 'high' ? 'q-badge-high' : q.priority === 'mid' ? 'q-badge-mid' : 'q-badge-low';
+    const bTxt = q.priority === 'high' ? '大事' : q.priority === 'mid' ? '確認' : 'あれば';
+
+    h += `<div class="q-card ${done ? 'answered' : ''}" id="card-${q.id}">`;
+    h += `<div class="q-top"><span class="q-num">${num} / ${list.length}</span><span class="q-badge ${bCls}">${bTxt}</span><span class="q-done-mark">回答済み</span></div>`;
+    h += `<div class="q-label">${q.q}</div>`;
+    if (q.hint) h += `<div class="q-hint">${q.hint}</div>`;
 
     if (q.type === 'select') {
-      html += `<div class="q-options">`;
+      h += `<div class="q-options">`;
       for (const opt of q.options) {
-        const sel = ans === opt ? 'selected' : '';
-        html += `<div class="q-option ${sel}" onclick="selectOption('${q.id}', '${opt.replace(/'/g, "\\'")}', this)">
-          <input type="radio" name="${q.id}" ${sel ? 'checked' : ''}> ${opt}
-        </div>`;
+        const s = ans === opt ? 'selected' : '';
+        h += `<div class="q-opt ${s}" onclick="sel('${q.id}','${opt.replace(/'/g,"\\'")}',this)">${opt}</div>`;
       }
-      html += `</div>`;
-      // Also allow free text for select
-      html += `<input class="q-input" style="margin-top: 8px;" type="text"
-        placeholder="選択肢にない場合はここに書いて"
-        value="${q.options.includes(ans) ? '' : ans}"
-        oninput="textAnswer('${q.id}', this.value)"
-      >`;
+      h += `</div>`;
+      h += `<div class="q-free"><input class="q-free-input" type="text" placeholder="その他の場合はここに" value="${q.options.includes(ans) ? '' : (ans === 'わからん' || ans === '主催者に確認' || ans === 'SP判断でOK' ? '' : ans)}" oninput="txt('${q.id}',this.value)"></div>`;
     } else {
-      html += `<textarea class="q-input" rows="2"
-        placeholder="${q.placeholder || ''}"
-        oninput="textAnswer('${q.id}', this.value)"
-      >${ans}</textarea>`;
+      h += `<textarea class="q-input" rows="2" placeholder="${q.placeholder || ''}" oninput="txt('${q.id}',this.value)">${ans === 'わからん' || ans === '主催者に確認' || ans === 'SP判断でOK' ? '' : ans}</textarea>`;
     }
 
-    // Quick answer buttons for all questions
-    html += `<div class="quick-btns">`;
-    const quickOpts = ['わからん', '主催者に確認', 'SP判断でOK'];
-    for (const qo of quickOpts) {
-      const sel = ans === qo ? 'selected' : '';
-      html += `<button class="quick-btn ${sel}" onclick="quickAnswer('${q.id}', '${qo}', this)">${qo}</button>`;
+    h += `<div class="q-quick">`;
+    for (const qo of ['わからん', '主催者に確認', 'SP判断でOK']) {
+      h += `<button class="q-quick-btn ${ans === qo ? 'selected' : ''}" onclick="quick('${q.id}','${qo}',this)">${qo}</button>`;
     }
-    html += `</div>`;
-
-    html += `</div>`;
+    h += `</div></div>`;
   }
 
-  area.innerHTML = html;
+  area.innerHTML = h;
 }
 
-// Answer handlers
-function selectOption(id, value, el) {
-  answers[id] = value;
-  saveLocal();
-  // Update UI
+function sel(id, val, el) {
+  answers[id] = val; save();
   const card = document.getElementById('card-' + id);
-  card.querySelectorAll('.q-option').forEach(o => o.classList.remove('selected'));
-  card.querySelectorAll('.q-option input').forEach(r => r.checked = false);
+  card.querySelectorAll('.q-opt').forEach(o => o.classList.remove('selected'));
   el.classList.add('selected');
-  el.querySelector('input').checked = true;
-  // Clear quick btn selection
-  card.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('selected'));
-  // Clear free text
-  const freeInput = card.querySelector('.q-input');
-  if (freeInput) freeInput.value = '';
+  card.querySelectorAll('.q-quick-btn').forEach(b => b.classList.remove('selected'));
+  const fi = card.querySelector('.q-free-input');
+  if (fi) fi.value = '';
   card.classList.add('answered');
   updateProgress();
 }
 
-function textAnswer(id, value) {
-  answers[id] = value;
-  saveLocal();
+function txt(id, val) {
+  answers[id] = val; save();
   const card = document.getElementById('card-' + id);
-  // Clear select options if text is entered
-  if (value.trim()) {
-    card.querySelectorAll('.q-option').forEach(o => o.classList.remove('selected'));
-    card.querySelectorAll('.q-option input').forEach(r => r.checked = false);
-    card.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('selected'));
+  if (val.trim()) {
+    card.querySelectorAll('.q-opt').forEach(o => o.classList.remove('selected'));
+    card.querySelectorAll('.q-quick-btn').forEach(b => b.classList.remove('selected'));
     card.classList.add('answered');
-  } else {
-    card.classList.remove('answered');
-  }
+  } else { card.classList.remove('answered'); }
   updateProgress();
 }
 
-function quickAnswer(id, value, el) {
-  answers[id] = value;
-  saveLocal();
+function quick(id, val, el) {
+  answers[id] = val; save();
   const card = document.getElementById('card-' + id);
-  // Clear all other selections
-  card.querySelectorAll('.q-option').forEach(o => o.classList.remove('selected'));
-  card.querySelectorAll('.q-option input').forEach(r => r.checked = false);
-  card.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('selected'));
-  card.querySelectorAll('.q-input').forEach(i => { if (i.tagName === 'TEXTAREA') i.value = ''; });
+  card.querySelectorAll('.q-opt').forEach(o => o.classList.remove('selected'));
+  card.querySelectorAll('.q-quick-btn').forEach(b => b.classList.remove('selected'));
+  const ta = card.querySelector('textarea');
+  if (ta) ta.value = '';
+  const fi = card.querySelector('.q-free-input');
+  if (fi) fi.value = '';
   el.classList.add('selected');
   card.classList.add('answered');
   updateProgress();
 }
 
 function updateProgress() {
-  const total = questions.length;
-  const answered = questions.filter(q => answers[q.id] && answers[q.id].trim()).length;
-  const pct = Math.round((answered / total) * 100);
-  document.getElementById('prog-text').textContent = `${answered} / ${total}`;
-  document.getElementById('prog-fill').style.width = pct + '%';
+  const t = questions.length;
+  const d = questions.filter(q => answers[q.id] && answers[q.id].trim()).length;
+  document.getElementById('prog-text').textContent = `${d}/${t}`;
+  document.getElementById('prog-fill').style.width = (d / t * 100) + '%';
 }
 
-// Submit
 async function submitAnswers() {
   const btn = document.getElementById('submit-btn');
-  btn.disabled = true;
-  btn.textContent = '送信中...';
-
-  const payload = {
-    answers: answers,
-    submittedAt: new Date().toISOString(),
+  btn.disabled = true; btn.textContent = '送信中...';
+  const payload = { answers, submittedAt: new Date().toISOString(),
     answeredCount: questions.filter(q => answers[q.id] && answers[q.id].trim()).length,
-    totalCount: questions.length
-  };
-
+    totalCount: questions.length };
   try {
-    const res = await fetch(FB_URL + '/responses.json', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    // Also save latest as single record for easy access
-    await fetch(FB_URL + '/latest-response.json', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    if (res.ok) {
-      showToast('送信完了！ありがとう！');
-    } else {
-      showToast('送信エラー...もう一度試してください');
-    }
-  } catch (e) {
-    showToast('ネットワークエラー...後でもう一度');
-  }
-
-  btn.disabled = false;
-  btn.textContent = '回答を送信';
+    const [r1] = await Promise.all([
+      fetch(FB_URL + '/responses.json', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) }),
+      fetch(FB_URL + '/latest-response.json', { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) })
+    ]);
+    showToast(r1.ok ? '送信できた！ありがとう' : '送信エラー...もう1回');
+  } catch(e) { showToast('通信エラー...あとでもう1回'); }
+  btn.disabled = false; btn.textContent = '回答を送信';
 }
 
-// Load from Firebase (in case already answered from another device)
 async function loadFromFirebase() {
   try {
-    const res = await fetch(FB_URL + '/latest-response.json');
-    const data = await res.json();
-    if (data && data.answers) {
-      // Merge: Firebase answers fill in blanks, local takes priority
-      for (const [k, v] of Object.entries(data.answers)) {
-        if (!answers[k] || !answers[k].trim()) {
-          answers[k] = v;
-        }
-      }
-      saveLocal();
-      renderQuestions();
-      updateProgress();
+    const r = await fetch(FB_URL + '/latest-response.json');
+    const d = await r.json();
+    if (d && d.answers) {
+      for (const [k,v] of Object.entries(d.answers)) { if (!answers[k] || !answers[k].trim()) answers[k] = v; }
+      save(); renderQuestions(); updateProgress();
     }
-  } catch (e) {
-    // Silently fail - offline is fine
-  }
+  } catch(e) {}
 }
 
-// Admin
 function toggleAdmin() {
-  isAdmin = !isAdmin;
-  const panel = document.getElementById('admin-panel');
-  if (isAdmin) {
-    panel.classList.add('visible');
-    renderAdminResults();
-    document.getElementById('admin-toggle').textContent = '質問に戻る';
-  } else {
-    panel.classList.remove('visible');
-    document.getElementById('admin-toggle').textContent = '管理者';
-  }
+  const p = document.getElementById('admin-panel');
+  const isOn = p.classList.toggle('visible');
+  document.getElementById('admin-toggle').textContent = isOn ? 'form' : 'admin';
+  if (isOn) renderAdmin();
 }
 
-async function renderAdminResults() {
+async function renderAdmin() {
   const area = document.getElementById('admin-results');
-  area.innerHTML = '<div style="color: var(--dim);">読み込み中...</div>';
-
+  area.innerHTML = '<div style="color:var(--dim);font-size:0.8rem">読み込み中...</div>';
   try {
-    const res = await fetch(FB_URL + '/latest-response.json');
-    const data = await res.json();
-
-    if (!data || !data.answers) {
-      area.innerHTML = '<div style="color: var(--dim);">まだ回答がありません</div>';
-      return;
-    }
-
-    let html = `<div style="margin-bottom: 16px; font-size: 0.8rem; color: var(--dim);">最終送信: ${new Date(data.submittedAt).toLocaleString('ja-JP')} | ${data.answeredCount}/${data.totalCount}件回答</div>`;
-
+    const r = await fetch(FB_URL + '/latest-response.json');
+    const d = await r.json();
+    if (!d || !d.answers) { area.innerHTML = '<div style="color:var(--dim)">まだ回答なし</div>'; return; }
+    let h = `<div style="margin-bottom:12px;font-size:0.72rem;color:var(--dim)">最終: ${new Date(d.submittedAt).toLocaleString('ja-JP')} | ${d.answeredCount}/${d.totalCount}件</div>`;
     for (const q of questions) {
-      const a = data.answers[q.id];
-      const pClass = q.priority === 'high' ? 'priority-high' : q.priority === 'mid' ? 'priority-mid' : 'priority-low';
-      html += `<div class="result-item">
-        <div class="result-q">${q.catLabel} | ${q.q} <span class="priority-badge ${pClass}">${q.priority === 'high' ? '重要' : q.priority === 'mid' ? '確認' : 'あれば'}</span></div>
-        <div class="result-a ${a ? '' : 'empty'}">${a || '未回答'}</div>
-      </div>`;
+      const a = d.answers[q.id];
+      h += `<div class="result-item"><div class="result-q">${q.catLabel} | ${q.q}</div><div class="result-a ${a?'':'empty'}">${a||'未回答'}</div></div>`;
     }
-
-    area.innerHTML = html;
-  } catch (e) {
-    area.innerHTML = '<div style="color: var(--dim);">読み込みエラー</div>';
-  }
+    area.innerHTML = h;
+  } catch(e) { area.innerHTML = '<div style="color:var(--dim)">読み込みエラー</div>'; }
 }
 
 function showToast(msg) {
-  const toast = document.getElementById('toast');
-  toast.textContent = msg;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 3000);
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
 }
 
 init();
 </script>
-
 </body>
 </html>
