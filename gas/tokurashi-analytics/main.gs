@@ -1,27 +1,23 @@
 /**
  * トクラシ Analytics Sync
- * GA4 + Search Console → Firebase
+ * GA4 + Search Console → Firebase（REST API直接呼び出し版）
  *
  * 【セットアップ】
- * 1. script.google.com で新規プロジェクト作成
- * 2. このコードを貼り付け
- * 3. Script Properties に設定:
+ * 1. clasp push 済み（コードは自動反映）
+ * 2. Script Properties に設定:
  *    - GA4_PROPERTY_ID: GA4のプロパティID（数値）
  *      → GA4管理画面 → 管理 → プロパティ設定 → プロパティID
- *    - SITE_URL: https://www.tokurashi.com
- * 4. サービスを追加:
- *    - Google Analytics Data API (AnalyticsData)
- *    - Google Search Console API (SearchConsole)  ← 「Webmasters API」で検索
- * 5. トリガー設定: syncAll() を毎日1回（朝6時など）
+ * 3. setup() を1回手動実行（トリガー自動作成 + 初回同期）
+ *    → 初回実行時にGoogle認証の許可ダイアログが出るので許可する
  */
 
 const FIREBASE_URL = 'https://viisi-master-app-default-rtdb.firebaseio.com';
 const FIREBASE_PATH = '/tokurashi-analytics';
+const SITE_URL = 'https://www.tokurashi.com';
 
 function syncAll() {
   const props = PropertiesService.getScriptProperties();
   const ga4PropertyId = props.getProperty('GA4_PROPERTY_ID');
-  const siteUrl = props.getProperty('SITE_URL') || 'https://www.tokurashi.com';
 
   const data = {
     updated_at: new Date().toISOString(),
@@ -39,12 +35,12 @@ function syncAll() {
       data.ga4 = { error: e.message };
     }
   } else {
-    data.ga4 = { error: 'GA4_PROPERTY_ID が未設定' };
+    data.ga4 = { error: 'GA4_PROPERTY_ID が未設定。setup()実行時に自動取得を試みます。' };
   }
 
   // Search Console
   try {
-    data.gsc = fetchGSCData(siteUrl);
+    data.gsc = fetchGSCData();
     Logger.log('GSC 取得完了');
   } catch (e) {
     Logger.log('GSC エラー: ' + e.message);
@@ -65,16 +61,16 @@ function syncAll() {
     clicks_7d: data.gsc.clicks_7d || 0,
     impressions_7d: data.gsc.impressions_7d || 0,
     ctr_7d: data.gsc.ctr_7d || 0,
-    position_7d: data.gsc.position_7d || 0,
-    indexed_pages: data.gsc.indexed_pages || 0
+    position_7d: data.gsc.position_7d || 0
   });
 
   Logger.log('Firebase 保存完了');
 }
 
-/**
- * GA4 Data API
- */
+// ============================================
+// GA4 Data API (REST)
+// ============================================
+
 function fetchGA4Data(propertyId) {
   const result = {};
 
@@ -97,21 +93,20 @@ function fetchGA4Data(propertyId) {
 }
 
 function runGA4Report(propertyId, days) {
-  const endDate = new Date();
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - days);
+  const endDate = fmtDate(new Date());
+  const startDate = fmtDate(daysAgo(days));
 
-  const request = AnalyticsData.newRunReportRequest();
-  request.dateRanges = [AnalyticsData.newDateRange()];
-  request.dateRanges[0].startDate = formatDate(startDate);
-  request.dateRanges[0].endDate = formatDate(endDate);
-  request.metrics = [
-    Object.assign(AnalyticsData.newMetric(), { name: 'screenPageViews' }),
-    Object.assign(AnalyticsData.newMetric(), { name: 'totalUsers' }),
-    Object.assign(AnalyticsData.newMetric(), { name: 'sessions' })
-  ];
+  const payload = {
+    dateRanges: [{ startDate: startDate, endDate: endDate }],
+    metrics: [
+      { name: 'screenPageViews' },
+      { name: 'totalUsers' },
+      { name: 'sessions' }
+    ]
+  };
 
-  const response = AnalyticsData.Properties.runReport(request, 'properties/' + propertyId);
+  const url = `https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`;
+  const response = gapiPost(url, payload);
 
   if (!response.rows || response.rows.length === 0) {
     return { pageViews: 0, users: 0, sessions: 0 };
@@ -126,25 +121,19 @@ function runGA4Report(propertyId, days) {
 }
 
 function getGA4TopPages(propertyId, days) {
-  const endDate = new Date();
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - days);
+  const payload = {
+    dateRanges: [{ startDate: fmtDate(daysAgo(days)), endDate: fmtDate(new Date()) }],
+    dimensions: [{ name: 'pagePath' }],
+    metrics: [
+      { name: 'screenPageViews' },
+      { name: 'totalUsers' }
+    ],
+    limit: 20,
+    orderBys: [{ metric: { metricName: 'screenPageViews' }, desc: true }]
+  };
 
-  const request = AnalyticsData.newRunReportRequest();
-  request.dateRanges = [AnalyticsData.newDateRange()];
-  request.dateRanges[0].startDate = formatDate(startDate);
-  request.dateRanges[0].endDate = formatDate(endDate);
-  request.dimensions = [Object.assign(AnalyticsData.newDimension(), { name: 'pagePath' })];
-  request.metrics = [
-    Object.assign(AnalyticsData.newMetric(), { name: 'screenPageViews' }),
-    Object.assign(AnalyticsData.newMetric(), { name: 'totalUsers' })
-  ];
-  request.limit = 20;
-  request.orderBys = [AnalyticsData.newOrderBy()];
-  request.orderBys[0].metric = Object.assign(AnalyticsData.newMetricOrderBy(), { metricName: 'screenPageViews' });
-  request.orderBys[0].desc = true;
-
-  const response = AnalyticsData.Properties.runReport(request, 'properties/' + propertyId);
+  const url = `https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`;
+  const response = gapiPost(url, payload);
 
   if (!response.rows) return [];
 
@@ -155,74 +144,59 @@ function getGA4TopPages(propertyId, days) {
   }));
 }
 
-/**
- * Search Console API
- */
-function fetchGSCData(siteUrl) {
+// ============================================
+// Search Console API (REST)
+// ============================================
+
+function fetchGSCData() {
   const result = {};
 
   // 過去7日間のサマリー
-  const summary7d = getGSCSummary(siteUrl, 7);
+  const summary7d = getGSCSummary(7);
   result.clicks_7d = summary7d.clicks;
   result.impressions_7d = summary7d.impressions;
   result.ctr_7d = summary7d.ctr;
   result.position_7d = summary7d.position;
 
   // 過去28日間のサマリー
-  const summary28d = getGSCSummary(siteUrl, 28);
+  const summary28d = getGSCSummary(28);
   result.clicks_28d = summary28d.clicks;
   result.impressions_28d = summary28d.impressions;
   result.ctr_28d = summary28d.ctr;
   result.position_28d = summary28d.position;
 
   // トップクエリ（過去28日）
-  result.top_queries = getGSCTopQueries(siteUrl, 28);
+  result.top_queries = getGSCTopQueries(28);
 
   // トップページ（過去28日）
-  result.top_pages = getGSCTopPages(siteUrl, 28);
-
-  // インデックス数（サイトマップから推定）
-  try {
-    const sitemaps = SearchConsole.Sitemaps.list(siteUrl);
-    if (sitemaps.sitemap && sitemaps.sitemap.length > 0) {
-      let total = 0;
-      sitemaps.sitemap.forEach(sm => {
-        if (sm.contents) {
-          sm.contents.forEach(c => { total += (c.submitted || 0); });
-        }
-      });
-      result.indexed_pages = total;
-    }
-  } catch (e) {
-    Logger.log('サイトマップ取得エラー: ' + e.message);
-  }
+  result.top_pages = getGSCTopPages(28);
 
   return result;
 }
 
-function getGSCSummary(siteUrl, days) {
-  const endDate = new Date();
-  endDate.setDate(endDate.getDate() - 3); // GSCは3日前までのデータ
-  const startDate = new Date(endDate);
-  startDate.setDate(startDate.getDate() - days);
+function getGSCSummary(days) {
+  const endDate = fmtDate(daysAgo(3)); // GSCは3日前までのデータ
+  const startDate = fmtDate(daysAgo(days + 3));
+
+  const payload = {
+    startDate: startDate,
+    endDate: endDate,
+    dimensions: [],
+    rowLimit: 1
+  };
+
+  const url = `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(SITE_URL)}/searchAnalytics/query`;
 
   try {
-    const response = SearchConsole.Searchanalytics.query({
-      startDate: formatDate(startDate),
-      endDate: formatDate(endDate),
-      dimensions: [],
-      rowLimit: 1
-    }, siteUrl);
-
+    const response = gapiPost(url, payload);
     if (!response.rows || response.rows.length === 0) {
       return { clicks: 0, impressions: 0, ctr: 0, position: 0 };
     }
-
     const row = response.rows[0];
     return {
       clicks: row.clicks || 0,
       impressions: row.impressions || 0,
-      ctr: Math.round((row.ctr || 0) * 10000) / 100,  // パーセント（小数2桁）
+      ctr: Math.round((row.ctr || 0) * 10000) / 100,
       position: Math.round((row.position || 0) * 10) / 10
     };
   } catch (e) {
@@ -231,24 +205,19 @@ function getGSCSummary(siteUrl, days) {
   }
 }
 
-function getGSCTopQueries(siteUrl, days) {
-  const endDate = new Date();
-  endDate.setDate(endDate.getDate() - 3);
-  const startDate = new Date(endDate);
-  startDate.setDate(startDate.getDate() - days);
+function getGSCTopQueries(days) {
+  const payload = {
+    startDate: fmtDate(daysAgo(days + 3)),
+    endDate: fmtDate(daysAgo(3)),
+    dimensions: ['query'],
+    rowLimit: 20
+  };
+
+  const url = `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(SITE_URL)}/searchAnalytics/query`;
 
   try {
-    const response = SearchConsole.Searchanalytics.query({
-      startDate: formatDate(startDate),
-      endDate: formatDate(endDate),
-      dimensions: ['query'],
-      rowLimit: 20,
-      orderBy: 'clicks',
-      orderDirection: 'descending'
-    }, siteUrl);
-
+    const response = gapiPost(url, payload);
     if (!response.rows) return [];
-
     return response.rows.map(row => ({
       query: row.keys[0],
       clicks: row.clicks,
@@ -261,24 +230,19 @@ function getGSCTopQueries(siteUrl, days) {
   }
 }
 
-function getGSCTopPages(siteUrl, days) {
-  const endDate = new Date();
-  endDate.setDate(endDate.getDate() - 3);
-  const startDate = new Date(endDate);
-  startDate.setDate(startDate.getDate() - days);
+function getGSCTopPages(days) {
+  const payload = {
+    startDate: fmtDate(daysAgo(days + 3)),
+    endDate: fmtDate(daysAgo(3)),
+    dimensions: ['page'],
+    rowLimit: 20
+  };
+
+  const url = `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(SITE_URL)}/searchAnalytics/query`;
 
   try {
-    const response = SearchConsole.Searchanalytics.query({
-      startDate: formatDate(startDate),
-      endDate: formatDate(endDate),
-      dimensions: ['page'],
-      rowLimit: 20,
-      orderBy: 'clicks',
-      orderDirection: 'descending'
-    }, siteUrl);
-
+    const response = gapiPost(url, payload);
     if (!response.rows) return [];
-
     return response.rows.map(row => ({
       page: row.keys[0],
       clicks: row.clicks,
@@ -291,9 +255,125 @@ function getGSCTopPages(siteUrl, days) {
   }
 }
 
+// ============================================
+// GA4 Property ID 自動取得
+// ============================================
+
+function findGA4PropertyId() {
+  const url = 'https://analyticsadmin.googleapis.com/v1beta/accountSummaries';
+  try {
+    const response = gapiGet(url);
+    if (!response.accountSummaries) {
+      Logger.log('GA4アカウントが見つかりません');
+      return null;
+    }
+
+    for (const account of response.accountSummaries) {
+      if (!account.propertySummaries) continue;
+      for (const prop of account.propertySummaries) {
+        // tokurashi を含むプロパティを探す
+        const displayName = (prop.displayName || '').toLowerCase();
+        const propertyId = prop.property.replace('properties/', '');
+        Logger.log(`Found: ${prop.displayName} (ID: ${propertyId})`);
+
+        if (displayName.includes('tokurashi') || displayName.includes('トクラシ')) {
+          Logger.log(`→ トクラシのプロパティを発見: ${propertyId}`);
+          return propertyId;
+        }
+      }
+    }
+
+    // 見つからなければ全プロパティをログに出して手動選択
+    Logger.log('「tokurashi」を含むプロパティが見つかりませんでした。');
+    Logger.log('上のリストからプロパティIDを確認し、Script Properties に GA4_PROPERTY_ID として設定してください。');
+    return null;
+  } catch (e) {
+    Logger.log('GA4 Admin API エラー: ' + e.message);
+    return null;
+  }
+}
+
+// ============================================
+// セットアップ & ユーティリティ
+// ============================================
+
 /**
- * Firebase helpers
+ * 初期セットアップ: 1回だけ手動実行
  */
+function setup() {
+  const props = PropertiesService.getScriptProperties();
+
+  // GA4 Property ID 自動取得
+  let ga4Id = props.getProperty('GA4_PROPERTY_ID');
+  if (!ga4Id) {
+    Logger.log('GA4_PROPERTY_ID が未設定。自動取得を試みます...');
+    ga4Id = findGA4PropertyId();
+    if (ga4Id) {
+      props.setProperty('GA4_PROPERTY_ID', ga4Id);
+      Logger.log('GA4_PROPERTY_ID を自動設定: ' + ga4Id);
+    } else {
+      Logger.log('⚠️ GA4_PROPERTY_ID の自動取得に失敗。手動設定してください。');
+      Logger.log('手順: Script Properties → GA4_PROPERTY_ID → GA4管理画面のプロパティID（数値）');
+    }
+  } else {
+    Logger.log('GA4_PROPERTY_ID: ' + ga4Id + '（設定済み）');
+  }
+
+  // 既存トリガー削除
+  ScriptApp.getProjectTriggers().forEach(t => {
+    if (t.getHandlerFunction() === 'syncAll') {
+      ScriptApp.deleteTrigger(t);
+      Logger.log('既存トリガー削除');
+    }
+  });
+
+  // 毎日6時JSTのトリガー作成
+  ScriptApp.newTrigger('syncAll')
+    .timeBased()
+    .everyDays(1)
+    .atHour(6)
+    .create();
+  Logger.log('✅ トリガー作成: 毎日6時にsyncAll()を実行');
+
+  // 初回実行
+  Logger.log('初回同期を実行中...');
+  syncAll();
+  Logger.log('✅ セットアップ完了！');
+}
+
+/**
+ * Google API ヘルパー
+ */
+function gapiPost(url, payload) {
+  const options = {
+    method: 'post',
+    contentType: 'application/json',
+    headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
+  };
+  const res = UrlFetchApp.fetch(url, options);
+  const code = res.getResponseCode();
+  if (code !== 200) {
+    throw new Error(`API error ${code}: ${res.getContentText().substring(0, 200)}`);
+  }
+  return JSON.parse(res.getContentText());
+}
+
+function gapiGet(url) {
+  const options = {
+    method: 'get',
+    headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
+    muteHttpExceptions: true
+  };
+  const res = UrlFetchApp.fetch(url, options);
+  const code = res.getResponseCode();
+  if (code !== 200) {
+    throw new Error(`API error ${code}: ${res.getContentText().substring(0, 200)}`);
+  }
+  return JSON.parse(res.getContentText());
+}
+
 function firebasePut(path, data) {
   const options = {
     method: 'put',
@@ -304,12 +384,18 @@ function firebasePut(path, data) {
   UrlFetchApp.fetch(FIREBASE_URL + path, options);
 }
 
-function formatDate(date) {
+function daysAgo(n) {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return d;
+}
+
+function fmtDate(date) {
   return Utilities.formatDate(date, 'Asia/Tokyo', 'yyyy-MM-dd');
 }
 
 /**
- * テスト用: 手動実行で動作確認
+ * テスト: 手動実行で動作確認
  */
 function testSync() {
   syncAll();
