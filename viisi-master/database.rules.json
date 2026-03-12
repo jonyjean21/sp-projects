@@ -98,6 +98,10 @@
       ".read": true,
       ".write": true,
       ".indexOn": ["status", "created_at"]
+    },
+    "daily-summaries": {
+      ".read": true,
+      ".write": true
     }
   }
 }
