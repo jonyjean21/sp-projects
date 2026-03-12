@@ -1,8 +1,9 @@
 /**
  * BuildHub X (@buildhub_jp) 自動投稿 GAS
  *
- * 1日2投稿（朝9時・夜20時）
- * Gemini でClaude Code/AI開発Tipsを生成 → X API v2 で直接投稿
+ * フロー:
+ *   generateQueue(14) → Firebase /buildhub-x-queue に保存（手動/週次実行）
+ *   9:00/20:00 トリガー → キューから最古のpendingを1件投稿
  *
  * Script Properties:
  *   GEMINI_API_KEY          — Google AI Studio の API キー
@@ -11,6 +12,8 @@
  *   X_ACCESS_TOKEN          — Access Token (@buildhub_jp)
  *   X_ACCESS_TOKEN_SECRET   — Access Token Secret (@buildhub_jp)
  */
+
+const FIREBASE_BASE = 'https://viisi-master-app-default-rtdb.firebaseio.com';
 
 const BH_CONFIG = {
   persona: 'BuildHub編集部。Claude Code・AI開発ツールの最新情報を発信。実際に使って試した知見をシェア。',
@@ -53,36 +56,126 @@ const BH_CONFIG = {
   maxTweetLength: 270,
 };
 
-// ===== メイン =====
+// ===== メイン: キューから1件取り出して投稿 =====
 
 function generateAndPost() {
   const props = PropertiesService.getScriptProperties();
-  const geminiKey = props.getProperty('GEMINI_API_KEY');
-  const apiKey    = props.getProperty('X_API_KEY');
-  const apiSecret = props.getProperty('X_API_SECRET');
-  const token     = props.getProperty('X_ACCESS_TOKEN');
+  const apiKey      = props.getProperty('X_API_KEY');
+  const apiSecret   = props.getProperty('X_API_SECRET');
+  const token       = props.getProperty('X_ACCESS_TOKEN');
   const tokenSecret = props.getProperty('X_ACCESS_TOKEN_SECRET');
 
-  if (!geminiKey || !apiKey || !apiSecret || !token || !tokenSecret) {
-    Logger.log('ERROR: 必須プロパティ未設定');
+  if (!apiKey || !apiSecret || !token || !tokenSecret) {
+    Logger.log('ERROR: X API プロパティ未設定');
     return;
   }
 
-  // jitter（0〜15分）
-  Utilities.sleep(Math.floor(Math.random() * 15 * 60 * 1000));
+  // jitter（0〜3分）
+  Utilities.sleep(Math.floor(Math.random() * 3 * 60 * 1000));
 
-  const category = pickCategory_();
-  const theme = category.themes[Math.floor(Math.random() * category.themes.length)];
-
-  const tweet = callGemini_(geminiKey, category.name, theme);
-  if (!tweet) { Logger.log('Gemini生成失敗'); return; }
-
-  const result = postTweet_(apiKey, apiSecret, token, tokenSecret, tweet);
-  if (result) {
-    Logger.log(`✅ 投稿完了: [${category.name}/${theme}]\n${tweet}`);
-  } else {
-    Logger.log(`❌ 投稿失敗: [${category.name}/${theme}]`);
+  // キューから最古のpendingを取得
+  const item = getNextPending_();
+  if (!item) {
+    Logger.log('⚠️ キューが空です。GASで generateQueue() を実行してください');
+    return;
   }
+
+  Logger.log(`投稿: [${item.category}/${item.theme}]\n${item.text}`);
+
+  const xId = postTweet_(apiKey, apiSecret, token, tokenSecret, item.text);
+  if (xId) {
+    updateQueueItem_(item.id, {
+      status: 'posted',
+      posted_at: new Date().toISOString(),
+      x_id: xId,
+    });
+    Logger.log(`✅ 投稿完了: x_id=${xId}`);
+  } else {
+    Logger.log('❌ 投稿失敗（キューには残ります）');
+  }
+}
+
+// ===== キュー生成: n件生成してFirebaseに保存 =====
+
+function generateQueue(n) {
+  n = n || 14;
+  const props = PropertiesService.getScriptProperties();
+  const geminiKey = props.getProperty('GEMINI_API_KEY');
+  if (!geminiKey) { Logger.log('GEMINI_API_KEY未設定'); return; }
+
+  Logger.log(`${n}件のキュー生成開始...`);
+  let saved = 0;
+
+  for (let i = 0; i < n; i++) {
+    const category = pickCategory_();
+    const theme = category.themes[Math.floor(Math.random() * category.themes.length)];
+    const text = callGemini_(geminiKey, category.name, theme);
+
+    if (!text) {
+      Logger.log(`[${i+1}/${n}] 生成失敗 [${category.name}/${theme}]`);
+      continue;
+    }
+
+    saveToQueue_({
+      text: text,
+      category: category.name,
+      theme: theme,
+      status: 'pending',
+      created_at: new Date().toISOString(),
+    });
+
+    saved++;
+    Logger.log(`[${i+1}/${n}] 保存: [${category.name}/${theme}]\n${text.substring(0, 60)}...`);
+    Utilities.sleep(1500); // Gemini API レートリミット対策
+  }
+
+  Logger.log(`完了: ${saved}/${n}件 キューに保存`);
+}
+
+// ===== Firebase: キュー操作 =====
+
+function getNextPending_() {
+  const url = `${FIREBASE_BASE}/buildhub-x-queue.json`;
+  const res = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+  if (res.getResponseCode() !== 200) {
+    Logger.log('Firebase取得失敗: ' + res.getResponseCode());
+    return null;
+  }
+  const data = JSON.parse(res.getContentText());
+  if (!data) return null;
+
+  let oldest = null;
+  for (const [id, item] of Object.entries(data)) {
+    if (item.status === 'pending') {
+      if (!oldest || item.created_at < oldest.created_at) {
+        oldest = { id, ...item };
+      }
+    }
+  }
+  return oldest;
+}
+
+function saveToQueue_(item) {
+  const url = `${FIREBASE_BASE}/buildhub-x-queue.json`;
+  const res = UrlFetchApp.fetch(url, {
+    method: 'post',
+    contentType: 'application/json',
+    payload: JSON.stringify(item),
+    muteHttpExceptions: true,
+  });
+  if (res.getResponseCode() !== 200) {
+    Logger.log('Firebase保存失敗: ' + res.getContentText());
+  }
+}
+
+function updateQueueItem_(id, updates) {
+  const url = `${FIREBASE_BASE}/buildhub-x-queue/${id}.json`;
+  UrlFetchApp.fetch(url, {
+    method: 'patch',
+    contentType: 'application/json',
+    payload: JSON.stringify(updates),
+    muteHttpExceptions: true,
+  });
 }
 
 // ===== X API v2 投稿（OAuth 1.0a） =====
@@ -107,17 +200,27 @@ function postTweet_(apiKey, apiSecret, token, tokenSecret, text) {
 
     const code = res.getResponseCode();
     Logger.log(`X API response: ${code} ${res.getContentText()}`);
-    return code === 201;
+    if (code === 201) {
+      const json = JSON.parse(res.getContentText());
+      return (json.data && json.data.id) ? json.data.id : 'unknown';
+    }
+    return null;
   } catch (e) {
     Logger.log('X API exception: ' + e.message);
-    return false;
+    return null;
   }
 }
 
 // ===== OAuth 1.0a 署名生成 =====
 
+function rfc3986Encode_(str) {
+  return encodeURIComponent(String(str))
+    .replace(/!/g, '%21').replace(/'/g, '%27')
+    .replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\*/g, '%2A');
+}
+
 function buildOAuth1Header_(method, url, consumerKey, consumerSecret, token, tokenSecret) {
-  const nonce = Utilities.base64Encode(Utilities.getUuid()).replace(/[^a-zA-Z0-9]/g, '');
+  const nonce = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
   const timestamp = Math.floor(Date.now() / 1000).toString();
 
   const oauthParams = {
@@ -129,37 +232,39 @@ function buildOAuth1Header_(method, url, consumerKey, consumerSecret, token, tok
     oauth_version: '1.0',
   };
 
-  // シグネチャ生成
   const signature = buildSignature_(method, url, oauthParams, consumerSecret, tokenSecret);
   oauthParams['oauth_signature'] = signature;
 
-  // Authorizationヘッダー組み立て
   const headerParts = Object.keys(oauthParams).sort().map(k =>
-    `${encodeURIComponent(k)}="${encodeURIComponent(oauthParams[k])}"`
+    `${rfc3986Encode_(k)}="${rfc3986Encode_(oauthParams[k])}"`
   );
 
   return 'OAuth ' + headerParts.join(', ');
 }
 
 function buildSignature_(method, url, oauthParams, consumerSecret, tokenSecret) {
-  // パラメータを辞書順にソートしてエンコード
   const sortedParams = Object.keys(oauthParams).sort().map(k =>
-    `${encodeURIComponent(k)}=${encodeURIComponent(oauthParams[k])}`
+    `${rfc3986Encode_(k)}=${rfc3986Encode_(oauthParams[k])}`
   ).join('&');
 
-  // シグネチャベース文字列
   const baseString = [
     method.toUpperCase(),
-    encodeURIComponent(url),
-    encodeURIComponent(sortedParams),
+    rfc3986Encode_(url),
+    rfc3986Encode_(sortedParams),
   ].join('&');
 
-  // 署名キー
-  const signingKey = `${encodeURIComponent(consumerSecret)}&${encodeURIComponent(tokenSecret)}`;
+  const signingKey = `${rfc3986Encode_(consumerSecret)}&${rfc3986Encode_(tokenSecret)}`;
 
-  // HMAC-SHA1署名
-  const signature = Utilities.computeHmacSha1Signature(baseString, signingKey);
-  return Utilities.base64Encode(signature);
+  Logger.log('baseString: ' + baseString.substring(0, 100));
+  Logger.log('signingKey prefix: ' + signingKey.substring(0, 20));
+
+  const signatureBytes = Utilities.computeHmacSignature(
+    Utilities.MacAlgorithm.HMAC_SHA_1,
+    baseString,
+    signingKey,
+    Utilities.Charset.UTF_8
+  );
+  return Utilities.base64Encode(signatureBytes);
 }
 
 // ===== Gemini API =====
@@ -231,6 +336,55 @@ function createTriggers() {
   Logger.log('トリガー設定完了: 9:00, 20:00 JST');
 }
 
+// ===== テスト: OAuth署名アルゴリズム検証（ダミー値） =====
+// Python期待値: L7E67PHpVQzqIubl1Wmi7OutQ5M=
+function testAlgorithm() {
+  const sig = buildSignature_('GET', 'https://api.twitter.com/2/users/me',
+    {
+      oauth_consumer_key: 'abc123',
+      oauth_nonce: 'fixednonce',
+      oauth_signature_method: 'HMAC-SHA1',
+      oauth_timestamp: '1000000000',
+      oauth_token: 'token456',
+      oauth_version: '1.0',
+    },
+    'secret123', 'tokensec789'
+  );
+  Logger.log('GAS signature  : ' + sig);
+  Logger.log('Python expected: L7E67PHpVQzqIubl1Wmi7OutQ5M=');
+  Logger.log('match: ' + (sig === 'L7E67PHpVQzqIubl1Wmi7OutQ5M='));
+}
+
+// ===== テスト: OAuth認証確認（GET /2/users/me） =====
+
+function testAuth() {
+  const props = PropertiesService.getScriptProperties();
+  const apiKey     = props.getProperty('X_API_KEY');
+  const apiSecret  = props.getProperty('X_API_SECRET');
+  const token      = props.getProperty('X_ACCESS_TOKEN');
+  const tokenSecret = props.getProperty('X_ACCESS_TOKEN_SECRET');
+
+  Logger.log(`X_API_KEY: ...${apiKey ? apiKey.slice(-6) : 'NULL'} (len=${apiKey ? apiKey.length : 0})`);
+  Logger.log(`X_API_SECRET: ...${apiSecret ? apiSecret.slice(-6) : 'NULL'} (len=${apiSecret ? apiSecret.length : 0})`);
+  Logger.log(`X_ACCESS_TOKEN: ${token ? token.substring(0,19) : 'NULL'}... (len=${token ? token.length : 0})`);
+  Logger.log(`X_ACCESS_TOKEN_SECRET: ...${tokenSecret ? tokenSecret.slice(-6) : 'NULL'} (len=${tokenSecret ? tokenSecret.length : 0})`);
+
+  const urlV2 = 'https://api.twitter.com/2/users/me';
+  const authV2 = buildOAuth1Header_('GET', urlV2, apiKey, apiSecret, token, tokenSecret);
+  const resV2 = UrlFetchApp.fetch(urlV2, {
+    method: 'get', headers: { 'Authorization': authV2 }, muteHttpExceptions: true,
+  });
+  Logger.log(`v2 GET /2/users/me: ${resV2.getResponseCode()}`);
+
+  const urlV1 = 'https://api.twitter.com/1.1/account/verify_credentials.json';
+  const authV1 = buildOAuth1Header_('GET', urlV1, apiKey, apiSecret, token, tokenSecret);
+  const resV1 = UrlFetchApp.fetch(urlV1, {
+    method: 'get', headers: { 'Authorization': authV1 }, muteHttpExceptions: true,
+  });
+  Logger.log(`v1.1 verify_credentials: ${resV1.getResponseCode()}`);
+  Logger.log(resV1.getContentText().substring(0, 300));
+}
+
 // ===== テスト: 生成のみ（投稿しない） =====
 
 function testGeminiOnly() {
@@ -242,8 +396,46 @@ function testGeminiOnly() {
   Logger.log(callGemini_(key, cat.name, theme) || '失敗');
 }
 
-// ===== テスト: 実際に1件投稿 =====
+// ===== テスト: キュー確認（Firebaseから取得して表示） =====
+
+function testQueueStatus() {
+  const url = `${FIREBASE_BASE}/buildhub-x-queue.json`;
+  const res = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+  const data = JSON.parse(res.getContentText());
+  if (!data) { Logger.log('キューが空です'); return; }
+
+  const items = Object.entries(data).map(([id, v]) => ({ id, ...v }));
+  const pending = items.filter(i => i.status === 'pending').sort((a, b) => a.created_at.localeCompare(b.created_at));
+  const posted  = items.filter(i => i.status === 'posted').sort((a, b) => b.posted_at.localeCompare(a.posted_at));
+
+  Logger.log(`=== pending: ${pending.length}件 ===`);
+  pending.forEach((i, n) => Logger.log(`[${n+1}] [${i.category}] ${i.text.substring(0, 50)}...`));
+  Logger.log(`=== posted: ${posted.length}件 ===`);
+  posted.slice(0, 5).forEach((i, n) => Logger.log(`[${n+1}] ${i.posted_at} [${i.category}] ${i.text.substring(0, 50)}...`));
+}
+
+// ===== テスト: 実際に1件投稿（jitterなし、キュー経由） =====
 
 function testPost() {
-  generateAndPost();
+  const props = PropertiesService.getScriptProperties();
+  const apiKey    = props.getProperty('X_API_KEY');
+  const apiSecret = props.getProperty('X_API_SECRET');
+  const token     = props.getProperty('X_ACCESS_TOKEN');
+  const tokenSecret = props.getProperty('X_ACCESS_TOKEN_SECRET');
+
+  if (!apiKey || !apiSecret || !token || !tokenSecret) {
+    Logger.log('ERROR: 必須プロパティ未設定'); return;
+  }
+
+  const item = getNextPending_();
+  if (!item) { Logger.log('キューが空です'); return; }
+
+  Logger.log(`投稿予定: [${item.category}/${item.theme}]\n${item.text}`);
+  const xId = postTweet_(apiKey, apiSecret, token, tokenSecret, item.text);
+  if (xId) {
+    updateQueueItem_(item.id, { status: 'posted', posted_at: new Date().toISOString(), x_id: xId });
+    Logger.log('✅ 投稿成功: x_id=' + xId);
+  } else {
+    Logger.log('❌ 投稿失敗');
+  }
 }

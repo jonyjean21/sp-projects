@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BuildHub X 投稿キュー管理</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Hiragino Sans", sans-serif; background: #0d1117; color: #e6edf3; line-height: 1.6; }
+
+  .header { background: linear-gradient(135deg, #0d1117 0%, #161b22 100%); border-bottom: 1px solid #30363d; padding: 20px 24px; }
+  .header-inner { max-width: 960px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .header h1 { font-size: 18px; font-weight: 800; }
+  .header h1 span { color: #1d9bf0; }
+  .header-meta { font-size: 12px; color: #8b949e; margin-top: 2px; }
+  .header-actions { display: flex; gap: 8px; align-items: center; }
+  .btn-refresh { background: none; border: 1px solid #30363d; color: #e6edf3; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; transition: .2s; }
+  .btn-refresh:hover { border-color: #1d9bf0; color: #1d9bf0; }
+  .header-link { font-size: 12px; color: #8b949e; text-decoration: none; padding: 6px 12px; border: 1px solid #30363d; border-radius: 6px; transition: .2s; }
+  .header-link:hover { color: #e6edf3; border-color: #8b949e; }
+
+  .container { max-width: 960px; margin: 0 auto; padding: 20px 16px; }
+
+  .stats-row { display: flex; gap: 12px; margin-bottom: 20px; }
+  .stat-card { flex: 1; background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 16px; text-align: center; }
+  .stat-num { font-size: 32px; font-weight: 900; line-height: 1; }
+  .stat-label { font-size: 12px; color: #8b949e; margin-top: 4px; }
+  .stat-pending { color: #f0883e; }
+  .stat-posted { color: #3fb950; }
+
+  .tabs { display: flex; gap: 0; margin-bottom: 20px; background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 4px; }
+  .tab { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: 700; border-radius: 8px; cursor: pointer; transition: .2s; color: #8b949e; }
+  .tab.active { background: #1d9bf0; color: #fff; }
+  .tab:hover:not(.active) { background: #21262d; color: #e6edf3; }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .tweet-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .tweet-card { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 16px; transition: border-color .2s; }
+  .tweet-card:hover { border-color: #8b949e; }
+  .tweet-card.next-up { border-color: #1d9bf0; background: #0d1117; }
+  .tweet-card.next-up::before { content: '次に投稿'; display: inline-block; font-size: 10px; font-weight: 700; color: #1d9bf0; background: #0e2a42; padding: 2px 10px; border-radius: 20px; margin-bottom: 10px; }
+
+  .tweet-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 20px; }
+  .badge-cat { background: #1f3244; color: #79c0ff; }
+  .badge-theme { background: #1f2d22; color: #7ee787; }
+  .badge-posted { background: #1a2f1a; color: #3fb950; }
+  .badge-pending { background: #2a1f0e; color: #f0883e; }
+  .tweet-num { font-size: 11px; color: #484f58; margin-left: auto; }
+
+  .tweet-text { font-size: 14px; line-height: 1.8; color: #e6edf3; white-space: pre-wrap; word-break: break-word; }
+
+  .tweet-footer { display: flex; align-items: center; gap: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #21262d; }
+  .tweet-date { font-size: 11px; color: #484f58; }
+  .tweet-xlink { font-size: 11px; color: #1d9bf0; text-decoration: none; margin-left: auto; }
+  .tweet-xlink:hover { text-decoration: underline; }
+
+  .char-count { font-size: 11px; color: #8b949e; }
+  .char-count.over { color: #f85149; }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: #8b949e; }
+  .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  .loading { text-align: center; padding: 40px; color: #8b949e; font-size: 14px; }
+  .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid #30363d; border-top-color: #1d9bf0; border-radius: 50%; animation: spin .8s linear infinite; margin-right: 8px; vertical-align: middle; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .info-banner { background: #0e2a42; border: 1px solid #1d9bf0; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: #79c0ff; }
+  .info-banner strong { color: #1d9bf0; }
+
+  @media (max-width: 600px) {
+    .stats-row { flex-wrap: wrap; }
+    .stat-card { min-width: calc(50% - 6px); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <h1><span>BuildHub X</span> 投稿キュー管理</h1>
+      <div class="header-meta">@buildhub_jp ／ pending=投稿待ち、posted=投稿済み</div>
+    </div>
+    <div class="header-actions">
+      <a class="header-link" href="https://twitter.com/buildhub_jp" target="_blank">X プロフィール</a>
+      <a class="header-link" href="https://www.buildhub.jp/wp-admin/" target="_blank">WP管理</a>
+      <button class="btn-refresh" onclick="loadAll()">↻ 更新</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="info-banner">
+    <strong>使い方:</strong> GASで <code>generateQueue(14)</code> を実行するとキューに14件追加されます。毎朝9:00・夜20:00に自動投稿されます。
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-num stat-pending" id="stat-pending">-</div>
+      <div class="stat-label">投稿待ち</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num stat-posted" id="stat-posted">-</div>
+      <div class="stat-label">投稿済み</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-days" style="color:#8b949e">-</div>
+      <div class="stat-label">残り日数（1日2投稿換算）</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="pending">予定 <span id="tab-pending-count"></span></div>
+    <div class="tab" data-tab="posted">投稿済み <span id="tab-posted-count"></span></div>
+  </div>
+
+  <div id="pending" class="tab-content active">
+    <div id="pending-list"><div class="loading"><span class="spinner"></span>読み込み中...</div></div>
+  </div>
+
+  <div id="posted" class="tab-content">
+    <div id="posted-list"><div class="loading"><span class="spinner"></span>読み込み中...</div></div>
+  </div>
+
+</div>
+
+<script>
+const FIREBASE_URL = 'https://viisi-master-app-default-rtdb.firebaseio.com/buildhub-x-queue.json';
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.tab).classList.add('active');
+  });
+});
+
+function fmtDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function charCount(text) {
+  // Twitter文字数カウント（日本語=2、英数字=1、URL=23として簡易計算）
+  let count = 0;
+  for (const c of text) {
+    count += /[\u0000-\u00ff]/.test(c) ? 1 : 2;
+  }
+  return count;
+}
+
+function renderCard(item, index, isNextUp) {
+  const chars = charCount(item.text);
+  const overClass = chars > 280 ? ' over' : '';
+  const nextUpClass = isNextUp ? ' next-up' : '';
+  const xLink = item.x_id && item.x_id !== 'unknown'
+    ? `<a class="tweet-xlink" href="https://twitter.com/buildhub_jp/status/${item.x_id}" target="_blank">Xで見る →</a>`
+    : '';
+  const postedAt = item.posted_at
+    ? `<span class="tweet-date">投稿: ${fmtDate(item.posted_at)}</span>`
+    : `<span class="tweet-date">作成: ${fmtDate(item.created_at)}</span>`;
+  const statusBadge = item.status === 'posted'
+    ? '<span class="badge badge-posted">投稿済み</span>'
+    : '<span class="badge badge-pending">予定</span>';
+
+  return `
+    <div class="tweet-card${nextUpClass}">
+      <div class="tweet-meta">
+        ${statusBadge}
+        <span class="badge badge-cat">${item.category || '?'}</span>
+        <span class="badge badge-theme">${item.theme || '?'}</span>
+        <span class="tweet-num">#${index + 1}</span>
+      </div>
+      <div class="tweet-text">${escHtml(item.text)}</div>
+      <div class="tweet-footer">
+        ${postedAt}
+        <span class="char-count${overClass}">${chars}字</span>
+        ${xLink}
+      </div>
+    </div>
+  `;
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+async function loadAll() {
+  document.getElementById('pending-list').innerHTML = '<div class="loading"><span class="spinner"></span>読み込み中...</div>';
+  document.getElementById('posted-list').innerHTML = '<div class="loading"><span class="spinner"></span>読み込み中...</div>';
+
+  try {
+    const res = await fetch(FIREBASE_URL);
+    const data = await res.json();
+
+    if (!data) {
+      document.getElementById('pending-list').innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>キューが空です<br>GASで generateQueue(14) を実行してください</p></div>';
+      document.getElementById('posted-list').innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>投稿済みデータがありません</p></div>';
+      document.getElementById('stat-pending').textContent = '0';
+      document.getElementById('stat-posted').textContent = '0';
+      document.getElementById('stat-days').textContent = '0';
+      return;
+    }
+
+    const items = Object.entries(data).map(([id, v]) => ({ id, ...v }));
+    const pending = items.filter(i => i.status === 'pending').sort((a, b) => a.created_at.localeCompare(b.created_at));
+    const posted  = items.filter(i => i.status === 'posted').sort((a, b) => (b.posted_at || '').localeCompare(a.posted_at || ''));
+
+    // Stats
+    document.getElementById('stat-pending').textContent = pending.length;
+    document.getElementById('stat-posted').textContent = posted.length;
+    document.getElementById('stat-days').textContent = Math.ceil(pending.length / 2);
+    document.getElementById('tab-pending-count').textContent = pending.length > 0 ? `(${pending.length})` : '';
+    document.getElementById('tab-posted-count').textContent = posted.length > 0 ? `(${posted.length})` : '';
+
+    // Pending tab
+    if (pending.length === 0) {
+      document.getElementById('pending-list').innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>投稿待ちがありません<br>GASで generateQueue(14) を実行してください</p></div>';
+    } else {
+      document.getElementById('pending-list').innerHTML = '<div class="tweet-list">' + pending.map((item, i) => renderCard(item, i, i === 0)).join('') + '</div>';
+    }
+
+    // Posted tab
+    if (posted.length === 0) {
+      document.getElementById('posted-list').innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>まだ投稿履歴がありません</p></div>';
+    } else {
+      document.getElementById('posted-list').innerHTML = '<div class="tweet-list">' + posted.map((item, i) => renderCard(item, i, false)).join('') + '</div>';
+    }
+
+  } catch (e) {
+    const errHtml = `<div class="empty-state"><div class="icon">⚠️</div><p>読み込み失敗: ${escHtml(e.message)}</p></div>`;
+    document.getElementById('pending-list').innerHTML = errHtml;
+    document.getElementById('posted-list').innerHTML = errHtml;
+  }
+}
+
+loadAll();
+</script>
+</body>
+</html>
