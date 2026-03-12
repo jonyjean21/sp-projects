@@ -225,7 +225,7 @@ def build_html(result, date_str, raw_items):
         html += '</div>\n\n'
 
     html += f"<p><small>このまとめはAIが自動生成しています。{date_str}時点の情報です。</small></p>"
-    html += '\n<div style="background:#1a1a1a;border-radius:10px;padding:28px 24px;margin:32px 0;text-align:center;"><p style="color:#c8a06a;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin:0 0 8px;">Newsletter</p><p style="color:#f2ede6;font-size:18px;font-weight:800;margin:0 0 6px;">BuildHub Newsletter</p><p style="color:#888;font-size:13px;margin:0 0 20px;line-height:1.7;">Claude Code・AI開発ツールの最新情報を週次でお届け。無料で購読できます。</p><a href="https://buildhub-jp.beehiiv.com/subscribe" target="_blank" rel="noopener" style="display:inline-block;background:#c8a06a;color:#1a1a1a;font-size:14px;font-weight:800;padding:12px 32px;border-radius:6px;text-decoration:none;">無料で購読する →</a></div>\n'
+    html += '\n<div style="background:#1a1a1a;border-radius:10px;padding:28px 24px;margin:32px 0;text-align:center;"><p style="color:#c8a06a;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin:0 0 8px;">Newsletter</p><p style="color:#f2ede6;font-size:18px;font-weight:800;margin:0 0 6px;">BuildHub Newsletter</p><p style="color:#888;font-size:13px;margin:0 0 20px;line-height:1.7;">Claude Code・AI開発ツールの最新情報を週次でお届け。無料で購読できます。</p><a href="https://buildhub.beehiiv.com/subscribe" target="_blank" rel="noopener" style="display:inline-block;background:#c8a06a;color:#1a1a1a;font-size:14px;font-weight:800;padding:12px 32px;border-radius:6px;text-decoration:none;">無料で購読する →</a></div>\n'
     return html
 
 
