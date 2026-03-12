@@ -495,11 +495,11 @@ function reportNav(dir) {
   loadReport(input.value);
 }
 
-async function generateDailySummary() {
-  const dateStr = document.getElementById('reportDate').value;
+async function generateDailySummary(dateStr) {
+  if (!dateStr) dateStr = document.getElementById('reportDate').value;
   if (!dateStr) return;
   const btn = document.getElementById('genSummaryBtn');
-  btn.disabled = true; btn.textContent = '生成中...';
+  if (btn) { btn.disabled = true; btn.textContent = '生成中...'; }
   const container = document.getElementById('reportContent');
   container.innerHTML = `<div class="empty"><span class="spinner"></span> Geminiがサマリーを生成中...</div>`;
 
@@ -558,7 +558,7 @@ ${logText}
   } catch(e) {
     container.innerHTML = `<div class="empty">生成エラー: ${esc(e.message)}</div>`;
   } finally {
-    btn.disabled = false; btn.textContent = '✨ サマリー生成';
+    if (btn) { btn.disabled = false; btn.textContent = '✨ 再生成'; }
   }
 }
 
@@ -606,12 +606,13 @@ async function loadReport(dateStr) {
   } catch {}
 
   if (!report || (report.stats?.total_commits || 0) === 0) {
-    container.innerHTML = `<div class="empty"><span class="spinner"></span> 活動ログを確認中...</div>`;
+    container.innerHTML = `<div class="empty"><span class="spinner"></span> 確認中...</div>`;
     try {
       const r = await fetch(`${FIREBASE_URL}/daily-activities/${dateStr}.json`);
       const acts = await r.json();
       if (acts && Object.keys(acts).length > 0) {
-        container.innerHTML = renderActivityLog(dateStr, acts);
+        // activities あり → 自動でサマリー生成
+        await generateDailySummary(dateStr);
       } else {
         container.innerHTML = `<div class="empty">この日は活動なし（${dateStr}）</div>`;
       }
