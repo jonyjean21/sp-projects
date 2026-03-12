@@ -150,6 +150,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
   <div class="tab" onclick="switchTab('report')">日報閲覧</div>
   <div class="tab" onclick="switchTab('stats')">統計</div>
   <div class="tab" onclick="switchTab('export')">エクスポート</div>
+  <div class="tab" onclick="switchTab('pipeline')">パイプライン</div>
 </div>
 
 <div class="content">
@@ -195,6 +196,135 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
     </div>
     <div id="exportContent"><div class="empty">日付を選んで読み込んでください</div></div>
   </div>
+
+  <!-- ===== Pipeline Panel ===== -->
+  <div class="panel" id="panel-pipeline">
+    <div style="margin-bottom:1.2rem">
+      <h2 style="font-size:1rem;color:var(--text);margin-bottom:0.3rem">AUTO-PROCESS パイプライン</h2>
+      <p style="font-size:0.78rem;color:var(--dim)">セッション開始時にフックが自動チェックし、pending件数があれば処理を実行</p>
+    </div>
+
+    <!-- トリガー -->
+    <div style="background:var(--card);border:1px solid var(--accent);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.2rem;display:flex;align-items:center;gap:1rem">
+      <div style="width:36px;height:36px;background:rgba(99,102,241,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">⚡</div>
+      <div>
+        <div style="font-size:0.82rem;font-weight:700;color:var(--accent)">TRIGGER: セッション開始</div>
+        <div style="font-size:0.75rem;color:var(--dim);margin-top:2px">.claude/hooks/session-start.sh が実行 → Firebase 各キューを確認 → pending があれば AUTO-PROCESS を出力</div>
+      </div>
+    </div>
+
+    <!-- フロー矢印 -->
+    <div style="text-align:center;color:var(--dim);font-size:1rem;margin-bottom:1rem">▼</div>
+
+    <!-- 5フロー グリッド -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:0.8rem;margin-bottom:1.2rem">
+
+      <!-- 大会情報 -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem">
+        <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.8rem">
+          <span style="font-size:1rem">🏆</span>
+          <span style="font-size:0.85rem;font-weight:700;color:var(--text)">大会情報</span>
+          <span style="margin-left:auto;font-size:0.65rem;padding:2px 8px;background:rgba(34,197,94,0.15);color:var(--ok);border-radius:10px">自動</span>
+        </div>
+        <div style="font-size:0.72rem;color:var(--dim);line-height:1.8">
+          <div>Firebase <code style="background:#1a1a2e;padding:1px 5px;border-radius:4px;color:var(--cyan)">/tournament-queue</code></div>
+          <div style="padding-left:0.8rem;color:var(--dim)">↳ X(IFTTT) / RSS</div>
+          <div style="margin-top:0.4rem">→ ツイート内容を取得・解析</div>
+          <div>→ MOLKKY HUB WP に tournament 投稿</div>
+          <div>→ status: posted に更新</div>
+        </div>
+        <div style="margin-top:0.8rem;padding-top:0.8rem;border-top:1px solid var(--border);font-size:0.7rem;color:var(--dim)">
+          スキル: <code style="color:var(--accent)">/tournament queue</code>
+        </div>
+      </div>
+
+      <!-- BuildHub Tips -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem">
+        <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.8rem">
+          <span style="font-size:1rem">🤖</span>
+          <span style="font-size:0.85rem;font-weight:700;color:var(--text)">Claude Code Tips</span>
+          <span style="margin-left:auto;font-size:0.65rem;padding:2px 8px;background:rgba(6,182,212,0.15);color:var(--cyan);border-radius:10px">cron自動</span>
+        </div>
+        <div style="font-size:0.72rem;color:var(--dim);line-height:1.8">
+          <div>Firebase <code style="background:#1a1a2e;padding:1px 5px;border-radius:4px;color:var(--cyan)">/claude-tips-queue</code></div>
+          <div style="padding-left:0.8rem;color:var(--dim)">↳ GAS 6時間ごと収集（7ソース）</div>
+          <div style="margin-top:0.4rem">→ ConoHa WING PHP cron（毎朝7時）</div>
+          <div>→ Gemini で記事生成</div>
+          <div>→ BuildHub WP に自動投稿</div>
+        </div>
+        <div style="margin-top:0.8rem;padding-top:0.8rem;border-top:1px solid var(--border);font-size:0.7rem;color:var(--dim)">
+          確認のみ（cron自動処理） / deploy/buildhub-cron.php
+        </div>
+      </div>
+
+      <!-- チャプ会議事録 -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem">
+        <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.8rem">
+          <span style="font-size:1rem">📝</span>
+          <span style="font-size:0.85rem;font-weight:700;color:var(--text)">チャプ会議事録</span>
+          <span style="margin-left:auto;font-size:0.65rem;padding:2px 8px;background:rgba(167,139,250,0.15);color:var(--purple);border-radius:10px">自動</span>
+        </div>
+        <div style="font-size:0.72rem;color:var(--dim);line-height:1.8">
+          <div>Firebase <code style="background:#1a1a2e;padding:1px 5px;border-radius:4px;color:var(--cyan)">/chapche-queue</code></div>
+          <div style="padding-left:0.8rem;color:var(--dim)">↳ GAS が録音URLを登録</div>
+          <div style="margin-top:0.4rem">→ 音声テキストDL</div>
+          <div>→ Claude が議事録に変換</div>
+          <div>→ Notion 投稿 + ローカル保存</div>
+        </div>
+        <div style="margin-top:0.8rem;padding-top:0.8rem;border-top:1px solid var(--border);font-size:0.7rem;color:var(--dim)">
+          スキル: <code style="color:var(--accent)">/chapche-minutes queue</code>
+        </div>
+      </div>
+
+      <!-- 寄稿原稿 -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem">
+        <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.8rem">
+          <span style="font-size:1rem">✍️</span>
+          <span style="font-size:0.85rem;font-weight:700;color:var(--text)">寄稿原稿</span>
+          <span style="margin-left:auto;font-size:0.65rem;padding:2px 8px;background:rgba(245,158,11,0.15);color:var(--warn);border-radius:10px">要SP確認</span>
+        </div>
+        <div style="font-size:0.72rem;color:var(--dim);line-height:1.8">
+          <div>Firebase <code style="background:#1a1a2e;padding:1px 5px;border-radius:4px;color:var(--cyan)">/contribution-queue</code></div>
+          <div style="padding-left:0.8rem;color:var(--dim)">↳ 手動登録（著者から原稿受領）</div>
+          <div style="margin-top:0.4rem">→ 原稿DL → 画像抽出</div>
+          <div>→ WP メディアアップ → 記事HTML化</div>
+          <div>→ <strong style="color:var(--warn)">下書き投稿（公開はSP確認後）</strong></div>
+        </div>
+        <div style="margin-top:0.8rem;padding-top:0.8rem;border-top:1px solid var(--border);font-size:0.7rem;color:var(--dim)">
+          手動フロー（スキル未設定）
+        </div>
+      </div>
+
+      <!-- 週間大会まとめ -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem">
+        <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.8rem">
+          <span style="font-size:1rem">📅</span>
+          <span style="font-size:0.85rem;font-weight:700;color:var(--text)">週間大会まとめ</span>
+          <span style="margin-left:auto;font-size:0.65rem;padding:2px 8px;background:rgba(74,158,255,0.15);color:var(--blue);border-radius:10px">月曜のみ</span>
+        </div>
+        <div style="font-size:0.72rem;color:var(--dim);line-height:1.8">
+          <div>トリガー: 月曜セッション開始</div>
+          <div style="margin-top:0.4rem">→ 今週（月〜日）の大会を集計</div>
+          <div>→ 日別グループ化して記事生成</div>
+          <div>→ MOLKKY HUB WP に公開</div>
+          <div>→ 月曜12:00 X（IFTTT）に自動ポスト</div>
+        </div>
+        <div style="margin-top:0.8rem;padding-top:0.8rem;border-top:1px solid var(--border);font-size:0.7rem;color:var(--dim)">
+          <code style="color:var(--accent)">python3 tools/weekly-roundup-gen.py</code>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Firebaseキュー状況（リアルタイム） -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.8rem">
+        <h3 style="font-size:0.85rem;color:var(--text)">Firebase キュー状況（リアルタイム）</h3>
+        <button class="btn btn-sm btn-outline" onclick="loadQueueStatus()">更新</button>
+      </div>
+      <div id="queueStatus" style="font-size:0.78rem;color:var(--dim)">読み込み中...</div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -229,12 +359,41 @@ async function init() {
 // ===== Tabs =====
 function switchTab(name) {
   document.querySelectorAll('.tab').forEach((t, i) => {
-    const panels = ['calendar','report','stats','export'];
+    const panels = ['calendar','report','stats','export','pipeline'];
     t.classList.toggle('active', panels[i] === name);
   });
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel-' + name).classList.add('active');
   if (name === 'stats') renderStats();
+  if (name === 'pipeline') loadQueueStatus();
+}
+
+async function loadQueueStatus() {
+  const el = document.getElementById('queueStatus');
+  if (!el) return;
+  el.textContent = '読み込み中...';
+  const queues = [
+    { key: 'tournament-queue', label: '大会情報' },
+    { key: 'claude-tips-queue', label: 'Claude Code Tips' },
+    { key: 'chapche-queue', label: 'チャプ会議事録' },
+    { key: 'contribution-queue', label: '寄稿原稿' },
+  ];
+  const results = await Promise.all(queues.map(async q => {
+    try {
+      const r = await fetch(`${FIREBASE_URL}/${q.key}.json?orderBy="status"&equalTo="pending"`);
+      const d = await r.json();
+      const count = d ? Object.keys(d).length : 0;
+      return { ...q, count };
+    } catch { return { ...q, count: '?' }; }
+  }));
+  el.innerHTML = results.map(r => {
+    const c = r.count;
+    const color = c === 0 ? 'var(--ok)' : c === '?' ? 'var(--dim)' : 'var(--warn)';
+    return `<div style="display:flex;justify-content:space-between;padding:0.4rem 0;border-bottom:1px solid var(--border)">
+      <span>${r.label}</span>
+      <span style="color:${color};font-weight:700">${c} pending</span>
+    </div>`;
+  }).join('');
 }
 
 // ===== Calendar =====
