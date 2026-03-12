@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>トクラシ 管理ダッシュボード</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Hiragino Sans", sans-serif; background: #f0f2f5; color: #1a1a2e; line-height: 1.6; }
+
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #fff; padding: 24px; }
+  .header-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .header h1 { font-size: 20px; font-weight: 800; }
+  .header h1 span { color: #ffd700; }
+  .header-meta { font-size: 12px; color: #aaa; }
+  .header-actions { display: flex; gap: 8px; }
+  .header-actions a { font-size: 12px; color: #fff; background: rgba(255,255,255,.15); padding: 6px 14px; border-radius: 6px; text-decoration: none; transition: .2s; }
+  .header-actions a:hover { background: rgba(255,255,255,.3); }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 20px 16px; }
+
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; background: #fff; border-radius: 10px; padding: 4px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  .tab { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: 700; border-radius: 8px; cursor: pointer; transition: .2s; color: #666; }
+  .tab.active { background: #1a1a2e; color: #fff; }
+  .tab:hover:not(.active) { background: #f0f0f0; }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px; }
+
+  .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+  .card-title { font-size: 12px; font-weight: 700; color: #888; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+
+  .stat-big { font-size: 36px; font-weight: 900; line-height: 1; }
+  .stat-label { font-size: 13px; color: #666; margin-top: 4px; }
+  .stat-sub { font-size: 11px; color: #aaa; margin-top: 2px; }
+
+  .cat-bar { display: flex; align-items: center; margin-bottom: 8px; }
+  .cat-name { width: 100px; font-size: 13px; font-weight: 600; }
+  .cat-fill-bg { flex: 1; height: 24px; background: #f0f0f0; border-radius: 6px; overflow: hidden; }
+  .cat-fill { height: 100%; border-radius: 6px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; font-size: 11px; font-weight: 700; color: #fff; min-width: 30px; transition: width .5s; }
+  .cat-count { width: 30px; text-align: right; font-size: 13px; font-weight: 700; margin-left: 8px; }
+
+  .kpi-row { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+  .kpi-row:last-child { border: none; }
+  .kpi-label { flex: 1; font-size: 14px; }
+  .kpi-target { font-size: 13px; color: #888; width: 100px; text-align: center; }
+  .kpi-actual { font-size: 14px; font-weight: 700; width: 100px; text-align: center; }
+  .kpi-status { width: 60px; text-align: center; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 20px; }
+  .badge.green { background: #e6f9e8; color: #28a745; }
+  .badge.yellow { background: #fff8e1; color: #f5a623; }
+  .badge.red { background: #fde8e8; color: #e53935; }
+  .badge.gray { background: #f0f0f0; color: #888; }
+
+  .asp-row { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+  .asp-row:last-child { border: none; }
+  .asp-name { flex: 1; font-size: 14px; font-weight: 600; }
+  .asp-price { font-size: 14px; font-weight: 700; color: #1a1a2e; width: 100px; text-align: right; }
+  .asp-status { width: 80px; text-align: center; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 8px 12px; background: #f8f8f8; font-weight: 700; color: #666; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid #f0f0f0; }
+  tr:hover td { background: #fafafa; }
+  .article-title { font-weight: 600; color: #1a1a2e; }
+  .article-cat { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 12px; }
+
+  .phase-card { border-left: 4px solid #ccc; padding: 16px; margin-bottom: 12px; border-radius: 0 10px 10px 0; background: #fafafa; }
+  .phase-card.current { border-color: #ffd700; background: #fffef5; }
+  .phase-card.future { border-color: #ddd; background: #fafafa; opacity: .7; }
+  .phase-num { font-size: 11px; font-weight: 700; color: #888; letter-spacing: 1px; }
+  .phase-title { font-size: 16px; font-weight: 800; margin: 4px 0; }
+  .phase-goal { font-size: 13px; color: #666; }
+
+  .note-area { width: 100%; min-height: 200px; border: 2px solid #e0e0e0; border-radius: 10px; padding: 16px; font-family: inherit; font-size: 14px; line-height: 1.8; resize: vertical; transition: border-color .2s; }
+  .note-area:focus { outline: none; border-color: #1a1a2e; }
+  .note-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .btn { padding: 8px 20px; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; transition: .2s; }
+  .btn-primary { background: #1a1a2e; color: #fff; }
+  .btn-primary:hover { background: #2a2a4e; }
+  .btn-ghost { background: #f0f0f0; color: #666; }
+  .btn-ghost:hover { background: #e0e0e0; }
+
+  .refresh-btn { background: none; border: 2px solid rgba(255,255,255,.3); color: #fff; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; transition: .2s; }
+  .refresh-btn:hover { border-color: #ffd700; color: #ffd700; }
+
+  .loading { text-align: center; padding: 40px; color: #aaa; font-size: 14px; }
+  .spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid #e0e0e0; border-top-color: #1a1a2e; border-radius: 50%; animation: spin .8s linear infinite; margin-right: 8px; vertical-align: middle; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .ext-links { display: flex; flex-wrap: wrap; gap: 10px; }
+  .ext-link { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: #fff; border-radius: 10px; text-decoration: none; color: #1a1a2e; font-size: 13px; font-weight: 600; box-shadow: 0 2px 6px rgba(0,0,0,.06); transition: .2s; flex: 1; min-width: 200px; }
+  .ext-link:hover { box-shadow: 0 4px 12px rgba(0,0,0,.12); transform: translateY(-1px); }
+  .ext-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+
+  .timeline { padding-left: 20px; border-left: 3px solid #e0e0e0; }
+  .timeline-item { position: relative; padding: 0 0 20px 16px; }
+  .timeline-item::before { content: ''; position: absolute; left: -11px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: #1a1a2e; border: 3px solid #fff; }
+  .timeline-date { font-size: 11px; font-weight: 700; color: #888; }
+  .timeline-text { font-size: 14px; margin-top: 2px; }
+
+  @media (max-width: 600px) {
+    .grid { grid-template-columns: 1fr; }
+    .header-inner { flex-direction: column; align-items: flex-start; }
+    .tabs { overflow-x: auto; }
+    .tab { white-space: nowrap; min-width: 80px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <h1><span>TOKURASHI</span> 管理ダッシュボード</h1>
+      <div class="header-meta">tokurashi.com ／ 分析・方針決定会議用</div>
+    </div>
+    <div class="header-actions">
+      <a href="https://www.tokurashi.com" target="_blank">サイトを見る</a>
+      <a href="https://www.tokurashi.com/wp-admin/" target="_blank">WP管理画面</a>
+      <button class="refresh-btn" onclick="loadAll()">↻ データ更新</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="tabs">
+    <div class="tab active" data-tab="overview">概要</div>
+    <div class="tab" data-tab="articles">記事一覧</div>
+    <div class="tab" data-tab="roadmap">ロードマップ</div>
+    <div class="tab" data-tab="meeting">分析会議</div>
+  </div>
+
+  <!-- 概要タブ -->
+  <div id="overview" class="tab-content active">
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">公開記事数</div>
+        <div class="stat-big" id="total-posts" style="color:#1a1a2e">-</div>
+        <div class="stat-label">本</div>
+        <div class="stat-sub">目標: Phase1=35本 → Phase3=80本</div>
+      </div>
+      <div class="card">
+        <div class="card-title">月間PV（GA4確認）</div>
+        <div class="stat-big" style="color:#0073aa" id="pv-display">-</div>
+        <div class="stat-label" id="pv-label">未計測</div>
+        <div class="stat-sub">目標: Phase1=500 → Phase3=5,000+</div>
+      </div>
+      <div class="card">
+        <div class="card-title">累計収益</div>
+        <div class="stat-big" style="color:#28a745" id="revenue-display">¥0</div>
+        <div class="stat-label">目標: 月5万円（6ヶ月以内）</div>
+        <div class="stat-sub">A8.net管理画面で確認</div>
+      </div>
+    </div>
+
+    <!-- カテゴリ分布 -->
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">カテゴリ別記事数</div>
+      <div id="category-bars"><div class="loading"><span class="spinner"></span>読み込み中...</div></div>
+    </div>
+
+    <!-- ASPステータス -->
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">ASP提携ステータス</div>
+      <div class="asp-row">
+        <div class="asp-name">プレミアムウォーター</div>
+        <div class="asp-price">¥12,000/件</div>
+        <div class="asp-status"><span class="badge green">承認済</span></div>
+      </div>
+      <div class="asp-row">
+        <div class="asp-name">保険見直しラボ</div>
+        <div class="asp-price">¥10,000/件</div>
+        <div class="asp-status"><span class="badge yellow">審査中</span></div>
+      </div>
+      <div class="asp-row">
+        <div class="asp-name">マネードクター</div>
+        <div class="asp-price">¥11,279/件</div>
+        <div class="asp-status"><span class="badge yellow">審査中</span></div>
+      </div>
+      <div class="asp-row">
+        <div class="asp-name">三井住友カード NL</div>
+        <div class="asp-price">¥4,800/件</div>
+        <div class="asp-status"><span class="badge yellow">審査中</span></div>
+      </div>
+      <div class="asp-row">
+        <div class="asp-name">さとふる</div>
+        <div class="asp-price">未定</div>
+        <div class="asp-status"><span class="badge yellow">審査中</span></div>
+      </div>
+      <div class="asp-row">
+        <div class="asp-name">じゃらん</div>
+        <div class="asp-price">未定</div>
+        <div class="asp-status"><span class="badge yellow">審査中</span></div>
+      </div>
+      <div class="asp-row">
+        <div class="asp-name">ハピタス</div>
+        <div class="asp-price">未定</div>
+        <div class="asp-status"><span class="badge yellow">審査中</span></div>
+      </div>
+      <div class="asp-row">
+        <div class="asp-name">クラウドワークス</div>
+        <div class="asp-price">未定</div>
+        <div class="asp-status"><span class="badge yellow">審査中</span></div>
+      </div>
+      <div class="asp-row">
+        <div class="asp-name">UQモバイル</div>
+        <div class="asp-price">未定</div>
+        <div class="asp-status"><span class="badge yellow">審査中</span></div>
+      </div>
+    </div>
+
+    <!-- 外部リンク -->
+    <div class="card">
+      <div class="card-title">外部ツール</div>
+      <div class="ext-links">
+        <a class="ext-link" href="https://analytics.google.com/" target="_blank">
+          <div class="ext-icon" style="background:#e8f5e9">📊</div>
+          <div>GA4<br><span style="font-size:11px;color:#888">G-L2XZ303VD8</span></div>
+        </a>
+        <a class="ext-link" href="https://search.google.com/search-console" target="_blank">
+          <div class="ext-icon" style="background:#e3f2fd">🔍</div>
+          <div>Search Console<br><span style="font-size:11px;color:#888">tokurashi.com</span></div>
+        </a>
+        <a class="ext-link" href="https://www.a8.net/" target="_blank">
+          <div class="ext-icon" style="background:#fff3e0">💰</div>
+          <div>A8.net<br><span style="font-size:11px;color:#888">ASP管理画面</span></div>
+        </a>
+        <a class="ext-link" href="https://www.tokurashi.com/wp-admin/" target="_blank">
+          <div class="ext-icon" style="background:#f3e5f5">⚙️</div>
+          <div>WordPress<br><span style="font-size:11px;color:#888">管理画面</span></div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 記事一覧タブ -->
+  <div id="articles" class="tab-content">
+    <div class="card">
+      <div class="card-title">全記事一覧（WP API リアルタイム取得）</div>
+      <div id="article-table"><div class="loading"><span class="spinner"></span>読み込み中...</div></div>
+    </div>
+  </div>
+
+  <!-- ロードマップタブ -->
+  <div id="roadmap" class="tab-content">
+
+    <div class="phase-card current">
+      <div class="phase-num">PHASE 1（1〜2ヶ月目）</div>
+      <div class="phase-title">基盤固め → 初成約</div>
+      <div class="phase-goal">記事35本維持・PV 500・収益 1件（1.2万円）</div>
+      <div style="margin-top:12px">
+        <div class="kpi-row">
+          <div class="kpi-label">記事数</div>
+          <div class="kpi-target">目標: 35+</div>
+          <div class="kpi-actual" id="kpi-posts">-</div>
+          <div class="kpi-status" id="kpi-posts-badge"></div>
+        </div>
+        <div class="kpi-row">
+          <div class="kpi-label">Googleインデックス数</div>
+          <div class="kpi-target">目標: 80%+</div>
+          <div class="kpi-actual">要確認</div>
+          <div class="kpi-status"><span class="badge gray">GSC</span></div>
+        </div>
+        <div class="kpi-row">
+          <div class="kpi-label">月間PV</div>
+          <div class="kpi-target">目標: 500</div>
+          <div class="kpi-actual">要確認</div>
+          <div class="kpi-status"><span class="badge gray">GA4</span></div>
+        </div>
+        <div class="kpi-row">
+          <div class="kpi-label">ASP成約数</div>
+          <div class="kpi-target">目標: 1件</div>
+          <div class="kpi-actual">0件</div>
+          <div class="kpi-status"><span class="badge red">未達</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-card future">
+      <div class="phase-num">PHASE 2（3〜4ヶ月目）</div>
+      <div class="phase-title">SEO成長期 → 月1〜2万</div>
+      <div class="phase-goal">PV 2,000・キラーページ追加・内部リンク強化</div>
+    </div>
+
+    <div class="phase-card future">
+      <div class="phase-num">PHASE 3（5〜6ヶ月目）</div>
+      <div class="phase-title">収益最大化 → 月5万</div>
+      <div class="phase-goal">PV 5,000+・記事80本・AdSense申請</div>
+    </div>
+
+    <!-- 戦略メモ -->
+    <div class="card" style="margin-top:20px">
+      <div class="card-title">戦略方針（2026-03-12決定）</div>
+      <div style="font-size:14px;line-height:2">
+        <p><strong>位置づけ:</strong> 全体メディア（実験場・母艦）。特化しない。幅広く自動運用。</p>
+        <p><strong>運用:</strong> 週1-2本をAI自動生成・投稿。SPは月1回の方針確認のみ。</p>
+        <p><strong>記事トーン:</strong> 「調べて比較した」調査型。体験談は避ける。</p>
+        <p><strong>収益:</strong> トクラシ単体で月5万は目指さない。特化サイト群が本命。</p>
+        <p><strong>補完関係:</strong> トクラシで実験→データ取得→成功パターンを特化サイトに展開。</p>
+      </div>
+    </div>
+
+    <!-- 特化サイト群 -->
+    <div class="card" style="margin-top:16px">
+      <div class="card-title">特化サイト群（本命の収益源）</div>
+      <table>
+        <tr><th>#</th><th>ジャンル</th><th>単価</th><th>競合</th><th>状態</th></tr>
+        <tr><td>1</td><td>ウォーターサーバー</td><td>10K〜20K</td><td>ずらしで回避</td><td><span class="badge yellow">調査済</span></td></tr>
+        <tr><td>2</td><td>退職代行</td><td>8K〜15K</td><td>弱</td><td><span class="badge gray">未着手</span></td></tr>
+        <tr><td>3</td><td>探偵・興信所</td><td>9K〜17K</td><td>弱</td><td><span class="badge gray">未着手</span></td></tr>
+        <tr><td>4</td><td>バーチャルオフィス</td><td>5K〜10K</td><td>弱</td><td><span class="badge gray">未着手</span></td></tr>
+        <tr><td>5</td><td>AI SaaS</td><td>10K〜25K</td><td>まだ弱</td><td><span class="badge gray">未着手</span></td></tr>
+        <tr><td>6</td><td>VPN</td><td>5K〜15K</td><td>日本語は弱</td><td><span class="badge gray">未着手</span></td></tr>
+        <tr><td>7</td><td>害虫駆除</td><td>5K〜15K</td><td>最弱</td><td><span class="badge gray">未着手</span></td></tr>
+        <tr><td>8</td><td>資格取得</td><td>5K〜15K</td><td>資格次第</td><td><span class="badge gray">未着手</span></td></tr>
+        <tr><td>9</td><td>買取サービス</td><td>5K〜15K</td><td>品目次第</td><td><span class="badge gray">未着手</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 分析会議タブ -->
+  <div id="meeting" class="tab-content">
+
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">分析会議メモ</div>
+      <p style="font-size:13px;color:#888;margin-bottom:12px">定期的な分析・方針決定会議の記録。ローカルストレージに自動保存されます。</p>
+      <textarea class="note-area" id="meeting-notes" placeholder="会議メモを入力...&#10;&#10;例:&#10;## 2026-03-12 第1回分析会議&#10;- PV: XX&#10;- インデックス数: XX&#10;- 方針: ..."></textarea>
+      <div class="note-actions">
+        <button class="btn btn-primary" onclick="saveMeetingNotes()">保存</button>
+        <button class="btn btn-ghost" onclick="exportMeetingNotes()">テキストでエクスポート</button>
+        <span id="save-status" style="font-size:12px;color:#28a745;margin-left:8px"></span>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">月次チェックリスト</div>
+      <div class="kpi-row">
+        <div class="kpi-label">📊 月間PV（GA4）</div>
+        <div class="kpi-target">前月比-20%以上ならジャンル見直し</div>
+      </div>
+      <div class="kpi-row">
+        <div class="kpi-label">🔍 検索順位（Search Console）</div>
+        <div class="kpi-target">CTR 2%未満ならタイトル修正</div>
+      </div>
+      <div class="kpi-row">
+        <div class="kpi-label">💰 ASP成約数（A8.net）</div>
+        <div class="kpi-target">0件が2ヶ月続いたらキラーページ追加</div>
+      </div>
+      <div class="kpi-row">
+        <div class="kpi-label">📑 インデックス数（Search Console）</div>
+        <div class="kpi-target">記事数の80%未満なら内部リンク強化</div>
+      </div>
+    </div>
+
+    <!-- タイムライン -->
+    <div class="card">
+      <div class="card-title">運用履歴</div>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-date">2026-03-12</div>
+          <div class="timeline-text">戦略方針決定: 全体メディア（実験場）として運用。特化サイト群が本命。</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-date">2026-03-12</div>
+          <div class="timeline-text">管理ダッシュボード構築。分析会議体制スタート。</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-date">2026-03-09</div>
+          <div class="timeline-text">サイト構築完了。35記事公開、GA4・GSC設定、ASP申請10件。</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-date">2026-03-09</div>
+          <div class="timeline-text">プレミアムウォーター（12,000円/件）承認。ウォーターサーバーキラーページ公開。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const WP_API = 'https://www.tokurashi.com/wp-json/wp/v2';
+const CAT_COLORS = {
+  'savings': '#28a745',
+  'shopping': '#0073aa',
+  'furusato-nozei': '#e53935',
+  'poikatsu': '#f5a623',
+  'travel': '#7c4dff',
+  'side-job': '#00bcd4',
+  'others': '#999'
+};
+
+// Tab switching
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.tab).classList.add('active');
+  });
+});
+
+// Load all data
+function loadAll() {
+  loadCategories();
+  loadArticles();
+}
+
+async function loadCategories() {
+  try {
+    const res = await fetch(`${WP_API}/categories?per_page=50`);
+    const cats = await res.json();
+    const total = cats.reduce((s, c) => s + c.count, 0);
+
+    document.getElementById('total-posts').textContent = total;
+    document.getElementById('kpi-posts').textContent = `${total}本`;
+    document.getElementById('kpi-posts-badge').innerHTML =
+      total >= 35 ? '<span class="badge green">達成</span>' : '<span class="badge red">未達</span>';
+
+    const sorted = cats.filter(c => c.count > 0).sort((a, b) => b.count - a.count);
+    const maxCount = Math.max(...sorted.map(c => c.count));
+    const html = sorted.map(c => `
+      <div class="cat-bar">
+        <div class="cat-name">${c.name}</div>
+        <div class="cat-fill-bg">
+          <div class="cat-fill" style="width:${(c.count/maxCount)*100}%;background:${CAT_COLORS[c.slug]||'#999'}">${c.count}</div>
+        </div>
+      </div>
+    `).join('');
+    document.getElementById('category-bars').innerHTML = html;
+  } catch (e) {
+    document.getElementById('category-bars').innerHTML = '<div style="color:#e53935">読み込み失敗</div>';
+  }
+}
+
+async function loadArticles() {
+  try {
+    const [postsRes, catsRes] = await Promise.all([
+      fetch(`${WP_API}/posts?per_page=100&orderby=date&order=desc`),
+      fetch(`${WP_API}/categories?per_page=50`)
+    ]);
+    const posts = await postsRes.json();
+    const cats = await catsRes.json();
+    const catMap = {};
+    cats.forEach(c => { catMap[c.id] = { name: c.name, slug: c.slug }; });
+
+    const rows = posts.map(p => {
+      const cat = catMap[p.categories[0]] || { name: '?', slug: 'others' };
+      const color = CAT_COLORS[cat.slug] || '#999';
+      const date = p.date.slice(0, 10);
+      return `<tr>
+        <td>${date}</td>
+        <td><span class="article-cat" style="background:${color}20;color:${color}">${cat.name}</span></td>
+        <td class="article-title"><a href="${p.link}" target="_blank" style="color:inherit;text-decoration:none">${p.title.rendered}</a></td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('article-table').innerHTML = `
+      <div style="font-size:12px;color:#888;margin-bottom:8px">全${posts.length}件</div>
+      <table><tr><th>日付</th><th>カテゴリ</th><th>タイトル</th></tr>${rows}</table>
+    `;
+  } catch (e) {
+    document.getElementById('article-table').innerHTML = '<div style="color:#e53935">読み込み失敗</div>';
+  }
+}
+
+// Meeting notes (localStorage)
+function saveMeetingNotes() {
+  const notes = document.getElementById('meeting-notes').value;
+  localStorage.setItem('tokurashi-meeting-notes', notes);
+  const status = document.getElementById('save-status');
+  status.textContent = '保存しました';
+  setTimeout(() => { status.textContent = ''; }, 2000);
+}
+
+function loadMeetingNotes() {
+  const notes = localStorage.getItem('tokurashi-meeting-notes') || '';
+  document.getElementById('meeting-notes').value = notes;
+}
+
+function exportMeetingNotes() {
+  const notes = document.getElementById('meeting-notes').value;
+  const blob = new Blob([notes], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `tokurashi-meeting-${new Date().toISOString().slice(0,10)}.txt`;
+  a.click();
+}
+
+// Auto-save meeting notes
+document.getElementById('meeting-notes')?.addEventListener('input', () => {
+  clearTimeout(window._autoSave);
+  window._autoSave = setTimeout(saveMeetingNotes, 3000);
+});
+
+// Init
+loadAll();
+loadMeetingNotes();
+</script>
+</body>
+</html>
