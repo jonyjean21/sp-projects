@@ -1,0 +1,24 @@
+name: Deploy to ConoHa WING (FTP)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/buildhub-cron.php'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy buildhub-cron.php via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.CONOHA_FTP_HOST }}
+          username: ${{ secrets.CONOHA_FTP_USER }}
+          password: ${{ secrets.CONOHA_FTP_PASS }}
+          local-dir: deploy/
+          server-dir: ${{ secrets.CONOHA_FTP_BUILDPATH }}/
+          include: buildhub-cron.php
+          log-level: minimal

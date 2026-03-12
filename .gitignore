@@ -29,7 +29,8 @@ __pycache__/
 # OS
 .DS_Store
 tools/buildhub-cron-deploy.php
-deploy/
+# deploy/ 全体ではなくAPIキーファイルのみgitignore
+deploy/buildhub-config.php
 
 # curl cookie files
 3
