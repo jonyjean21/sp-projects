@@ -691,13 +691,15 @@ textarea{resize:vertical;min-height:60px}
       <input type="text" id="eventMatchUrl" placeholder="https://... （募集ページ・詳細ページ等）">
     </div>
     <div class="form-group">
-      <label class="form-label">詳細メモ</label>
-      <textarea id="eventNote" placeholder="持ち物・注意事項など"></textarea>
+      <label class="form-label">詳細</label>
+      <textarea id="eventNote" placeholder="持ち物・注意事項・募集要項など詳しく記入できます" style="min-height:120px"></textarea>
     </div>
     <div class="form-group">
-      <label class="form-label">画像URL</label>
-      <input type="text" id="eventImageUrl" placeholder="https://... （画像のURL）">
-      <div style="font-size:12px;color:var(--warning);margin-top:4px">⚠ 画像は3ヶ月後に削除されます</div>
+      <label class="form-label">画像</label>
+      <div id="eventImagePreview" style="margin-bottom:8px"></div>
+      <input type="file" id="eventImageFile" accept="image/*" onchange="previewEventImage(this)" style="font-size:14px;width:100%">
+      <input type="hidden" id="eventImageData">
+      <div style="font-size:12px;color:var(--text-light);margin-top:4px">1MB以内の画像をアップロードできます</div>
     </div>
 
     <button class="btn btn-primary" onclick="saveEvent()">保存</button>
@@ -1958,7 +1960,8 @@ function showEventDetail(id) {
     ${e.match_url ? `<div style="margin-top:8px;font-size:13px"><a href="${escapeHtml(e.match_url)}" target="_blank" rel="noopener" style="color:var(--accent)">🔗 試合詳細ページを開く</a></div>` : ''}
     ${e.note ? `<div style="margin-top:8px;font-size:13px;white-space:pre-wrap;color:var(--text)">${escapeHtml(e.note)}</div>` : ''}
   </div>`;
-  if (e.image_url) html += `<div class="card" style="padding:0;overflow:hidden"><img src="${escapeHtml(e.image_url)}" alt="イベント画像" style="width:100%;max-height:240px;object-fit:cover;border-radius:var(--radius)"></div>`;
+  const imgSrc = e.image_data || e.image_url;
+  if (imgSrc) html += `<div class="card" style="padding:0;overflow:hidden"><img src="${imgSrc.startsWith('data:') ? imgSrc : escapeHtml(imgSrc)}" alt="イベント画像" style="width:100%;max-height:240px;object-fit:cover;border-radius:var(--radius)"></div>`;
 
   // ② 出欠回答ボタン
   if (!isPast) {
@@ -2556,7 +2559,11 @@ function openEventModal(eventId) {
     document.getElementById('eventMaxCars').value = e.max_cars || '';
     document.getElementById('eventMatchUrl').value = e.match_url || '';
     document.getElementById('eventNote').value = e.note || '';
-    document.getElementById('eventImageUrl').value = e.image_url || '';
+    const imgSrcEdit = e.image_data || e.image_url || '';
+    document.getElementById('eventImageData').value = imgSrcEdit;
+    document.getElementById('eventImageFile').value = '';
+    const prevEdit = document.getElementById('eventImagePreview');
+    prevEdit.innerHTML = imgSrcEdit ? `<img src="${imgSrcEdit}" style="max-width:100%;max-height:200px;border-radius:8px;display:block">` : '';
     // Restore grade selection
     const tg = e.target_grades || [];
     document.querySelectorAll('#eventGradeChoices .checkbox-item').forEach(el => {
@@ -2572,10 +2579,28 @@ function openEventModal(eventId) {
     document.getElementById('eventMaxCars').value = '';
     document.getElementById('eventMatchUrl').value = '';
     document.getElementById('eventNote').value = '';
-    document.getElementById('eventImageUrl').value = '';
+    document.getElementById('eventImageData').value = '';
+    document.getElementById('eventImageFile').value = '';
+    document.getElementById('eventImagePreview').innerHTML = '';
     document.querySelectorAll('#eventGradeChoices .checkbox-item').forEach(el => el.classList.remove('checked'));
   }
   openModal('eventModal');
+}
+
+function previewEventImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 1024 * 1024) {
+    showToast('1MB以内の画像を選択してください', 'error');
+    input.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('eventImageData').value = ev.target.result;
+    document.getElementById('eventImagePreview').innerHTML = `<img src="${ev.target.result}" style="max-width:100%;max-height:200px;border-radius:8px;display:block">`;
+  };
+  reader.readAsDataURL(file);
 }
 
 function showLocSuggestions() {
@@ -2625,7 +2650,7 @@ async function saveEvent() {
   const rsvpDeadline = document.getElementById('eventRsvpDeadline').value || '';
   const matchUrl = document.getElementById('eventMatchUrl').value.trim();
   const note = document.getElementById('eventNote').value.trim();
-  const imageUrl = document.getElementById('eventImageUrl').value.trim();
+  const imageData = document.getElementById('eventImageData').value;
 
   // Collect target grades
   const targetGrades = [];
@@ -2645,7 +2670,8 @@ async function saveEvent() {
     target_grades: targetGrades.length > 0 ? targetGrades : null,
     match_url: matchUrl || null,
     note: note || null,
-    image_url: imageUrl || null
+    image_data: imageData || null,
+    image_url: null
   };
 
   try {
@@ -3577,13 +3603,15 @@ function renderManualAssignUI(eventId) {
   // Rider list - sorted by seats_needed desc
   const sortedRiders = [...riders].sort((a, b) => (b.seats_needed || b.family_count || 1) - (a.seats_needed || a.family_count || 1));
 
-  html += '<div style="font-size:13px;font-weight:700;color:var(--text-sub);margin-bottom:8px">🧑 どの車に乗るか選択</div>';
+  const unassignedNow = riders.filter(r => !assign[r.id]).length;
+  html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+    <div style="font-size:13px;font-weight:700;color:var(--text-sub)">🧑 どの車に乗るか選択</div>
+    <div style="font-size:12px;font-weight:700;color:${unassignedNow > 0 ? 'var(--danger)' : 'var(--success)'}">未割り当て：あと${unassignedNow}人</div>
+  </div>`;
   sortedRiders.forEach(r => {
     const selected = assign[r.id] || '';
     const mem = membersData[r.id];
     const rsvpR = rsvp[r.id] || {};
-    const zone = mem?.zone_id && zonesData[mem.zone_id] ? zonesData[mem.zone_id] : null;
-    const zoneDot = zone ? `<span class="zone-dot" style="background:${escapeHtml(zone.color)}"></span>` : '';
 
     // Build detail string: 親2子1（3席）内CS1席 テントあり
     const adults = rsvpR.adult_count || 0;
@@ -3603,7 +3631,7 @@ function renderManualAssignUI(eventId) {
 
     html += `<div style="padding:8px 0;border-bottom:1px solid var(--border)">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-        <span style="font-size:14px">${zoneDot}<strong>${escapeHtml(r.name)}</strong> <span style="font-size:11px;color:var(--text-sub)">${detailStr}</span></span>
+        <span style="font-size:14px"><strong>${escapeHtml(r.name)}</strong> <span style="font-size:11px;color:var(--text-sub)">${detailStr}</span></span>
       </div>
       <select onchange="setManualAssign('${r.id}', this.value, '${eventId}')"
         style="width:100%;background:var(--bg-card);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px">
@@ -4501,15 +4529,64 @@ function viewAssignment(eventId) {
 }
 
 // ── Tournaments ──
+let tournamentGradeFilter = 'all';
+
+function getTournamentGrades(t) {
+  // Get grades from linked event, or from tournament itself
+  const grades = t.target_grades || [];
+  if (grades.length > 0) return grades;
+  if (t.event_id && eventsData[t.event_id]) {
+    return eventsData[t.event_id].target_grades || [];
+  }
+  return []; // empty = all grades
+}
+
+function tournamentMatchesGrade(t, grade) {
+  if (grade === 'all') return true;
+  const grades = getTournamentGrades(t);
+  if (grades.length === 0) return true; // 全学年対象
+  return grades.includes(parseInt(grade));
+}
+
+function setTournamentGradeFilter(grade) {
+  tournamentGradeFilter = grade;
+  renderTournaments();
+}
+
 function renderTournaments() {
   const c = document.getElementById('tournamentsContent');
   if (!c) return;
-  const entries = Object.entries(tournamentsData).sort((a,b) => (b[1].date || '').localeCompare(a[1].date || ''));
+  const allEntries = Object.entries(tournamentsData).sort((a,b) => (b[1].date || '').localeCompare(a[1].date || ''));
 
-  if (entries.length === 0) {
+  if (allEntries.length === 0) {
     c.innerHTML = '<div class="empty"><div class="empty-icon">🏆</div><div class="empty-text">大会記録はまだありません</div></div>';
     return;
   }
+
+  // Build grade filter tabs
+  const gradeCounts = { all: allEntries.length };
+  allEntries.forEach(([, t]) => {
+    const grades = getTournamentGrades(t);
+    if (grades.length === 0) {
+      [0,1,2,3,4,5,6].forEach(g => { gradeCounts[g] = (gradeCounts[g] || 0) + 1; });
+    } else {
+      grades.forEach(g => { gradeCounts[g] = (gradeCounts[g] || 0) + 1; });
+    }
+  });
+  const gradeKeys = [0,1,2,3,4,5,6].filter(g => gradeCounts[g]);
+
+  let tabHtml = '<div style="display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;-webkit-overflow-scrolling:touch">';
+  const activeAll = tournamentGradeFilter === 'all';
+  tabHtml += `<button onclick="setTournamentGradeFilter('all')" style="padding:6px 12px;border-radius:20px;border:1.5px solid ${activeAll?'var(--accent)':'var(--border)'};background:${activeAll?'var(--accent-light)':'transparent'};color:${activeAll?'var(--accent)':'var(--text-sub)'};font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">全員（${allEntries.length}）</button>`;
+  gradeKeys.forEach(g => {
+    const active = tournamentGradeFilter == g;
+    const label = gradeLabel(g);
+    tabHtml += `<button onclick="setTournamentGradeFilter(${g})" style="padding:6px 12px;border-radius:20px;border:1.5px solid ${active?'var(--accent)':'var(--border)'};background:${active?'var(--accent-light)':'transparent'};color:${active?'var(--accent)':'var(--text-sub)'};font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">${label}（${gradeCounts[g]}）</button>`;
+  });
+  tabHtml += '</div>';
+
+  // Filter entries by grade
+  const entries = allEntries.filter(([, t]) => tournamentMatchesGrade(t, tournamentGradeFilter));
 
   // Group by year
   const byYear = {};
@@ -4522,18 +4599,23 @@ function renderTournaments() {
   // Season stats
   const wins = entries.filter(([,t]) => t.scores && t.scores.some(s => s.result === 'win')).length;
   const total = entries.length;
-  let html = `<div class="stats-row" style="margin-bottom:16px">
+  let html = tabHtml;
+  html += `<div class="stats-row" style="margin-bottom:16px">
     <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">大会数</div></div>
     <div class="stat-card"><div class="stat-value">${wins}</div><div class="stat-label">勝利あり</div></div>
     <div class="stat-card"><div class="stat-value">${calcAvgRank(entries)}</div><div class="stat-label">平均順位</div></div>
   </div>`;
 
-  Object.entries(byYear).sort((a,b) => b[0].localeCompare(a[0])).forEach(([year, items]) => {
-    html += `<div class="tournament-season">
-      <div class="tournament-season-title">${year}年シーズン（${items.length}大会）</div>
-      ${items.map(([id, t]) => renderTournamentCard(id, t)).join('')}
-    </div>`;
-  });
+  if (entries.length === 0) {
+    html += '<div style="text-align:center;color:var(--text-sub);padding:24px 0">該当する大会記録がありません</div>';
+  } else {
+    Object.entries(byYear).sort((a,b) => b[0].localeCompare(a[0])).forEach(([year, items]) => {
+      html += `<div class="tournament-season">
+        <div class="tournament-season-title">${year}年シーズン（${items.length}大会）</div>
+        ${items.map(([id, t]) => renderTournamentCard(id, t)).join('')}
+      </div>`;
+    });
+  }
 
   c.innerHTML = html;
 }
