@@ -15,6 +15,7 @@ const GITHUB_REPO = 'jonyjean21/sp-projects';
 const REPORT_PATH = '/daily-reports';
 const LOG_PATH = '/daily-report-log';
 const ACTIVITIES_PATH = '/daily-activities';
+const SUMMARIES_PATH = '/daily-summaries';
 
 // ===== プロジェクト分類マップ =====
 const AREA_MAP = [
@@ -152,7 +153,21 @@ function generateForDate(dateStr) {
     muteHttpExceptions: true
   });
 
-  // 9. 実行ログ
+  // 9. 日次サマリー生成（report-admin カード表示用）
+  if (enriched.length > 0 || activities.length > 0) {
+    const dailySummary = generateDailySummary_(enriched, activities, dateStr);
+    if (dailySummary) {
+      UrlFetchApp.fetch(`${FIREBASE_URL}${SUMMARIES_PATH}/${dateStr}.json`, {
+        method: 'put',
+        contentType: 'application/json',
+        payload: JSON.stringify(dailySummary),
+        muteHttpExceptions: true
+      });
+      Logger.log('日次サマリー保存完了');
+    }
+  }
+
+  // 10. 実行ログ
   const duration = Math.round((new Date() - startTime) / 1000);
   UrlFetchApp.fetch(`${FIREBASE_URL}${LOG_PATH}.json`, {
     method: 'post',
@@ -381,6 +396,61 @@ ${activitiesList}
 
   const text = result.candidates[0].content.parts[0].text;
   return JSON.parse(text);
+}
+
+// ===== 日次サマリー生成（report-admin カード表示用）=====
+
+function generateDailySummary_(commits, activities, dateStr) {
+  const geminiKey = PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
+  if (!geminiKey) return null;
+
+  const commitLines = commits.map(c => `[${c.time}] ${c.message} (${c.area})`).join('\n') || 'なし';
+  const actLines = activities.map(a => `[${a.time || '--'}] ${a.activity}`).join('\n') || 'なし';
+
+  const prompt = `以下は ${dateStr} の作業記録です。report-adminのカード表示用JSONを生成してください。
+
+コミット:
+${commitLines}
+
+セッション活動（コミット外の作業）:
+${actLines}
+
+出力形式（JSONのみ）:
+{
+  "headline": "今日を一言で表すタイトル（20文字以内、キャッチーに）",
+  "categories": [
+    {
+      "name": "プロジェクト名（BuildHub, トクラシ, MOLKKY HUB, チームライド, SP運営 など）",
+      "emoji": "絵文字1つ",
+      "color": "#16進数カラー",
+      "items": ["やったこと（20文字程度）", "やったこと2"]
+    }
+  ]
+}
+
+ルール: 同じプロジェクトをまとめる / 技術的固有名詞はそのまま / AI臭い文章禁止 / 日本語`;
+
+  const resp = UrlFetchApp.fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+    {
+      method: 'post',
+      contentType: 'application/json',
+      payload: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.3, responseMimeType: 'application/json' }
+      }),
+      muteHttpExceptions: true
+    }
+  );
+
+  try {
+    const result = JSON.parse(resp.getContentText());
+    const text = result.candidates[0].content.parts[0].text;
+    return JSON.parse(text);
+  } catch(e) {
+    Logger.log('日次サマリー生成エラー: ' + e.message);
+    return null;
+  }
 }
 
 // ===== トリガー管理 =====
