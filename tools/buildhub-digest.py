@@ -46,16 +46,34 @@ BASE_TAGS = [6, 12]  # Claude Code, AI開発 は常に付与
 
 
 def fetch_pending_items():
+    """24時間以内のpendingを返す。24時間超のpendingは即削除。"""
     with urllib.request.urlopen(f"{FIREBASE_URL}{QUEUE_PATH}.json") as res:
         data = json.loads(res.read())
     if not data:
         return []
-    cutoff = (datetime.now(timezone.utc) - timedelta(hours=48)).isoformat()
-    return [
-        {'id': k, **v} for k, v in data.items()
-        if v and v.get('status') == 'pending'
-        and (not v.get('collected_at') or v['collected_at'] >= cutoff)
-    ]
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+    recent, old = [], []
+    for k, v in data.items():
+        if not v or not isinstance(v, dict) or v.get('status') != 'pending':
+            continue
+        collected = v.get('collected_at', '')
+        if collected and collected < cutoff:
+            old.append(k)
+        else:
+            recent.append({'id': k, **v})
+    # 古いpendingをFirebaseから削除
+    for key in old:
+        req = urllib.request.Request(
+            f"{FIREBASE_URL}{QUEUE_PATH}/{key}.json",
+            headers={"Content-Type": "application/json"}, method="DELETE"
+        )
+        try:
+            urllib.request.urlopen(req)
+        except Exception:
+            pass
+    if old:
+        print(f"古いpending削除: {len(old)}件")
+    return recent
 
 
 def select_top(items, n=7):
@@ -338,6 +356,23 @@ def mark_published(items, post_id):
         urllib.request.urlopen(req)
 
 
+def delete_unused(all_items, published_items):
+    """top7に選ばれなかった24h以内のpendingを削除"""
+    published_ids = {i['id'] for i in published_items}
+    unused = [i for i in all_items if i['id'] not in published_ids]
+    for item in unused:
+        req = urllib.request.Request(
+            f"{FIREBASE_URL}{QUEUE_PATH}/{item['id']}.json",
+            headers={"Content-Type": "application/json"}, method="DELETE"
+        )
+        try:
+            urllib.request.urlopen(req)
+        except Exception:
+            pass
+    if unused:
+        print(f"未使用pending削除: {len(unused)}件")
+
+
 def write_log(date_str, post_id, count):
     payload = json.dumps({"date": date_str, "postId": post_id, "itemCount": count}).encode()
     req = urllib.request.Request(
@@ -437,6 +472,7 @@ def main(dry_run=False):
         print("PEXELS_API_KEY未設定。アイキャッチスキップ。")
 
     mark_published(top, post_id)
+    delete_unused(items, top)
     write_log(date_str, post_id, len(top))
     print(f"完了: {len(top)}件 → {BUILDHUB_URL}/?p={post_id}")
 
