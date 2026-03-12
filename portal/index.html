@@ -470,23 +470,31 @@ tr:hover { background: rgba(0,0,0,0.02); }
 
       <!-- ===== DASHBOARD ===== -->
       <div class="section active" id="sec-dashboard">
-        <div class="stat-grid" id="dashStats">
-          <div class="stat-card" style="cursor:pointer" onclick="showSection('inbox')">
-            <div class="stat-value" style="color:var(--orange)" id="dInbox">-</div>
-            <div class="stat-label">未処理のメモ・タスク</div>
-            <div class="stat-change" style="color:var(--sub)">↗ クリックで処理へ</div>
+
+        <!-- キュー状態 -->
+        <div class="card">
+          <div class="card-header">
+            <h3>処理待ちキュー</h3>
+            <button class="btn btn-sm btn-outline" onclick="loadDashboardQueues()">更新</button>
           </div>
-          <div class="stat-card">
-            <div class="stat-value" style="color:var(--purple)" id="dProducts">29</div>
-            <div class="stat-label">管理中のアプリ・ツール</div>
-            <div class="stat-change" style="color:var(--sub)">一覧で確認</div>
+          <p style="font-size:12px;color:var(--sub);margin-bottom:14px">Claude Codeセッション開始時に自動チェックするキューの今の状態です。オレンジは処理が必要なサインです。</p>
+          <div id="dashQueues" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px">
+            <div class="empty" style="grid-column:1/-1"><span class="spinner"></span> 確認中...</div>
           </div>
         </div>
 
-        <!-- Quick Actions -->
+        <!-- 今日の作業ログ -->
         <div class="card">
-          <h3>よく使う画面</h3>
-          <p style="font-size:12px;color:var(--sub);margin-bottom:12px">各プロジェクトの管理画面へすぐ移動できます</p>
+          <div class="card-header">
+            <h3>今日やったこと</h3>
+            <span style="font-size:11px;color:var(--sub)" id="dashActivityDate"></span>
+          </div>
+          <div id="dashTodayActivity"><div class="empty"><span class="spinner"></span> 読み込み中...</div></div>
+        </div>
+
+        <!-- よく使う管理画面 -->
+        <div class="card">
+          <h3>よく使う管理画面</h3>
           <div class="links-grid">
             <a class="link-card" href="https://jonyjean21.github.io/sp-projects/molkky-portal/" target="_blank">
               <span class="link-icon">&#9878;</span>
@@ -495,76 +503,54 @@ tr:hover { background: rgba(0,0,0,0.02); }
                 <div style="font-size:11px;color:var(--sub)">記事・大会・Xポスト管理</div>
               </div>
             </a>
+            <a class="link-card" href="https://www.buildhub.jp/wp-admin/" target="_blank">
+              <span class="link-icon">&#127959;</span>
+              <div>
+                <div>BuildHub WP管理</div>
+                <div style="font-size:11px;color:var(--sub)">AI開発メディア記事管理</div>
+              </div>
+            </a>
+            <a class="link-card" href="https://www.tokurashi.com/wp-admin/" target="_blank">
+              <span class="link-icon">&#127991;</span>
+              <div>
+                <div>トクラシ WP管理</div>
+                <div style="font-size:11px;color:var(--sub)">アフィリブログ記事管理</div>
+              </div>
+            </a>
             <a class="link-card" href="https://jonyjean21.github.io/sp-projects/machap-portal/" target="_blank">
-              <span class="link-icon">&#9733;</span>
+              <span class="link-icon">&#9889;</span>
               <div>
                 <div>MACHAP Portal</div>
-                <div style="font-size:11px;color:var(--sub)">事業進捗・タスク管理</div>
+                <div style="font-size:11px;color:var(--sub)">3人チーム・タスク管理</div>
               </div>
             </a>
             <a class="link-card" href="https://jonyjean21.github.io/sp-projects/youtube/" target="_blank">
               <span class="link-icon">&#9654;</span>
               <div>
                 <div>YouTube Dashboard</div>
-                <div style="font-size:11px;color:var(--sub)">チャンネル分析・管理</div>
+                <div style="font-size:11px;color:var(--sub)">チャンネル分析</div>
               </div>
             </a>
-            <a class="link-card" href="https://jonyjean21.github.io/sp-projects/side-project-plan/" target="_blank">
-              <span class="link-icon">&#128176;</span>
+            <a class="link-card" href="https://jonyjean21.github.io/sp-projects/report-admin/" target="_blank">
+              <span class="link-icon">&#128221;</span>
               <div>
-                <div>副業ロードマップ</div>
-                <div style="font-size:11px;color:var(--sub)">2026年計画</div>
+                <div>日報ビューア</div>
+                <div style="font-size:11px;color:var(--sub)">毎朝4時自動生成ログ</div>
               </div>
             </a>
           </div>
         </div>
 
-        <!-- Recent Activity -->
-        <div class="card">
-          <div class="card-header">
-            <h3>最近やったこと</h3>
-            <span style="font-size:11px;color:var(--sub)">Claude Codeとのセッション記録</span>
-          </div>
-          <div id="dashActivity" style="font-size:12px;color:var(--sub)">
-            <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>MOLKKY HUB専用ポータル独立化</div><div class="activity-time">2026.03.05</div></div></div>
-            <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>YouTube Dashboardダッシュボード構築</div><div class="activity-time">2026.03.05</div></div></div>
-            <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>SP Portal軽量化（モルハブ機能分離）</div><div class="activity-time">2026.03.05</div></div></div>
-            <div class="activity-item"><div class="activity-dot" style="background:var(--blue)"></div><div style="flex:1"><div>MACHAP独立ポータル構築</div><div class="activity-time">2026.03.05</div></div></div>
-            <div class="activity-item"><div class="activity-dot" style="background:var(--blue)"></div><div style="flex:1"><div>SP Portal統合管理ポータル初期構築</div><div class="activity-time">2026.03.04</div></div></div>
-          </div>
-        </div>
-
-        <!-- Build History -->
-        <div class="card">
-          <h3>これまでの作業記録</h3>
-          <p style="font-size:12px;color:var(--sub);margin-bottom:12px">いつ何を作ったかのログ</p>
-          <div style="font-size:12px;color:var(--sub)">
-            <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>トクラシ（お得な暮らしブログ）構築、種記事10本生成</div><div class="activity-time">2026.03.09</div></div></div>
-            <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>副業ロードマップ2026作成、appsカタログをSP Portalに統合</div><div class="activity-time">2026.03.09</div></div></div>
-            <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>MACHAPプロダクト一覧ページ構築、パートナー記事修正・公開、大会キュー17件処理</div><div class="activity-time">2026.03.07</div></div></div>
-            <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>寄稿自動投稿システム、選手権トラッカー色調整、5先王Xポスト連動、Maxプラン節約体制</div><div class="activity-time">2026.03.06</div></div></div>
-            <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>MACHAP P0-P1完了（Firebase同期・INBOX PWA・STEP充実・Chart.jsグラフ）</div><div class="activity-time">2026.03.05</div></div></div>
-            <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>SP Portal統合管理ポータル構築、大会キュー69件自動処理、モルハブTOP改修提案書</div><div class="activity-time">2026.03.04</div></div></div>
-            <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>チームライド配車アプリ構築（RSVP・自動配車・QA 4ラウンド完了）</div><div class="activity-time">2026.03.03</div></div></div>
-            <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>日本選手権トラッカー構築、IFTTT動作確認、molkky-admin統合管理パネル</div><div class="activity-time">2026.03.02</div></div></div>
-            <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div style="flex:1"><div>セキュリティ修正（APIキー非公開化）、大会RSS自動収集GAS</div><div class="activity-time">2026.03.01</div></div></div>
-            <div class="activity-item"><div class="activity-dot" style="background:var(--blue)"></div><div style="flex:1"><div>パートナーLP、向上委員会ダッシュボード、ナイモル結果HTML生成ツール構築</div><div class="activity-time">2026.02.28</div></div></div>
-            <div class="activity-item"><div class="activity-dot" style="background:var(--blue)"></div><div style="flex:1"><div>レシピBOX URL取込、パートナー循環ポータル、大会自動化スキル構築</div><div class="activity-time">2026.02.27</div></div></div>
-            <div class="activity-item"><div class="activity-dot" style="background:var(--blue)"></div><div style="flex:1"><div>promote/repost/tournament-submit 各ツール構築</div><div class="activity-time">2026.02</div></div></div>
-            <div class="activity-item"><div class="activity-dot" style="background:var(--dim)"></div><div style="flex:1"><div>5先王アプリ、めぐり帳、marutamura-bot、MOLKKY HUB開設</div><div class="activity-time">2025</div></div></div>
-          </div>
-        </div>
-
-        <!-- External Links -->
+        <!-- 外部サービス -->
         <div class="card">
           <h3>外部サービス</h3>
           <div class="links-grid">
             <a class="link-card" href="https://analytics.google.com/" target="_blank"><span class="link-icon">&#128200;</span> GA4</a>
             <a class="link-card" href="https://search.google.com/search-console" target="_blank"><span class="link-icon">&#128270;</span> Search Console</a>
             <a class="link-card" href="https://console.firebase.google.com/project/viisi-master-app/database" target="_blank"><span class="link-icon">&#128293;</span> Firebase</a>
+            <a class="link-card" href="https://app.beehiiv.com" target="_blank"><span class="link-icon">&#128140;</span> beehiiv</a>
             <a class="link-card" href="https://ifttt.com/my_applets" target="_blank"><span class="link-icon">&#9889;</span> IFTTT</a>
             <a class="link-card" href="https://vercel.com/dashboard" target="_blank"><span class="link-icon">&#9650;</span> Vercel</a>
-            <a class="link-card" href="https://www.notion.so/" target="_blank"><span class="link-icon">&#128466;</span> Notion</a>
           </div>
         </div>
       </div>
@@ -589,25 +575,25 @@ tr:hover { background: rgba(0,0,0,0.02); }
           <div class="ov-focus-banner">
             <div class="ov-focus-main">
               <div class="ov-focus-label">TODAY'S FOCUS</div>
-              <div class="ov-focus-text">3月バトルプラン — 収益 ¥100,000/月を達成する</div>
+              <div class="ov-focus-text">トクラシ × BuildHub — アフィリエイト収益化フェーズへ</div>
             </div>
             <div class="ov-focus-sub">
-              <div><span style="color:var(--accent)">&#9654;</span> 「もう1人のSP」Phase 2 準備（LINE Bot統合）</div>
-              <div><span style="color:var(--orange)">&#9654;</span> Crowdworks + BOOTH + note で即金を作る</div>
-              <div><span style="color:var(--green)">&#9654;</span> MOLKKY HUB のSEO・アフィリエイト改善</div>
+              <div><span style="color:var(--green)">&#9654;</span> トクラシ：35本公開・A8.net申請済・プレミアムウォーター承認</div>
+              <div><span style="color:var(--cyan)">&#9654;</span> BuildHub：全自動パイプライン稼働・ニュースレター(beehiiv)設置</div>
+              <div><span style="color:var(--orange)">&#9654;</span> MOLKKY HUB：SEO継続・エリア記事拡充</div>
             </div>
           </div>
 
           <!-- Blockers: 目立つように最上位に -->
           <div class="ov-blocker-strip" id="blockerStrip">
             <div class="ov-blocker-chip ov-blocker-red">
-              <span>&#128683;</span> GitHub Secrets 未設定 <span class="ov-blocker-who">SP手動</span>
-            </div>
-            <div class="ov-blocker-chip ov-blocker-red">
-              <span>&#128683;</span> LINE Developers 登録 <span class="ov-blocker-who">SP手動</span>
+              <span>&#128683;</span> ConoHa FTP更新（buildhub-cron.php）<span class="ov-blocker-who">SP手動</span>
             </div>
             <div class="ov-blocker-chip ov-blocker-yellow">
-              <span>&#9888;</span> X アカウント作成 <span class="ov-blocker-who">SP手動</span>
+              <span>&#9888;</span> X アカウント作成（副業X） <span class="ov-blocker-who">SP手動</span>
+            </div>
+            <div class="ov-blocker-chip ov-blocker-yellow">
+              <span>&#9888;</span> LINE Developers 登録（AI Clone用） <span class="ov-blocker-who">SP手動</span>
             </div>
           </div>
         </div>
@@ -704,25 +690,28 @@ tr:hover { background: rgba(0,0,0,0.02); }
               <div class="ov-pillar-rank">#3</div>
               <div class="ov-pillar-icon" style="background:linear-gradient(135deg,#F97316,#FBBF24)">💰</div>
               <div class="ov-pillar-info">
-                <div class="ov-pillar-name">収益チャネル <span class="pill pill-orange" style="font-size:9px">3月バトル中</span></div>
-                <div class="ov-pillar-desc">AI×既存資産で月10-20万の仕組みを作る</div>
+                <div class="ov-pillar-name">収益チャネル <span class="pill pill-orange" style="font-size:9px">収益化フェーズ</span></div>
+                <div class="ov-pillar-desc">アフィリエイト × ニュースレタースポンサー</div>
               </div>
               <a class="btn btn-sm btn-outline" href="https://jonyjean21.github.io/sp-projects/side-project-plan/" target="_blank">ロードマップ &#8599;</a>
             </div>
             <div class="ov-pillar-tree">
               <div class="ov-branch">
-                <div class="ov-branch-label">チャネル別 目標</div>
-                <div class="ov-branch-items" style="flex-direction:column;gap:6px">
-                  <div class="ov-revenue-line"><span class="ov-rev-name">Crowdworks</span><div class="revenue-bar-track" style="height:8px;flex:1"><div class="revenue-bar-fill" style="height:100%;width:0%;background:var(--blue);min-width:0;padding:0" id="revCw"></div></div><span class="ov-rev-num">¥50,000</span></div>
-                  <div class="ov-revenue-line"><span class="ov-rev-name">BOOTH</span><div class="revenue-bar-track" style="height:8px;flex:1"><div class="revenue-bar-fill" style="height:100%;width:0%;background:var(--purple);min-width:0;padding:0" id="revBooth"></div></div><span class="ov-rev-num">¥39,600</span></div>
-                  <div class="ov-revenue-line"><span class="ov-rev-name">note</span><div class="revenue-bar-track" style="height:8px;flex:1"><div class="revenue-bar-fill" style="height:100%;width:0%;background:var(--orange);min-width:0;padding:0" id="revNote"></div></div><span class="ov-rev-num">¥19,800</span></div>
-                  <div class="ov-revenue-line"><span class="ov-rev-name">HUB Affiliate</span><div class="revenue-bar-track" style="height:8px;flex:1"><div class="revenue-bar-fill" style="height:100%;width:0%;background:var(--green);min-width:0;padding:0" id="revHub"></div></div><span class="ov-rev-num">¥15,000</span></div>
+                <div class="ov-branch-label">チャネル</div>
+                <div class="ov-branch-items" style="flex-direction:column;gap:8px">
+                  <div style="background:var(--bg);border-radius:8px;padding:10px;font-size:12px">
+                    <div style="font-weight:600;margin-bottom:4px">🏷 トクラシ（A8.net アフィリエイト）</div>
+                    <div style="color:var(--sub)">35本公開 / プレミアムウォーター承認 / さとふる・じゃらん審査中</div>
+                  </div>
+                  <div style="background:var(--bg);border-radius:8px;padding:10px;font-size:12px">
+                    <div style="font-weight:600;margin-bottom:4px">🏗 BuildHub（ニュースレター × スポンサー）</div>
+                    <div style="color:var(--sub)">beehiiv設置 / Vercel v0アフィリ / 読者1,000人→スポンサー営業</div>
+                  </div>
+                  <div style="background:var(--bg);border-radius:8px;padding:10px;font-size:12px">
+                    <div style="font-weight:600;margin-bottom:4px">📰 MOLKKY HUB（アドセンス・アフィリ）</div>
+                    <div style="color:var(--sub)">月間3Kセッション / SEO継続 / エリア記事拡充</div>
+                  </div>
                 </div>
-              </div>
-              <div style="margin-top:8px;padding:10px 12px;background:var(--bg);border-radius:8px;display:flex;align-items:center;gap:10px">
-                <span style="font-size:11px;color:var(--sub)">合計進捗</span>
-                <div class="revenue-bar-track" style="height:12px;flex:1"><div class="revenue-bar-fill" id="revBar" style="width:0%;background:linear-gradient(90deg,var(--accent),var(--cyan))">0%</div></div>
-                <span style="font-size:13px;font-weight:700" id="revTotal">¥0 / 100K</span>
               </div>
             </div>
           </div>
@@ -777,19 +766,39 @@ tr:hover { background: rgba(0,0,0,0.02); }
             <!-- トクラシ -->
             <div class="ov-sub-card" style="border-top:3px solid var(--orange)">
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-                <div class="ov-pillar-icon" style="background:linear-gradient(135deg,#e8750a,#f5a623);width:36px;height:36px;font-size:18px">🏷</div>
+                <div class="ov-pillar-icon" style="background:linear-gradient(135deg,#e8750a,#f5a623);width:36px;height:36px;font-size:18px">&#127991;</div>
                 <div>
                   <div style="font-weight:600;font-size:14px">トクラシ</div>
                   <div style="font-size:11px;color:var(--sub)">お得な暮らしブログ — ポイ活・ふるさと納税</div>
                 </div>
               </div>
               <div class="ov-phase-track">
-                <div class="ov-phase done">種記事10本<br><span>構築済み</span></div>
+                <div class="ov-phase done">35本公開<br><span>全自動生成</span></div>
                 <div class="ov-phase-arrow">→</div>
-                <div class="ov-phase">Cloudflare移行<br><span>未着手</span></div>
+                <div class="ov-phase current">ASP申請<br><span>A8.net 10件</span></div>
                 <div class="ov-phase-arrow">→</div>
-                <div class="ov-phase">収益化<br><span>AdSense</span></div>
+                <div class="ov-phase">収益化<br><span>アフィリ成約</span></div>
               </div>
+              <div class="ov-sub-note"><span style="color:var(--green)">&#10003;</span> プレミアムウォーター承認済み / さとふる・じゃらん審査中</div>
+            </div>
+
+            <!-- BuildHub -->
+            <div class="ov-sub-card" style="border-top:3px solid var(--cyan)">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                <div class="ov-pillar-icon" style="background:#0073aa;width:36px;height:36px;font-size:18px">&#127959;</div>
+                <div>
+                  <div style="font-weight:600;font-size:14px">BuildHub</div>
+                  <div style="font-size:11px;color:var(--sub)">AI開発ツール情報メディア</div>
+                </div>
+              </div>
+              <div class="ov-phase-track">
+                <div class="ov-phase done">パイプライン<br><span>全自動稼働</span></div>
+                <div class="ov-phase-arrow">→</div>
+                <div class="ov-phase current">NL設置<br><span>beehiiv</span></div>
+                <div class="ov-phase-arrow">→</div>
+                <div class="ov-phase">スポンサー<br><span>1,000読者〜</span></div>
+              </div>
+              <div class="ov-sub-note"><span style="color:var(--orange)">&#128683;</span> ConoHa FTP更新待ち（buildhub-cron.php）</div>
             </div>
           </div>
         </div>
@@ -1119,6 +1128,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('ja-JP');
   renderProducts();
   loadInboxCount();
+  loadDashboardQueues();
+  loadDashboardTodayActivity();
 });
 
 // ===== Navigation =====
@@ -1134,6 +1145,7 @@ function showSection(id) {
   document.getElementById('pageTitle').textContent = titles[id] || id;
 
   // Lazy load data
+  if (id === 'dashboard') { loadDashboardQueues(); loadDashboardTodayActivity(); }
   if (id === 'automation') loadAutomationStatus();
   if (id === 'inbox') loadInboxItems();
   if (id === 'overview') loadOverviewData();
@@ -1571,6 +1583,73 @@ function swipeEnd(e, key) {
   if (dx > 80) { routeItem(key); }
   else if (dx < -80) { dismissItem(key); }
   swipeState = {};
+}
+
+// ===== Dashboard =====
+async function loadDashboardQueues() {
+  const box = document.getElementById('dashQueues');
+  if (!box) return;
+  const queues = [
+    { key: 'tournament-queue', label: '大会情報', emoji: '&#127942;', type: 'manual', note: '/tournament queue で処理' },
+    { key: 'claude-tips-queue', label: 'Claude Tips', emoji: '&#129302;', type: 'cron', note: 'cron自動 / 毎朝7時' },
+    { key: 'chapche-queue', label: 'チャプ会議事録', emoji: '&#128221;', type: 'manual', note: '/chapche-minutes queue で処理' },
+    { key: 'contribution-queue', label: '寄稿原稿', emoji: '&#9997;', type: 'manual', note: 'SP確認後に手動処理' },
+  ];
+  box.innerHTML = '<div class="empty" style="grid-column:1/-1"><span class="spinner"></span> 確認中...</div>';
+  try {
+    const results = await Promise.all(queues.map(async q => {
+      const r = await fetch(`${FB}/${q.key}.json?orderBy="status"&equalTo="pending"`);
+      const d = await r.json();
+      return { ...q, pending: d ? Object.keys(d).length : 0 };
+    }));
+    box.innerHTML = results.map(r => {
+      const hasPending = r.pending > 0;
+      const color = hasPending ? 'var(--orange)' : 'var(--green)';
+      const bg = hasPending ? 'var(--orange-dim)' : 'var(--green-dim)';
+      const border = hasPending ? 'rgba(217,119,6,0.3)' : 'rgba(22,163,74,0.3)';
+      const clickAttr = (r.type === 'manual' && hasPending) ? 'onclick="showSection(\'automation\')" style="cursor:pointer"' : '';
+      return `<div ${clickAttr} style="background:${bg};border:1px solid ${border};border-radius:10px;padding:14px">
+        <div style="font-size:20px;margin-bottom:6px">${r.emoji}</div>
+        <div style="font-size:11px;color:var(--sub);margin-bottom:4px">${r.label}</div>
+        <div style="font-size:28px;font-weight:800;color:${color}">${r.pending}</div>
+        <div style="font-size:10px;color:var(--sub);margin-top:4px">${r.note}</div>
+        ${hasPending && r.type === 'manual' ? '<div style="font-size:10px;color:var(--orange);margin-top:4px;font-weight:600">要処理 &#8594;</div>' : ''}
+      </div>`;
+    }).join('');
+  } catch(e) {
+    box.innerHTML = `<div class="empty" style="grid-column:1/-1;color:var(--red)">取得失敗: ${escapeHtml(e.message)}</div>`;
+  }
+}
+
+async function loadDashboardTodayActivity() {
+  const box = document.getElementById('dashTodayActivity');
+  const dateEl = document.getElementById('dashActivityDate');
+  if (!box) return;
+  const today = new Date().toISOString().split('T')[0];
+  if (dateEl) dateEl.textContent = today;
+  try {
+    const r = await fetch(FB + '/daily-activities/' + today + '.json');
+    const data = await r.json();
+    if (!data) { box.innerHTML = '<div class="empty">今日の作業ログはまだありません</div>'; return; }
+    const entries = typeof data === 'object' ? Object.values(data) : [data];
+    let html = '';
+    for (const entry of entries) {
+      const items = entry.items || [];
+      const time = entry.time || '';
+      for (const item of items) {
+        html += `<div class="activity-item">
+          <div class="activity-dot" style="background:var(--green)"></div>
+          <div style="flex:1">
+            <div style="font-size:13px">${escapeHtml(item)}</div>
+            ${time ? `<div class="activity-time">${time}</div>` : ''}
+          </div>
+        </div>`;
+      }
+    }
+    box.innerHTML = html || '<div class="empty">今日の作業ログはまだありません</div>';
+  } catch(e) {
+    box.innerHTML = '<div class="empty" style="color:var(--sub)">作業ログを取得できませんでした</div>';
+  }
 }
 
 // ===== Overview Map =====
