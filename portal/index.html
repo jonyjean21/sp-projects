@@ -891,46 +891,98 @@ tr:hover { background: rgba(255,255,255,0.02); }
       <!-- ===== AUTOMATION ===== -->
       <div class="section" id="sec-automation">
         <div class="card">
-          <h3>自動化パイプライン概要</h3>
-          <div style="font-size:13px;line-height:1.8;color:var(--sub)">
-            <div style="margin-bottom:16px">
-              <div style="font-weight:600;color:var(--text);margin-bottom:4px">大会情報収集パイプライン</div>
-              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <div class="card-header">
+            <h3>AUTO-PROCESS パイプライン</h3>
+            <span class="pill pill-green" style="font-size:11px">セッション開始時に自動チェック</span>
+          </div>
+          <div style="font-size:12px;color:var(--sub);margin-bottom:16px">⚡ .claude/hooks/session-start.sh → Firebase 各キューを確認 → pending があれば処理実行</div>
+
+          <div style="display:flex;flex-direction:column;gap:12px">
+
+            <div style="background:var(--bg);border-radius:8px;padding:12px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <div style="font-weight:600;color:var(--text);font-size:13px">🏆 大会情報</div>
+                <span class="pill pill-green" style="font-size:10px">自動</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px">
                 <span class="pill pill-blue">GAS RSS</span>
                 <span class="pill pill-accent">IFTTT X検索</span>
-                <span class="pill pill-dim">手動URL</span>
                 <span style="color:var(--dim)">→</span>
-                <span class="pill pill-orange">Firebase Queue</span>
+                <span class="pill pill-orange">Firebase /tournament-queue</span>
                 <span style="color:var(--dim)">→</span>
-                <span class="pill pill-green">WP投稿</span>
+                <span class="pill pill-green">MOLKKY HUB WP</span>
               </div>
-              <div style="margin-top:4px">GAS: 毎日9時（JMA公式 + こくちーず）/ IFTTT: 5分間隔（X検索）</div>
+              <div style="font-size:11px;color:var(--dim)">スキル: /tournament queue</div>
             </div>
-            <div style="margin-bottom:16px">
-              <div style="font-weight:600;color:var(--text);margin-bottom:4px">チャプ会議事録パイプライン</div>
-              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+
+            <div style="background:var(--bg);border-radius:8px;padding:12px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <div style="font-weight:600;color:var(--text);font-size:13px">🤖 Claude Code Tips（BuildHub）</div>
+                <span class="pill pill-cyan" style="font-size:10px">cron自動</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+                <span class="pill pill-blue">GAS 6時間収集</span>
+                <span style="color:var(--dim)">→</span>
+                <span class="pill pill-orange">Firebase /claude-tips-queue</span>
+                <span style="color:var(--dim)">→</span>
+                <span class="pill pill-purple">ConoHa PHP cron 毎朝7時</span>
+                <span style="color:var(--dim)">→</span>
+                <span class="pill pill-green">BuildHub WP</span>
+              </div>
+              <div style="font-size:11px;color:var(--dim)">確認のみ（cron自動処理）/ deploy/buildhub-cron.php</div>
+            </div>
+
+            <div style="background:var(--bg);border-radius:8px;padding:12px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <div style="font-weight:600;color:var(--text);font-size:13px">📝 チャプ会議事録</div>
+                <span class="pill pill-purple" style="font-size:10px">自動</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px">
                 <span class="pill pill-purple">Google Meet</span>
                 <span style="color:var(--dim)">→</span>
-                <span class="pill pill-blue">Geminiメモ</span>
+                <span class="pill pill-blue">GAS検知</span>
                 <span style="color:var(--dim)">→</span>
-                <span class="pill pill-orange">GAS検知</span>
+                <span class="pill pill-orange">Firebase /chapche-queue</span>
                 <span style="color:var(--dim)">→</span>
                 <span class="pill pill-cyan">Notion投稿</span>
               </div>
-              <div style="margin-top:4px">GAS: 1時間おき（Driveの新規Geminiメモを検知）</div>
+              <div style="font-size:11px;color:var(--dim)">スキル: /chapche-minutes queue</div>
             </div>
-            <div>
-              <div style="font-weight:600;color:var(--text);margin-bottom:4px">Xポスト生成パイプライン</div>
-              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                <span class="pill pill-blue">WP記事</span>
-                <span style="color:var(--dim)">→</span>
-                <span class="pill pill-purple">Gemini生成</span>
-                <span style="color:var(--dim)">→</span>
-                <span class="pill pill-cyan">3パターン</span>
-                <span style="color:var(--dim)">→</span>
-                <span class="pill pill-green">@molkkyhub</span>
+
+            <div style="background:var(--bg);border-radius:8px;padding:12px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <div style="font-weight:600;color:var(--text);font-size:13px">✍️ 寄稿原稿</div>
+                <span class="pill pill-orange" style="font-size:10px">要SP確認</span>
               </div>
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+                <span class="pill pill-dim">手動登録</span>
+                <span style="color:var(--dim)">→</span>
+                <span class="pill pill-orange">Firebase /contribution-queue</span>
+                <span style="color:var(--dim)">→</span>
+                <span class="pill pill-blue">原稿DL・HTML化</span>
+                <span style="color:var(--dim)">→</span>
+                <span class="pill pill-orange">下書き投稿（SP確認後公開）</span>
+              </div>
+              <div style="font-size:11px;color:var(--dim)">手動フロー</div>
             </div>
+
+            <div style="background:var(--bg);border-radius:8px;padding:12px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <div style="font-weight:600;color:var(--text);font-size:13px">📅 週間大会まとめ</div>
+                <span class="pill pill-blue" style="font-size:10px">月曜のみ</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+                <span class="pill pill-blue">月曜セッション開始</span>
+                <span style="color:var(--dim)">→</span>
+                <span class="pill pill-green">今週の大会を集計</span>
+                <span style="color:var(--dim)">→</span>
+                <span class="pill pill-green">MOLKKY HUB WP公開</span>
+                <span style="color:var(--dim)">→</span>
+                <span class="pill pill-cyan">X自動ポスト 12:00</span>
+              </div>
+              <div style="font-size:11px;color:var(--dim)">python3 tools/weekly-roundup-gen.py</div>
+            </div>
+
           </div>
         </div>
 
@@ -1094,36 +1146,23 @@ function escapeHtml(t) { const d = document.createElement('div'); d.textContent 
 // ===== Automation Status =====
 async function loadAutomationStatus() {
   const box = document.getElementById('autoStatus');
+  const queues = [
+    { key: 'tournament-queue', label: '🏆 大会情報', color: 'var(--green)' },
+    { key: 'claude-tips-queue', label: '🤖 Claude Code Tips', color: 'var(--cyan)' },
+    { key: 'chapche-queue', label: '📝 チャプ会議事録', color: 'var(--purple)' },
+    { key: 'contribution-queue', label: '✍️ 寄稿原稿', color: 'var(--orange)' },
+  ];
   try {
-    const [qResp, logResp] = await Promise.all([
-      fetch(FB + '/tournament-queue.json'),
-      fetch(FB + '/tournament-collector-log.json?orderBy="$key"&limitToLast=3')
-    ]);
-    const qData = await qResp.json();
-    const logData = await logResp.json();
-
-    const entries = qData ? Object.values(qData) : [];
-    const pending = entries.filter(e => e.status === 'pending').length;
-    const posted = entries.filter(e => e.status === 'posted').length;
-    const skipped = entries.filter(e => e.status === 'skipped').length;
-    const ifttt = entries.filter(e => (e.source||'').includes('ifttt')).length;
-    const rss = entries.filter(e => (e.source||'').includes('rss')).length;
-
-    let html = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:16px">
-      <div style="text-align:center;padding:10px;background:var(--bg);border-radius:8px"><div style="font-size:20px;font-weight:700;color:var(--orange)">${pending}</div><div style="font-size:10px;color:var(--sub)">Pending</div></div>
-      <div style="text-align:center;padding:10px;background:var(--bg);border-radius:8px"><div style="font-size:20px;font-weight:700;color:var(--green)">${posted}</div><div style="font-size:10px;color:var(--sub)">Posted</div></div>
-      <div style="text-align:center;padding:10px;background:var(--bg);border-radius:8px"><div style="font-size:20px;font-weight:700;color:var(--dim)">${skipped}</div><div style="font-size:10px;color:var(--sub)">Skipped</div></div>
-      <div style="text-align:center;padding:10px;background:var(--bg);border-radius:8px"><div style="font-size:20px;font-weight:700;color:var(--accent)">${ifttt}</div><div style="font-size:10px;color:var(--sub)">IFTTT件数</div></div>
-      <div style="text-align:center;padding:10px;background:var(--bg);border-radius:8px"><div style="font-size:20px;font-weight:700;color:var(--blue)">${rss}</div><div style="font-size:10px;color:var(--sub)">RSS件数</div></div>
-    </div>`;
-
-    if (logData) {
-      html += '<div style="font-size:12px;font-weight:600;margin-bottom:6px">GAS実行ログ</div>';
-      for (const [date, log] of Object.entries(logData).reverse()) {
-        html += `<div style="font-size:12px;color:var(--sub);padding:4px 0;border-bottom:1px solid var(--border)">${date}: ${typeof log === 'string' ? log : JSON.stringify(log).substring(0,100)}</div>`;
-      }
-    }
-    box.innerHTML = html;
+    const results = await Promise.all(queues.map(async q => {
+      const r = await fetch(`${FB}/${q.key}.json?orderBy="status"&equalTo="pending"`);
+      const d = await r.json();
+      return { ...q, pending: d ? Object.keys(d).length : 0 };
+    }));
+    box.innerHTML = results.map(r => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:13px">${r.label}</span>
+        <span style="font-size:16px;font-weight:700;color:${r.pending > 0 ? 'var(--orange)' : r.color}">${r.pending} pending</span>
+      </div>`).join('');
   } catch(e) {
     box.innerHTML = `<div class="empty" style="color:var(--red)">取得失敗: ${e.message}</div>`;
   }
