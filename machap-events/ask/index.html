@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4/12 気球イベント - 確認事項</title>
+<style>
+:root {
+  --bg: #0e1117;
+  --card: #161b22;
+  --card-hover: #1c2129;
+  --border: #30363d;
+  --text: #e6edf3;
+  --dim: #8b949e;
+  --accent: #4a9eff;
+  --accent-hover: #6db3ff;
+  --green: #3fb950;
+  --yellow: #d29922;
+  --red: #f85149;
+  --orange: #db6d28;
+  --purple: #a371f7;
+  --radius: 12px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans JP', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  padding: 24px 0 16px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+
+.header h1 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.header p {
+  color: var(--dim);
+  font-size: 0.85rem;
+}
+
+/* Progress */
+.top-progress {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.top-progress-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+}
+
+.progress-bar {
+  background: var(--border);
+  border-radius: 6px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--accent), var(--green));
+  transition: width 0.4s ease;
+}
+
+/* Category tabs */
+.cat-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+
+.cat-tab {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--dim);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.cat-tab.active {
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+}
+
+.cat-tab .tab-count {
+  display: inline-block;
+  margin-left: 4px;
+  background: rgba(0,0,0,0.2);
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+}
+
+/* Question card */
+.q-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: border-color 0.2s;
+}
+
+.q-card.answered {
+  border-color: var(--green);
+  opacity: 0.85;
+}
+
+.q-card.answered .q-label::after {
+  content: ' ✓';
+  color: var(--green);
+}
+
+.q-num {
+  font-size: 0.7rem;
+  color: var(--dim);
+  margin-bottom: 4px;
+}
+
+.q-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.q-hint {
+  font-size: 0.8rem;
+  color: var(--dim);
+  margin-bottom: 10px;
+}
+
+/* Input styles */
+.q-input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--text);
+  font-size: 0.9rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 42px;
+  transition: border-color 0.2s;
+}
+
+.q-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.q-input::placeholder {
+  color: var(--dim);
+}
+
+/* Quick answer buttons */
+.quick-btns {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.quick-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--dim);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.quick-btn:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.quick-btn.selected {
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+}
+
+/* Select options */
+.q-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.q-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+
+.q-option:hover {
+  border-color: var(--accent);
+}
+
+.q-option.selected {
+  border-color: var(--accent);
+  background: rgba(74, 158, 255, 0.1);
+}
+
+.q-option input[type="radio"] {
+  accent-color: var(--accent);
+}
+
+/* Priority badge */
+.priority-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.priority-high {
+  background: rgba(248, 81, 73, 0.15);
+  color: var(--red);
+}
+
+.priority-mid {
+  background: rgba(210, 153, 34, 0.15);
+  color: var(--yellow);
+}
+
+.priority-low {
+  background: rgba(139, 148, 158, 0.15);
+  color: var(--dim);
+}
+
+/* Section divider */
+.section-divider {
+  padding: 12px 0;
+  font-size: 0.8rem;
+  color: var(--dim);
+  font-weight: 600;
+  display: none;
+}
+
+/* Submit */
+.submit-area {
+  text-align: center;
+  padding: 24px 0;
+}
+
+.submit-btn {
+  padding: 14px 40px;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 700;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.submit-btn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.submit-msg {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: var(--dim);
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--green);
+  color: #000;
+  padding: 12px 24px;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 0.9rem;
+  z-index: 1000;
+  transition: transform 0.3s ease;
+}
+
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Admin view toggle */
+.admin-toggle {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--dim);
+  cursor: pointer;
+  z-index: 50;
+}
+
+/* Admin results view */
+.admin-panel {
+  display: none;
+}
+
+.admin-panel.visible {
+  display: block;
+}
+
+.result-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+
+.result-q {
+  font-size: 0.8rem;
+  color: var(--dim);
+  margin-bottom: 4px;
+}
+
+.result-a {
+  font-size: 0.9rem;
+}
+
+.result-a.empty {
+  color: var(--dim);
+  font-style: italic;
+}
+
+@media (max-width: 640px) {
+  .container { padding: 12px; }
+  .q-card { padding: 14px; }
+}
+
+.footer {
+  text-align: center;
+  padding: 20px 0;
+  color: var(--dim);
+  font-size: 0.7rem;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <h1>4/12 気球イベント 確認事項</h1>
+    <p>中さんへ - わかるものだけでOK。サクッと答えてください</p>
+  </div>
+
+  <div class="top-progress">
+    <div class="top-progress-header">
+      <span>回答進捗</span>
+      <span id="prog-text">0 / 0</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="prog-fill" style="width: 0%"></div>
+    </div>
+  </div>
+
+  <div class="cat-tabs" id="cat-tabs"></div>
+
+  <div id="questions-area"></div>
+
+  <div class="submit-area">
+    <button class="submit-btn" id="submit-btn" onclick="submitAnswers()">回答を送信</button>
+    <div class="submit-msg">途中でも送信OK。後から追加・修正もできます</div>
+  </div>
+
+  <!-- Admin results panel -->
+  <div class="admin-panel" id="admin-panel">
+    <h2 style="margin-bottom: 16px; font-size: 1.1rem;">回答一覧（管理者ビュー）</h2>
+    <div id="admin-results"></div>
+  </div>
+
+  <div class="footer">MACHAP Events | SP × 中さん</div>
+</div>
+
+<div class="toast" id="toast"></div>
+<button class="admin-toggle" id="admin-toggle" onclick="toggleAdmin()">管理者</button>
+
+<script>
+const FB_URL = 'https://viisi-master-app-default-rtdb.firebaseio.com/machap-events/20260412-balloon';
+const STORAGE_KEY = 'machap-balloon-0412-answers';
+
+const questions = [
+  // A. 最優先 - 会場
+  { id: 'a1_venue', cat: 'venue', catLabel: '会場', priority: 'high',
+    q: '会場はどこ？', hint: '場所の名前や住所がわかれば', type: 'text', placeholder: '例: ○○公園、△△河川敷 など' },
+  { id: 'a1_parking', cat: 'venue', catLabel: '会場', priority: 'high',
+    q: '駐車場はある？', type: 'select', options: ['ある（十分）', 'ある（少なめ）', 'ない', 'わからん'] },
+  { id: 'a1_reserved', cat: 'venue', catLabel: '会場', priority: 'high',
+    q: '会場は確定済み？', type: 'select', options: ['確定済み', '仮押さえ', 'まだ決まってない', 'わからん'] },
+
+  // A. 最優先 - 主催者
+  { id: 'a2_organizer', cat: 'organizer', catLabel: '主催者', priority: 'high',
+    q: '主催者は誰？', hint: '個人名でも団体名でもOK', type: 'text', placeholder: '例: ○○さん、△△実行委員会' },
+  { id: 'a2_role_split', cat: 'organizer', catLabel: '主催者', priority: 'high',
+    q: '主催者と中さんの役割分担は？', hint: '主催者が何をやって、こっちが何をやるか', type: 'text', placeholder: '例: 主催者が会場手配、こっちが集客と運営' },
+  { id: 'a2_contact', cat: 'organizer', catLabel: '主催者', priority: 'mid',
+    q: '主催者との連絡手段は？', type: 'select', options: ['LINE', '電話', 'メール', 'その他'] },
+
+  // A. 最優先 - 気球
+  { id: 'a3_balloons', cat: 'balloon', catLabel: '気球', priority: 'high',
+    q: '今回は何機飛ばす？', type: 'select', options: ['1機', '2機', 'まだ未定'] },
+  { id: 'a3_vendor', cat: 'balloon', catLabel: '気球', priority: 'high',
+    q: '気球業者はどこ？手配済み？', type: 'text', placeholder: '例: ○○バルーン、手配済み / これから' },
+  { id: 'a3_vendor_deadline', cat: 'balloon', catLabel: '気球', priority: 'mid',
+    q: '業者への発注期限は？', type: 'text', placeholder: '例: 3月末まで / もう発注済み' },
+  { id: 'a3_cancel', cat: 'balloon', catLabel: '気球', priority: 'mid',
+    q: 'キャンセル料が発生するタイミングは？', type: 'text', placeholder: '例: 1週間前から / わからん' },
+
+  // A. 最優先 - お金
+  { id: 'a4_advance', cat: 'money', catLabel: 'お金', priority: 'high',
+    q: '初期費用（気球代）は誰が立て替える？', type: 'select', options: ['主催者', '中さん', '折半', 'まだ決めてない'] },
+  { id: 'a4_adult_price', cat: 'money', catLabel: 'お金', priority: 'high',
+    q: '乗船料は大人3,500円 / 子供1,500円で確定？', type: 'select', options: ['確定', '大体そのくらい', 'まだ決めてない'] },
+  { id: 'a4_staff_fee', cat: 'money', catLabel: 'お金', priority: 'high',
+    q: 'スタッフ参加費は1万円で確定？', type: 'select', options: ['確定', '大体そのくらい', 'まだ決めてない'] },
+  { id: 'a4_payment', cat: 'money', catLabel: 'お金', priority: 'mid',
+    q: '乗船料の決済方法は？', type: 'select', options: ['現金のみ', '現金 + PayPay等', 'まだ決めてない'] },
+  { id: 'a4_split', cat: 'money', catLabel: 'お金', priority: 'high',
+    q: 'SPと中さんの収益按分、どうする？', hint: 'ざっくりでOK', type: 'text', placeholder: '例: 折半、3:7、後で決める' },
+
+  // B. 集客
+  { id: 'b1_target_visitors', cat: 'guests', catLabel: '集客', priority: 'mid',
+    q: '目標の来場者数は？', type: 'select', options: ['50人以下', '50〜100人', '100〜200人', '200人以上', '特に決めてない'] },
+  { id: 'b1_target_audience', cat: 'guests', catLabel: '集客', priority: 'mid',
+    q: 'メインターゲットは？', type: 'select', options: ['ファミリー層', '地域住民全般', '特に絞ってない', 'その他'] },
+  { id: 'b1_promo', cat: 'guests', catLabel: '集客', priority: 'mid',
+    q: '集客チャネルは何を使う？', hint: '複数あれば全部書いて', type: 'text', placeholder: '例: SNS、口コミ、チラシ、自治体広報' },
+  { id: 'b1_reservation', cat: 'guests', catLabel: '集客', priority: 'mid',
+    q: '予約制？当日先着順？', type: 'select', options: ['予約制', '当日先着順', '両方（枠を分ける）', 'まだ決めてない'] },
+
+  // B. スタッフ
+  { id: 'b2_staff_target', cat: 'staff', catLabel: 'スタッフ', priority: 'mid',
+    q: 'スタッフは何人集めたい？', type: 'select', options: ['10人以下', '10〜15人', '15〜20人', '20人以上', 'まだ決めてない'] },
+  { id: 'b2_staff_recruit', cat: 'staff', catLabel: 'スタッフ', priority: 'mid',
+    q: 'スタッフの募集方法は？', type: 'text', placeholder: '例: 中さんのつながりで声かけ、SNS募集' },
+  { id: 'b2_staff_recruit_start', cat: 'staff', catLabel: 'スタッフ', priority: 'mid',
+    q: 'スタッフ募集はいつから始める？', type: 'select', options: ['もう始めてる', '今週中に', '来週以降', 'まだ決めてない'] },
+  { id: 'b2_tshirt', cat: 'staff', catLabel: 'スタッフ', priority: 'low',
+    q: 'スタッフTシャツは作る？', type: 'select', options: ['作る', '作らない', 'スタッフの希望次第'] },
+
+  // B. 天候・安全
+  { id: 'b3_rain', cat: 'safety', catLabel: '天候・安全', priority: 'high',
+    q: '雨天の場合は？', type: 'select', options: ['中止（予備日あり）', '中止（予備日なし）', '屋内に変更', 'まだ決めてない'] },
+  { id: 'b3_rain_date', cat: 'safety', catLabel: '天候・安全', priority: 'mid',
+    q: '予備日はある？あるならいつ？', type: 'text', placeholder: '例: 4/19、なし' },
+  { id: 'b3_insurance', cat: 'safety', catLabel: '天候・安全', priority: 'mid',
+    q: 'イベント保険は加入する？', type: 'select', options: ['加入する（こちら側で）', '主催者が手配', '業者の保険でカバー', 'わからん'] },
+  { id: 'b3_cancel_judge', cat: 'safety', catLabel: '天候・安全', priority: 'mid',
+    q: '中止判断はいつする？', type: 'select', options: ['前日の夜', '当日の早朝（集合前）', '当日現地で', 'まだ決めてない'] },
+
+  // C. コンテンツ
+  { id: 'c1_extra', cat: 'content', catLabel: 'コンテンツ', priority: 'low',
+    q: '気球以外にやりたいことある？', hint: '飲食、出店、体験、音楽、モルック体験とか', type: 'text', placeholder: '自由に書いて' },
+  { id: 'c1_kitchen_car', cat: 'content', catLabel: 'コンテンツ', priority: 'low',
+    q: 'キッチンカーは呼ぶ？', type: 'select', options: ['呼ぶ', '呼ばない', 'スタッフ費次第', 'まだ決めてない'] },
+  { id: 'c1_event_name', cat: 'content', catLabel: 'コンテンツ', priority: 'low',
+    q: 'イベント名は決まってる？', type: 'text', placeholder: '仮でもOK。なければ空欄で' },
+
+  // C. その他
+  { id: 'c2_line_group', cat: 'other', catLabel: 'その他', priority: 'low',
+    q: '関係者のLINEグループはある？', type: 'select', options: ['ある', 'ない（これから作る）', 'ない（個別連絡）'] },
+  { id: 'c2_past_exp', cat: 'other', catLabel: 'その他', priority: 'low',
+    q: '過去の気球イベントで来場者は大体何人くらいだった？', type: 'text', placeholder: '例: 100人くらい / 覚えてない' },
+  { id: 'c2_past_lesson', cat: 'other', catLabel: 'その他', priority: 'low',
+    q: '過去のイベントで「これは良かった」「これは改善したい」があれば', type: 'text', placeholder: '自由に書いて' },
+  { id: 'c2_next_mtg', cat: 'other', catLabel: 'その他', priority: 'mid',
+    q: '次の打ち合わせはいつ？', type: 'text', placeholder: '例: 来週○曜日、未定' },
+  { id: 'c2_anything', cat: 'other', catLabel: 'その他', priority: 'low',
+    q: 'その他、SPに伝えておきたいこと', type: 'text', placeholder: '何でも自由に' },
+];
+
+// State
+let answers = {};
+let currentCat = 'all';
+let isAdmin = false;
+
+// Init
+function init() {
+  loadSaved();
+  renderTabs();
+  renderQuestions();
+  updateProgress();
+  loadFromFirebase();
+}
+
+function loadSaved() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) answers = JSON.parse(saved);
+}
+
+function saveLocal() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(answers));
+}
+
+// Categories
+function getCategories() {
+  const cats = [];
+  const seen = new Set();
+  for (const q of questions) {
+    if (!seen.has(q.cat)) {
+      seen.add(q.cat);
+      cats.push({ id: q.cat, label: q.catLabel });
+    }
+  }
+  return cats;
+}
+
+function renderTabs() {
+  const cats = getCategories();
+  const area = document.getElementById('cat-tabs');
+  let html = `<div class="cat-tab ${currentCat === 'all' ? 'active' : ''}" onclick="switchCat('all')">すべて<span class="tab-count">${questions.length}</span></div>`;
+  for (const c of cats) {
+    const count = questions.filter(q => q.cat === c.id).length;
+    html += `<div class="cat-tab ${currentCat === c.id ? 'active' : ''}" onclick="switchCat('${c.id}')">${c.label}<span class="tab-count">${count}</span></div>`;
+  }
+  area.innerHTML = html;
+}
+
+function switchCat(cat) {
+  currentCat = cat;
+  renderTabs();
+  renderQuestions();
+}
+
+// Render
+function renderQuestions() {
+  const area = document.getElementById('questions-area');
+  const filtered = currentCat === 'all' ? questions : questions.filter(q => q.cat === currentCat);
+  let html = '';
+  let num = 0;
+
+  for (const q of filtered) {
+    num++;
+    const ans = answers[q.id] || '';
+    const isAnswered = ans && ans.trim() !== '';
+    const pLabel = q.priority === 'high' ? '重要' : q.priority === 'mid' ? '確認' : 'あれば';
+    const pClass = q.priority === 'high' ? 'priority-high' : q.priority === 'mid' ? 'priority-mid' : 'priority-low';
+
+    html += `<div class="q-card ${isAnswered ? 'answered' : ''}" id="card-${q.id}">`;
+    html += `<div class="q-num">${q.catLabel} #${num}<span class="priority-badge ${pClass}">${pLabel}</span></div>`;
+    html += `<div class="q-label">${q.q}</div>`;
+    if (q.hint) html += `<div class="q-hint">${q.hint}</div>`;
+
+    if (q.type === 'select') {
+      html += `<div class="q-options">`;
+      for (const opt of q.options) {
+        const sel = ans === opt ? 'selected' : '';
+        html += `<div class="q-option ${sel}" onclick="selectOption('${q.id}', '${opt.replace(/'/g, "\\'")}', this)">
+          <input type="radio" name="${q.id}" ${sel ? 'checked' : ''}> ${opt}
+        </div>`;
+      }
+      html += `</div>`;
+      // Also allow free text for select
+      html += `<input class="q-input" style="margin-top: 8px;" type="text"
+        placeholder="選択肢にない場合はここに書いて"
+        value="${q.options.includes(ans) ? '' : ans}"
+        oninput="textAnswer('${q.id}', this.value)"
+      >`;
+    } else {
+      html += `<textarea class="q-input" rows="2"
+        placeholder="${q.placeholder || ''}"
+        oninput="textAnswer('${q.id}', this.value)"
+      >${ans}</textarea>`;
+    }
+
+    // Quick answer buttons for all questions
+    html += `<div class="quick-btns">`;
+    const quickOpts = ['わからん', '主催者に確認', 'SP判断でOK'];
+    for (const qo of quickOpts) {
+      const sel = ans === qo ? 'selected' : '';
+      html += `<button class="quick-btn ${sel}" onclick="quickAnswer('${q.id}', '${qo}', this)">${qo}</button>`;
+    }
+    html += `</div>`;
+
+    html += `</div>`;
+  }
+
+  area.innerHTML = html;
+}
+
+// Answer handlers
+function selectOption(id, value, el) {
+  answers[id] = value;
+  saveLocal();
+  // Update UI
+  const card = document.getElementById('card-' + id);
+  card.querySelectorAll('.q-option').forEach(o => o.classList.remove('selected'));
+  card.querySelectorAll('.q-option input').forEach(r => r.checked = false);
+  el.classList.add('selected');
+  el.querySelector('input').checked = true;
+  // Clear quick btn selection
+  card.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('selected'));
+  // Clear free text
+  const freeInput = card.querySelector('.q-input');
+  if (freeInput) freeInput.value = '';
+  card.classList.add('answered');
+  updateProgress();
+}
+
+function textAnswer(id, value) {
+  answers[id] = value;
+  saveLocal();
+  const card = document.getElementById('card-' + id);
+  // Clear select options if text is entered
+  if (value.trim()) {
+    card.querySelectorAll('.q-option').forEach(o => o.classList.remove('selected'));
+    card.querySelectorAll('.q-option input').forEach(r => r.checked = false);
+    card.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('selected'));
+    card.classList.add('answered');
+  } else {
+    card.classList.remove('answered');
+  }
+  updateProgress();
+}
+
+function quickAnswer(id, value, el) {
+  answers[id] = value;
+  saveLocal();
+  const card = document.getElementById('card-' + id);
+  // Clear all other selections
+  card.querySelectorAll('.q-option').forEach(o => o.classList.remove('selected'));
+  card.querySelectorAll('.q-option input').forEach(r => r.checked = false);
+  card.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('selected'));
+  card.querySelectorAll('.q-input').forEach(i => { if (i.tagName === 'TEXTAREA') i.value = ''; });
+  el.classList.add('selected');
+  card.classList.add('answered');
+  updateProgress();
+}
+
+function updateProgress() {
+  const total = questions.length;
+  const answered = questions.filter(q => answers[q.id] && answers[q.id].trim()).length;
+  const pct = Math.round((answered / total) * 100);
+  document.getElementById('prog-text').textContent = `${answered} / ${total}`;
+  document.getElementById('prog-fill').style.width = pct + '%';
+}
+
+// Submit
+async function submitAnswers() {
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = '送信中...';
+
+  const payload = {
+    answers: answers,
+    submittedAt: new Date().toISOString(),
+    answeredCount: questions.filter(q => answers[q.id] && answers[q.id].trim()).length,
+    totalCount: questions.length
+  };
+
+  try {
+    const res = await fetch(FB_URL + '/responses.json', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    // Also save latest as single record for easy access
+    await fetch(FB_URL + '/latest-response.json', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+      showToast('送信完了！ありがとう！');
+    } else {
+      showToast('送信エラー...もう一度試してください');
+    }
+  } catch (e) {
+    showToast('ネットワークエラー...後でもう一度');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '回答を送信';
+}
+
+// Load from Firebase (in case already answered from another device)
+async function loadFromFirebase() {
+  try {
+    const res = await fetch(FB_URL + '/latest-response.json');
+    const data = await res.json();
+    if (data && data.answers) {
+      // Merge: Firebase answers fill in blanks, local takes priority
+      for (const [k, v] of Object.entries(data.answers)) {
+        if (!answers[k] || !answers[k].trim()) {
+          answers[k] = v;
+        }
+      }
+      saveLocal();
+      renderQuestions();
+      updateProgress();
+    }
+  } catch (e) {
+    // Silently fail - offline is fine
+  }
+}
+
+// Admin
+function toggleAdmin() {
+  isAdmin = !isAdmin;
+  const panel = document.getElementById('admin-panel');
+  if (isAdmin) {
+    panel.classList.add('visible');
+    renderAdminResults();
+    document.getElementById('admin-toggle').textContent = '質問に戻る';
+  } else {
+    panel.classList.remove('visible');
+    document.getElementById('admin-toggle').textContent = '管理者';
+  }
+}
+
+async function renderAdminResults() {
+  const area = document.getElementById('admin-results');
+  area.innerHTML = '<div style="color: var(--dim);">読み込み中...</div>';
+
+  try {
+    const res = await fetch(FB_URL + '/latest-response.json');
+    const data = await res.json();
+
+    if (!data || !data.answers) {
+      area.innerHTML = '<div style="color: var(--dim);">まだ回答がありません</div>';
+      return;
+    }
+
+    let html = `<div style="margin-bottom: 16px; font-size: 0.8rem; color: var(--dim);">最終送信: ${new Date(data.submittedAt).toLocaleString('ja-JP')} | ${data.answeredCount}/${data.totalCount}件回答</div>`;
+
+    for (const q of questions) {
+      const a = data.answers[q.id];
+      const pClass = q.priority === 'high' ? 'priority-high' : q.priority === 'mid' ? 'priority-mid' : 'priority-low';
+      html += `<div class="result-item">
+        <div class="result-q">${q.catLabel} | ${q.q} <span class="priority-badge ${pClass}">${q.priority === 'high' ? '重要' : q.priority === 'mid' ? '確認' : 'あれば'}</span></div>
+        <div class="result-a ${a ? '' : 'empty'}">${a || '未回答'}</div>
+      </div>`;
+    }
+
+    area.innerHTML = html;
+  } catch (e) {
+    area.innerHTML = '<div style="color: var(--dim);">読み込みエラー</div>';
+  }
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+init();
+</script>
+
+</body>
+</html>
