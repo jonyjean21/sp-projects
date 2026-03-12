@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>今週のやったこと｜チャプ会 2026-03-12</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Hiragino Sans", sans-serif; background: #f5f5f5; color: #222; line-height: 1.7; }
+  .header { background: #1a1a2e; color: #fff; padding: 32px 24px; text-align: center; }
+  .header h1 { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+  .header p { font-size: 14px; color: #aaa; }
+  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px; }
+
+  .section { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+  .section-title { font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #888; margin-bottom: 16px; }
+
+  .big-number { font-size: 42px; font-weight: 900; line-height: 1; }
+  .big-label { font-size: 13px; color: #666; margin-top: 4px; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .stat { text-align: center; padding: 16px; background: #f9f9f9; border-radius: 10px; }
+
+  .card { border-left: 4px solid #ccc; padding: 12px 16px; margin-bottom: 12px; border-radius: 0 8px 8px 0; background: #fafafa; }
+  .card.new    { border-color: #ff6b35; background: #fff8f5; }
+  .card.update { border-color: #0073aa; background: #f0f7ff; }
+  .card.auto   { border-color: #28a745; background: #f0fff4; }
+  .card.biz    { border-color: #f5a623; background: #fffbf0; }
+  .card-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+  .card-body  { font-size: 14px; color: #555; }
+  .card-body li { margin-left: 16px; margin-top: 2px; }
+
+  .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-right: 4px; margin-bottom: 6px; }
+  .tag.new    { background: #ff6b35; color: #fff; }
+  .tag.update { background: #0073aa; color: #fff; }
+  .tag.auto   { background: #28a745; color: #fff; }
+  .tag.biz    { background: #f5a623; color: #fff; }
+  .link { display: inline-block; font-size: 12px; color: #0073aa; text-decoration: none; background: #e8f4fd; padding: 2px 10px; border-radius: 20px; margin-left: 6px; vertical-align: middle; }
+  .link:hover { background: #0073aa; color: #fff; }
+
+  .pipeline { background: #1a1a2e; color: #eee; border-radius: 10px; padding: 16px; font-size: 13px; font-family: monospace; line-height: 2; }
+  .pipe-green { color: #4cff91; }
+  .pipe-yellow { color: #ffd700; }
+  .pipe-blue { color: #64b5f6; }
+
+  .next { background: #f9f9f9; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; font-size: 14px; }
+  .next-label { font-size: 11px; font-weight: 700; color: #888; margin-bottom: 2px; }
+
+  h2 { font-size: 18px; margin-bottom: 4px; }
+  hr { border: none; border-top: 1px solid #eee; margin: 20px 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📋 今週のやったこと</h1>
+  <p>チャプ会 2026-03-12 ／ 集計期間: 3/6（金）〜 3/12（木）</p>
+</div>
+
+<div class="container">
+
+  <!-- 数字で振り返り -->
+  <div class="section">
+    <div class="section-title">📊 数字で振り返り</div>
+    <div class="stats">
+      <div class="stat">
+        <div class="big-number" style="color:#ff6b35">3</div>
+        <div class="big-label">新規サービス<br>立ち上げ</div>
+      </div>
+      <div class="stat">
+        <div class="big-number" style="color:#0073aa">5</div>
+        <div class="big-label">既存アプリ<br>アップデート</div>
+      </div>
+      <div class="stat">
+        <div class="big-number" style="color:#28a745">4</div>
+        <div class="big-label">自動化<br>パイプライン</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新しく作ったもの -->
+  <div class="section">
+    <div class="section-title">🚀 新しく作ったもの</div>
+
+    <div class="card new">
+      <span class="tag new">NEW</span>
+      <div class="card-title">BuildHub（buildhub.jp）<a href="https://www.buildhub.jp" target="_blank" class="link">開く →</a></div>
+      <div class="card-body">
+        Claude Code・AI開発ツールの情報メディアを新規立ち上げ。記事収集〜Gemini要約〜WordPress投稿まで<strong>完全自動</strong>。毎朝7時に自動で記事が公開される状態に。
+        <ul>
+          <li>収集先: Reddit・Hacker News・Zenn・Qiita・dev.to・GitHubリリース</li>
+          <li>記事: 毎日1本、海外バズ記事を日本語でまとめて投稿</li>
+          <li>ニュースレター（beehiiv）も設置済み</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card new">
+      <span class="tag new">NEW</span>
+      <div class="card-title">トクラシ（tokurashi.com）<a href="https://www.tokurashi.com" target="_blank" class="link">開く →</a></div>
+      <div class="card-body">
+        お得な暮らし情報のアフィリエイトブログを新規立ち上げ。AI生成で記事35本を一気に公開。
+        <ul>
+          <li>ペルソナ「ゆうこ」（32歳主婦）視点で執筆</li>
+          <li>A8.netに10プログラム申請、プレミアムウォーター（1.2万円/件）は承認済み</li>
+          <li>GA4・Search Console・サイトマップ設定完了</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card new">
+      <span class="tag new">NEW</span>
+      <div class="card-title">日報自動生成システム<a href="https://jonyjean21.github.io/sp-projects/report-admin/" target="_blank" class="link">管理画面 →</a></div>
+      <div class="card-body">
+        毎朝4時にGASがGitHubコミット＋Claude Codeの作業ログを集めてGeminiで要約し、日報を自動生成。管理画面（report-admin）からカレンダー・統計が見られる。
+      </div>
+    </div>
+  </div>
+
+  <!-- 既存アプリのアップデート -->
+  <div class="section">
+    <div class="section-title">🔧 既存アプリのアップデート</div>
+
+    <div class="card update">
+      <span class="tag update">UPDATE</span>
+      <div class="card-title">チームライド<a href="https://jonyjean21.github.io/sp-projects/teamride/" target="_blank" class="link">開く →</a></div>
+      <div class="card-body">
+        <ul>
+          <li><strong>AI自動配車</strong>：乗車人数・距離・優先度を考慮して自動で組み分け</li>
+          <li><strong>配車編集機能</strong>：確定後でも乗客を自由に移動できる</li>
+          <li>学年選択・入力依頼文の自動生成・大会記録機能を追加</li>
+          <li>LINE共有テキストの自動生成</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card update">
+      <span class="tag update">UPDATE</span>
+      <div class="card-title">まなびモン2（2年生向け）<a href="https://jonyjean21.github.io/sp-projects/manabimon2/" target="_blank" class="link">開く →</a></div>
+      <div class="card-body">
+        1〜3年生向けから<strong>2年生専用</strong>に変更。ドラゴンテーマに刷新し、進化演出・バッジ・ショップ機能を強化。
+      </div>
+    </div>
+
+    <div class="card update">
+      <span class="tag update">UPDATE</span>
+      <div class="card-title">MACHAPページ<a href="https://jonyjean21.github.io/sp-projects/machap-portal/" target="_blank" class="link">開く →</a></div>
+      <div class="card-body">
+        プロダクト一覧をカタログ化（25+プロダクト、カルーセル表示）。導線を「相談する」ボタン重視にリニューアル。
+      </div>
+    </div>
+
+    <div class="card update">
+      <span class="tag update">UPDATE</span>
+      <div class="card-title">SP Portal<a href="https://jonyjean21.github.io/sp-projects/portal/" target="_blank" class="link">開く →</a></div>
+      <div class="card-body">
+        ダーク→ライトモードに全面リデザイン。全貌マップページを追加し、プロジェクト全体像が一目でわかるように。
+      </div>
+    </div>
+
+    <div class="card update">
+      <span class="tag update">UPDATE</span>
+      <div class="card-title">レシピBOX<a href="https://jonyjean21.github.io/sp-projects/recipe/" target="_blank" class="link">開く →</a></div>
+      <div class="card-body">
+        2列レイアウト、写真複数枚対応、タイマー削除など使いやすさを改善。
+      </div>
+    </div>
+  </div>
+
+  <!-- 自動化インフラ -->
+  <div class="section">
+    <div class="section-title">⚙️ 今週から動いている自動化</div>
+
+    <div class="pipeline">
+      <div><span class="pipe-green">● 毎朝7時</span>　BuildHub — Reddit/HNの記事をAIで日本語まとめ → 自動投稿</div>
+      <div><span class="pipe-green">● 毎朝4時</span>　日報 — Gitコミット+作業ログ → Gemini要約 → Firebase保存</div>
+      <div><span class="pipe-yellow">● 週1回(月)</span>　MOLKKY HUB — 週間大会まとめ記事を自動生成・公開</div>
+      <div><span class="pipe-blue">● 随時</span>　　大会情報 — IFTTT検知 → Firebase → WordPress自動投稿</div>
+    </div>
+  </div>
+
+  <!-- ビジネス・収益 -->
+  <div class="section">
+    <div class="section-title">💰 収益・ビジネス面</div>
+
+    <div class="card biz">
+      <span class="tag biz">BIZ</span>
+      <div class="card-title">X（Twitter）収益実験の準備完了</div>
+      <div class="card-body">
+        副業・フリーランス系Xアカウントで収益化する仕組みをGASで実装完了。1日4回、Gemini生成のポストを自動投稿できる状態。あとはXアカウントを作るだけ。
+      </div>
+    </div>
+
+    <div class="card biz">
+      <span class="tag biz">BIZ</span>
+      <div class="card-title">アフィリエイト（トクラシ）始動</div>
+      <div class="card-body">
+        プレミアムウォーター（1件1.2万円）が承認済み。さとふる・じゃらん・ハピタス等は審査中。記事は35本公開済みでGoogleのインデックス待ち。
+      </div>
+    </div>
+  </div>
+
+  <!-- 次のアクション -->
+  <div class="section">
+    <div class="section-title">📌 次やること（優先順）</div>
+
+    <div class="next">
+      <div class="next-label">P1 / トクラシ</div>
+      ASP承認が来たら記事にリンクを埋め込む（プレミアムウォーターはすぐできる）
+    </div>
+    <div class="next">
+      <div class="next-label">P2 / BuildHub</div>
+      ニュースレター読者を増やす施策を検討（今は記事CTAのみ）
+    </div>
+    <div class="next">
+      <div class="next-label">P2 / MACHAP</div>
+      収益化の方向を決める（チームライド横展開 vs スポンサー）
+    </div>
+    <div class="next">
+      <div class="next-label">SP手動待ち</div>
+      Xアカウント作成 → X収益実験スタート
+    </div>
+  </div>
+
+  <p style="text-align:center;font-size:12px;color:#aaa;padding-bottom:32px;">自動生成 by Claude Code ／ 2026-03-12</p>
+
+</div>
+</body>
+</html>
