@@ -491,8 +491,12 @@ textarea{resize:vertical;min-height:60px}
     <div class="card" id="settingsAdminLogout" style="display:none" onclick="adminLogout()">
       <div style="font-size:15px;font-weight:600;color:var(--danger)">管理者ログアウト</div>
     </div>
+    <div class="card" id="settingsTemplateEditor" style="display:none" onclick="openTemplateEditor()">
+      <div style="font-size:15px;font-weight:600">📝 テンプレート編集</div>
+      <div style="font-size:13px;color:var(--text-sub);margin-top:4px">入力依頼文・LINEテンプレ等をカスタマイズ</div>
+    </div>
 
-    <div style="text-align:center;margin-top:24px;font-size:11px;color:var(--text-light)">v4 (2026-03-10)</div>
+    <div style="text-align:center;margin-top:24px;font-size:11px;color:var(--text-light)">v4 (2026-03-12)</div>
   </div>
 </div>
 
@@ -687,19 +691,19 @@ textarea{resize:vertical;min-height:60px}
       <div style="font-size:12px;color:var(--text-light);margin-top:4px">会場の駐車場制限。空欄=制限なし</div>
     </div>
     <div class="form-group">
-      <label class="form-label">試合/イベントURL</label>
-      <input type="text" id="eventMatchUrl" placeholder="https://... （募集ページ・詳細ページ等）">
-    </div>
-    <div class="form-group">
       <label class="form-label">詳細</label>
       <textarea id="eventNote" placeholder="持ち物・注意事項・募集要項など詳しく記入できます" style="min-height:120px"></textarea>
     </div>
     <div class="form-group">
-      <label class="form-label">画像</label>
-      <div id="eventImagePreview" style="margin-bottom:8px"></div>
-      <input type="file" id="eventImageFile" accept="image/*" onchange="previewEventImage(this)" style="font-size:14px;width:100%">
-      <input type="hidden" id="eventImageData">
-      <div style="font-size:12px;color:var(--text-light);margin-top:4px">1MB以内の画像をアップロードできます</div>
+      <label class="form-label">PDF添付</label>
+      <div id="eventPdfPreview" style="margin-bottom:8px"></div>
+      <input type="file" id="eventPdfFile" accept=".pdf,application/pdf" onchange="previewEventPdf(this)" style="font-size:14px;width:100%">
+      <input type="hidden" id="eventPdfData">
+      <div style="font-size:12px;color:var(--text-light);margin-top:4px">5MB以内のPDFを添付できます</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">試合/イベントURL</label>
+      <input type="text" id="eventMatchUrl" placeholder="https://... （募集ページ・詳細ページ等）">
     </div>
 
     <button class="btn btn-primary" onclick="saveEvent()">保存</button>
@@ -792,6 +796,18 @@ textarea{resize:vertical;min-height:60px}
   </div>
 </div>
 
+<!-- Modal: Template Editor -->
+<div class="modal-overlay" id="templateEditorModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📝 テンプレート編集</div>
+    <div style="font-size:12px;color:var(--text-sub);margin-bottom:12px">変数: {date}日付 {title}イベント名 {grade}学年 {url}URL {deadline}締切 {equip_icon}機材アイコン {equip_name}機材名 {unanswered_list}未回答者</div>
+    <div id="templateEditorContent"></div>
+    <button class="btn btn-primary" onclick="saveTemplates()">保存</button>
+    <button class="btn btn-outline" onclick="closeModal('templateEditorModal')" style="margin-top:8px">閉じる</button>
+  </div>
+</div>
+
 <!-- Modal: Admin PIN -->
 <div class="modal-overlay" id="adminPinModal">
   <div class="modal">
@@ -842,6 +858,19 @@ textarea{resize:vertical;min-height:60px}
         <option value="friendly">練習試合</option>
         <option value="practice">紅白戦</option>
       </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">対象学年 <span style="color:var(--danger);font-size:12px">※必須</span></label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="tournamentGradeChoices">
+        <div class="checkbox-item" data-grade="0" onclick="this.classList.toggle('checked')" style="font-size:13px">年長</div>
+        <div class="checkbox-item" data-grade="1" onclick="this.classList.toggle('checked')" style="font-size:13px">1年</div>
+        <div class="checkbox-item" data-grade="2" onclick="this.classList.toggle('checked')" style="font-size:13px">2年</div>
+        <div class="checkbox-item" data-grade="3" onclick="this.classList.toggle('checked')" style="font-size:13px">3年</div>
+        <div class="checkbox-item" data-grade="4" onclick="this.classList.toggle('checked')" style="font-size:13px">4年</div>
+        <div class="checkbox-item" data-grade="5" onclick="this.classList.toggle('checked')" style="font-size:13px">5年</div>
+        <div class="checkbox-item" data-grade="6" onclick="this.classList.toggle('checked')" style="font-size:13px">6年</div>
+      </div>
+      <div style="font-size:12px;color:var(--text-light);margin-top:4px">複数選択可</div>
     </div>
     <div class="form-group">
       <label class="form-label">チーム順位</label>
@@ -916,6 +945,7 @@ let infoSectionsData = {};
 let infoSectionOrder = null; // null = use default order
 let isAdmin = !!localStorage.getItem('teamride_admin');
 let selectedMemberId = localStorage.getItem('teamride_member') || null;
+let templatesData = {};
 
 // ── SHA-256 Hash ──
 async function sha256(text) {
@@ -1043,6 +1073,12 @@ function loadAll() {
   });
   db.ref(ROOT + '/tournaments').on('value', snap => {
     tournamentsData = snap.val() || {};
+    // Migrate: set target_grades=[0,1] for any existing tournament without grades
+    Object.entries(tournamentsData).forEach(([id, t]) => {
+      if (!t.target_grades) {
+        db.ref(ROOT + '/tournaments/' + id + '/target_grades').set([0, 1]);
+      }
+    });
     renderTournaments();
   });
   db.ref(ROOT + '/team_info').on('value', snap => {
@@ -1054,6 +1090,9 @@ function loadAll() {
   db.ref(ROOT + '/info_section_order').on('value', snap => {
     infoSectionOrder = snap.val() || null;
     renderInfoPage();
+  });
+  db.ref(ROOT + '/templates').on('value', snap => {
+    templatesData = snap.val() || {};
   });
 }
 
@@ -1671,6 +1710,57 @@ function renderSettings() {
   if (logoutBtn) {
     logoutBtn.style.display = (isAdmin && configData.admin_pin) ? '' : 'none';
   }
+  const tplBtn = document.getElementById('settingsTemplateEditor');
+  if (tplBtn) tplBtn.style.display = isAdmin ? '' : 'none';
+}
+
+// ── Template Editor ──
+const TEMPLATE_DEFAULTS = {
+  input_request: 'お疲れです。\n\n{grade}　{date} {title}の、参加・配車・帯同の入力をお願いします。\n{trial_info}{deadline_info}\n回答はこちらから:\n{url}\n\nよろしくお願いいたします。',
+  equip_nudge: 'お疲れさまです。\n\n試合荷物の「{equip_icon}{equip_name}」の所在が確認できていません。\n\nお持ち帰りいただいている方は、「{title}」の出欠回答で{equip_icon}ボタンを押していただけると助かります。',
+  unanswered_nudge: '【出欠未回答のお知らせ】\n⚽ {date} {title}\nまだ回答がありません:\n{unanswered_list}\nアプリから回答をお願いします\n{url}',
+  line_assign_header: 'お疲れ様です。\n{date} {title}の配車案を作成しました。\nご確認をお願いいたします🙇\n{meet_time_line}何かありましたら、私までご連絡ください。',
+  match_report_preamble: ''
+};
+
+const TEMPLATE_LABELS = {
+  input_request: '入力依頼文',
+  equip_nudge: '荷物所有者確認',
+  unanswered_nudge: '未回答に催促',
+  line_assign_header: '配車決定後のLINEテンプレ（ヘッダー）',
+  match_report_preamble: '試合レポート（締めの言葉）'
+};
+
+function openTemplateEditor() {
+  if (!isAdmin) { showToast('管理者ログインが必要です', 'error'); return; }
+  const keys = Object.keys(TEMPLATE_DEFAULTS);
+  let html = '';
+  keys.forEach(key => {
+    const label = TEMPLATE_LABELS[key];
+    const val = templatesData[key] !== undefined ? templatesData[key] : TEMPLATE_DEFAULTS[key];
+    html += `<div class="form-group">
+      <label class="form-label">${escapeHtml(label)}</label>
+      <textarea id="tpl_${key}" style="min-height:100px;font-size:13px">${escapeHtml(val)}</textarea>
+    </div>`;
+  });
+  document.getElementById('templateEditorContent').innerHTML = html;
+  openModal('templateEditorModal');
+}
+
+async function saveTemplates() {
+  const keys = Object.keys(TEMPLATE_DEFAULTS);
+  const updates = {};
+  keys.forEach(key => {
+    const el = document.getElementById('tpl_' + key);
+    if (el) updates[key] = el.value;
+  });
+  try {
+    await db.ref(ROOT + '/templates').update(updates);
+    closeModal('templateEditorModal');
+    showToast('テンプレートを保存しました');
+  } catch (e) {
+    showToast('エラー: ' + e.message, 'error');
+  }
 }
 
 // ── Admin PIN ──
@@ -1960,8 +2050,7 @@ function showEventDetail(id) {
     ${e.match_url ? `<div style="margin-top:8px;font-size:13px"><a href="${escapeHtml(e.match_url)}" target="_blank" rel="noopener" style="color:var(--accent)">🔗 試合詳細ページを開く</a></div>` : ''}
     ${e.note ? `<div style="margin-top:8px;font-size:13px;white-space:pre-wrap;color:var(--text)">${escapeHtml(e.note)}</div>` : ''}
   </div>`;
-  const imgSrc = e.image_data || e.image_url;
-  if (imgSrc) html += `<div class="card" style="padding:0;overflow:hidden"><img src="${imgSrc.startsWith('data:') ? imgSrc : escapeHtml(imgSrc)}" alt="イベント画像" style="width:100%;max-height:240px;object-fit:cover;border-radius:var(--radius)"></div>`;
+  if (e.pdf_data) html += `<div class="card"><button onclick="openEventPdf('${id}')" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--accent);padding:0">📄 添付PDFを見る</button></div>`;
 
   // ② 出欠回答ボタン
   if (!isPast) {
@@ -2071,13 +2160,12 @@ function showEventDetail(id) {
         ${unansweredCount > 0 ? `<span style="font-size:12px;color:var(--danger);font-weight:600">❗️未回答${unansweredCount}人</span>` : ''}
       </div>
       ${equipStr ? `<div style="font-size:12px;color:var(--text-sub);margin-bottom:6px">${equipStr}</div>` : ''}
-      <div style="display:flex;gap:8px;margin-top:8px">
-        ${e.status === 'open' && drivers > 0 ? `<button class="btn btn-primary btn-small" onclick="showDriverSelection('${id}')" style="flex:2;font-size:14px">🚗 配車を決める</button>` : '<div style="flex:2"></div>'}
-        <div style="flex:1;display:flex;flex-direction:column;gap:4px">
-          ${unansweredCount > 0 && e.status === 'open' ? `<button class="btn btn-outline btn-small" onclick="generateNudgeText('${id}')" style="font-size:11px;padding:6px 8px">📢 未回答に<br>催促</button>` : ''}
-          ${hasEquipment ? `<button class="btn btn-outline btn-small" onclick="generateEquipNudgeText('${id}')" style="font-size:11px;padding:6px 8px">📦 荷物の<br>所在確認</button>` : ''}
-        </div>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        ${e.status === 'open' && drivers > 0 ? `<button class="btn btn-primary btn-small" onclick="showDriverSelection('${id}')" style="flex:1;font-size:14px">🚗 配車を決める</button>` : ''}
+        ${hasUnassignedEquip ? `<button class="btn btn-outline btn-small" onclick="generateEquipNudgeText('${id}')" style="flex:1;font-size:13px">📦 荷物所有者確認</button>` : ''}
       </div>
+      ${unansweredCount > 0 && e.status === 'open' ? `<div style="margin-top:6px"><button class="btn btn-outline btn-small" onclick="generateNudgeText('${id}')" style="width:100%;font-size:12px">📢 未回答に催促（${unansweredCount}人）</button></div>` : ''}
+      ${hasEquipment && !hasUnassignedEquip ? `<div style="margin-top:6px"><button class="btn btn-outline btn-small" onclick="generateEquipNudgeText('${id}')" style="width:100%;font-size:12px">📦 荷物の所在確認</button></div>` : ''}
     </div>`;
   }
 
@@ -2559,11 +2647,10 @@ function openEventModal(eventId) {
     document.getElementById('eventMaxCars').value = e.max_cars || '';
     document.getElementById('eventMatchUrl').value = e.match_url || '';
     document.getElementById('eventNote').value = e.note || '';
-    const imgSrcEdit = e.image_data || e.image_url || '';
-    document.getElementById('eventImageData').value = imgSrcEdit;
-    document.getElementById('eventImageFile').value = '';
-    const prevEdit = document.getElementById('eventImagePreview');
-    prevEdit.innerHTML = imgSrcEdit ? `<img src="${imgSrcEdit}" style="max-width:100%;max-height:200px;border-radius:8px;display:block">` : '';
+    const pdfSrc = e.pdf_data || '';
+    document.getElementById('eventPdfData').value = pdfSrc;
+    document.getElementById('eventPdfFile').value = '';
+    document.getElementById('eventPdfPreview').innerHTML = pdfSrc ? '<div style="font-size:13px;color:var(--accent)">📄 PDF添付済み　<button type="button" onclick="clearEventPdf()" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:12px">削除</button></div>' : '';
     // Restore grade selection
     const tg = e.target_grades || [];
     document.querySelectorAll('#eventGradeChoices .checkbox-item').forEach(el => {
@@ -2579,28 +2666,46 @@ function openEventModal(eventId) {
     document.getElementById('eventMaxCars').value = '';
     document.getElementById('eventMatchUrl').value = '';
     document.getElementById('eventNote').value = '';
-    document.getElementById('eventImageData').value = '';
-    document.getElementById('eventImageFile').value = '';
-    document.getElementById('eventImagePreview').innerHTML = '';
+    document.getElementById('eventPdfData').value = '';
+    document.getElementById('eventPdfFile').value = '';
+    document.getElementById('eventPdfPreview').innerHTML = '';
     document.querySelectorAll('#eventGradeChoices .checkbox-item').forEach(el => el.classList.remove('checked'));
   }
   openModal('eventModal');
 }
 
-function previewEventImage(input) {
+function previewEventPdf(input) {
   const file = input.files[0];
   if (!file) return;
-  if (file.size > 1024 * 1024) {
-    showToast('1MB以内の画像を選択してください', 'error');
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('5MB以内のPDFを選択してください', 'error');
     input.value = '';
     return;
   }
   const reader = new FileReader();
   reader.onload = ev => {
-    document.getElementById('eventImageData').value = ev.target.result;
-    document.getElementById('eventImagePreview').innerHTML = `<img src="${ev.target.result}" style="max-width:100%;max-height:200px;border-radius:8px;display:block">`;
+    document.getElementById('eventPdfData').value = ev.target.result;
+    document.getElementById('eventPdfPreview').innerHTML = `<div style="font-size:13px;color:var(--accent)">📄 ${escapeHtml(file.name)}　<button type="button" onclick="clearEventPdf()" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:12px">削除</button></div>`;
   };
   reader.readAsDataURL(file);
+}
+
+function clearEventPdf() {
+  document.getElementById('eventPdfData').value = '';
+  document.getElementById('eventPdfFile').value = '';
+  document.getElementById('eventPdfPreview').innerHTML = '';
+}
+
+function openEventPdf(eventId) {
+  const e = eventsData[eventId];
+  if (!e?.pdf_data) return;
+  const [, base64] = e.pdf_data.split(',');
+  const bytes = atob(base64);
+  const byteArray = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i++) byteArray[i] = bytes.charCodeAt(i);
+  const blob = new Blob([byteArray], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
 }
 
 function showLocSuggestions() {
@@ -2650,7 +2755,7 @@ async function saveEvent() {
   const rsvpDeadline = document.getElementById('eventRsvpDeadline').value || '';
   const matchUrl = document.getElementById('eventMatchUrl').value.trim();
   const note = document.getElementById('eventNote').value.trim();
-  const imageData = document.getElementById('eventImageData').value;
+  const pdfData = document.getElementById('eventPdfData').value;
 
   // Collect target grades
   const targetGrades = [];
@@ -2670,8 +2775,7 @@ async function saveEvent() {
     target_grades: targetGrades.length > 0 ? targetGrades : null,
     match_url: matchUrl || null,
     note: note || null,
-    image_data: imageData || null,
-    image_url: null
+    pdf_data: pdfData || null
   };
 
   try {
@@ -3112,7 +3216,14 @@ function generateNudgeText(eventId) {
   }
 
   const dateStr = formatEventDate(e.date);
-  const text = `【出欠未回答のお知らせ】\n⚽ ${dateStr} ${e.title}\nまだ回答がありません:\n${unanswered.map(n => '・' + n).join('\n')}\nアプリから回答をお願いします\n${window.location.href.split('?')[0]}`;
+  const appUrl = window.location.href.split('?')[0];
+  const unansweredList = unanswered.map(n => '・' + n).join('\n');
+  const tpl = (templatesData?.unanswered_nudge) || TEMPLATE_DEFAULTS.unanswered_nudge;
+  const text = tpl
+    .replace(/\{date\}/g, dateStr)
+    .replace(/\{title\}/g, e.title || '')
+    .replace(/\{unanswered_list\}/g, unansweredList)
+    .replace(/\{url\}/g, appUrl);
 
   navigator.clipboard.writeText(text).then(() => {
     showToast(`催促テキストをコピーしました（${unanswered.length}人未回答）`);
@@ -3137,18 +3248,24 @@ function generateEquipNudgeText(eventId) {
       if (r.bring_equipment[eid]) eqAssigned[eid] = (eqAssigned[eid] || 0) + 1;
     });
   });
-  const missing = [];
+
+  const missingItems = [];
   Object.entries(e.equipment_needed).forEach(([eid, qty]) => {
     const have = eqAssigned[eid] || 0;
     if (have < qty) {
-      const name = equipmentTypesData[eid]?.name || eid;
-      missing.push(`${name}：あと${qty - have}つ`);
+      const eq = equipmentTypesData[eid];
+      const icon = eq?.icon || getEquipIcon(eid);
+      const name = eq?.name || eid;
+      missingItems.push({ eid, icon, name, missing: qty - have });
     }
   });
-  if (missing.length === 0) { showToast('備品は全て揃っています！'); return; }
+  if (missingItems.length === 0) { showToast('備品は全て揃っています！'); return; }
 
-  const dateStr = formatEventDate(e.date);
-  const text = `【備品持参のお願い】\n⚽ ${dateStr} ${e.title}\n\n以下の備品がまだ足りていません:\n${missing.map(m => '・' + m).join('\n')}\n\n持参可能な方はアプリから出欠回答を更新してください🙏`;
+  const tpl = (templatesData?.equip_nudge) || 'お疲れさまです。\n\n試合荷物の「{equip_icon}{equip_name}」の所在が確認できていません。\n\nお持ち帰りいただいている方は、「{title}」の出欠回答で{equip_icon}ボタンを押していただけると助かります。';
+  const messages = missingItems.map(item =>
+    tpl.replace(/\{equip_icon\}/g, item.icon).replace(/\{equip_name\}/g, item.name).replace(/\{title\}/g, e.title || 'この試合')
+  );
+  const text = messages.join('\n\n---\n\n');
 
   navigator.clipboard.writeText(text).then(() => {
     showToast('催促テキストをコピーしました');
@@ -3170,10 +3287,17 @@ function generateInputRequestText(eventId) {
   const dateStr = formatEventDate(e.date);
   const deadlineStr = e.rsvp_deadline ? formatEventDate(e.rsvp_deadline) : '';
   const appUrl = window.location.href.split('?')[0];
-  let text = `お疲れです。\n\n${gradeStr}　${dateStr} ${e.title || ''}の、参加・配車・帯同の入力をお願いします。\n`;
-  if (e.match_url) text += `\n試合情報: ${e.match_url}\n`;
-  if (deadlineStr) text += `\n締切は${deadlineStr}です。\n`;
-  text += `\n回答はこちらから:\n${appUrl}\n\nよろしくお願いいたします。`;
+  const trialInfo = e.match_url ? `\n試合情報: ${e.match_url}\n` : '';
+  const deadlineInfo = deadlineStr ? `\n締切は${deadlineStr}です。\n` : '';
+  const tpl = (templatesData?.input_request) || TEMPLATE_DEFAULTS.input_request;
+  const text = tpl
+    .replace(/\{grade\}/g, gradeStr)
+    .replace(/\{date\}/g, dateStr)
+    .replace(/\{title\}/g, e.title || '')
+    .replace(/\{url\}/g, appUrl)
+    .replace(/\{deadline\}/g, deadlineStr)
+    .replace(/\{trial_info\}/g, trialInfo)
+    .replace(/\{deadline_info\}/g, deadlineInfo);
 
   navigator.clipboard.writeText(text).then(() => {
     showToast('入力依頼文をコピーしました');
@@ -3391,7 +3515,9 @@ function showDriverSelection(eventId) {
       eqBadge = `<span style="font-size:13px;margin-left:4px">${bringIcons}</span>`;
     }
     const largeBadge = c.canCarryLarge ? '<span style="font-size:11px;background:#FEF3C7;color:#B45309;padding:1px 6px;border-radius:6px;margin-left:4px">🚛荷物可</span>' : '';
-    const csBadge = c.csCount > 0 ? `<span style="font-size:11px;background:#E3F2FD;color:#1565C0;padding:1px 6px;border-radius:6px;margin-left:4px">🧸チャイルドシート${c.csCount}</span>` : '';
+    const driverPreschool = rsvp[c.id]?.preschool_count || 0;
+    const availableCS = Math.max(0, c.csCount - driverPreschool);
+    const csBadge = availableCS > 0 ? `<span style="font-size:11px;background:#E3F2FD;color:#1565C0;padding:1px 6px;border-radius:6px;margin-left:4px">🧸CS${availableCS}あり</span>` : '';
     const nearParkBadge = c.nearParking ? '<span style="font-size:11px;background:#FCE4EC;color:#C62828;padding:1px 6px;border-radius:6px;margin-left:4px">近隣希望</span>' : '';
     const seatsFull = c.seats === 0;
 
@@ -3604,9 +3730,10 @@ function renderManualAssignUI(eventId) {
   const sortedRiders = [...riders].sort((a, b) => (b.seats_needed || b.family_count || 1) - (a.seats_needed || a.family_count || 1));
 
   const unassignedNow = riders.filter(r => !assign[r.id]).length;
+  const unassignedSeats = riders.filter(r => !assign[r.id]).reduce((s, r) => s + (r.seats_needed || r.family_count || 1), 0);
   html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
     <div style="font-size:13px;font-weight:700;color:var(--text-sub)">🧑 どの車に乗るか選択</div>
-    <div style="font-size:12px;font-weight:700;color:${unassignedNow > 0 ? 'var(--danger)' : 'var(--success)'}">未割り当て：あと${unassignedNow}人</div>
+    <div style="font-size:12px;font-weight:700;color:${unassignedNow > 0 ? 'var(--danger)' : 'var(--success)'}">未割り当て：あと${unassignedSeats}席</div>
   </div>`;
   sortedRiders.forEach(r => {
     const selected = assign[r.id] || '';
@@ -3623,15 +3750,17 @@ function renderManualAssignUI(eventId) {
     if (children > 0) detailParts.push(`子${children}`);
     if (preschool > 0) detailParts.push(`未就学${preschool}`);
     let detailStr = detailParts.length > 0 ? `${detailParts.join('')}（${totalSeats}席）` : `${totalSeats}席`;
-    if (preschool > 0) detailStr += ` 🧸${preschool}席`;
+    if (preschool > 0) detailStr += ` CS${preschool}必要`;
     if (rsvpR.bring_equipment && Object.keys(rsvpR.bring_equipment).length > 0) {
       const eqIcons = Object.keys(rsvpR.bring_equipment).filter(eid => rsvpR.bring_equipment[eid]).map(eid => getEquipIcon(eid)).filter(Boolean);
       if (eqIcons.length > 0) detailStr += ` ${eqIcons.join('')}`;
     }
 
+    const riderZone = mem?.zone_id && zonesData[mem.zone_id] ? zonesData[mem.zone_id] : null;
+    const riderZoneDot = riderZone ? `<span class="zone-dot" style="background:${escapeHtml(riderZone.color)}"></span>` : '';
     html += `<div style="padding:8px 0;border-bottom:1px solid var(--border)">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-        <span style="font-size:14px"><strong>${escapeHtml(r.name)}</strong> <span style="font-size:11px;color:var(--text-sub)">${detailStr}</span></span>
+        <span style="font-size:14px">${riderZoneDot}<strong>${escapeHtml(r.name)}</strong> <span style="font-size:11px;color:var(--text-sub)">${detailStr}</span></span>
       </div>
       <select onchange="setManualAssign('${r.id}', this.value, '${eventId}')"
         style="width:100%;background:var(--bg-card);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px">
@@ -3644,11 +3773,9 @@ function renderManualAssignUI(eventId) {
           const driverMem = membersData[d.id];
           const isNearby = mem?.nearby_members?.includes(d.id) || driverMem?.nearby_members?.includes(r.id);
           const dZone = d.zone_id && zonesData[d.zone_id] ? zonesData[d.zone_id] : null;
-          const zoneMark = dZone ? '●' : '';
           const nearLabel = isNearby ? '　近い' : '';
           const csLabel = driverMem?.childseat_count > 0 ? `　🧸${driverMem.childseat_count}席` : '';
-          const zoneColor = dZone?.color || '';
-          return `<option value="${d.id}" ${isCurrent ? 'selected' : ''} ${wouldOverflow ? 'disabled' : ''} ${zoneColor ? `style="color:${escapeHtml(zoneColor)}"` : ''}>${zoneMark}${escapeHtml(d.name)}号（空き${avail}席）${dZone ? '　'+escapeHtml(dZone.name) : ''}${csLabel}${nearLabel}${wouldOverflow ? '※満席' : ''}</option>`;
+          return `<option value="${d.id}" ${isCurrent ? 'selected' : ''} ${wouldOverflow ? 'disabled' : ''}>${escapeHtml(d.name)}号（空き${avail}席）${csLabel}${nearLabel}${wouldOverflow ? '※満席' : ''}</option>`;
         }).join('')}
       </select>
     </div>`;
@@ -4270,9 +4397,12 @@ function generateLineTemplateAssign(eventId) {
   const rsvp = e.rsvp || {};
   const maxCars = e.max_cars || 0;
 
-  let text = `お疲れ様です。\n${dateStr} ${e.title || ''}の配車案を作成しました。\nご確認をお願いいたします🙇\n`;
-  if (e.meet_time) text += `${e.meet_time}集合でお願いします。\n`;
-  text += `何かありましたら、私までご連絡ください。\n\n`;
+  const meetTimeLine = e.meet_time ? `${e.meet_time}集合でお願いします。\n` : '';
+  const headerTpl = (templatesData?.line_assign_header) || TEMPLATE_DEFAULTS.line_assign_header;
+  let text = headerTpl
+    .replace(/\{date\}/g, dateStr)
+    .replace(/\{title\}/g, e.title || '')
+    .replace(/\{meet_time_line\}/g, meetTimeLine) + '\n\n';
 
   if (!a && !e.assignments) return text + '(配車未確定)';
 
@@ -4680,6 +4810,10 @@ function openTournamentModal(id) {
     document.getElementById('tournamentDate').value = t.date || '';
     document.getElementById('tournamentLocation').value = t.location || '';
     document.getElementById('tournamentType').value = t.type || 'official';
+    const tg = t.target_grades || [];
+    document.querySelectorAll('#tournamentGradeChoices .checkbox-item').forEach(el => {
+      el.classList.toggle('checked', tg.includes(parseInt(el.dataset.grade)));
+    });
     document.getElementById('tournamentRank').value = t.team_rank || '';
     document.getElementById('tournamentRankTie').value = t.rank_tie ? 'tie' : '';
     document.getElementById('tournamentTotalTeams').value = t.total_teams || '';
@@ -4701,6 +4835,7 @@ function openTournamentModal(id) {
     document.getElementById('tournamentDate').value = '';
     document.getElementById('tournamentLocation').value = '';
     document.getElementById('tournamentType').value = 'official';
+    document.querySelectorAll('#tournamentGradeChoices .checkbox-item').forEach(el => el.classList.remove('checked'));
     document.getElementById('tournamentRank').value = '';
     document.getElementById('tournamentRankTie').value = '';
     document.getElementById('tournamentTotalTeams').value = '';
@@ -4790,15 +4925,16 @@ function generateMatchReport(tournamentId) {
   const scores = t.scores || [];
   const dateStr = formatEventDate(t.date);
 
-  // Gratitude phrases - rotate
-  const gratitudes = [
+  // Gratitude phrases - use template or rotate default
+  const defaultGratitudes = [
     '指導してくださったコーチ、温かい応援をしていただいた保護者の皆様ありがとうございました。',
     '会場設営や審判、熱心にご指導いただいたコーチの皆様、そして最後まで温かい声援を送ってくださった保護者の皆様、本日も本当にありがとうございました。',
     '暑い中（寒い中）応援に駆けつけてくださった保護者の皆様、いつも丁寧にご指導いただくコーチの皆様、心より感謝申し上げます。',
     '対戦いただいたチームの皆様、運営スタッフの方々、そしていつも支えてくださる保護者の皆様、コーチの皆様、ありがとうございました。',
     '朝早くからの送迎・応援、本当にありがとうございました。コーチの皆様の熱い指導のおかげで、子どもたちも成長を見せてくれました。'
   ];
-  const gratIdx = Math.floor(Math.random() * gratitudes.length);
+  const customPreamble = templatesData?.match_report_preamble;
+  const gratIdx = Math.floor(Math.random() * defaultGratitudes.length);
 
   let text = `お疲れ様です。\n\n${dateStr}、${t.name || '大会'}に参加してきました⚽️\n\n`;
   text += '【試合結果】\n';
@@ -4816,7 +4952,7 @@ function generateMatchReport(tournamentId) {
     text += '\n（今後の展望をここに記入）\n';
   }
 
-  text += `\n${gratitudes[gratIdx]}`;
+  text += `\n${customPreamble || defaultGratitudes[gratIdx]}`;
 
   navigator.clipboard.writeText(text).then(() => {
     showToast('試合レポートをコピーしました');
@@ -4875,6 +5011,12 @@ async function saveTournament() {
   const name = document.getElementById('tournamentName').value.trim();
   if (!name) return showToast('大会名を入力してください', 'error');
 
+  const targetGrades = [];
+  document.querySelectorAll('#tournamentGradeChoices .checkbox-item.checked').forEach(el => {
+    targetGrades.push(parseInt(el.dataset.grade));
+  });
+  if (targetGrades.length === 0) return showToast('対象学年を選択してください', 'error');
+
   const scores = [];
   document.querySelectorAll('#tournamentMatchesContainer .match-input-row').forEach(row => {
     const result = row.querySelector('.match-result-sel').value;
@@ -4897,6 +5039,7 @@ async function saveTournament() {
     date: document.getElementById('tournamentDate').value,
     location: document.getElementById('tournamentLocation').value.trim(),
     type: document.getElementById('tournamentType').value,
+    target_grades: targetGrades,
     team_rank: parseInt(document.getElementById('tournamentRank').value) || null,
     rank_tie: rankTie || null,
     total_teams: parseInt(document.getElementById('tournamentTotalTeams').value) || null,
