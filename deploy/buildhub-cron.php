@@ -24,7 +24,7 @@ define('DIGEST_CATEGORY_ID', 1); // まとめ記事
 define('SHORTINIT', false);
 require_once __DIR__ . '/wp-load.php';
 
-// APIキーは buildhub-config.php から読み込む（gitignore済み・サーバー上にのみ存在）
+// APIキー（buildhub-config.php はgitignore済み・サーバーのみに存在）
 require_once __DIR__ . '/buildhub-config.php';
 
 date_default_timezone_set('Asia/Tokyo');
@@ -38,14 +38,27 @@ if (!$queue_data) {
     exit(0);
 }
 
-$cutoff = date('c', strtotime('-48 hours'));
+$cutoff = date('c', strtotime('-24 hours'));
 $items = [];
+$old_keys = [];
 foreach ($queue_data as $id => $item) {
     if (!is_array($item)) continue;
     if (($item['status'] ?? '') !== 'pending') continue;
-    if (isset($item['collected_at']) && $item['collected_at'] < $cutoff) continue;
+    $collected = $item['collected_at'] ?? '';
+    if ($collected && $collected < $cutoff) {
+        $old_keys[] = $id;
+        continue;
+    }
     $item['_id'] = $id;
     $items[] = $item;
+}
+
+// 24時間超のpendingを削除
+foreach ($old_keys as $key) {
+    firebase_delete(QUEUE_PATH . '/' . $key . '.json');
+}
+if ($old_keys) {
+    echo "古いpending削除: " . count($old_keys) . "件\n";
 }
 
 if (empty($items)) {
@@ -130,12 +143,21 @@ foreach ($pexels_queries as $q) {
     if (set_featured_image_from_pexels($post_id, $q)) break;
 }
 
-// 5. Firebase ステータス更新
+// 5. Firebase ステータス更新 + 未使用pending削除
+$top_ids = array_column($top, '_id');
 foreach ($top as $item) {
     firebase_patch(QUEUE_PATH . '/' . $item['_id'] . '.json', [
         'status'  => 'published',
         'post_id' => $post_id,
     ]);
+}
+// top7に選ばれなかった24h以内のpendingを削除
+$unused = array_filter($items, fn($i) => !in_array($i['_id'], $top_ids));
+foreach ($unused as $item) {
+    firebase_delete(QUEUE_PATH . '/' . $item['_id'] . '.json');
+}
+if ($unused) {
+    echo "未使用pending削除: " . count($unused) . "件\n";
 }
 
 // 6. ログ記録
@@ -172,6 +194,11 @@ function firebase_patch($path, $data) {
         'header'  => 'Content-Type: application/json',
         'content' => json_encode($data),
     ]]);
+    @file_get_contents(FIREBASE_URL . $path, false, $ctx);
+}
+
+function firebase_delete($path) {
+    $ctx = stream_context_create(['http' => ['method' => 'DELETE']]);
     @file_get_contents(FIREBASE_URL . $path, false, $ctx);
 }
 
