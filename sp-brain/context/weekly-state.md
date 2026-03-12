@@ -17,7 +17,7 @@
 - [x] トクラシ 35本公開・A8.net申請済・プレミアムウォーター承認
 - [x] beehiiv ニュースレター設置（BuildHub記事にCTA追加）
 - [x] SP Portal ライトモード再設計・最新化
-- [ ] ConoHa FTP更新（buildhub-cron.php）→ SP手動
+- [x] ConoHa FTP更新（buildhub-cron.php）→ 完了済み（cron毎朝7時稼働確認）
 - [ ] X アカウント作成（副業X）→ SP手動
 
 ## メモ

@@ -27,7 +27,7 @@
 - 自動化: GAS(6時間収集) + ConoHa PHP cron(毎朝7時WP投稿)
 - 収益モデル: beehiivニュースレター × スポンサーシップ
 - 次: Vercel v0アフィリ登録、読者1,000人でスポンサー営業
-- ブロッカー: ConoHa FTP更新（buildhub-cron.php）→ SP手動
+- cron: 毎朝7時JST稼働確認済み（ConoHa PHP、beehiivURL正常）
 
 ## AIクローン（もう1人のSP）
 - 状態: Phase 1（記憶層）+ Phase 3（自律稼働）完成・稼働中

@@ -20,5 +20,4 @@
 - MOLKKY HUB: セッション数維持・改善
 
 ## ブロッカー（SP手動対応が必要）
-- ConoHa FTP更新: `deploy/buildhub-cron.php` をアップロード
 - X アカウント作成: 副業Xアカウント
