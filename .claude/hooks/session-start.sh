@@ -73,6 +73,25 @@ for k,v in json.load(sys.stdin).items():
     print(f'  - {v.get(\"title\",\"(不明)\")[:50]} ({v.get(\"source\",\"\")})')
 " "/claude-tips-queue を確認してください"
 
+# --- セッション開始ログ（即時記録・クラッシュ対策） ---
+SESSION_LOG_DIR="sp-brain/memory/sessions"
+SESSION_LOG="${SESSION_LOG_DIR}/$(TZ=Asia/Tokyo date +%Y%m%d).md"
+SESSION_TIME="$(TZ=Asia/Tokyo date '+%H:%M')"
+
+if [ ! -f "$SESSION_LOG" ]; then
+  # 新規ログファイル作成
+  cat > "$SESSION_LOG" << EOF
+# セッションログ: $(TZ=Asia/Tokyo date '+%Y-%m-%d')
+
+## セッション記録
+EOF
+fi
+
+# セッション開始を追記（複数セッション対応）
+echo "" >> "$SESSION_LOG"
+echo "### ${SESSION_TIME} セッション開始" >> "$SESSION_LOG"
+echo "- 作業内容: （セッション中に随時更新）" >> "$SESSION_LOG"
+
 # --- 月曜: 週間大会まとめ自動公開 ---
 if [ "$(TZ=Asia/Tokyo date +%u)" = "1" ]; then
   echo ""

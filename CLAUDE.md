@@ -103,7 +103,10 @@
 - 毎朝4時の日報GASがコミット＋この活動ログを合算してGemini要約を生成
 
 #### 記憶の蓄積（セッション中に随時）
-- **セッションログ**: ~~終了時~~ **大きな作業が完了するたびに都度** `sp-brain/memory/sessions/YYYYMMDD.md` に追記する（終了時まで溜めない。セッション切断時のデータ消失を防ぐ）
+- **セッションログ**: `sp-brain/memory/sessions/YYYYMMDD.md` に **大きな作業が完了するたびに追記する**（セッション終了を待たない）
+  - フックがセッション開始時刻を自動記録する
+  - 主要タスク完了後、`### HH:MM やったこと` の形式で追記する（Editツールで末尾追記）
+  - セッションがクラッシュしても開始記録は残る
 - **重要な判断**: `sp-brain/memory/decisions/YYYYMMDD-topic.md` に保存
 - **学び・気づき**: `sp-brain/memory/learnings/YYYYMMDD-topic.md` に保存
 - **人物情報の更新**: `sp-brain/memory/people/name.md` に追記
