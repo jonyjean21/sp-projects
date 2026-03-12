@@ -5,10 +5,11 @@
  * セットアップ:
  *   1. createTrigger() を1回実行してトリガー登録（6時間おき）
  *
- * v3: 閾値引き上げ（バズ記事のみ通過）+ 48h超expired自動クリーンアップ
+ * v4: Anthropic公式ニュース収集を追加
  *   - Reddit: score >= 50 / HN: points >= 50 / Zenn: liked >= 20
  *   - Qiita: JSON API + likes >= 10 / dev.to: reactions >= 20
- *   - GitHub Releases: 全件（公式リリースは常に価値あり）
+ *   - GitHub Releases: 全件（score=60固定）
+ *   - Anthropic公式ニュース: 最新15件（score=80固定、最高優先度）
  */
 
 const FIREBASE_URL = 'https://viisi-master-app-default-rtdb.firebaseio.com';
@@ -34,13 +35,14 @@ function collectAll() {
   const existingUrls = getExistingUrls_();
 
   const collectors = [
-    { fn: collectReddit_,        name: 'reddit-claudeai',   sub: 'ClaudeAI' },
-    { fn: collectReddit_,        name: 'reddit-claudecode', sub: 'ClaudeCode' },
-    { fn: collectHN_,            name: 'hn' },
-    { fn: collectZenn_,          name: 'zenn' },
-    { fn: collectQiita_,         name: 'qiita' },
-    { fn: collectDevTo_,         name: 'dev-to' },
-    { fn: collectGithubReleases_, name: 'github-releases' }
+    { fn: collectReddit_,         name: 'reddit-claudeai',   sub: 'ClaudeAI' },
+    { fn: collectReddit_,         name: 'reddit-claudecode', sub: 'ClaudeCode' },
+    { fn: collectHN_,             name: 'hn' },
+    { fn: collectZenn_,           name: 'zenn' },
+    { fn: collectQiita_,          name: 'qiita' },
+    { fn: collectDevTo_,          name: 'dev-to' },
+    { fn: collectGithubReleases_, name: 'github-releases' },
+    { fn: collectAnthropicNews_,  name: 'anthropic-news' },
   ];
 
   for (const c of collectors) {
@@ -381,6 +383,60 @@ function cleanupExpired_() {
     }
   }
   return count;
+}
+
+/**
+ * Anthropic 公式ニュース（anthropic.com/news）
+ * ページをSSRスクレイピング → 最新15件のスラッグを取得 → 各記事のtitle/descを取得
+ * score=80固定（公式発表は高優先度）
+ */
+function collectAnthropicNews_() {
+  const BASE = 'https://www.anthropic.com';
+
+  // ニュース一覧から最新スラッグを取得
+  const listRes = UrlFetchApp.fetch(`${BASE}/news`, {
+    muteHttpExceptions: true,
+    headers: { 'User-Agent': 'claude-tips-collector/1.0' }
+  });
+  if (listRes.getResponseCode() !== 200) throw new Error(`HTTP ${listRes.getResponseCode()}`);
+
+  const listHtml = listRes.getContentText();
+  const slugMatches = listHtml.match(/\/news\/([\w-]+)/g) || [];
+  const slugs = [...new Set(slugMatches.map(s => s.replace('/news/', '')))].slice(0, 15);
+
+  const entries = [];
+  for (const slug of slugs) {
+    try {
+      const url = `${BASE}/news/${slug}`;
+      const res = UrlFetchApp.fetch(url, {
+        muteHttpExceptions: true,
+        headers: { 'User-Agent': 'claude-tips-collector/1.0' }
+      });
+      if (res.getResponseCode() !== 200) continue;
+
+      const html = res.getContentText();
+      const titleMatch = html.match(/<title>([^<]+)<\/title>/);
+      const descMatch  = html.match(/<meta name="description" content="([^"]+)"/);
+
+      const title = titleMatch ? titleMatch[1].replace(' \\ Anthropic', '').trim() : slug;
+      const desc  = descMatch  ? descMatch[1].trim() : '';
+
+      entries.push({
+        url,
+        title,
+        content_preview: desc.substring(0, 800),
+        score: 80,
+        has_code: false,
+        github_url: null,
+        published_at: new Date().toISOString(),
+      });
+
+      Utilities.sleep(300); // レートリミット対策
+    } catch(e) {
+      Logger.log(`anthropic-news ${slug} エラー: ${e.message}`);
+    }
+  }
+  return entries;
 }
 
 // === トリガー管理 ===
