@@ -1071,14 +1071,20 @@ function loadAll() {
     eventsData = snap.val() || {};
     renderHome();
   });
+  let _tournamentMigrated = false;
   db.ref(ROOT + '/tournaments').on('value', snap => {
     tournamentsData = snap.val() || {};
-    // Migrate: set target_grades=[0,1] for any existing tournament without grades
-    Object.entries(tournamentsData).forEach(([id, t]) => {
-      if (!t.target_grades) {
-        db.ref(ROOT + '/tournaments/' + id + '/target_grades').set([0, 1]);
+    if (!_tournamentMigrated) {
+      _tournamentMigrated = true;
+      const updates = {};
+      Object.entries(tournamentsData).forEach(([id, t]) => {
+        if (!t.target_grades) updates[id + '/target_grades'] = [0, 1];
+      });
+      if (Object.keys(updates).length > 0) {
+        db.ref(ROOT + '/tournaments').update(updates);
+        return; // リスナーが再発火するので今回のrenderはスキップ
       }
-    });
+    }
     renderTournaments();
   });
   db.ref(ROOT + '/team_info').on('value', snap => {
