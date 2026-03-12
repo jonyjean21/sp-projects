@@ -6,16 +6,16 @@
 <title>SP Portal — 統合管理</title>
 <style>
 :root {
-  --bg: #08090d; --bg2: #0e1117; --card: #151921; --card-hover: #1a2030;
-  --border: #22293a; --border-active: #3a4560;
-  --text: #e6edf3; --sub: #7d8ba0; --dim: #4a5568;
-  --accent: #6366f1; --accent-dim: rgba(99,102,241,0.12);
-  --blue: #4a9eff; --blue-dim: rgba(74,158,255,0.1);
-  --green: #22c55e; --green-dim: rgba(34,197,94,0.12);
-  --orange: #f59e0b; --orange-dim: rgba(245,158,11,0.12);
-  --red: #ef4444; --red-dim: rgba(239,68,68,0.12);
-  --cyan: #06b6d4; --cyan-dim: rgba(6,182,212,0.12);
-  --purple: #a78bfa; --purple-dim: rgba(167,139,250,0.12);
+  --bg: #f4f6f9; --bg2: #eef0f5; --card: #ffffff; --card-hover: #f8fafc;
+  --border: #dde1ea; --border-active: #b0b8d0;
+  --text: #1a2035; --sub: #5a6680; --dim: #9aa3b8;
+  --accent: #6366f1; --accent-dim: rgba(99,102,241,0.1);
+  --blue: #2563eb; --blue-dim: rgba(37,99,235,0.1);
+  --green: #16a34a; --green-dim: rgba(22,163,74,0.1);
+  --orange: #d97706; --orange-dim: rgba(217,119,6,0.1);
+  --red: #dc2626; --red-dim: rgba(220,38,38,0.1);
+  --cyan: #0891b2; --cyan-dim: rgba(8,145,178,0.1);
+  --purple: #7c3aed; --purple-dim: rgba(124,58,237,0.1);
   --sidebar-w: 240px;
   --header-h: 52px;
 }
@@ -48,7 +48,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
   display: flex; align-items: center; gap: 10px; padding: 8px 18px; font-size: 13px; color: var(--sub);
   cursor: pointer; transition: all 0.15s; position: relative; text-decoration: none;
 }
-.nav-item:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+.nav-item:hover { color: var(--text); background: rgba(0,0,0,0.04); }
 .nav-item.active { color: var(--accent); background: var(--accent-dim); }
 .nav-item.active::before { content: ''; position: absolute; left: 0; top: 4px; bottom: 4px; width: 3px; background: var(--accent); border-radius: 0 3px 3px 0; }
 .nav-icon { width: 18px; text-align: center; font-size: 14px; flex-shrink: 0; }
@@ -104,7 +104,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
 .pill-blue { background: var(--blue-dim); color: var(--blue); }
 .pill-cyan { background: var(--cyan-dim); color: var(--cyan); }
 .pill-purple { background: var(--purple-dim); color: var(--purple); }
-.pill-dim { background: rgba(255,255,255,0.05); color: var(--sub); }
+.pill-dim { background: rgba(0,0,0,0.06); color: var(--sub); }
 
 label { font-size: 12px; color: var(--sub); display: block; margin-bottom: 4px; }
 input[type="text"], input[type="password"], input[type="url"], input[type="date"], select, textarea {
@@ -121,7 +121,7 @@ textarea { resize: vertical; min-height: 80px; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
 th { font-size: 11px; color: var(--sub); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
-tr:hover { background: rgba(255,255,255,0.02); }
+tr:hover { background: rgba(0,0,0,0.02); }
 
 .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -234,7 +234,7 @@ tr:hover { background: rgba(255,255,255,0.02); }
 }
 .ov-pillar-head {
   display: flex; align-items: center; gap: 12px; padding: 16px 18px;
-  background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,0.02); border-bottom: 1px solid var(--border);
 }
 .ov-pillar-rank { font-size: 20px; font-weight: 800; color: var(--pillar-color); width: 36px; text-align: center; flex-shrink: 0; }
 .ov-pillar-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
@@ -293,7 +293,7 @@ tr:hover { background: rgba(255,255,255,0.02); }
 /* Queue list */
 .queue-item { padding: 12px; border-bottom: 1px solid var(--border); }
 .queue-item:last-child { border-bottom: none; }
-.queue-item:hover { background: rgba(255,255,255,0.02); }
+.queue-item:hover { background: rgba(0,0,0,0.02); }
 
 /* Article list */
 .article-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
@@ -305,7 +305,7 @@ tr:hover { background: rgba(255,255,255,0.02); }
 .post-card .post-body { font-size: 13px; line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
 
 /* Auth modal */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; display: flex; align-items: center; justify-content: center; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; display: flex; align-items: center; justify-content: center; }
 .modal-box { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 24px; width: 90vw; max-width: 380px; }
 .modal-box h3 { font-size: 15px; margin-bottom: 16px; }
 
@@ -403,25 +403,25 @@ tr:hover { background: rgba(255,255,255,0.02); }
     </div>
 
     <div class="nav-group">
-      <div class="nav-group-label">Overview</div>
+      <div class="nav-group-label">ホーム</div>
       <div class="nav-item active" data-section="dashboard" onclick="showSection('dashboard')">
-        <span class="nav-icon">&#9632;</span> ダッシュボード
+        <span class="nav-icon">&#9632;</span> 今日の状況
       </div>
       <div class="nav-item" data-section="overview" onclick="showSection('overview')">
-        <span class="nav-icon">&#127758;</span> 全貌マップ
+        <span class="nav-icon">&#127758;</span> プロジェクト全体像
       </div>
     </div>
 
     <div class="nav-group">
-      <div class="nav-group-label">Triage</div>
+      <div class="nav-group-label">受信ボックス</div>
       <div class="nav-item" data-section="inbox" onclick="showSection('inbox')">
-        <span class="nav-icon">&#128229;</span> INBOX
+        <span class="nav-icon">&#128229;</span> 未処理メモ・タスク
         <span class="nav-badge" id="inboxBadge" style="display:none">0</span>
       </div>
     </div>
 
     <div class="nav-group">
-      <div class="nav-group-label">Portals</div>
+      <div class="nav-group-label">各ポータルへ</div>
       <a class="nav-item" href="https://jonyjean21.github.io/sp-projects/molkky-portal/" target="_blank" style="text-decoration:none">
         <span class="nav-icon">&#9878;</span> MOLKKY HUB Portal
         <span style="font-size:10px;color:var(--dim);margin-left:auto">&#8599;</span>
@@ -441,12 +441,12 @@ tr:hover { background: rgba(255,255,255,0.02); }
     </div>
 
     <div class="nav-group">
-      <div class="nav-group-label">System</div>
+      <div class="nav-group-label">管理</div>
       <div class="nav-item" data-section="products" onclick="showSection('products')">
-        <span class="nav-icon">&#9881;</span> プロダクト一覧
+        <span class="nav-icon">&#9881;</span> アプリ・ツール一覧
       </div>
       <div class="nav-item" data-section="automation" onclick="showSection('automation')">
-        <span class="nav-icon">&#9889;</span> 自動化パイプライン
+        <span class="nav-icon">&#9889;</span> 自動処理フロー
       </div>
       <div class="nav-item" data-section="settings" onclick="showSection('settings')">
         <span class="nav-icon">&#9881;</span> 設定
@@ -1118,7 +1118,7 @@ function showSection(id) {
   const navItem = document.querySelector(`.nav-item[data-section="${id}"]`);
   if (navItem) navItem.classList.add('active');
 
-  const titles = { dashboard:'ダッシュボード', overview:'全貌マップ', inbox:'INBOX', products:'プロダクト一覧', automation:'自動化パイプライン', settings:'設定' };
+  const titles = { dashboard:'今日の状況', overview:'プロジェクト全体像', inbox:'未処理メモ・タスク', products:'アプリ・ツール一覧', automation:'自動処理フロー', settings:'設定' };
   document.getElementById('pageTitle').textContent = titles[id] || id;
 
   // Lazy load data
