@@ -538,6 +538,27 @@ tr:hover { background: rgba(0,0,0,0.02); }
                 <div style="font-size:11px;color:var(--sub)">毎朝4時自動生成ログ</div>
               </div>
             </a>
+            <a class="link-card" href="https://jonyjean21.github.io/sp-projects/data/chapche/2026-03-12-weekly.html" target="_blank">
+              <span class="link-icon">&#128203;</span>
+              <div>
+                <div>今週のやったこと</div>
+                <div style="font-size:11px;color:var(--sub)">チャプ会共有用・最新版</div>
+              </div>
+            </a>
+            <a class="link-card" href="https://jonyjean21.github.io/sp-projects/buildhub-x-admin/" target="_blank">
+              <span class="link-icon">&#127959;</span>
+              <div>
+                <div>BuildHub X管理</div>
+                <div style="font-size:11px;color:var(--sub)">Xポストキュー管理</div>
+              </div>
+            </a>
+            <a class="link-card" href="https://jonyjean21.github.io/sp-projects/tokurashi-admin/" target="_blank">
+              <span class="link-icon">&#127991;</span>
+              <div>
+                <div>トクラシ管理</div>
+                <div style="font-size:11px;color:var(--sub)">記事・アフィリ状況確認</div>
+              </div>
+            </a>
           </div>
         </div>
 
@@ -1063,6 +1084,7 @@ const PRODUCTS = [
     ]},
     { name: 'Xポスト生成ツール', desc: '記事URLからXポスト案を自動生成（Gemini AI）', url: P+'/promote/', icon: '📱', bg: '#101a2a', tags: [['Pages','accent'],['2026.02','dim']] },
     { name: '引用リポスト生成ツール', desc: 'モルハブ宛ポストへの引用リポスト案を自動生成', url: P+'/repost/', icon: '💬', bg: '#1a1530', tags: [['Pages','accent'],['2026.02','dim']] },
+    { name: 'X Post Queue Admin', desc: 'Xポスト投稿キューの管理画面（MOLKKY HUB向け）', url: P+'/x-post-admin/', icon: '🐦', bg: '#101a2a', tags: [['Pages','accent'],['Firebase','purple'],['2026.03','dim']] },
     { name: 'モルハブ向上委員会', desc: 'KPIダッシュボード（GA4・SC・WP・Firebase連携）', url: P+'/hub-dashboard/', icon: '📊', bg: '#1a1530', tags: [['Pages','accent'],['WP API','orange'],['Firebase','purple'],['2026.02','dim']] },
     { name: 'パートナーLP', desc: 'パートナー制度の営業用ランディングページ', url: P+'/partner/', icon: '📄', bg: '#1a3a0a', tags: [['Pages','accent'],['2026.02','dim']] },
     { name: 'SP Portal', desc: 'プロダクト一覧・INBOX・自動化パイプライン・ビルド履歴の統合管理ハブ', url: P+'/portal/', icon: '🏢', bg: 'linear-gradient(135deg,#1a1a3a,#0a2a3a)', tags: [['Pages','accent'],['Firebase','purple'],['2026.03','dim']] },
@@ -1110,7 +1132,14 @@ const PRODUCTS = [
     { name: 'YouTube Analytics Dashboard', desc: 'チャンネル分析ダッシュボード v1.5。ヘルスチェック・動画フィルタ・6軸レーダー。デモモード付き', url: P+'/youtube/', icon: '📊', bg: 'linear-gradient(135deg,#0a0a1f,#d4ff47)', tags: [['Pages','accent'],['Chart.js','green'],['2026.03','dim']] },
   ]},
   { cat: '収益プロジェクト', icon: '💰', items: [
-    { name: 'トクラシ', desc: 'お得な暮らし情報ブログ（ポイ活・ふるさと納税・旅行・買い物）— Cloudflare移行予定', url: P+'/tokurashi/', icon: '🏷', bg: 'linear-gradient(135deg,#e8750a,#f5a623)', tags: [['Pages','accent'],['2026.03','dim']] },
+    { name: 'BuildHub', desc: 'Claude Code・AI開発ツール情報メディア。8ソース自動収集→Gemini要約→毎朝7時WP投稿。X自動投稿も稼働中。', url: 'https://www.buildhub.jp', icon: '🏗', bg: 'linear-gradient(135deg,#001a33,#0073aa)', tags: [['WordPress','orange'],['ConoHa','green'],['2026.03','dim']], subs: [
+      { label: 'WP管理', url: 'https://www.buildhub.jp/wp-admin/' },
+      { label: 'X管理', url: P+'/buildhub-x-admin/' },
+    ]},
+    { name: 'トクラシ', desc: 'お得な暮らし情報アフィリエイトブログ（ポイ活・ふるさと納税・旅行・買い物）— A8.net提携中', url: 'https://www.tokurashi.com', icon: '🏷', bg: 'linear-gradient(135deg,#e8750a,#f5a623)', tags: [['WordPress','orange'],['ConoHa','green'],['2026.03','dim']], subs: [
+      { label: '管理画面', url: P+'/tokurashi-admin/' },
+      { label: 'WP管理', url: 'https://www.tokurashi.com/wp-admin/' },
+    ]},
   ]},
   { cat: '倉庫（Archive）', icon: '📦', collapsed: true, items: [
     { name: 'シーズン大会 スライド版', desc: '横型16:9プレゼンテーション（20スライド）', url: P+'/projects/molkky-dome/ranking/slides.html', icon: '📊', bg: '#1e1e2e', tags: [['Pages','accent'],['2026.02','dim']], status: 'archive' },

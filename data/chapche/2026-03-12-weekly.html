@@ -71,7 +71,7 @@
         <div class="big-label">既存アプリ<br>アップデート</div>
       </div>
       <div class="stat">
-        <div class="big-number" style="color:#28a745">5</div>
+        <div class="big-number" style="color:#28a745">6</div>
         <div class="big-label">自動化<br>パイプライン</div>
       </div>
     </div>
@@ -87,9 +87,10 @@
       <div class="card-body">
         Claude Code・AI開発ツールの情報メディアを新規立ち上げ。記事収集〜Gemini要約〜WordPress投稿まで<strong>完全自動</strong>。毎朝7時に自動で記事が公開される状態に。
         <ul>
-          <li>収集先: Reddit・Hacker News・Zenn・Qiita・dev.to・GitHubリリース</li>
+          <li>収集先: Reddit・Hacker News・Zenn・Qiita・dev.to・GitHubリリース・Anthropic公式（8ソース体制）</li>
           <li>記事: 毎日1本、海外バズ記事を日本語でまとめて投稿</li>
-          <li>ニュースレター（beehiiv）も設置済み</li>
+          <li>ニュースレター（beehiiv）設置済み・全記事末尾にCTA</li>
+          <li><strong>X自動投稿も完全稼働</strong>：毎日9:00/20:00 JSTにAI生成ポストを自動投稿（キュー管理画面付き）</li>
         </ul>
       </div>
     </div>
@@ -130,7 +131,9 @@
           <li><strong>配車編集機能</strong>：確定後でも乗客を自由に移動できる</li>
           <li>学年選択・入力依頼文の自動生成・大会記録機能を追加</li>
           <li>LINE共有テキストの自動生成</li>
-          <li>画像アップロード対応、未割り当て人数表示、学年別フィルタ追加</li>
+          <li>画像アップロード対応（base64保存・プレビュー）</li>
+          <li>乗客割り振り画面に「未割り当てあと○人」表示追加</li>
+          <li>大会記録に学年別フィルタタブ追加</li>
         </ul>
       </div>
     </div>
@@ -173,7 +176,8 @@
     <div class="section-title">⚙️ 今週から動いている自動化</div>
 
     <div class="pipeline">
-      <div><span class="pipe-green">● 毎朝7時</span>　BuildHub — Reddit/HNの記事をAIで日本語まとめ → 自動投稿</div>
+      <div><span class="pipe-green">● 毎朝7時</span>　BuildHub — 8ソースの記事をAIで日本語まとめ → 自動投稿</div>
+      <div><span class="pipe-green">● 毎日9時/20時</span>　BuildHub X — AIが生成したポストをXに自動投稿</div>
       <div><span class="pipe-green">● 毎朝4時</span>　日報 — Gitコミット+作業ログ → Gemini要約 → Firebase保存</div>
       <div><span class="pipe-yellow">● 週1回(月)</span>　MOLKKY HUB — 週間大会まとめ記事を自動生成・公開</div>
       <div><span class="pipe-green">● 水・土8時</span>　トクラシ — データ分析→トピック選定→記事生成→WP公開（週2本）</div>
@@ -187,9 +191,17 @@
 
     <div class="card biz">
       <span class="tag biz">BIZ</span>
-      <div class="card-title">X（Twitter）収益実験の準備完了</div>
+      <div class="card-title">BuildHub X 自動投稿 稼働中 ✅</div>
       <div class="card-body">
-        副業・フリーランス系Xアカウントで収益化する仕組みをGASで実装完了。1日4回、Gemini生成のポストを自動投稿できる状態。あとはXアカウントを作るだけ。
+        BuildHub公式XアカウントへのAI自動投稿が完全稼働。毎日9時・20時にGemini生成の投稿を自動配信。Firebaseキューで14件分を事前生成・管理画面から確認できる。
+      </div>
+    </div>
+
+    <div class="card biz">
+      <span class="tag biz">BIZ</span>
+      <div class="card-title">タスク管理 Todoist 完全移行</div>
+      <div class="card-body">
+        全タスクをTodoistに集約。2時間おきにInboxをAI自動トリアージ（適切なプロジェクトに振り分け）。「メモ:」プレフィックスは自動でsp-brainに転記。
       </div>
     </div>
 
