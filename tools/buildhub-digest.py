@@ -4,7 +4,7 @@ BuildHub 日次ダイジェスト生成・投稿
 Firebase /claude-tips-queue → Gemini要約 → BuildHub WP投稿
 
 記事構成:
-  - 今日のメイン（海外バズ記事を1本フル翻訳・詳細解説）
+  - 今日のメイン（海外バズ記事を1本ピックアップ・要約解説）
   - その他の注目（残り記事を要約）
   - BuildHub編集部より（今日の総評）
 """
@@ -379,7 +379,7 @@ def main(dry_run=False):
     print("Gemini要約完了")
 
     date_str = datetime.now(JST).strftime('%Y/%m/%d')
-    title    = f"Claude Code 海外バズ翻訳まとめ【{date_str}】"
+    title    = f"Claude Code 海外バズ注目まとめ【{date_str}】"
     content  = build_html(result, date_str, top)
     excerpt  = result.get('excerpt', '')
 

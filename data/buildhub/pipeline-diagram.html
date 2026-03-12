@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BuildHub 自動投稿パイプライン</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #f2ede6;
+    font-family: 'Helvetica Neue', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 48px 24px;
+    color: #1a1a1a;
+  }
+  .page { max-width: 740px; width: 100%; }
+
+  .header {
+    background: #1a1a1a;
+    color: #f2ede6;
+    border-radius: 4px 4px 0 0;
+    padding: 32px 40px 28px;
+  }
+  .header-eyebrow {
+    font-size: 10px; font-weight: 700; letter-spacing: 3px;
+    text-transform: uppercase; color: #c8a06a; margin-bottom: 10px;
+  }
+  .header-title { font-size: 24px; font-weight: 800; line-height: 1.3; margin-bottom: 10px; }
+  .header-sub { font-size: 13px; color: #999; line-height: 1.6; }
+
+  .body-card {
+    background: #fdfaf6;
+    border: 1px solid #e0d8cf; border-top: none;
+    border-radius: 0 0 4px 4px;
+    padding: 40px 40px 36px;
+  }
+  .section-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 2.5px;
+    text-transform: uppercase; color: #b07d4a; margin-bottom: 20px;
+  }
+
+  /* ======= トップフロー概要 ======= */
+  .top-flow {
+    background: #1a1a1a;
+    border-radius: 0;
+    padding: 24px 40px;
+    border-top: 1px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+  .tf-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+  }
+  .tf-icon-wrap {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    background: #2a2a2a;
+    border: 1px solid #3a3a3a;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .tf-icon-wrap.accent {
+    background: #2a1f14;
+    border-color: #b07d4a;
+  }
+  .tf-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #e0d8cf;
+    text-align: center;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+  .tf-sub {
+    font-size: 9px;
+    color: #666;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .tf-arrow {
+    color: #444;
+    font-size: 18px;
+    flex-shrink: 0;
+    margin-bottom: 14px;
+  }
+
+  /* ======= コンポーネント説明グリッド ======= */
+  .components {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 36px;
+  }
+  .comp {
+    background: #fff;
+    border: 1.5px solid #e0d8cf;
+    border-radius: 8px;
+    padding: 16px 14px;
+  }
+  .comp.highlight { border-color: #b07d4a; background: #fdf5ec; }
+  .comp-icon { font-size: 22px; margin-bottom: 8px; display: block; }
+  .comp-name { font-size: 12px; font-weight: 800; color: #1a1a1a; margin-bottom: 3px; }
+  .comp-what {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+    text-transform: uppercase; color: #b07d4a; margin-bottom: 6px;
+  }
+  .comp-desc { font-size: 11px; color: #555; line-height: 1.65; margin-bottom: 8px; }
+  .comp-role {
+    font-size: 10px; color: #888; line-height: 1.6;
+    border-top: 1px solid #e0d8cf; padding-top: 8px;
+  }
+  .comp-role strong { color: #444; }
+
+  /* ======= フロー図 ======= */
+  .flow-section {
+    background: #fff;
+    border: 1px solid #e0d8cf;
+    border-radius: 8px;
+    padding: 28px 24px;
+    margin-bottom: 36px;
+  }
+  .flow-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .flow-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .flow-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 36px;
+    flex-shrink: 0;
+  }
+  .flow-circle {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: #1a1a1a; color: #fdfaf6;
+    font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .flow-circle.accent { background: #b07d4a; }
+  .flow-line {
+    width: 1px; flex: 1; min-height: 20px;
+    background: #d4c9bc; margin: 3px 0;
+  }
+  .flow-content { flex: 1; padding-bottom: 24px; padding-top: 5px; }
+  .flow-name { font-size: 14px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
+  .flow-tags { margin-bottom: 6px; }
+  .tag {
+    display: inline-block; font-size: 10px; font-weight: 600;
+    padding: 2px 8px; border-radius: 20px; margin-right: 4px; margin-bottom: 2px;
+  }
+  .tag-brown { background: #f2e8dc; color: #b07d4a; }
+  .tag-gray  { background: #ede8e3; color: #5a5a5a; }
+  .tag-green { background: #e4f0e8; color: #3a7a50; }
+  .flow-detail { font-size: 12px; color: #666; line-height: 1.7; }
+
+  /* ======= 比較 ======= */
+  .compare-wrap {
+    border-top: 1px solid #e0d8cf;
+    padding-top: 32px; margin-bottom: 36px;
+  }
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .compare-col { border-radius: 8px; padding: 18px 16px; }
+  .compare-col.good { background: #edf5ef; border: 1.5px solid #7bb88a; }
+  .compare-col.bad  { background: #f5edec; border: 1.5px solid #c98080; }
+  .compare-verdict {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .good .compare-verdict { color: #3a7a50; }
+  .bad  .compare-verdict { color: #a03030; }
+  .compare-name { font-size: 14px; font-weight: 800; margin-bottom: 4px; color: #1a1a1a; }
+  .compare-what-is {
+    font-size: 11px; color: #777; margin-bottom: 10px;
+    padding-bottom: 10px; border-bottom: 1px solid rgba(0,0,0,0.08);
+    line-height: 1.5;
+  }
+  .compare-item {
+    display: flex; align-items: flex-start;
+    gap: 8px; margin-bottom: 6px;
+    font-size: 11px; color: #444; line-height: 1.5;
+  }
+  .compare-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    margin-top: 5px; flex-shrink: 0;
+  }
+  .good .compare-dot { background: #3a7a50; }
+  .bad  .compare-dot { background: #a03030; }
+
+  /* ======= Learnings ======= */
+  .learnings {
+    border-top: 1px solid #e0d8cf;
+    padding-top: 28px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px; margin-bottom: 28px;
+  }
+  .learn-card {
+    background: #fff; border: 1px solid #e0d8cf;
+    border-radius: 8px; padding: 16px 14px;
+  }
+  .learn-num {
+    font-size: 28px; font-weight: 800;
+    color: #e0d8cf; line-height: 1; margin-bottom: 8px;
+  }
+  .learn-text { font-size: 11px; color: #555; line-height: 1.7; }
+
+  .footer {
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid #e0d8cf; padding-top: 16px;
+    font-size: 11px; color: #aaa;
+  }
+  .footer strong { color: #b07d4a; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="header-eyebrow">Architecture Note — BuildHub</div>
+    <div class="header-title">完全自動投稿<br>パイプライン図解</div>
+    <div class="header-sub">Claude Code / AI情報を7ソースから収集し、毎朝 Gemini で記事化・自動公開する仕組み</div>
+  </div>
+
+  <!-- ===== トップフロー概要帯 ===== -->
+  <div class="top-flow">
+    <div class="tf-node">
+      <div class="tf-icon-wrap">⚡</div>
+      <div class="tf-label">GAS</div>
+      <div class="tf-sub">収集 / 6h毎</div>
+    </div>
+    <div class="tf-arrow">→</div>
+    <div class="tf-node">
+      <div class="tf-icon-wrap">🗄️</div>
+      <div class="tf-label">Firebase</div>
+      <div class="tf-sub">キュー管理</div>
+    </div>
+    <div class="tf-arrow">→</div>
+    <div class="tf-node">
+      <div class="tf-icon-wrap accent">⚙️</div>
+      <div class="tf-label">PHP cron</div>
+      <div class="tf-sub">毎朝 7:00</div>
+    </div>
+    <div class="tf-arrow">→</div>
+    <div class="tf-node">
+      <div class="tf-icon-wrap">✨</div>
+      <div class="tf-label">Gemini</div>
+      <div class="tf-sub">記事生成</div>
+    </div>
+    <div class="tf-arrow">→</div>
+    <div class="tf-node">
+      <div class="tf-icon-wrap">🖼️</div>
+      <div class="tf-label">Pexels</div>
+      <div class="tf-sub">アイキャッチ</div>
+    </div>
+    <div class="tf-arrow">→</div>
+    <div class="tf-node">
+      <div class="tf-icon-wrap">🌐</div>
+      <div class="tf-label">WordPress</div>
+      <div class="tf-sub">自動公開</div>
+    </div>
+  </div>
+
+  <div class="body-card">
+
+    <!-- ===== コンポーネント紹介 ===== -->
+    <div class="section-label">Components — 登場するツール</div>
+    <div class="components">
+
+      <div class="comp">
+        <span class="comp-icon">⚡</span>
+        <div class="comp-name">GAS</div>
+        <div class="comp-what">Google Apps Script</div>
+        <div class="comp-desc">Googleが提供するサーバーレス実行環境。JavaScriptでスクリプトを書き、時間起動などのトリガーで自動実行できる。無料。</div>
+        <div class="comp-role"><strong>このパイプラインでの役割：</strong><br>7つのサイトを巡回して記事ネタを収集し、Firebase に登録する</div>
+      </div>
+
+      <div class="comp">
+        <span class="comp-icon">🗄️</span>
+        <div class="comp-name">Firebase RTDB</div>
+        <div class="comp-what">Google のリアルタイムDB</div>
+        <div class="comp-desc">Googleのクラウドデータベース。JSON形式でデータを保存・読み書きできる。REST APIで誰でも簡単にアクセス可能。</div>
+        <div class="comp-role"><strong>このパイプラインでの役割：</strong><br>収集ネタのキュー管理。pending→postedで処理状態を追跡</div>
+      </div>
+
+      <div class="comp highlight">
+        <span class="comp-icon">⚙️</span>
+        <div class="comp-name">ConoHa PHP cron</div>
+        <div class="comp-what">レンタルサーバー内の自動実行</div>
+        <div class="comp-desc">ConoHa WINGのサーバー内でPHPスクリプトを定刻に自動実行する機能。サーバー内部から動くのでIP制限を受けない。</div>
+        <div class="comp-role"><strong>このパイプラインでの役割：</strong><br>パイプラインの心臓部。毎朝7時にFirebase→Gemini→WP投稿を実行</div>
+      </div>
+
+      <div class="comp">
+        <span class="comp-icon">✨</span>
+        <div class="comp-name">Gemini API</div>
+        <div class="comp-what">Google の生成AI</div>
+        <div class="comp-desc">GoogleのAIモデル。テキスト生成・翻訳・要約などをAPIで呼び出せる。GPT-4と同等の能力を持ち、大量トークン処理が得意。</div>
+        <div class="comp-role"><strong>このパイプラインでの役割：</strong><br>収集した記事ネタをスコアリング・翻訳し、日本語の記事として仕上げる</div>
+      </div>
+
+      <div class="comp">
+        <span class="comp-icon">🖼️</span>
+        <div class="comp-name">Pexels API</div>
+        <div class="comp-what">フリー写真素材サービス</div>
+        <div class="comp-desc">著作権フリーの写真を提供するサービス。APIで検索・取得が可能。商用利用無料。WordPressのメディアとして自動アップロードできる。</div>
+        <div class="comp-role"><strong>このパイプラインでの役割：</strong><br>記事のアイキャッチ画像をキーワードで自動検索して設定する</div>
+      </div>
+
+      <div class="comp">
+        <span class="comp-icon">🌐</span>
+        <div class="comp-name">WordPress REST API</div>
+        <div class="comp-what">WPの外部操作インターフェース</div>
+        <div class="comp-desc">WordPressが標準で持つAPI。外部プログラムから記事の投稿・更新・取得などを認証付きで操作できる。プラグイン不要。</div>
+        <div class="comp-role"><strong>このパイプラインでの役割：</strong><br>PHPスクリプトからWPに記事・アイキャッチを自動投稿する</div>
+      </div>
+
+    </div>
+
+    <!-- ===== フロー図 ===== -->
+    <div class="section-label">Flow — 実際の処理の流れ</div>
+    <div class="flow-section">
+      <div class="flow-steps">
+
+        <div class="flow-step">
+          <div class="flow-left">
+            <div class="flow-circle">1</div>
+            <div class="flow-line"></div>
+          </div>
+          <div class="flow-content">
+            <div class="flow-name">GAS が7ソースを巡回・収集</div>
+            <div class="flow-tags">
+              <span class="tag tag-gray">6時間ごと</span>
+              <span class="tag tag-gray">Reddit / HN / Zenn / Qiita / dev.to / GitHub</span>
+            </div>
+            <div class="flow-detail">各ソースの新着記事を取得し、スコアリング（海外+50・コードあり+20）してFirebaseのキューにpendingで登録</div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-left">
+            <div class="flow-circle">2</div>
+            <div class="flow-line"></div>
+          </div>
+          <div class="flow-content">
+            <div class="flow-name">Firebase がネタをキューとして保持</div>
+            <div class="flow-tags">
+              <span class="tag tag-gray">pending → posted / skipped</span>
+            </div>
+            <div class="flow-detail">収集と投稿を切り離すハブ。処理済みはpostedに更新し重複投稿を防止。ネタが溜まっていれば翌日以降も処理可能</div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-left">
+            <div class="flow-circle accent">3</div>
+            <div class="flow-line"></div>
+          </div>
+          <div class="flow-content">
+            <div class="flow-name">ConoHa PHP cron が毎朝7時に起動</div>
+            <div class="flow-tags">
+              <span class="tag tag-brown">毎朝 7:00 JST</span>
+              <span class="tag tag-green">★ 正式パイプライン</span>
+            </div>
+            <div class="flow-detail">サーバー内のPHPスクリプトが自動実行。Firebaseからpendingを取得し、スコア順に処理。スラッグ照合で既存記事との重複チェックも実施</div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-left">
+            <div class="flow-circle">4</div>
+            <div class="flow-line"></div>
+          </div>
+          <div class="flow-content">
+            <div class="flow-name">Gemini API が記事を生成</div>
+            <div class="flow-tags">
+              <span class="tag tag-gray">翻訳 / 要約 / 編集部コメント生成</span>
+            </div>
+            <div class="flow-detail">高スコア1本をピックアップして要約＋独自考察。残りを「その他注目」として要点まとめ。最後に編集部コメントをAIが生成してまとめる</div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-left">
+            <div class="flow-circle">5</div>
+          </div>
+          <div class="flow-content">
+            <div class="flow-name">WordPress に記事・アイキャッチを自動投稿</div>
+            <div class="flow-tags">
+              <span class="tag tag-gray">Pexels アイキャッチ付き</span>
+              <span class="tag tag-gray">カテゴリ・タグ自動設定</span>
+            </div>
+            <div class="flow-detail">Pexelsからアイキャッチ画像を取得してWPにアップロード。記事本文・タイトル・カテゴリとセットでREST APIから投稿。buildhub.jpに自動公開される</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== 比較 ===== -->
+    <div class="compare-wrap">
+      <div class="section-label">Why — なぜ ConoHa PHP cron なのか</div>
+      <div class="compare-grid">
+
+        <div class="compare-col bad">
+          <div class="compare-verdict">✕ 廃止</div>
+          <div class="compare-name">GitHub Actions</div>
+          <div class="compare-what-is">GitHubが提供するCI/CDツール。リポジトリのイベントやスケジュールでスクリプトを自動実行できる。</div>
+          <div class="compare-item"><div class="compare-dot"></div>GitHub = Microsoft Azure のサーバーから実行される</div>
+          <div class="compare-item"><div class="compare-dot"></div>ConoHa WING は Microsoft / Google の IP を全ブロック</div>
+          <div class="compare-item"><div class="compare-dot"></div>WP REST API に届かず 403 エラー → 構造的に不可</div>
+        </div>
+
+        <div class="compare-col good">
+          <div class="compare-verdict">○ 採用</div>
+          <div class="compare-name">ConoHa PHP cron</div>
+          <div class="compare-what-is">ConoHa WINGが提供するcron機能。サーバー内のスクリプトを指定時刻に自動実行できる。</div>
+          <div class="compare-item"><div class="compare-dot"></div>サーバー内部からの実行 → IP制限を受けない</div>
+          <div class="compare-item"><div class="compare-dot"></div>wp-load.php を直接読み込めるため高速・安定</div>
+          <div class="compare-item"><div class="compare-dot"></div>毎朝7時に安定稼働中（アイキャッチ付きで実績あり）</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== Learnings ===== -->
+    <div class="section-label">Learnings</div>
+    <div class="learnings">
+      <div class="learn-card">
+        <div class="learn-num">01</div>
+        <div class="learn-text">レンタルサーバーの自動化は「サーバー内 cron」が最強。外部サービスからのAPI呼び出しはIPブロックのリスクがある。</div>
+      </div>
+      <div class="learn-card">
+        <div class="learn-num">02</div>
+        <div class="learn-text">収集と投稿をFirebaseで疎結合にすると、どちらかが止まっても影響しない。ネタは翌日以降に処理できる。</div>
+      </div>
+      <div class="learn-card">
+        <div class="learn-num">03</div>
+        <div class="learn-text">GAS → Firebase → PHP cron の三層構造が ConoHa WING 環境での最適解。各レイヤーが独立して動く。</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <strong>buildhub.jp</strong>
+      <span>2026.03 — Architecture Note</span>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
