@@ -101,6 +101,15 @@
   .timeline-date { font-size: 11px; font-weight: 700; color: #888; }
   .timeline-text { font-size: 14px; margin-top: 2px; }
 
+  .mini-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .mini-table th { text-align: left; padding: 6px 8px; background: #f8f8f8; font-weight: 700; color: #666; font-size: 10px; letter-spacing: 1px; }
+  .mini-table td { padding: 6px 8px; border-bottom: 1px solid #f0f0f0; }
+  .mini-table tr:hover td { background: #fafafa; }
+  .trend-chart { display: flex; align-items: flex-end; gap: 2px; height: 60px; }
+  .trend-bar { flex: 1; background: #1a1a2e; border-radius: 2px 2px 0 0; min-width: 4px; transition: height .5s; }
+  .analytics-empty { text-align: center; padding: 30px; color: #aaa; font-size: 13px; }
+  .analytics-empty a { color: #0073aa; }
+
   @media (max-width: 600px) {
     .grid { grid-template-columns: 1fr; }
     .header-inner { flex-direction: column; align-items: flex-start; }
@@ -130,6 +139,7 @@
   <div class="tabs">
     <div class="tab active" data-tab="overview">概要</div>
     <div class="tab" data-tab="articles">記事一覧</div>
+    <div class="tab" data-tab="seo">SEO・検索</div>
     <div class="tab" data-tab="roadmap">ロードマップ</div>
     <div class="tab" data-tab="meeting">分析会議</div>
   </div>
@@ -189,8 +199,8 @@
       </div>
       <div class="asp-row">
         <div class="asp-name">さとふる</div>
-        <div class="asp-price">未定</div>
-        <div class="asp-status"><span class="badge yellow">審査中</span></div>
+        <div class="asp-price">低単価</div>
+        <div class="asp-status"><span class="badge green">承認済</span></div>
       </div>
       <div class="asp-row">
         <div class="asp-name">じゃらん</div>
@@ -243,6 +253,13 @@
     <div class="card">
       <div class="card-title">全記事一覧（WP API リアルタイム取得）</div>
       <div id="article-table"><div class="loading"><span class="spinner"></span>読み込み中...</div></div>
+    </div>
+  </div>
+
+  <!-- SEO・検索タブ -->
+  <div id="seo" class="tab-content">
+    <div id="seo-content">
+      <div class="loading"><span class="spinner"></span>Analytics データ読み込み中...</div>
     </div>
   </div>
 
@@ -385,6 +402,7 @@
 
 <script>
 const WP_API = 'https://www.tokurashi.com/wp-json/wp/v2';
+const FIREBASE_ANALYTICS = 'https://viisi-master-app-default-rtdb.firebaseio.com/tokurashi-analytics';
 const CAT_COLORS = {
   'savings': '#28a745',
   'shopping': '#0073aa',
@@ -409,6 +427,7 @@ document.querySelectorAll('.tab').forEach(tab => {
 function loadAll() {
   loadCategories();
   loadArticles();
+  loadAnalytics();
 }
 
 async function loadCategories() {
@@ -467,6 +486,195 @@ async function loadArticles() {
   } catch (e) {
     document.getElementById('article-table').innerHTML = '<div style="color:#e53935">読み込み失敗</div>';
   }
+}
+
+// Analytics from Firebase (GA4 + GSC)
+async function loadAnalytics() {
+  try {
+    const [latestRes, dailyRes] = await Promise.all([
+      fetch(`${FIREBASE_ANALYTICS}/latest.json`),
+      fetch(`${FIREBASE_ANALYTICS}/daily.json`)
+    ]);
+    const latest = await latestRes.json();
+    const daily = await dailyRes.json();
+
+    if (!latest) {
+      renderAnalyticsEmpty();
+      return;
+    }
+
+    // Update overview cards
+    const ga4 = latest.ga4 || {};
+    const gsc = latest.gsc || {};
+
+    if (ga4.pv_30d !== undefined && !ga4.error) {
+      document.getElementById('pv-display').textContent = (ga4.pv_30d || 0).toLocaleString();
+      document.getElementById('pv-label').textContent = `過去30日 / ユーザー: ${(ga4.users_30d || 0).toLocaleString()}`;
+    }
+
+    // Render SEO tab
+    renderSEOTab(latest, daily);
+
+  } catch (e) {
+    renderAnalyticsEmpty();
+  }
+}
+
+function renderAnalyticsEmpty() {
+  document.getElementById('seo-content').innerHTML = `
+    <div class="card">
+      <div class="analytics-empty">
+        <p style="font-size:18px;margin-bottom:8px">📊 GAS連携待ち</p>
+        <p>GA4・Search Consoleのデータを自動取得するには<br>GASスクリプトのセットアップが必要です。</p>
+        <div style="margin-top:16px;text-align:left;max-width:500px;margin-left:auto;margin-right:auto;background:#f8f8f8;padding:16px;border-radius:8px;font-size:12px;line-height:2">
+          <strong>セットアップ手順:</strong><br>
+          1. <a href="https://script.google.com" target="_blank">script.google.com</a> で新規プロジェクト作成<br>
+          2. <code>gas/tokurashi-analytics/main.gs</code> のコードを貼り付け<br>
+          3. サービス追加: AnalyticsData + SearchConsole (Webmasters API)<br>
+          4. Script Properties に GA4_PROPERTY_ID を設定<br>
+          &nbsp;&nbsp;→ GA4管理画面 → 管理 → プロパティ設定 → プロパティID<br>
+          5. トリガー: syncAll() を毎日1回実行<br>
+          6. testSync() で動作確認
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderSEOTab(latest, daily) {
+  const ga4 = latest.ga4 || {};
+  const gsc = latest.gsc || {};
+  const updated = latest.updated_at ? new Date(latest.updated_at).toLocaleString('ja-JP') : '不明';
+
+  // Daily trend data
+  let trendHtml = '';
+  if (daily) {
+    const days = Object.values(daily).sort((a, b) => a.date.localeCompare(b.date)).slice(-14);
+    if (days.length > 0) {
+      const maxPV = Math.max(...days.map(d => d.pv_7d || 0), 1);
+      const bars = days.map(d => {
+        const h = Math.max(((d.pv_7d || 0) / maxPV) * 55, 2);
+        return `<div class="trend-bar" style="height:${h}px" title="${d.date}: ${d.pv_7d || 0} PV"></div>`;
+      }).join('');
+      trendHtml = `
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-title">PV推移（7日移動）</div>
+          <div class="trend-chart">${bars}</div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:4px">
+            <span>${days[0].date}</span><span>${days[days.length-1].date}</span>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  // Top queries
+  let queriesHtml = '';
+  if (gsc.top_queries && gsc.top_queries.length > 0) {
+    const qRows = gsc.top_queries.slice(0, 15).map(q => `
+      <tr>
+        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${q.query}</td>
+        <td style="text-align:right">${q.clicks}</td>
+        <td style="text-align:right">${q.impressions}</td>
+        <td style="text-align:right">${q.ctr}%</td>
+        <td style="text-align:right">${q.position}</td>
+      </tr>
+    `).join('');
+    queriesHtml = `
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">検索クエリ TOP 15（過去28日）</div>
+        <table class="mini-table">
+          <tr><th>クエリ</th><th style="text-align:right">クリック</th><th style="text-align:right">表示</th><th style="text-align:right">CTR</th><th style="text-align:right">順位</th></tr>
+          ${qRows}
+        </table>
+      </div>
+    `;
+  }
+
+  // Top pages (GSC)
+  let pagesHtml = '';
+  if (gsc.top_pages && gsc.top_pages.length > 0) {
+    const pRows = gsc.top_pages.slice(0, 15).map(p => {
+      const path = p.page.replace('https://www.tokurashi.com', '') || '/';
+      return `
+        <tr>
+          <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><a href="${p.page}" target="_blank" style="color:#0073aa">${path}</a></td>
+          <td style="text-align:right">${p.clicks}</td>
+          <td style="text-align:right">${p.impressions}</td>
+          <td style="text-align:right">${p.ctr}%</td>
+          <td style="text-align:right">${p.position}</td>
+        </tr>
+      `;
+    }).join('');
+    pagesHtml = `
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">ページ別パフォーマンス TOP 15（過去28日）</div>
+        <table class="mini-table">
+          <tr><th>ページ</th><th style="text-align:right">クリック</th><th style="text-align:right">表示</th><th style="text-align:right">CTR</th><th style="text-align:right">順位</th></tr>
+          ${pRows}
+        </table>
+      </div>
+    `;
+  }
+
+  // Top pages (GA4)
+  let ga4PagesHtml = '';
+  if (ga4.top_pages && ga4.top_pages.length > 0) {
+    const gRows = ga4.top_pages.slice(0, 15).map(p => `
+      <tr>
+        <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.path}</td>
+        <td style="text-align:right;font-weight:700">${p.pv}</td>
+        <td style="text-align:right">${p.users}</td>
+      </tr>
+    `).join('');
+    ga4PagesHtml = `
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">アクセスランキング TOP 15（GA4 過去30日）</div>
+        <table class="mini-table">
+          <tr><th>ページ</th><th style="text-align:right">PV</th><th style="text-align:right">ユーザー</th></tr>
+          ${gRows}
+        </table>
+      </div>
+    `;
+  }
+
+  const hasError = ga4.error || gsc.error;
+
+  document.getElementById('seo-content').innerHTML = `
+    <div style="font-size:11px;color:#aaa;margin-bottom:12px;text-align:right">最終更新: ${updated}</div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">GA4 サマリー</div>
+        ${ga4.error ? `<div style="color:#e53935;font-size:13px">${ga4.error}</div>` : `
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div><div class="stat-big" style="font-size:28px;color:#0073aa">${(ga4.pv_7d||0).toLocaleString()}</div><div class="stat-label">PV（7日）</div></div>
+            <div><div class="stat-big" style="font-size:28px;color:#0073aa">${(ga4.pv_30d||0).toLocaleString()}</div><div class="stat-label">PV（30日）</div></div>
+            <div><div class="stat-big" style="font-size:28px;color:#7c4dff">${(ga4.users_7d||0).toLocaleString()}</div><div class="stat-label">ユーザー（7日）</div></div>
+            <div><div class="stat-big" style="font-size:28px;color:#7c4dff">${(ga4.users_30d||0).toLocaleString()}</div><div class="stat-label">ユーザー（30日）</div></div>
+          </div>
+        `}
+      </div>
+      <div class="card">
+        <div class="card-title">Search Console サマリー</div>
+        ${gsc.error ? `<div style="color:#e53935;font-size:13px">${gsc.error}</div>` : `
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div><div class="stat-big" style="font-size:28px;color:#28a745">${(gsc.clicks_28d||0).toLocaleString()}</div><div class="stat-label">クリック（28日）</div></div>
+            <div><div class="stat-big" style="font-size:28px;color:#f5a623">${(gsc.impressions_28d||0).toLocaleString()}</div><div class="stat-label">表示回数（28日）</div></div>
+            <div><div class="stat-big" style="font-size:28px;color:#e53935">${gsc.ctr_28d||0}%</div><div class="stat-label">平均CTR</div></div>
+            <div><div class="stat-big" style="font-size:28px;color:#1a1a2e">${gsc.position_28d||'-'}</div><div class="stat-label">平均順位</div></div>
+          </div>
+        `}
+      </div>
+    </div>
+
+    ${trendHtml}
+    ${queriesHtml}
+    <div class="grid">
+      <div>${ga4PagesHtml}</div>
+      <div>${pagesHtml}</div>
+    </div>
+  `;
 }
 
 // Meeting notes (localStorage)
