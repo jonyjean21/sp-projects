@@ -1,9 +1,9 @@
 name: BuildHub Daily Digest
 
 on:
-  schedule:
-    - cron: '0 22 * * *'  # 22:00 UTC = 7:00 JST
-  workflow_dispatch:       # 手動実行も可能
+  workflow_dispatch:       # 手動実行のみ（ConoHa WING cronに統一）
+  # schedule は廃止 — ConoHa WING cron (buildhub-cron.php) が正式パイプライン
+  # GH Actions は GitHub(Azure)IP が ConoHa WING にブロックされるため自動実行不可
 
 jobs:
   digest:
