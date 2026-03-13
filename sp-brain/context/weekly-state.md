@@ -1,11 +1,12 @@
 # 今週の状態
 
 > 週: 2026-03-10〜
-> 最終更新: 2026-03-12
+> 最終更新: 2026-03-13
 
 ## フォーカス
-- トクラシ × BuildHub 収益化フェーズ（ASP成約・ニュースレター読者獲得）
-- MOLKKY HUB SEO継続
+- **TikTok退職代行アフィリエイト**: 戦略策定完了→パイプライン実装フェーズへ
+- MACHAP 4/12気球イベント推進
+- トクラシ × BuildHub 収益化継続
 
 ## 進捗
 - [x] sp-brain/ 記憶層の骨格構築完了
@@ -18,16 +19,27 @@
 - [x] beehiiv ニュースレター設置（BuildHub記事にCTA追加）
 - [x] SP Portal ライトモード再設計・最新化
 - [x] ConoHa FTP更新（buildhub-cron.php）→ 完了済み（cron毎朝7時稼働確認）
+- [x] MACHAP 気球イベント計画書・ダッシュボード・確認フォーム構築
+- [x] ニッチ特化アフィリエイト戦略策定（6ジャンル比較→退職代行S評価）
+- [x] TikTok退職代行ポータルサイト構築（apps/tiktok-taishoku/）
+- [x] 事業計画策定（ペルソナ4型、現実CVR、ファネル設計）
+- [x] 自動化パイプライン設計（Vrew不採用→Python完全自動、月額$0）
+- [x] バズ動画分析反映（アルゴリズム攻略・コメント誘導・投稿タイミング）
 - [ ] X アカウント作成（副業X）→ SP手動
 
 ## メモ
-- AI Clone = Phase 1（記憶層）＋ Phase 3（自律稼働）で実質完成
-- LINE Bot（Phase 2）は不要と判断・コードはvercel-api/api/line-bot.jsに残存
+- TikTok退職代行: 戦略・事業計画・パイプライン設計は完了。次はPython実装
+- Vrew: APIなしで不採用。AivisSpeech + MoviePy + Gemini Flashで$0パイプライン
+- 退職代行ASP: みやび承認率48.68%、EXIT 31.67%、実質単価¥5,000/件
+- MACHAP: 中さん共同PJ始動、4/12気球@多田東小学校
 - トクラシ収益化: さとふる・じゃらん・ハピタス等審査中
 - BuildHub: Vercel v0アフィリ登録 → ニュースレター1,000読者でスポンサー営業予定
 
 ## 次のアクション
-- [ ] ConoHa FTP更新（buildhub-cron.php を deploy/ から）→ SP手動
+- [ ] **TikTok動画生成スクリプト実装**（Gemini→AivisSpeech→MoviePy）
+- [ ] AivisSpeechセットアップ（SP側PCでDL・起動確認）
+- [ ] TikTokアカウント作成・プロフ設定（SP手動）
+- [ ] もしもアフィリエイト登録・退職代行提携申請
 - [ ] X アカウント作成 → gas/x-revenue/main.gs デプロイ → IFTTT設定
 - [ ] トクラシASP承認待ち → 承認次第テキストリンク埋め込み
 - [ ] 週次蒸留: MEMORY.md に 2026-03-10〜のエッセンスを追記
