@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>退職代行 TikTokアフィ戦略ポータル</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --tiktok-red: #fe2c55;
+    --tiktok-cyan: #25f4ee;
+    --tiktok-dark: #121212;
+    --tiktok-card: #1e1e1e;
+    --tiktok-card2: #2a2a2a;
+    --gold: #ffd700;
+    --green: #00e676;
+    --purple: #b388ff;
+    --orange: #ff9100;
+    --white: #f5f5f5;
+    --muted: #999;
+  }
+
+  body {
+    background: var(--tiktok-dark);
+    color: var(--white);
+    font-family: 'Noto Sans JP', sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #0a0a0a 100%);
+    padding: 60px 20px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 50%, rgba(254,44,85,0.15) 0%, transparent 50%),
+                radial-gradient(circle at 70% 50%, rgba(37,244,238,0.15) 0%, transparent 50%);
+    animation: pulse 8s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.1); opacity: 1; }
+  }
+  .hero-content { position: relative; z-index: 1; }
+  .hero-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--tiktok-red), var(--tiktok-cyan));
+    color: #000;
+    font-weight: 900;
+    font-size: 12px;
+    padding: 4px 16px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+  }
+  .hero h1 {
+    font-size: clamp(28px, 6vw, 48px);
+    font-weight: 900;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--tiktok-cyan), var(--tiktok-red));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-sub {
+    font-size: 16px;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+
+  /* ===== KPI STRIP ===== */
+  .kpi-strip {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+  .kpi-card {
+    background: var(--tiktok-card);
+    border: 1px solid #333;
+    border-radius: 16px;
+    padding: 16px 24px;
+    text-align: center;
+    min-width: 140px;
+  }
+  .kpi-card .label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .kpi-card .value { font-size: 28px; font-weight: 900; }
+  .kpi-card .value.red { color: var(--tiktok-red); }
+  .kpi-card .value.cyan { color: var(--tiktok-cyan); }
+  .kpi-card .value.gold { color: var(--gold); }
+  .kpi-card .value.green { color: var(--green); }
+
+  /* ===== NAV ===== */
+  .nav {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 20px;
+    background: #0a0a0a;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    flex-wrap: wrap;
+    border-bottom: 1px solid #222;
+  }
+  .nav a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: var(--tiktok-card);
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .nav a:hover, .nav a.active {
+    background: var(--tiktok-red);
+    color: #fff;
+  }
+
+  /* ===== SECTIONS ===== */
+  .container { max-width: 900px; margin: 0 auto; padding: 0 16px; }
+
+  section {
+    padding: 40px 0;
+  }
+  section + section { border-top: 1px solid #222; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .section-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-size: 22px;
+    font-weight: 900;
+  }
+  .section-desc {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* ===== CARDS ===== */
+  .card {
+    background: var(--tiktok-card);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+    border: 1px solid #2a2a2a;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: #444; }
+  .card-title {
+    font-size: 16px;
+    font-weight: 900;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-body { font-size: 14px; color: #ccc; }
+
+  /* ===== RANKING ===== */
+  .ranking-item {
+    background: var(--tiktok-card);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 12px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    border: 1px solid #2a2a2a;
+  }
+  .rank-badge {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+  .rank-1 { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; }
+  .rank-2 { background: linear-gradient(135deg, #c0c0c0, #808080); color: #000; }
+  .rank-3 { background: linear-gradient(135deg, #cd7f32, #8b4513); color: #fff; }
+  .rank-info { flex: 1; }
+  .rank-name { font-weight: 900; font-size: 16px; }
+  .rank-type {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 8px;
+  }
+  .type-lawyer { background: var(--tiktok-cyan); color: #000; }
+  .type-union { background: var(--green); color: #000; }
+  .rank-detail { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .rank-price {
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--gold);
+    white-space: nowrap;
+  }
+  .rank-asp { font-size: 11px; color: var(--muted); text-align: right; }
+
+  /* ===== ASP TABLE ===== */
+  .asp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+  }
+  .asp-card {
+    background: var(--tiktok-card);
+    border-radius: 14px;
+    padding: 16px;
+    border: 1px solid #2a2a2a;
+  }
+  .asp-name {
+    font-weight: 900;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+  .asp-priority {
+    font-size: 12px;
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+  .priority-high { background: var(--tiktok-red); color: #fff; }
+  .priority-mid { background: var(--orange); color: #000; }
+  .asp-detail { font-size: 13px; color: #aaa; }
+  .asp-detail li { margin-bottom: 4px; list-style: none; }
+  .asp-detail li::before { content: ''; margin-right: 6px; }
+
+  /* ===== SCRIPT CARDS ===== */
+  .script-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+  }
+  .script-card {
+    background: var(--tiktok-card);
+    border-radius: 14px;
+    padding: 16px;
+    border: 1px solid #2a2a2a;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .script-card:hover { border-color: var(--tiktok-red); transform: translateY(-2px); }
+  .script-num {
+    font-size: 11px;
+    color: var(--tiktok-cyan);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .script-title-text {
+    font-weight: 900;
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+  .script-hook {
+    font-size: 13px;
+    color: var(--tiktok-red);
+    font-weight: 700;
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    background: rgba(254,44,85,0.1);
+    border-radius: 8px;
+    border-left: 3px solid var(--tiktok-red);
+  }
+  .script-body {
+    font-size: 13px;
+    color: #aaa;
+    display: none;
+    margin-top: 8px;
+    white-space: pre-line;
+    padding: 12px;
+    background: #161616;
+    border-radius: 8px;
+  }
+  .script-card.open .script-body { display: block; }
+  .script-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+  }
+  .script-tag {
+    font-size: 11px;
+    color: var(--tiktok-cyan);
+    background: rgba(37,244,238,0.1);
+    padding: 2px 8px;
+    border-radius: 8px;
+  }
+  .script-expand {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 8px;
+    text-align: right;
+  }
+
+  /* ===== FUNNEL ===== */
+  .funnel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    margin: 24px 0;
+  }
+  .funnel-step {
+    padding: 16px 32px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 15px;
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+  }
+  .funnel-step:nth-child(1) { background: linear-gradient(135deg, var(--tiktok-red), #ff6b8a); border-radius: 16px 16px 0 0; }
+  .funnel-step:nth-child(2) { background: linear-gradient(135deg, #ff6b8a, var(--orange)); }
+  .funnel-step:nth-child(3) { background: linear-gradient(135deg, var(--orange), var(--gold)); color: #000; }
+  .funnel-step:nth-child(4) { background: linear-gradient(135deg, var(--gold), var(--green)); color: #000; border-radius: 0 0 16px 16px; }
+  .funnel-arrow {
+    font-size: 20px;
+    color: var(--muted);
+    margin: -4px 0;
+    z-index: 1;
+  }
+
+  /* ===== PHASE TIMELINE ===== */
+  .timeline { position: relative; padding-left: 32px; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 14px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, var(--tiktok-cyan), var(--tiktok-red));
+    border-radius: 2px;
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 24px;
+    padding: 16px 20px;
+    background: var(--tiktok-card);
+    border-radius: 14px;
+    border: 1px solid #2a2a2a;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -26px;
+    top: 20px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 3px solid var(--tiktok-cyan);
+    background: var(--tiktok-dark);
+  }
+  .timeline-item.active::before { background: var(--tiktok-cyan); box-shadow: 0 0 12px var(--tiktok-cyan); }
+  .timeline-phase {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--tiktok-cyan);
+    margin-bottom: 4px;
+  }
+  .timeline-title { font-weight: 900; font-size: 16px; margin-bottom: 4px; }
+  .timeline-desc { font-size: 13px; color: var(--muted); }
+  .timeline-tools {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .tool-tag {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 8px;
+    background: var(--tiktok-card2);
+    color: var(--white);
+    border: 1px solid #444;
+  }
+
+  /* ===== SCHEDULE ===== */
+  .schedule-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+  }
+  .schedule-day {
+    background: var(--tiktok-card);
+    border-radius: 12px;
+    padding: 12px 8px;
+    text-align: center;
+    border: 1px solid #2a2a2a;
+  }
+  .schedule-day .day-label {
+    font-size: 11px;
+    color: var(--tiktok-cyan);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .schedule-day .day-theme {
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .schedule-day .day-time {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* ===== CHECKLIST ===== */
+  .checklist { list-style: none; }
+  .checklist li {
+    padding: 12px 16px;
+    background: var(--tiktok-card);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid #2a2a2a;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .checklist li:hover { border-color: #444; }
+  .check-box {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: 2px solid #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .checklist li.done { opacity: 0.5; }
+  .checklist li.done .check-box {
+    background: var(--green);
+    border-color: var(--green);
+  }
+  .checklist li.done .check-box::after { content: '✓'; color: #000; font-size: 14px; font-weight: 900; }
+  .check-label { flex: 1; }
+  .check-tag {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 8px;
+    white-space: nowrap;
+  }
+  .tag-now { background: var(--tiktok-red); color: #fff; }
+  .tag-later { background: #333; color: var(--muted); }
+
+  /* ===== REVENUE ===== */
+  .revenue-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .revenue-card {
+    background: var(--tiktok-card);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid #2a2a2a;
+    text-align: center;
+  }
+  .revenue-card.highlight {
+    border-color: var(--gold);
+    background: linear-gradient(135deg, rgba(255,215,0,0.05), rgba(255,145,0,0.05));
+  }
+  .revenue-label { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .revenue-amount { font-size: 32px; font-weight: 900; }
+  .revenue-detail { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .revenue-calc {
+    font-size: 12px;
+    color: #888;
+    background: #161616;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 12px;
+    text-align: left;
+    line-height: 1.8;
+  }
+
+  /* ===== WARNING ===== */
+  .warning-box {
+    background: rgba(254,44,85,0.1);
+    border: 1px solid var(--tiktok-red);
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+  }
+  .warning-title {
+    font-weight: 900;
+    color: var(--tiktok-red);
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .warning-body { font-size: 13px; color: #ccc; }
+
+  .info-box {
+    background: rgba(37,244,238,0.08);
+    border: 1px solid rgba(37,244,238,0.3);
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+  }
+  .info-title {
+    font-weight: 900;
+    color: var(--tiktok-cyan);
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .info-body { font-size: 13px; color: #ccc; }
+
+  /* ===== DOUBLE CONVERSION ===== */
+  .double-conv {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 24px 0;
+    flex-wrap: wrap;
+    font-size: 18px;
+    font-weight: 900;
+  }
+  .conv-box {
+    background: var(--tiktok-card);
+    border-radius: 14px;
+    padding: 16px 24px;
+    text-align: center;
+    border: 1px solid #333;
+  }
+  .conv-box .conv-label { font-size: 12px; color: var(--muted); }
+  .conv-box .conv-amount { font-size: 24px; color: var(--gold); }
+  .conv-plus { font-size: 28px; color: var(--muted); }
+  .conv-eq { font-size: 28px; color: var(--green); }
+  .conv-total { font-size: 32px; color: var(--green); }
+
+  /* ===== FOOTER ===== */
+  footer {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+    font-size: 12px;
+    border-top: 1px solid #222;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 640px) {
+    .schedule-grid { grid-template-columns: repeat(2, 1fr); }
+    .revenue-cards { grid-template-columns: 1fr; }
+    .ranking-item { flex-direction: column; text-align: center; }
+    .rank-price { margin-top: 8px; }
+    .rank-asp { text-align: center; }
+    .double-conv { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HERO ===== -->
+<div class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">NICHE AFFILIATE STRATEGY</div>
+    <h1>退職代行 × TikTok</h1>
+    <p class="hero-sub">ニッチ特化アフィリエイト 実行ポータル</p>
+    <div class="kpi-strip">
+      <div class="kpi-card">
+        <div class="label">推奨1位 報酬</div>
+        <div class="value cyan">¥11,000</div>
+      </div>
+      <div class="kpi-card">
+        <div class="label">最高単価</div>
+        <div class="value gold">¥13,000</div>
+      </div>
+      <div class="kpi-card">
+        <div class="label">台本ストック</div>
+        <div class="value red">10本</div>
+      </div>
+      <div class="kpi-card">
+        <div class="label">バズ時 一撃</div>
+        <div class="value green">¥300K</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== NAV ===== -->
+<nav class="nav" id="nav">
+  <a href="#strategy">全体戦略</a>
+  <a href="#ranking">推奨TOP3</a>
+  <a href="#asp">ASP一覧</a>
+  <a href="#scripts">台本10本</a>
+  <a href="#pipeline">動画制作</a>
+  <a href="#schedule">投稿計画</a>
+  <a href="#revenue">収益SIM</a>
+  <a href="#todo">やることリスト</a>
+</nav>
+
+<div class="container">
+
+<!-- ===== 1. 全体戦略 ===== -->
+<section id="strategy">
+  <div class="section-header">
+    <div class="section-icon" style="background:linear-gradient(135deg, var(--tiktok-red), var(--purple));">🎯</div>
+    <div>
+      <div class="section-title">全体戦略</div>
+      <div class="section-desc">TikTok → lit.link → ASP成約の導線</div>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <div class="info-title">コンセプト</div>
+    <div class="info-body">
+      顔出し不要のテロップ動画をTikTokで毎日投稿。<br>
+      退職に悩む20-30代をプロフィールリンク（lit.link）経由でASPに誘導。<br>
+      <strong>弁護士法人・労働組合系を1位推奨</strong>にして信頼性を担保する。
+    </div>
+  </div>
+
+  <div class="funnel">
+    <div class="funnel-step">TikTok動画（毎日投稿）</div>
+    <div class="funnel-step">プロフィールリンクをタップ</div>
+    <div class="funnel-step">lit.link（おすすめTOP3）</div>
+    <div class="funnel-step">ASP成約 → 報酬¥10,000〜¥13,000</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">💥 ダブル成約戦略</div>
+    <div class="card-body">
+      退職完了後に転職エージェント（リクルートエージェント等）へ誘導。<br>
+      1ユーザーから2件の成約を狙う。
+    </div>
+    <div class="double-conv">
+      <div class="conv-box">
+        <div class="conv-label">退職代行</div>
+        <div class="conv-amount">¥10,000〜</div>
+      </div>
+      <div class="conv-plus">+</div>
+      <div class="conv-box">
+        <div class="conv-label">転職エージェント</div>
+        <div class="conv-amount">¥10,000〜</div>
+      </div>
+      <div class="conv-eq">=</div>
+      <div class="conv-box" style="border-color:var(--green);">
+        <div class="conv-label">1ユーザーあたり</div>
+        <div class="conv-total">¥20,000+</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="warning-box">
+    <div class="warning-title">⚠ モームリに関する注意</div>
+    <div class="warning-body">
+      モームリは2025年10月に警視庁の家宅捜索を受けている。<br>
+      安全策として<strong>弁護士法人・労働組合運営のサービスを1位推奨</strong>にする。
+    </div>
+  </div>
+</section>
+
+<!-- ===== 2. 推奨TOP3 ===== -->
+<section id="ranking">
+  <div class="section-header">
+    <div class="section-icon" style="background:linear-gradient(135deg, var(--gold), var(--orange));">🏆</div>
+    <div>
+      <div class="section-title">推奨ランキングTOP3</div>
+      <div class="section-desc">安全性・信頼性を最優先。lit.linkに掲載する順位</div>
+    </div>
+  </div>
+
+  <div class="ranking-item">
+    <div class="rank-badge rank-1">1</div>
+    <div class="rank-info">
+      <div class="rank-name">弁護士法人みやび<span class="rank-type type-lawyer">弁護士法人</span></div>
+      <div class="rank-detail">弁護士が直接対応 = 最高の信頼性。残業代・退職金請求も可能</div>
+    </div>
+    <div>
+      <div class="rank-price">¥11,000</div>
+      <div class="rank-asp">バリューコマース</div>
+    </div>
+  </div>
+
+  <div class="ranking-item">
+    <div class="rank-badge rank-2">2</div>
+    <div class="rank-info">
+      <div class="rank-name">退職代行OITOMA<span class="rank-type type-union">労働組合</span></div>
+      <div class="rank-detail">最高単価クラス。労組運営で団体交渉権あり</div>
+    </div>
+    <div>
+      <div class="rank-price">¥13,000</div>
+      <div class="rank-asp">レントラックス</div>
+    </div>
+  </div>
+
+  <div class="ranking-item">
+    <div class="rank-badge rank-3">3</div>
+    <div class="rank-info">
+      <div class="rank-name">退職代行ガーディアン<span class="rank-type type-union">労働組合</span></div>
+      <div class="rank-detail">労組+高知名度+安定した実績。新卒〜中堅に人気</div>
+    </div>
+    <div>
+      <div class="rank-price">¥12,000</div>
+      <div class="rank-asp">A8.net</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 3. ASP一覧 ===== -->
+<section id="asp">
+  <div class="section-header">
+    <div class="section-icon" style="background:linear-gradient(135deg, var(--green), var(--tiktok-cyan));">📡</div>
+    <div>
+      <div class="section-title">ASP申請リスト</div>
+      <div class="section-desc">優先順に申請。独占案件の取りこぼしに注意</div>
+    </div>
+  </div>
+
+  <div class="asp-grid">
+    <div class="asp-card">
+      <div class="asp-name">1. もしもアフィリエイト</div>
+      <div class="asp-priority priority-high">最優先</div>
+      <ul class="asp-detail">
+        <li>退職代行案件7件以上で最多</li>
+        <li>W報酬制度（+12%上乗せ）</li>
+        <li>審査なし案件あり → 即日利用可能</li>
+        <li>Jobs ¥10,000〜 / ニコイチ ¥8,000〜</li>
+      </ul>
+    </div>
+
+    <div class="asp-card">
+      <div class="asp-name">2. バリューコマース</div>
+      <div class="asp-priority priority-high">最優先</div>
+      <ul class="asp-detail">
+        <li><strong>EXIT独占</strong>（高単価・非公開）</li>
+        <li><strong>弁護士法人みやび</strong> ¥11,000</li>
+        <li>1位推奨のみやびはここでしか取れない</li>
+      </ul>
+    </div>
+
+    <div class="asp-card">
+      <div class="asp-name">3. レントラックス</div>
+      <div class="asp-priority priority-high">最優先</div>
+      <ul class="asp-detail">
+        <li><strong>OITOMA独占</strong> ¥13,000（税別）</li>
+        <li>クローズドASP</li>
+        <li>アフィリエイトフレンズ経由で申請</li>
+      </ul>
+    </div>
+
+    <div class="asp-card">
+      <div class="asp-name">4. A8.net</div>
+      <div class="asp-priority priority-mid">優先</div>
+      <ul class="asp-detail">
+        <li><strong>ガーディアン</strong> ¥12,000〜</li>
+        <li>既存トクラシアカウントにサイト追加</li>
+        <li>lit.linkのURLを登録</li>
+      </ul>
+    </div>
+
+    <div class="asp-card">
+      <div class="asp-name">5. AffiliateSystem</div>
+      <div class="asp-priority priority-mid">優先</div>
+      <ul class="asp-detail">
+        <li><strong>SARABA独占</strong> ¥10,000〜</li>
+        <li>労働組合運営</li>
+        <li>SARABA直接提携のみ</li>
+      </ul>
+    </div>
+
+    <div class="asp-card">
+      <div class="asp-name">6. afb</div>
+      <div class="asp-priority priority-mid">後日</div>
+      <ul class="asp-detail">
+        <li>各種退職代行 ¥8,000〜</li>
+        <li>最低支払額777円、消費税上乗せ</li>
+        <li>ブログ完成後に申請推奨</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 4. 台本10本 ===== -->
+<section id="scripts">
+  <div class="section-header">
+    <div class="section-icon" style="background:linear-gradient(135deg, var(--tiktok-red), #ff6b8a);">📝</div>
+    <div>
+      <div class="section-title">TikTok台本 10本</div>
+      <div class="section-desc">即投稿可能。タップで全文表示</div>
+    </div>
+  </div>
+
+  <div class="script-grid">
+
+    <div class="script-card" onclick="this.classList.toggle('open')">
+      <div class="script-num">#1 新卒向け</div>
+      <div class="script-title-text">入社3ヶ月で辞めたくなったら</div>
+      <div class="script-hook">「入社3ヶ月で辞めたい」は甘えじゃない</div>
+      <div class="script-body">新卒の3人に1人が3年以内に辞めてる
+でも上司に言えない人がほとんど
+
+実は退職代行を使えば
+・上司と一切話さなくていい
+・即日退職できる
+・有給も消化できる
+
+📍 料金や口コミはプロフのリンクから👆</div>
+      <div class="script-tags">
+        <span class="script-tag">#退職代行</span>
+        <span class="script-tag">#新卒辞めたい</span>
+        <span class="script-tag">#ブラック企業</span>
+      </div>
+      <div class="script-expand">▼ タップで全文</div>
+    </div>
+
+    <div class="script-card" onclick="this.classList.toggle('open')">
+      <div class="script-num">#2 パワハラ系</div>
+      <div class="script-title-text">上司が怖くて退職を言えない人へ</div>
+      <div class="script-hook">「辞めます」が言えないのは、あなたが弱いんじゃない</div>
+      <div class="script-body">パワハラ上司に退職を伝えるのは
+普通に怖い。当たり前。
+
+退職代行なら
+あなたの代わりに全部やってくれる
+明日から会社に行かなくていい
+
+LINEで相談するだけ。
+電話すらしなくていい。
+
+📍 おすすめの退職代行はプロフから🔗</div>
+      <div class="script-tags">
+        <span class="script-tag">#パワハラ</span>
+        <span class="script-tag">#上司怖い</span>
+        <span class="script-tag">#退職代行</span>
+      </div>
+      <div class="script-expand">▼ タップで全文</div>
+    </div>
+
+    <div class="script-card" onclick="this.classList.toggle('open')">
+      <div class="script-num">#3 看護師特化</div>
+      <div class="script-title-text">看護師が退職代行を使うべき3つの理由</div>
+      <div class="script-hook">看護師の退職代行利用率、爆増してるの知ってた？</div>
+      <div class="script-body">理由①：人手不足で「辞めさせてもらえない」
+理由②：師長との面談が地獄
+理由③：シフトの関係で即日退職が難しい
+
+退職代行なら全部解決。
+LINEで申し込むだけで
+翌日から出勤しなくてOK
+
+📍 看護師に人気の退職代行はプロフから</div>
+      <div class="script-tags">
+        <span class="script-tag">#看護師辞めたい</span>
+        <span class="script-tag">#ナース</span>
+        <span class="script-tag">#退職代行</span>
+      </div>
+      <div class="script-expand">▼ タップで全文</div>
+    </div>
+
+    <div class="script-card" onclick="this.classList.toggle('open')">
+      <div class="script-num">#4 料金系</div>
+      <div class="script-title-text">退職代行っていくらかかるの？</div>
+      <div class="script-hook">退職代行の料金、思ってるより安い</div>
+      <div class="script-body">相場は2万〜5万円
+
+「高い」と思った？
+
+でもあと3ヶ月我慢して
+精神壊して休職したら
+収入ゼロになる
+
+2万円で人生リセットできるなら
+安くない？
+
+📍 料金比較はプロフのリンクから💰</div>
+      <div class="script-tags">
+        <span class="script-tag">#退職代行</span>
+        <span class="script-tag">#退職代行料金</span>
+        <span class="script-tag">#コスパ</span>
+      </div>
+      <div class="script-expand">▼ タップで全文</div>
+    </div>
+
+    <div class="script-card" onclick="this.classList.toggle('open')">
+      <div class="script-num">#5 体験談風 ⭐初回投稿推奨</div>
+      <div class="script-title-text">退職代行使ってみた結果</div>
+      <div class="script-hook">退職代行、マジで使ってよかった</div>
+      <div class="script-body">朝LINEで申し込んだ
+昼には会社に連絡してくれた
+夕方には「退職受理されました」の連絡
+
+上司と一言も話してない
+引き止めもゼロ
+有給も全部消化できた
+
+なんでもっと早く使わなかったんだろう
+
+📍 使ったサービスはプロフから確認できます</div>
+      <div class="script-tags">
+        <span class="script-tag">#退職代行体験談</span>
+        <span class="script-tag">#退職代行使ってみた</span>
+        <span class="script-tag">#転職成功</span>
+      </div>
+      <div class="script-expand">▼ タップで全文</div>
+    </div>
+
+    <div class="script-card" onclick="this.classList.toggle('open')">
+      <div class="script-num">#6 引き止め系</div>
+      <div class="script-title-text">退職を引き止められて困ってる人</div>
+      <div class="script-hook">「考え直してくれ」って言われて3ヶ月経ってない？</div>
+      <div class="script-body">引き止めに応じても
+・給料は上がらない
+・人間関係は変わらない
+・辞めたい気持ちは消えない
+
+退職代行を使えば
+引き止めの余地なし
+即日で退職完了
+
+もう我慢しなくていい
+
+📍 引き止められない退職方法はプロフから</div>
+      <div class="script-tags">
+        <span class="script-tag">#退職引き止め</span>
+        <span class="script-tag">#辞められない</span>
+        <span class="script-tag">#退職代行</span>
+      </div>
+      <div class="script-expand">▼ タップで全文</div>
+    </div>
+
+    <div class="script-card" onclick="this.classList.toggle('open')">
+      <div class="script-num">#7 GW明け系 🔥季節性</div>
+      <div class="script-title-text">GW明けに会社行きたくない人</div>
+      <div class="script-hook">GW明け、会社行きたくないの当たり前</div>
+      <div class="script-body">日曜の夜が憂鬱
+月曜の朝が地獄
+それが毎週続く
+
+それ、普通じゃないよ
+
+退職代行ならGW中にLINEで申し込んで
+GW明けから行かなくてOK
+
+📍 GW中に相談できるサービスはプロフから🌴</div>
+      <div class="script-tags">
+        <span class="script-tag">#GW明け</span>
+        <span class="script-tag">#仕事行きたくない</span>
+        <span class="script-tag">#退職代行</span>
+      </div>
+      <div class="script-expand">▼ タップで全文</div>
+    </div>
+
+    <div class="script-card" onclick="this.classList.toggle('open')">
+      <div class="script-num">#8 バイト向け</div>
+      <div class="script-title-text">バイト辞めたいけど言えない人</div>
+      <div class="script-hook">バイトも退職代行使えるって知ってた？</div>
+      <div class="script-body">「人手不足で辞めさせてくれない」
+「店長が怖い」
+「シフト入れられまくる」
+
+退職代行は正社員だけじゃない
+バイトでも使える
+しかも1万円台からある
+
+📍 バイトOKの退職代行はプロフから</div>
+      <div class="script-tags">
+        <span class="script-tag">#バイト辞めたい</span>
+        <span class="script-tag">#学生</span>
+        <span class="script-tag">#退職代行</span>
+      </div>
+      <div class="script-expand">▼ タップで全文</div>
+    </div>
+
+    <div class="script-card" onclick="this.classList.toggle('open')">
+      <div class="script-num">#9 介護職特化</div>
+      <div class="script-title-text">介護職の退職代行が増えてる理由</div>
+      <div class="script-hook">介護職の離職率、知ってる？</div>
+      <div class="script-body">慢性的な人手不足
+「辞めたら利用者さんが困る」
+そう言われて辞められない人が多い
+
+でもあなたが壊れたら
+もっと困る人が増える
+
+自分を守る選択肢として
+退職代行がある
+
+📍 介護職に選ばれてる退職代行はプロフから</div>
+      <div class="script-tags">
+        <span class="script-tag">#介護士辞めたい</span>
+        <span class="script-tag">#介護あるある</span>
+        <span class="script-tag">#退職代行</span>
+      </div>
+      <div class="script-expand">▼ タップで全文</div>
+    </div>
+
+    <div class="script-card" onclick="this.classList.toggle('open')">
+      <div class="script-num">#10 有給消化系</div>
+      <div class="script-title-text">退職前に有給全部使い切る方法</div>
+      <div class="script-hook">有給、捨ててない？</div>
+      <div class="script-body">退職するなら有給は全部使える
+法律で決まってる
+
+でも「忙しいから無理」と言われがち
+
+退職代行なら
+有給消化の交渉も全部やってくれる
+
+20日残ってたら20日休める
+その間に転職活動もできる
+
+📍 有給交渉してくれる退職代行はプロフから</div>
+      <div class="script-tags">
+        <span class="script-tag">#有給消化</span>
+        <span class="script-tag">#有給休暇</span>
+        <span class="script-tag">#退職代行</span>
+      </div>
+      <div class="script-expand">▼ タップで全文</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===== 5. 動画制作パイプライン ===== -->
+<section id="pipeline">
+  <div class="section-header">
+    <div class="section-icon" style="background:linear-gradient(135deg, var(--purple), var(--tiktok-cyan));">🎬</div>
+    <div>
+      <div class="section-title">動画制作パイプライン</div>
+      <div class="section-desc">Vrewメインの3段階アプローチ</div>
+    </div>
+  </div>
+
+  <div class="timeline">
+    <div class="timeline-item active">
+      <div class="timeline-phase">PHASE 1 — 今すぐ開始</div>
+      <div class="timeline-title">Vrew + CapCut（5-10分/本）</div>
+      <div class="timeline-desc">
+        Vrewにテキストを貼るだけでAI音声+テロップ+背景動画が全自動生成。<br>
+        顔出し不要に最適。CapCutはデザイン微調整のサブツール。<br>
+        まず10本作って反応を見る。
+      </div>
+      <div class="timeline-tools">
+        <span class="tool-tag">Vrew（メイン）</span>
+        <span class="tool-tag">CapCut（サブ）</span>
+        <span class="tool-tag">無料</span>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-phase">PHASE 2 — 反応確認後</div>
+      <div class="timeline-title">Vrew量産体制（4-5分/本）</div>
+      <div class="timeline-desc">
+        ChatGPT/Geminiで台本5-10本を一括生成 → Vrewで動画自動生成。<br>
+        週10-15本、毎日2本投稿（12:00 + 19:00）体制。
+      </div>
+      <div class="timeline-tools">
+        <span class="tool-tag">ChatGPT/Gemini</span>
+        <span class="tool-tag">Vrew</span>
+        <span class="tool-tag">週10-15本</span>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-phase">PHASE 3 — 将来（オプション）</div>
+      <div class="timeline-title">Python完全自動化（1分以下/本）</div>
+      <div class="timeline-desc">
+        MoviePy + FFmpeg + Gemini + Pexels APIで完全自動生成。<br>
+        1日10本以上の大量生産が必要になった場合のみ。
+      </div>
+      <div class="timeline-tools">
+        <span class="tool-tag">Python</span>
+        <span class="tool-tag">MoviePy</span>
+        <span class="tool-tag">FFmpeg</span>
+        <span class="tool-tag">Gemini API</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🎵 BGM戦略</div>
+    <div class="card-body">
+      <table style="width:100%;font-size:13px;border-collapse:collapse;">
+        <tr style="border-bottom:1px solid #333;"><td style="padding:8px;color:var(--tiktok-cyan);">体験談系</td><td style="padding:8px;">エモ系ピアノ</td><td style="padding:8px;color:var(--muted);">切なさ+希望</td></tr>
+        <tr style="border-bottom:1px solid #333;"><td style="padding:8px;color:var(--tiktok-cyan);">情報系</td><td style="padding:8px;">ポップ/アップテンポ</td><td style="padding:8px;color:var(--muted);">明るく分かりやすく</td></tr>
+        <tr style="border-bottom:1px solid #333;"><td style="padding:8px;color:var(--tiktok-cyan);">共感系</td><td style="padding:8px;">Lo-Fi/チル系</td><td style="padding:8px;color:var(--muted);">落ち着いた共感</td></tr>
+        <tr><td style="padding:8px;color:var(--tiktok-cyan);">煽り系</td><td style="padding:8px;">トレンドBGM</td><td style="padding:8px;color:var(--muted);">TikTokの流行に乗る</td></tr>
+      </table>
+      <p style="margin-top:12px;font-size:12px;color:var(--muted);">素材: DOVA-SYNDROME / 甘茶の音楽工房 / MusMus（全て商用利用OK）</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 6. 投稿スケジュール ===== -->
+<section id="schedule">
+  <div class="section-header">
+    <div class="section-icon" style="background:linear-gradient(135deg, var(--orange), var(--gold));">📅</div>
+    <div>
+      <div class="section-title">初週の投稿スケジュール</div>
+      <div class="section-desc">Day1は体験談風（最もバズりやすい）からスタート</div>
+    </div>
+  </div>
+
+  <div class="schedule-grid">
+    <div class="schedule-day" style="border-color:var(--tiktok-red);">
+      <div class="day-label">Day 1</div>
+      <div class="day-theme">体験談風</div>
+      <div class="day-time">19:00</div>
+      <div style="font-size:10px;color:var(--tiktok-red);margin-top:4px;">⭐ 初投稿</div>
+    </div>
+    <div class="schedule-day">
+      <div class="day-label">Day 2</div>
+      <div class="day-theme">新卒向け</div>
+      <div class="day-time">12:00</div>
+    </div>
+    <div class="schedule-day">
+      <div class="day-label">Day 3</div>
+      <div class="day-theme">パワハラ系</div>
+      <div class="day-time">19:00</div>
+    </div>
+    <div class="schedule-day">
+      <div class="day-label">Day 4</div>
+      <div class="day-theme">料金系</div>
+      <div class="day-time">12:00</div>
+    </div>
+    <div class="schedule-day">
+      <div class="day-label">Day 5</div>
+      <div class="day-theme">GW明け</div>
+      <div class="day-time">19:00</div>
+    </div>
+    <div class="schedule-day">
+      <div class="day-label">Day 6</div>
+      <div class="day-theme">看護師特化</div>
+      <div class="day-time">12:00</div>
+    </div>
+    <div class="schedule-day">
+      <div class="day-label">Day 7</div>
+      <div class="day-theme">引き止め系</div>
+      <div class="day-time">19:00</div>
+    </div>
+  </div>
+
+  <div class="info-box" style="margin-top:16px;">
+    <div class="info-title">📈 Week 2以降の横展開ネタ</div>
+    <div class="info-body">
+      <strong>業種別:</strong> 飲食 / コールセンター / 工場 / IT / 保育士 / 美容師 / 教師 / 公務員...<br>
+      <strong>状況別:</strong> 試用期間中 / 入社1週間 / うつ病 / 人間関係 / 残業地獄...<br>
+      <strong>季節別:</strong> GW明け / 夏ボーナス後 / 年末 / 新年度...<br>
+      <strong>FAQ:</strong> 違法？/ 親にバレる？/ 次の転職に影響する？...
+    </div>
+  </div>
+</section>
+
+<!-- ===== 7. 収益シミュレーション ===== -->
+<section id="revenue">
+  <div class="section-header">
+    <div class="section-icon" style="background:linear-gradient(135deg, var(--gold), var(--green));">💰</div>
+    <div>
+      <div class="section-title">収益シミュレーション</div>
+      <div class="section-desc">TikTok経由の保守的シナリオとバズシナリオ</div>
+    </div>
+  </div>
+
+  <div class="revenue-cards">
+    <div class="revenue-card">
+      <div class="revenue-label">保守的（月30本投稿）</div>
+      <div class="revenue-amount" style="color:var(--tiktok-cyan);">¥22,500<span style="font-size:14px;">/月</span></div>
+      <div class="revenue-calc">
+        月30本 × 平均5,000再生<br>
+        × プロフクリック率 1%<br>
+        × lit.link→ASP 30%<br>
+        × 成約率 5%<br>
+        = <strong>2.25件 × ¥10,000</strong>
+      </div>
+    </div>
+    <div class="revenue-card highlight">
+      <div class="revenue-label">🔥 1本10万再生バズ時</div>
+      <div class="revenue-amount" style="color:var(--gold);">¥300,000<span style="font-size:14px;">/本</span></div>
+      <div class="revenue-calc">
+        100,000再生<br>
+        × プロフクリック率 2%<br>
+        × lit.link→ASP 30%<br>
+        × 成約率 5%<br>
+        = <strong>30件 × ¥10,000</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <div class="card-title">🎯 GW明け（5月第1週）が最大チャンス</div>
+    <div class="card-body">
+      「GW明け 仕事行きたくない」の検索・視聴が爆増するタイミング。<br>
+      GW明け系スクリプト（#7）を事前に投稿しておけば、一撃数十万の可能性。
+    </div>
+  </div>
+</section>
+
+<!-- ===== 8. やることリスト ===== -->
+<section id="todo">
+  <div class="section-header">
+    <div class="section-icon" style="background:linear-gradient(135deg, var(--tiktok-red), var(--orange));">✅</div>
+    <div>
+      <div class="section-title">SPやることリスト</div>
+      <div class="section-desc">タップでチェック。上から順にやる</div>
+    </div>
+  </div>
+
+  <h3 style="font-size:15px;margin-bottom:12px;color:var(--tiktok-cyan);">🔥 今すぐやること</h3>
+  <ul class="checklist" id="checklist-now">
+    <li onclick="this.classList.toggle('done')">
+      <div class="check-box"></div>
+      <div class="check-label">TikTokアカウント作成（ビジネスアカウント）</div>
+      <span class="check-tag tag-now">今すぐ</span>
+    </li>
+    <li onclick="this.classList.toggle('done')">
+      <div class="check-box"></div>
+      <div class="check-label">プロフィール設定（@taishoku_mikata）</div>
+      <span class="check-tag tag-now">今すぐ</span>
+    </li>
+    <li onclick="this.classList.toggle('done')">
+      <div class="check-box"></div>
+      <div class="check-label">lit.linkアカウント作成 → 3つのリンク設定</div>
+      <span class="check-tag tag-now">今すぐ</span>
+    </li>
+    <li onclick="this.classList.toggle('done')">
+      <div class="check-box"></div>
+      <div class="check-label">もしもアフィリエイト登録 → 退職代行案件に提携申請</div>
+      <span class="check-tag tag-now">今すぐ</span>
+    </li>
+    <li onclick="this.classList.toggle('done')">
+      <div class="check-box"></div>
+      <div class="check-label">A8.netにサイト追加（lit.linkのURL）</div>
+      <span class="check-tag tag-now">今すぐ</span>
+    </li>
+    <li onclick="this.classList.toggle('done')">
+      <div class="check-box"></div>
+      <div class="check-label">Vrewをダウンロード</div>
+      <span class="check-tag tag-now">今すぐ</span>
+    </li>
+    <li onclick="this.classList.toggle('done')">
+      <div class="check-box"></div>
+      <div class="check-label">スクリプト#5で初動画を作成 → TikTokに投稿</div>
+      <span class="check-tag tag-now">今すぐ</span>
+    </li>
+  </ul>
+
+  <h3 style="font-size:15px;margin:24px 0 12px;color:var(--muted);">📋 後日やること</h3>
+  <ul class="checklist" id="checklist-later">
+    <li onclick="this.classList.toggle('done')">
+      <div class="check-box"></div>
+      <div class="check-label">バリューコマース登録（みやび・EXIT独占）</div>
+      <span class="check-tag tag-later">要登録</span>
+    </li>
+    <li onclick="this.classList.toggle('done')">
+      <div class="check-box"></div>
+      <div class="check-label">アフィリエイトフレンズ経由でレントラックス申請（OITOMA独占）</div>
+      <span class="check-tag tag-later">クローズド</span>
+    </li>
+    <li onclick="this.classList.toggle('done')">
+      <div class="check-box"></div>
+      <div class="check-label">afb登録（ブログ完成後）</div>
+      <span class="check-tag tag-later">後日</span>
+    </li>
+    <li onclick="this.classList.toggle('done')">
+      <div class="check-box"></div>
+      <div class="check-label">ドメイン取得 + WordPress構築（SEO/ブログ側）</div>
+      <span class="check-tag tag-later">後日</span>
+    </li>
+    <li onclick="this.classList.toggle('done')">
+      <div class="check-box"></div>
+      <div class="check-label">転職エージェントのASP提携（ダブル成約用）</div>
+      <span class="check-tag tag-later">後日</span>
+    </li>
+  </ul>
+
+  <div class="warning-box" style="margin-top:24px;">
+    <div class="warning-title">📌 注意事項</div>
+    <div class="warning-body">
+      <strong>ASP規約:</strong> TikTokからの直接誘導がOKか、各ASPの規約を確認<br>
+      <strong>ステマ規制:</strong> 動画に「PR」「広告」表示が必要（2023年10月〜）<br>
+      <strong>表現:</strong> 「必ず辞められる」等の断定表現は避ける<br>
+      <strong>使い分け:</strong> バズ動画→高単価案件、通常動画→成約しやすい案件に切り替え
+    </div>
+  </div>
+</section>
+
+<!-- ===== プロフィール設定案 ===== -->
+<section>
+  <div class="section-header">
+    <div class="section-icon" style="background:linear-gradient(135deg, #ff6b8a, var(--purple));">👤</div>
+    <div>
+      <div class="section-title">プロフィール設定案</div>
+      <div class="section-desc">TikTok + lit.link の設定内容</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">TikTokプロフィール</div>
+    <div class="card-body">
+      <table style="width:100%;font-size:13px;">
+        <tr><td style="padding:6px;color:var(--tiktok-cyan);width:100px;">ユーザー名</td><td style="padding:6px;">@taishoku_mikata</td></tr>
+        <tr><td style="padding:6px;color:var(--tiktok-cyan);">表示名</td><td style="padding:6px;">退職のミカタ｜退職代行の情報発信</td></tr>
+        <tr><td style="padding:6px;color:var(--tiktok-cyan);">自己紹介</td><td style="padding:6px;">退職代行の選び方を毎日発信🔥元ブラック企業勤務→退職代行で脱出｜おすすめは👇のリンクから</td></tr>
+        <tr><td style="padding:6px;color:var(--tiktok-cyan);">リンク</td><td style="padding:6px;">lit.linkのURL</td></tr>
+        <tr><td style="padding:6px;color:var(--tiktok-cyan);">アイコン</td><td style="padding:6px;">Canvaでシンプルなロゴを作成</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">lit.link構成</div>
+    <div class="card-body">
+      <div style="background:#161616;border-radius:8px;padding:16px;font-size:14px;">
+        <div style="margin-bottom:12px;padding:10px;background:var(--tiktok-card2);border-radius:8px;border-left:3px solid var(--gold);">
+          🏆 <strong>退職代行おすすめNo.1</strong><br>
+          <span style="font-size:12px;color:var(--muted);">→ 弁護士法人みやび（バリューコマース）</span>
+        </div>
+        <div style="margin-bottom:12px;padding:10px;background:var(--tiktok-card2);border-radius:8px;border-left:3px solid var(--green);">
+          💰 <strong>とにかく安い退職代行</strong><br>
+          <span style="font-size:12px;color:var(--muted);">→ OITOMA（レントラックス）</span>
+        </div>
+        <div style="margin-bottom:12px;padding:10px;background:var(--tiktok-card2);border-radius:8px;border-left:3px solid var(--tiktok-cyan);">
+          🛡️ <strong>労働組合で安心の退職代行</strong><br>
+          <span style="font-size:12px;color:var(--muted);">→ ガーディアン（A8.net）</span>
+        </div>
+        <div style="padding:10px;background:var(--tiktok-card2);border-radius:8px;border-left:3px solid var(--muted);">
+          📖 <strong>退職代行の選び方ガイド</strong><br>
+          <span style="font-size:12px;color:var(--muted);">→ ブログ記事URL（後日追加）</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  退職代行 × TikTok アフィリエイト戦略ポータル | 作成日: 2026-03-13 | SP-Projects
+</footer>
+
+<script>
+// Smooth scroll for nav
+document.querySelectorAll('.nav a').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+
+// Active nav highlight on scroll
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+  });
+});
+</script>
+
+</body>
+</html>
