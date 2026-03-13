@@ -441,7 +441,7 @@ textarea{resize:vertical;min-height:60px}
       <div class="btn-row" style="flex-wrap:nowrap">
         <button class="btn btn-primary btn-small" onclick="openMemberModal()">+ 追加</button>
         <button class="btn btn-outline btn-small" onclick="openZoneManager()">校区管理</button>
-        <button class="btn btn-outline btn-small" onclick="openEquipmentManager()">機材管理</button>
+        <button class="btn btn-outline btn-small" onclick="openEquipmentManager()">荷物管理</button>
       </div>
     </div>
     <div id="membersList"></div>
@@ -484,16 +484,16 @@ textarea{resize:vertical;min-height:60px}
     </div>
 
     <div class="section-title">管理者</div>
+    <div class="card" id="settingsTemplateEditor" style="display:none" onclick="openTemplateEditor()">
+      <div style="font-size:15px;font-weight:600">📝 テンプレート編集</div>
+      <div style="font-size:13px;color:var(--text-sub);margin-top:4px">入力依頼文・LINEテンプレ等をカスタマイズ</div>
+    </div>
     <div class="card" onclick="openAdminPinSetting()">
       <div style="font-size:15px;font-weight:600">管理者PINの変更</div>
       <div style="font-size:13px;color:var(--text-sub);margin-top:4px" id="settingsAdminPinStatus">未設定</div>
     </div>
     <div class="card" id="settingsAdminLogout" style="display:none" onclick="adminLogout()">
       <div style="font-size:15px;font-weight:600;color:var(--danger)">管理者ログアウト</div>
-    </div>
-    <div class="card" id="settingsTemplateEditor" style="display:none" onclick="openTemplateEditor()">
-      <div style="font-size:15px;font-weight:600">📝 テンプレート編集</div>
-      <div style="font-size:13px;color:var(--text-sub);margin-top:4px">入力依頼文・LINEテンプレ等をカスタマイズ</div>
     </div>
 
     <div style="text-align:center;margin-top:24px;font-size:11px;color:var(--text-light)">v4 (2026-03-12)</div>
@@ -617,14 +617,14 @@ textarea{resize:vertical;min-height:60px}
 <div class="modal-overlay" id="equipmentModal">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title">機材管理</div>
+    <div class="modal-title">荷物管理</div>
     <div id="equipmentList"></div>
     <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px">
       <div class="form-group">
-        <label class="form-label">新しい機材を追加</label>
+        <label class="form-label">新しい荷物を追加</label>
         <div style="display:flex;gap:8px">
           <input type="text" id="newEquipIcon" placeholder="📦" style="width:60px;text-align:center;font-size:20px">
-          <input type="text" id="newEquipName" placeholder="機材名（例: テント）" style="flex:1">
+          <input type="text" id="newEquipName" placeholder="荷物名（例: テント）" style="flex:1">
         </div>
       </div>
       <button class="btn btn-primary btn-small" onclick="addEquipment()">追加</button>
@@ -696,10 +696,10 @@ textarea{resize:vertical;min-height:60px}
     </div>
     <div class="form-group">
       <label class="form-label">PDF添付</label>
-      <div id="eventPdfPreview" style="margin-bottom:8px"></div>
-      <input type="file" id="eventPdfFile" accept=".pdf,application/pdf" onchange="previewEventPdf(this)" style="font-size:14px;width:100%">
-      <input type="hidden" id="eventPdfData">
-      <div style="font-size:12px;color:var(--text-light);margin-top:4px">5MB以内のPDFを添付できます</div>
+      <div id="eventPdfList" style="margin-bottom:8px"></div>
+      <input type="file" id="eventPdfFileInput" accept=".pdf,application/pdf" onchange="handlePdfAdd(this)" style="display:none" multiple>
+      <button type="button" class="btn btn-outline btn-small" onclick="document.getElementById('eventPdfFileInput').click()" style="width:auto;font-size:14px">+ PDFを追加</button>
+      <div style="font-size:12px;color:var(--text-light);margin-top:4px">5MB以内のPDFを複数添付できます</div>
     </div>
     <div class="form-group">
       <label class="form-label">試合/イベントURL</label>
@@ -801,7 +801,7 @@ textarea{resize:vertical;min-height:60px}
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title">📝 テンプレート編集</div>
-    <div style="font-size:12px;color:var(--text-sub);margin-bottom:12px">変数: {date}日付 {title}イベント名 {grade}学年 {url}URL {deadline}締切 {equip_icon}機材アイコン {equip_name}機材名 {unanswered_list}未回答者</div>
+    <div style="font-size:12px;color:var(--text-sub);margin-bottom:12px">変数: {date}日付 {title}イベント名 {grade}学年 {url}URL {deadline}締切 {equip_list}荷物リスト {equip_icons}荷物アイコン群 {equip_icon}荷物アイコン {equip_name}荷物名 {unanswered_list}未回答者</div>
     <div id="templateEditorContent"></div>
     <button class="btn btn-primary" onclick="saveTemplates()">保存</button>
     <button class="btn btn-outline" onclick="closeModal('templateEditorModal')" style="margin-top:8px">閉じる</button>
@@ -1671,7 +1671,7 @@ function renderEquipmentList() {
   const list = document.getElementById('equipmentList');
   const entries = Object.entries(equipmentTypesData).sort((a,b) => (a[1].order||0) - (b[1].order||0));
   if (entries.length === 0) {
-    list.innerHTML = '<div style="text-align:center;color:var(--text-sub);padding:16px">機材がまだ登録されていません</div>';
+    list.innerHTML = '<div style="text-align:center;color:var(--text-sub);padding:16px">荷物がまだ登録されていません</div>';
     return;
   }
   list.innerHTML = entries.map(([id, eq]) =>
@@ -1685,7 +1685,7 @@ function renderEquipmentList() {
 
 async function addEquipment() {
   const name = document.getElementById('newEquipName').value.trim();
-  if (!name) return showToast('機材名を入力してください', 'error');
+  if (!name) return showToast('荷物名を入力してください', 'error');
   const icon = document.getElementById('newEquipIcon').value.trim() || null;
   const order = Object.keys(equipmentTypesData).length + 1;
   const data = { name, order };
@@ -1723,17 +1723,23 @@ function renderSettings() {
 // ── Template Editor ──
 const TEMPLATE_DEFAULTS = {
   input_request: 'お疲れです。\n\n{grade}　{date} {title}の、参加・配車・帯同の入力をお願いします。\n{trial_info}{deadline_info}\n回答はこちらから:\n{url}\n\nよろしくお願いいたします。',
-  equip_nudge: 'お疲れさまです。\n\n試合荷物の「{equip_icon}{equip_name}」の所在が確認できていません。\n\nお持ち帰りいただいている方は、「{title}」の出欠回答で{equip_icon}ボタンを押していただけると助かります。',
-  unanswered_nudge: '【出欠未回答のお知らせ】\n⚽ {date} {title}\nまだ回答がありません:\n{unanswered_list}\nアプリから回答をお願いします\n{url}',
   line_assign_header: 'お疲れ様です。\n{date} {title}の配車案を作成しました。\nご確認をお願いいたします🙇\n{meet_time_line}何かありましたら、私までご連絡ください。',
+  line_meetup: 'お疲れさまです。\n【{title}／{date}】についてご連絡です。\n\n当日は○時ごろにお迎え予定です。\nよろしくお願いします。\n\n--- または ---\n\n当日は、○時ごろにお迎えで大丈夫でしょうか。\nよろしくお願いします。\n\n--- または ---\n\n当日は、どのようにしましょうか。\nご自宅まで伺うこともできますし、\nローソン・小学校・私の自宅まで来ていただく形でも大丈夫です。\nご都合の良い方法を教えてください。\nよろしくお願いします。',
+  line_parking: 'お疲れさまです。\n【{title}／{date}】ですが、うちも車を出して、周辺パーキングを利用しようと思います。\nよろしくお願いします。',
+  line_accident: 'お疲れさまです。\n本日、【{title}／{date}】の移動中に事故がありましたので、ご連絡いたします。\n\n【発生時間】○時○分ごろ\n【場所】○○\n【状況】○○\n【けが人】あり／なし\n【現在の状況】○○\n\n取り急ぎのご連絡となります。\n詳細が分かり次第、改めてご連絡いたします。',
+  equip_nudge: 'お疲れさまです。\n\n試合荷物の「{equip_list}」の所在が確認できていません。\n\nお持ち帰りいただいている方は、「{title}」の出欠回答で{equip_icons}ボタンを押していただけると助かります。\n\nよろしくお願いいたします。',
+  unanswered_nudge: '【出欠未回答のお知らせ】\n⚽ {date} {title}\nまだ回答がありません:\n{unanswered_list}\nアプリから回答をお願いします\n{url}',
   match_report_preamble: ''
 };
 
 const TEMPLATE_LABELS = {
   input_request: '入力依頼文',
+  line_assign_header: '配車決定後のLINEテンプレ（配車決定後）',
+  line_meetup: '配車決定後のLINEテンプレ（担当→同乗者）',
+  line_parking: '配車決定後のLINEテンプレ（同乗者→担当）',
+  line_accident: '配車決定後のLINEテンプレ（事故連絡）',
   equip_nudge: '荷物所有者確認',
   unanswered_nudge: '未回答に催促',
-  line_assign_header: '配車決定後のLINEテンプレ（ヘッダー）',
   match_report_preamble: '試合レポート（締めの言葉）'
 };
 
@@ -2056,7 +2062,10 @@ function showEventDetail(id) {
     ${e.match_url ? `<div style="margin-top:8px;font-size:13px"><a href="${escapeHtml(e.match_url)}" target="_blank" rel="noopener" style="color:var(--accent)">🔗 試合詳細ページを開く</a></div>` : ''}
     ${e.note ? `<div style="margin-top:8px;font-size:13px;white-space:pre-wrap;color:var(--text)">${escapeHtml(e.note)}</div>` : ''}
   </div>`;
-  if (e.pdf_data) html += `<div class="card"><button onclick="openEventPdf('${id}')" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--accent);padding:0">📄 添付PDFを見る</button></div>`;
+  const _pdfs = e.pdf_files || (e.pdf_data ? [{name:'添付PDF', data: e.pdf_data}] : []);
+  if (_pdfs.length > 0) {
+    html += `<div class="card">${_pdfs.map((pdf, idx) => `<div style="margin-bottom:4px"><button onclick="openEventPdfByIndex('${id}',${idx})" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--accent);padding:0">📄 ${escapeHtml(pdf.name || '添付PDF'+(idx+1))}</button></div>`).join('')}</div>`;
+  }
 
   // ② 出欠回答ボタン
   if (!isPast) {
@@ -2157,6 +2166,21 @@ function showEventDetail(id) {
       }
     }
 
+    // 試合イベント: ⛺🪑🩹🧺の4点チェック（荷物管理に登録済みかつ未確保）
+    const REQUIRED_MATCH_ICONS = ['⛺', '🪑', '🩹', '🧺'];
+    let hasMatchEquipMissing = false;
+    if (e.type === 'match' && Object.keys(equipmentTypesData).length > 0) {
+      const coveredEids = new Set();
+      Object.entries(rsvp).forEach(([, r]) => {
+        if (r.attending !== true || !r.bring_equipment) return;
+        Object.keys(r.bring_equipment).forEach(eid => { if (r.bring_equipment[eid]) coveredEids.add(eid); });
+      });
+      REQUIRED_MATCH_ICONS.forEach(icon => {
+        const eids = Object.entries(equipmentTypesData).filter(([, eq]) => (eq.icon || '') === icon).map(([eid]) => eid);
+        if (eids.length > 0 && !eids.some(eid => coveredEids.has(eid))) hasMatchEquipMissing = true;
+      });
+    }
+
     html += `<div class="card">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap">
         <span style="font-size:14px;font-weight:700">回答 ${answeredCount}/${totalMembers}</span>
@@ -2168,10 +2192,9 @@ function showEventDetail(id) {
       ${equipStr ? `<div style="font-size:12px;color:var(--text-sub);margin-bottom:6px">${equipStr}</div>` : ''}
       <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
         ${e.status === 'open' && drivers > 0 ? `<button class="btn btn-primary btn-small" onclick="showDriverSelection('${id}')" style="flex:1;font-size:14px">🚗 配車を決める</button>` : ''}
-        ${hasUnassignedEquip ? `<button class="btn btn-outline btn-small" onclick="generateEquipNudgeText('${id}')" style="flex:1;font-size:13px">📦 荷物所有者確認</button>` : ''}
+        ${(hasUnassignedEquip || hasMatchEquipMissing) ? `<button class="btn btn-outline btn-small" onclick="generateEquipNudgeText('${id}')" style="flex:1;font-size:13px">📦 荷物所有者確認</button>` : ''}
       </div>
       ${unansweredCount > 0 && e.status === 'open' ? `<div style="margin-top:6px"><button class="btn btn-outline btn-small" onclick="generateNudgeText('${id}')" style="width:100%;font-size:12px">📢 未回答に催促（${unansweredCount}人）</button></div>` : ''}
-      ${hasEquipment && !hasUnassignedEquip ? `<div style="margin-top:6px"><button class="btn btn-outline btn-small" onclick="generateEquipNudgeText('${id}')" style="width:100%;font-size:12px">📦 荷物の所在確認</button></div>` : ''}
     </div>`;
   }
 
@@ -2654,10 +2677,9 @@ function openEventModal(eventId) {
     document.getElementById('eventMaxCars').value = e.max_cars || '';
     document.getElementById('eventMatchUrl').value = e.match_url || '';
     document.getElementById('eventNote').value = e.note || '';
-    const pdfSrc = e.pdf_data || '';
-    document.getElementById('eventPdfData').value = pdfSrc;
-    document.getElementById('eventPdfFile').value = '';
-    document.getElementById('eventPdfPreview').innerHTML = pdfSrc ? '<div style="font-size:13px;color:var(--accent)">📄 PDF添付済み　<button type="button" onclick="clearEventPdf()" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:12px">削除</button></div>' : '';
+    window._eventPdfs = e.pdf_files ? JSON.parse(JSON.stringify(e.pdf_files)) : (e.pdf_data ? [{name:'添付PDF', data: e.pdf_data}] : []);
+    document.getElementById('eventPdfFileInput').value = '';
+    renderEventPdfList();
     // Restore grade selection
     const tg = e.target_grades || [];
     document.querySelectorAll('#eventGradeChoices .checkbox-item').forEach(el => {
@@ -2673,46 +2695,69 @@ function openEventModal(eventId) {
     document.getElementById('eventMaxCars').value = '';
     document.getElementById('eventMatchUrl').value = '';
     document.getElementById('eventNote').value = '';
-    document.getElementById('eventPdfData').value = '';
-    document.getElementById('eventPdfFile').value = '';
-    document.getElementById('eventPdfPreview').innerHTML = '';
+    window._eventPdfs = [];
+    document.getElementById('eventPdfFileInput').value = '';
+    renderEventPdfList();
     document.querySelectorAll('#eventGradeChoices .checkbox-item').forEach(el => el.classList.remove('checked'));
   }
   openModal('eventModal');
 }
 
-function previewEventPdf(input) {
-  const file = input.files[0];
-  if (!file) return;
-  if (file.size > 5 * 1024 * 1024) {
-    showToast('5MB以内のPDFを選択してください', 'error');
-    input.value = '';
-    return;
-  }
-  const reader = new FileReader();
-  reader.onload = ev => {
-    document.getElementById('eventPdfData').value = ev.target.result;
-    document.getElementById('eventPdfPreview').innerHTML = `<div style="font-size:13px;color:var(--accent)">📄 ${escapeHtml(file.name)}　<button type="button" onclick="clearEventPdf()" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:12px">削除</button></div>`;
-  };
-  reader.readAsDataURL(file);
+function renderEventPdfList() {
+  const list = document.getElementById('eventPdfList');
+  if (!list) return;
+  const pdfs = window._eventPdfs || [];
+  if (pdfs.length === 0) { list.innerHTML = ''; return; }
+  list.innerHTML = pdfs.map((pdf, idx) => `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:13px;color:var(--accent)">
+    📄 ${escapeHtml(pdf.name || 'PDF'+(idx+1))}
+    <button type="button" onclick="removeEventPdf(${idx})" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:12px">削除</button>
+  </div>`).join('');
 }
 
-function clearEventPdf() {
-  document.getElementById('eventPdfData').value = '';
-  document.getElementById('eventPdfFile').value = '';
-  document.getElementById('eventPdfPreview').innerHTML = '';
+function handlePdfAdd(input) {
+  const files = Array.from(input.files || []);
+  if (!window._eventPdfs) window._eventPdfs = [];
+  let pending = files.length;
+  if (pending === 0) return;
+  files.forEach(file => {
+    if (file.size > 5 * 1024 * 1024) {
+      showToast(`${file.name}: 5MB以内のPDFを選択してください`, 'error');
+      pending--;
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = ev => {
+      window._eventPdfs.push({ name: file.name, data: ev.target.result });
+      renderEventPdfList();
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
 }
 
-function openEventPdf(eventId) {
+function removeEventPdf(idx) {
+  if (!window._eventPdfs) return;
+  window._eventPdfs.splice(idx, 1);
+  renderEventPdfList();
+}
+
+function openEventPdfByIndex(eventId, idx) {
   const e = eventsData[eventId];
-  if (!e?.pdf_data) return;
-  const [, base64] = e.pdf_data.split(',');
+  if (!e) return;
+  const pdfs = e.pdf_files || (e.pdf_data ? [{name:'添付PDF', data: e.pdf_data}] : []);
+  const pdf = pdfs[idx];
+  if (!pdf?.data) return;
+  const [, base64] = pdf.data.split(',');
   const bytes = atob(base64);
   const byteArray = new Uint8Array(bytes.length);
   for (let i = 0; i < bytes.length; i++) byteArray[i] = bytes.charCodeAt(i);
   const blob = new Blob([byteArray], { type: 'application/pdf' });
   const url = URL.createObjectURL(blob);
   window.open(url, '_blank');
+}
+
+function openEventPdf(eventId) {
+  openEventPdfByIndex(eventId, 0);
 }
 
 function showLocSuggestions() {
@@ -2762,7 +2807,7 @@ async function saveEvent() {
   const rsvpDeadline = document.getElementById('eventRsvpDeadline').value || '';
   const matchUrl = document.getElementById('eventMatchUrl').value.trim();
   const note = document.getElementById('eventNote').value.trim();
-  const pdfData = document.getElementById('eventPdfData').value;
+  const pdfData = null; // legacy field unused now
 
   // Collect target grades
   const targetGrades = [];
@@ -2782,7 +2827,7 @@ async function saveEvent() {
     target_grades: targetGrades.length > 0 ? targetGrades : null,
     match_url: matchUrl || null,
     note: note || null,
-    pdf_data: pdfData || null
+    pdf_files: (window._eventPdfs && window._eventPdfs.length > 0) ? window._eventPdfs : null
   };
 
   try {
@@ -3246,42 +3291,70 @@ function generateNudgeText(eventId) {
 // ── Equipment Nudge Text ──
 function generateEquipNudgeText(eventId) {
   const e = eventsData[eventId];
-  if (!e || !e.equipment_needed) return;
+  if (!e) return;
   const rsvp = e.rsvp || {};
-  const eqAssigned = {};
-  Object.entries(rsvp).forEach(([mid, r]) => {
+
+  // RSVPで持参確定済みのEID
+  const coveredEids = new Set();
+  Object.entries(rsvp).forEach(([, r]) => {
     if (r.attending !== true || !r.bring_equipment) return;
-    Object.keys(r.bring_equipment).forEach(eid => {
-      if (r.bring_equipment[eid]) eqAssigned[eid] = (eqAssigned[eid] || 0) + 1;
+    Object.keys(r.bring_equipment).forEach(eid => { if (r.bring_equipment[eid]) coveredEids.add(eid); });
+  });
+
+  const missingSet = new Map(); // eid → {icon, name}
+
+  // equipment_neededから
+  if (e.equipment_needed) {
+    const eqAssigned = {};
+    Object.entries(rsvp).forEach(([, r]) => {
+      if (r.attending !== true || !r.bring_equipment) return;
+      Object.keys(r.bring_equipment).forEach(eid => { if (r.bring_equipment[eid]) eqAssigned[eid] = (eqAssigned[eid] || 0) + 1; });
     });
-  });
+    Object.entries(e.equipment_needed).forEach(([eid, qty]) => {
+      if ((eqAssigned[eid] || 0) < qty) {
+        const eq = equipmentTypesData[eid];
+        missingSet.set(eid, { icon: eq?.icon || getEquipIcon(eid), name: eq?.name || eid });
+      }
+    });
+  }
 
-  const missingItems = [];
-  Object.entries(e.equipment_needed).forEach(([eid, qty]) => {
-    const have = eqAssigned[eid] || 0;
-    if (have < qty) {
-      const eq = equipmentTypesData[eid];
-      const icon = eq?.icon || getEquipIcon(eid);
-      const name = eq?.name || eid;
-      missingItems.push({ eid, icon, name, missing: qty - have });
-    }
-  });
-  if (missingItems.length === 0) { showToast('備品は全て揃っています！'); return; }
+  // 試合イベント: ⛺🪑🩹🧺の4点チェック
+  const REQUIRED_MATCH_ICONS = ['⛺', '🪑', '🩹', '🧺'];
+  if (e.type === 'match' && Object.keys(equipmentTypesData).length > 0) {
+    REQUIRED_MATCH_ICONS.forEach(icon => {
+      const eids = Object.entries(equipmentTypesData).filter(([, eq]) => (eq.icon || '') === icon).map(([eid]) => eid);
+      eids.forEach(eid => {
+        if (!coveredEids.has(eid) && !missingSet.has(eid)) {
+          const eq = equipmentTypesData[eid];
+          missingSet.set(eid, { icon: eq?.icon || icon, name: eq?.name || eid });
+        }
+      });
+    });
+  }
 
-  const tpl = (templatesData?.equip_nudge) || 'お疲れさまです。\n\n試合荷物の「{equip_icon}{equip_name}」の所在が確認できていません。\n\nお持ち帰りいただいている方は、「{title}」の出欠回答で{equip_icon}ボタンを押していただけると助かります。';
-  const messages = missingItems.map(item =>
-    tpl.replace(/\{equip_icon\}/g, item.icon).replace(/\{equip_name\}/g, item.name).replace(/\{title\}/g, e.title || 'この試合')
-  );
-  const text = messages.join('\n\n---\n\n');
+  const missingItems = [...missingSet.values()];
+  if (missingItems.length === 0) { showToast('荷物は全て揃っています！'); return; }
+
+  const equip_list = missingItems.map(i => `${i.icon}${i.name}`).join('・');
+  const equip_icons = missingItems.map(i => i.icon).join('');
+  const first = missingItems[0];
+
+  const tpl = (templatesData?.equip_nudge) || TEMPLATE_DEFAULTS.equip_nudge;
+  const text = tpl
+    .replace(/\{equip_list\}/g, equip_list)
+    .replace(/\{equip_icons\}/g, equip_icons)
+    .replace(/\{equip_icon\}/g, first.icon)
+    .replace(/\{equip_name\}/g, first.name)
+    .replace(/\{title\}/g, e.title || 'この試合');
 
   navigator.clipboard.writeText(text).then(() => {
-    showToast('催促テキストをコピーしました');
+    showToast('荷物所有者確認テキストをコピーしました');
   }).catch(() => {
     const ta = document.createElement('textarea');
     ta.value = text; document.body.appendChild(ta);
     ta.select(); document.execCommand('copy');
     document.body.removeChild(ta);
-    showToast('催促テキストをコピーしました');
+    showToast('荷物所有者確認テキストをコピーしました');
   });
 }
 
@@ -3536,7 +3609,7 @@ function showDriverSelection(eventId) {
       <div style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="toggleDriverCandidate('${c.id}','${eventId}')">
         <span style="font-size:18px">${isSelected ? '☑️' : '⬜'}</span>
         <div style="flex:1">
-          <div style="font-weight:600;font-size:14px">${zoneDot}${escapeHtml(c.name)}${zone ? ' <span style="font-size:11px;color:var(--text-sub)">(' + escapeHtml(zone.name) + ')</span>' : ''}${transportMark}</div>
+          <div style="font-weight:600;font-size:14px">${zoneDot}${escapeHtml(c.name)}${transportMark}</div>
           <div style="font-size:12px;color:var(--text-sub);margin-top:2px">
             ${c.seats}席空き${seatsFull ? '（満席）' : ''}${c.family_count > 1 ? ' / 家族' + c.family_count + '人' : ''}
             ${eqBadge}${largeBadge}${csBadge}${nearParkBadge}
@@ -3731,10 +3804,13 @@ function renderManualAssignUI(eventId) {
     const mem = membersData[d.id];
     const driverPreschool = rsvp[d.id]?.preschool_count || 0;
     const availCS = Math.max(0, (mem?.childseat_count || 0) - driverPreschool);
+    const dEquip = d.equipment || {};
+    const dEquipIcons = Object.keys(dEquip).filter(eid => dEquip[eid]).map(eid => getEquipIcon(eid)).join('');
+    const isNearby = window._parkingChoices?.[d.id] === 'nearby';
     html += `<div style="background:var(--bg);border-radius:var(--radius);padding:8px 12px;font-size:13px;margin-bottom:4px">
-      ${zoneDot}<strong>${escapeHtml(d.name)}号</strong>
+      ${zoneDot}<strong>${escapeHtml(d.name)}号</strong>${dEquipIcons ? `　${dEquipIcons}` : ''}${isNearby ? `　<span style="color:var(--warning);font-size:12px">ただし近隣</span>` : ''}
       <span style="color:${color};margin-left:6px">空き${avail}席</span>
-      ${availCS > 0 ? `<span style="color:var(--text-light);font-size:11px">（🧸CS空き${availCS}席）</span>` : ''}
+      ${availCS > 0 ? `<span style="font-size:11px;background:#E3F2FD;color:#1565C0;padding:1px 6px;border-radius:6px;margin-left:4px">🧸CS${availCS}あり</span>` : ''}
     </div>`;
   });
   html += '</div>';
@@ -3784,12 +3860,17 @@ function renderManualAssignUI(eventId) {
           const riderSeats = r.seats_needed || r.family_count || 1;
           const wouldOverflow = !isCurrent && avail < riderSeats;
           const driverMem = membersData[d.id];
-          const isNearby = mem?.nearby_members?.includes(d.id) || driverMem?.nearby_members?.includes(r.id);
-          const nearLabel = isNearby ? '　近い' : '';
+          const isNearbyMember = mem?.nearby_members?.includes(d.id) || driverMem?.nearby_members?.includes(r.id);
+          const nearLabel = isNearbyMember ? '　近い' : '';
           const dPreschool = rsvp[d.id]?.preschool_count || 0;
           const dAvailCS = Math.max(0, (driverMem?.childseat_count || 0) - dPreschool);
-          const csLabel = dAvailCS > 0 ? `　🧸CS${dAvailCS}席` : '';
-          return `<option value="${d.id}" ${isCurrent ? 'selected' : ''} ${wouldOverflow ? 'disabled' : ''}>${escapeHtml(d.name)}号（空き${avail}席）${csLabel}${nearLabel}${wouldOverflow ? '※満席' : ''}</option>`;
+          const csLabel = dAvailCS > 0 ? `　🧸CS${dAvailCS}あり` : '';
+          const dEquip = d.equipment || {};
+          const dEquipIcons = Object.keys(dEquip).filter(eid => dEquip[eid]).map(eid => getEquipIcon(eid)).join('');
+          const equipLabel = dEquipIcons ? `　${dEquipIcons}` : '';
+          const isNearbyPark = window._parkingChoices?.[d.id] === 'nearby';
+          const nearbyParkLabel = isNearbyPark ? '　ただし近隣' : '';
+          return `<option value="${d.id}" ${isCurrent ? 'selected' : ''} ${wouldOverflow ? 'disabled' : ''}>${escapeHtml(d.name)}号${equipLabel}${nearbyParkLabel}（空き${avail}席）${csLabel}${nearLabel}${wouldOverflow ? '※満席' : ''}</option>`;
         }).join('')}
       </select>
     </div>`;
@@ -4168,16 +4249,25 @@ async function confirmAssignment(eventId) {
     warnings: a.warnings,
     drivers: {},
     direct: {},
-    unassigned: {}
+    unassigned: {},
+    parking_choices: window._parkingChoices || {}
   };
 
   a.drivers.forEach(d => {
+    const dRsvp = eventsData[eventId]?.rsvp?.[d.id] || {};
     assignData.drivers[d.id] = {
-      passengers: d.passengers.map(p => ({
-        id: p.id, name: p.name, with_parent: p.with_parent,
-        family_count: p.family_count, seats_needed: p.seats_needed
-      })),
-      equipment: d.assigned_equipment || []
+      passengers: d.passengers.map(p => {
+        const pRsvp = eventsData[eventId]?.rsvp?.[p.id] || {};
+        return {
+          id: p.id, name: p.name, with_parent: p.with_parent,
+          family_count: p.family_count, seats_needed: p.seats_needed,
+          adult_count: pRsvp.adult_count || 0,
+          child_count: pRsvp.child_count || 0,
+          preschool_count: pRsvp.preschool_count || 0
+        };
+      }),
+      equipment: d.assigned_equipment || [],
+      bring_equipment: dRsvp.bring_equipment || {}
     };
   });
   a.directs.forEach(d => { assignData.direct[d.id] = true; });
@@ -4236,16 +4326,25 @@ async function saveEditedAssignment(eventId) {
     warnings: a.warnings,
     drivers: {},
     direct: {},
-    unassigned: {}
+    unassigned: {},
+    parking_choices: window._parkingChoices || {}
   };
 
   a.drivers.forEach(d => {
+    const dRsvp = eventsData[eventId]?.rsvp?.[d.id] || {};
     assignData.drivers[d.id] = {
-      passengers: d.passengers.map(p => ({
-        id: p.id, name: p.name, with_parent: p.with_parent,
-        family_count: p.family_count, seats_needed: p.seats_needed
-      })),
-      equipment: d.assigned_equipment || []
+      passengers: d.passengers.map(p => {
+        const pRsvp = eventsData[eventId]?.rsvp?.[p.id] || {};
+        return {
+          id: p.id, name: p.name, with_parent: p.with_parent,
+          family_count: p.family_count, seats_needed: p.seats_needed,
+          adult_count: pRsvp.adult_count || 0,
+          child_count: pRsvp.child_count || 0,
+          preschool_count: pRsvp.preschool_count || 0
+        };
+      }),
+      equipment: d.assigned_equipment || [],
+      bring_equipment: dRsvp.bring_equipment || {}
     };
   });
   a.directs.forEach(d => { assignData.direct[d.id] = true; });
@@ -4429,42 +4528,53 @@ function generateLineTemplateAssign(eventId) {
       if (!mem) return;
       driversToRender.push({
         id: did, name: mem.name, zone_id: mem.zone_id || '',
-        passengers: d.passengers || [], assigned_equipment: d.equipment || []
+        passengers: d.passengers || [], assigned_equipment: d.equipment || [],
+        bring_equipment: d.bring_equipment || {}
       });
     });
   }
 
   const NUM_EMOJIS = ['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
 
-  // Build passenger text for a driver (with equipment icons+names)
+  // Build passenger text for a driver (with family details + equipment icons)
   function driverLine(d) {
-    // Equipment icons+names for this driver
-    let equipStr = '';
-    if (d.assigned_equipment && d.assigned_equipment.length > 0) {
-      equipStr = d.assigned_equipment.map(eid => {
-        const eq = equipmentTypesData[eid];
-        if (!eq) return '';
-        return getEquipIcon(eid) + (eq.name || '');
-      }).filter(Boolean).join('');
-      if (equipStr) equipStr = '　' + equipStr;
+    // Equipment icons: prefer d.bring_equipment (stored) then rsvp, then assigned_equipment
+    const bringEq = d.bring_equipment || rsvp[d.id]?.bring_equipment || {};
+    let equipIcons = Object.keys(bringEq).filter(eid => bringEq[eid]).map(eid => getEquipIcon(eid)).join('');
+    if (!equipIcons && d.assigned_equipment && d.assigned_equipment.length > 0) {
+      equipIcons = d.assigned_equipment.map(eid => getEquipIcon(eid)).join('');
     }
+    const equipStr = equipIcons ? `　${equipIcons}` : '';
+
     const passengers = [];
     d.passengers.forEach(p => {
-      let label = p.name;
-      const r = rsvp[p.id];
-      if (r?.preschool_count > 0) label += `　※内未就学児${r.preschool_count}名`;
-      passengers.push(label);
+      // Use stored family data (p.adult_count etc.) or fall back to rsvp
+      const pr = rsvp[p.id] || {};
+      const adults = p.adult_count ?? pr.adult_count ?? 0;
+      const children = p.child_count ?? pr.child_count ?? 0;
+      const preschool = p.preschool_count ?? pr.preschool_count ?? 0;
+      const parts = [];
+      if (adults > 0) parts.push(`親${adults}`);
+      if (children > 0) parts.push(`子${children}`);
+      if (preschool > 0) parts.push(`未就学${preschool}`);
+      const detail = parts.length > 0 ? `（${parts.join('')}）` : '';
+      passengers.push(`${p.name}${detail}`);
     });
     const passengerStr = passengers.length > 0 ? `同乗者：${passengers.join('、')}` : '同乗者：なし';
     return passengerStr + equipStr;
   }
 
-  // Separate venue parking vs no-parking drivers
-  let venueParkingDrivers = driversToRender;
-  let noParkingDrivers = [];
-  if (maxCars > 0 && driversToRender.length > maxCars) {
+  // Separate venue parking vs nearby parking drivers
+  const storedParkChoices = e.assignments?.parking_choices || {};
+  const parkChoices = (a && window._parkingChoices && Object.keys(window._parkingChoices).length > 0)
+    ? window._parkingChoices
+    : storedParkChoices;
+  let venueParkingDrivers = driversToRender.filter(d => (parkChoices[d.id] || 'venue') !== 'nearby');
+  let nearbyParkingDrivers = driversToRender.filter(d => parkChoices[d.id] === 'nearby');
+  // Fallback: if no parking data, use maxCars split
+  if (Object.keys(parkChoices).length === 0 && maxCars > 0 && driversToRender.length > maxCars) {
     venueParkingDrivers = driversToRender.slice(0, maxCars);
-    noParkingDrivers = driversToRender.slice(maxCars);
+    nearbyParkingDrivers = driversToRender.slice(maxCars);
   }
 
   // 【会場駐車場利用】
@@ -4477,10 +4587,10 @@ function generateLineTemplateAssign(eventId) {
     text += '\n';
   }
 
-  // 【駐車場利用なし】
-  if (noParkingDrivers.length > 0) {
-    text += `【駐車場利用なし】\n`;
-    noParkingDrivers.forEach(d => {
+  // 【近隣駐車場利用】
+  if (nearbyParkingDrivers.length > 0) {
+    text += `【近隣駐車場利用】\n`;
+    nearbyParkingDrivers.forEach(d => {
       text += `・${d.name}号　${driverLine(d)}\n`;
     });
     text += '\n';
@@ -4531,42 +4641,23 @@ function generateLineTemplateMeetup(eventId) {
   const e = eventsData[eventId];
   if (!e) return '';
   const dateStr = formatEventDate(e.date);
-  let text = `お疲れさまです。\n`;
-  text += `【${e.title || '○○大会'}／${dateStr}】についてご連絡です。\n\n`;
-  text += `当日は○時ごろにお迎え予定です。\nよろしくお願いします。\n\n`;
-  text += `--- または ---\n\n`;
-  text += `当日は、○時ごろにお迎えで大丈夫でしょうか。\nよろしくお願いします。\n\n`;
-  text += `--- または ---\n\n`;
-  text += `当日は、どのようにしましょうか。\n`;
-  text += `ご自宅まで伺うこともできますし、\n`;
-  text += `ローソン・小学校・私の自宅まで来ていただく形でも大丈夫です。\n`;
-  text += `ご都合の良い方法を教えてください。\nよろしくお願いします。`;
-  return text;
+  const tpl = (templatesData?.line_meetup) || TEMPLATE_DEFAULTS.line_meetup;
+  return tpl.replace(/\{title\}/g, e.title || '○○大会').replace(/\{date\}/g, dateStr);
 }
 
 function generateLineTemplateParking(eventId) {
   const e = eventsData[eventId];
   if (!e) return '';
   const dateStr = formatEventDate(e.date);
-  let text = `お疲れさまです。\n`;
-  text += `【${e.title || '○○大会'}／${dateStr}】ですが、うちも車を出して、周辺パーキングを利用しようと思います。\n`;
-  text += `よろしくお願いします。`;
-  return text;
+  const tpl = (templatesData?.line_parking) || TEMPLATE_DEFAULTS.line_parking;
+  return tpl.replace(/\{title\}/g, e.title || '○○大会').replace(/\{date\}/g, dateStr);
 }
 
 function generateLineTemplateAccident(eventId) {
   const e = eventsData[eventId];
   const dateStr = e ? formatEventDate(e.date) : '本日';
-  let text = `お疲れさまです。\n`;
-  text += `本日、【${e ? (e.title || '○○大会') : '○○大会'}／${dateStr}】の移動中に事故がありましたので、ご連絡いたします。\n\n`;
-  text += `【発生時間】○時○分ごろ\n`;
-  text += `【場所】○○\n`;
-  text += `【状況】○○\n`;
-  text += `【けが人】あり／なし\n`;
-  text += `【現在の状況】○○\n\n`;
-  text += `取り急ぎのご連絡となります。\n`;
-  text += `詳細が分かり次第、改めてご連絡いたします。`;
-  return text;
+  const tpl = (templatesData?.line_accident) || TEMPLATE_DEFAULTS.line_accident;
+  return tpl.replace(/\{title\}/g, e ? (e.title || '○○大会') : '○○大会').replace(/\{date\}/g, dateStr);
 }
 
 function switchLineTemplate(type) {
