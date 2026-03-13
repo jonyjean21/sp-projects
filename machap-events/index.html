@@ -1061,7 +1061,7 @@ select.form-input { appearance: auto; }
           </div>
           <div class="role-r" style="border-left:3px solid var(--accent);padding-left:10px;">
             <div class="role-nm">ナカ</div>
-            <div class="role-d">プロジェクト責任者・業者連携・主催者調整・気球代立替</div>
+            <div class="role-d">プロジェクト責任者・業者連携・主催者調整</div>
             <div class="role-c">電話+対面</div>
           </div>
           <div class="role-r" style="border-left:3px solid var(--green);padding-left:10px;">
@@ -1845,7 +1845,7 @@ async function loadBudgetDisplay() {
       <div class="bud-box bal"><div class="bud-v">${fmtK(balance)}</div><div class="bud-l">差額</div></div>
     </div>
     <div style="font-size:0.74rem;padding:8px 12px;background:var(--yellow-light);border-radius:8px;margin-bottom:14px;color:var(--text);">
-      PTA予算の補填額が不明のため仮の数字。正確な乗船料も未確定
+      主催者負担金110万円確定。チケット金額・予約者数は主催者に確認中
     </div>
     <div style="font-weight:600;font-size:0.78rem;margin-bottom:6px;color:var(--green);">収入</div>
     <div class="bud-detail">${incHtml}</div>
@@ -2023,7 +2023,8 @@ async function autoSeed() {
     tbd05: { title:'追加集客するか・応募フォーム要否', who:'ナカ→主催者確認', category:'集客', priority:'medium', deadline:'2026-03-20', why:'回覧板で予約を募っているが、追加でSNS等で集客する場合の受け皿が必要かもしれない', options:['回覧板のみで十分（フォーム不要）','SNS告知＋Web応募フォーム（SP構築）','SNS告知のみ（DM/電話で予約受付）'], status:'open' },
     tbd06: { title:'Tシャツ作成の最終判断', who:'SP×ナカで決定', category:'スタッフ', priority:'medium', deadline:'2026-03-22', why:'ナカは作りたい派。発注から納品まで2〜3週間のリードタイム。3/22に決めないと4/12に間に合わない', options:['作る（モルックドームでデザイン・発注）','作らない（私服＋ビブスやネームプレート）','簡易ビブスのみ（低コスト）'], status:'open' },
     tbd07: { title:'PTA予算の金額と使い道', who:'ナカ→主催者確認', category:'収支', priority:'high', deadline:'2026-03-27', why:'現在-35万円の赤字見込み。PTA予算で小学生の乗船料が補填されれば収支が大きく改善する可能性がある', options:['打ち合わせで直接確認'], status:'open' },
-    tbd08: { title:'気球代110万円の精算方法・タイミング', who:'SP×ナカで決定', category:'収支', priority:'medium', deadline:'2026-03-27', why:'ナカが110万円を立替中。精算タイミングと方法を明確にしておく', options:['イベント当日に現金で精算','イベント後1週間以内に振込','収益から差し引いて精算'], status:'open' },
+    tbd08: { title:'気球代110万円の精算方法・タイミング', who:'SP×ナカで決定', category:'収支', priority:'medium', deadline:'2026-03-27', why:'主催者が110万円を負担することが確定。精算タイミングと方法を明確にしておく', options:['イベント当日に現金で精算','イベント後1週間以内に振込','収益から差し引いて精算'], status:'resolved', resolvedNote:'主催者が110万円全額負担することが確定' },
+    tbd11: { title:'主催者のチケット金額と予約者数', who:'ナカ→主催者確認', category:'収支', priority:'high', deadline:'2026-03-27', why:'主催者がお客さんに何円でチケットを売るか、現在何名予約が入っているかが不明。実際の入場者数・収支予測に影響する', options:['打ち合わせ（3/27）で直接確認'], status:'open' },
     tbd09: { title:'プロカメラマン撮影の判断', who:'SP×ナカで決定', category:'コンテンツ', priority:'low', deadline:'2026-04-01', why:'費用10万円。次回告知素材として非常に価値が高い。ナカも「できれば楽しそう」とのこと', options:['依頼する（編集込み10万円）','スタッフが撮影（コスト0）','予算確定後に判断（3/27以降）'], status:'open' },
     tbd10: { title:'SPとの収益按分', who:'SP×ナカで決定', category:'収支', priority:'low', deadline:'2026-04-05', why:'MACHAP初プロジェクトとしての事業性。今後のイベントの基準にもなる', options:['利益折半','SP固定報酬（金額要相談）','成果報酬型','今回はボランティア（実績優先）'], status:'open' },
   });
@@ -2040,6 +2041,7 @@ async function autoSeed() {
       i001: { name:'大人乗船料', amount:525000, status:'見込み' },
       i002: { name:'子供乗船料（一般）', amount:45000, status:'見込み' },
       i003: { name:'スタッフ参加費', amount:200000, status:'見込み' },
+      i004: { name:'主催者負担金（気球代）', amount:1100000, status:'確定' },
     },
     expense: {
       e001: { name:'気球2機', amount:1100000, status:'確定' },
