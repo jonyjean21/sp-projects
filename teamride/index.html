@@ -1729,7 +1729,8 @@ const TEMPLATE_DEFAULTS = {
   line_accident: 'お疲れさまです。\n本日、【{title}／{date}】の移動中に事故がありましたので、ご連絡いたします。\n\n【発生時間】○時○分ごろ\n【場所】○○\n【状況】○○\n【けが人】あり／なし\n【現在の状況】○○\n\n取り急ぎのご連絡となります。\n詳細が分かり次第、改めてご連絡いたします。',
   equip_nudge: 'お疲れさまです。\n\n試合荷物の「{equip_list}」の所在が確認できていません。\n\nお持ち帰りいただいている方は、「{title}」の出欠回答で{equip_icons}ボタンを押していただけると助かります。\n\nよろしくお願いいたします。',
   unanswered_nudge: '【出欠未回答のお知らせ】\n⚽ {date} {title}\nまだ回答がありません:\n{unanswered_list}\nアプリから回答をお願いします\n{url}',
-  match_report_preamble: ''
+  match_report_template: 'お疲れ様です。\n\n{date}、{name}に参加してきました⚽️\n\n【試合結果】\n{results}\n{memo}',
+  line_assign_notes: '※学年荷物が割り当て車両に積めない場合は、ご連絡ください。\n※会場駐車場利用の同乗者の方も、各家庭でご相談のうえ、ご都合に合わせて各自で車を出し、周辺パーキングをご利用いただいても大丈夫です。\n※会場駐車場を利用する方は、駐車整理券を印刷のうえ、当日ご提示ください。印刷が難しい方は、ご連絡ください。'
 };
 
 const TEMPLATE_LABELS = {
@@ -1740,7 +1741,8 @@ const TEMPLATE_LABELS = {
   line_accident: '配車決定後のLINEテンプレ（事故連絡）',
   equip_nudge: '荷物所有者確認',
   unanswered_nudge: '未回答に催促',
-  match_report_preamble: '試合レポート（締めの言葉）'
+  match_report_template: '試合レポート（全体構成）',
+  line_assign_notes: '配車決定後のLINEテンプレ（注意事項）'
 };
 
 function openTemplateEditor() {
@@ -2168,6 +2170,7 @@ function showEventDetail(id) {
 
     // 試合イベント: ⛺🪑🩹🧺の4点チェック（荷物管理に登録済みかつ未確保）
     const REQUIRED_MATCH_ICONS = ['⛺', '🪑', '🩹', '🧺'];
+    const normalizeEmoji = s => s.replace(/\uFE0F/g, '');
     let hasMatchEquipMissing = false;
     if (e.type === 'match' && Object.keys(equipmentTypesData).length > 0) {
       const coveredEids = new Set();
@@ -2176,7 +2179,7 @@ function showEventDetail(id) {
         Object.keys(r.bring_equipment).forEach(eid => { if (r.bring_equipment[eid]) coveredEids.add(eid); });
       });
       REQUIRED_MATCH_ICONS.forEach(icon => {
-        const eids = Object.entries(equipmentTypesData).filter(([, eq]) => (eq.icon || '') === icon).map(([eid]) => eid);
+        const eids = Object.entries(equipmentTypesData).filter(([, eq]) => normalizeEmoji(eq.icon || '') === normalizeEmoji(icon)).map(([eid]) => eid);
         if (eids.length > 0 && !eids.some(eid => coveredEids.has(eid))) hasMatchEquipMissing = true;
       });
     }
@@ -3320,9 +3323,10 @@ function generateEquipNudgeText(eventId) {
 
   // 試合イベント: ⛺🪑🩹🧺の4点チェック
   const REQUIRED_MATCH_ICONS = ['⛺', '🪑', '🩹', '🧺'];
+  const normalizeEmoji = s => s.replace(/\uFE0F/g, '');
   if (e.type === 'match' && Object.keys(equipmentTypesData).length > 0) {
     REQUIRED_MATCH_ICONS.forEach(icon => {
-      const eids = Object.entries(equipmentTypesData).filter(([, eq]) => (eq.icon || '') === icon).map(([eid]) => eid);
+      const eids = Object.entries(equipmentTypesData).filter(([, eq]) => normalizeEmoji(eq.icon || '') === normalizeEmoji(icon)).map(([eid]) => eid);
       eids.forEach(eid => {
         if (!coveredEids.has(eid) && !missingSet.has(eid)) {
           const eq = equipmentTypesData[eid];
@@ -4629,11 +4633,8 @@ function generateLineTemplateAssign(eventId) {
   }
 
   // 注意事項
-  text += `※学年荷物が割り当て車両に積めない場合は、ご連絡ください。\n`;
-  text += `※会場駐車場利用の同乗者の方も、各家庭でご相談のうえ、ご都合に合わせて各自で車を出し、周辺パーキングをご利用いただいても大丈夫です。\n`;
-  if (maxCars > 0) {
-    text += `※会場駐車場を利用する方は、駐車整理券を印刷のうえ、当日ご提示ください。印刷が難しい方は、ご連絡ください。`;
-  }
+  const notesTpl = (templatesData?.line_assign_notes) || TEMPLATE_DEFAULTS.line_assign_notes;
+  text += notesTpl;
   return text;
 }
 
@@ -5031,34 +5032,25 @@ function generateMatchReport(tournamentId) {
   const scores = t.scores || [];
   const dateStr = formatEventDate(t.date);
 
-  // Gratitude phrases - use template or rotate default
-  const defaultGratitudes = [
-    '指導してくださったコーチ、温かい応援をしていただいた保護者の皆様ありがとうございました。',
-    '会場設営や審判、熱心にご指導いただいたコーチの皆様、そして最後まで温かい声援を送ってくださった保護者の皆様、本日も本当にありがとうございました。',
-    '暑い中（寒い中）応援に駆けつけてくださった保護者の皆様、いつも丁寧にご指導いただくコーチの皆様、心より感謝申し上げます。',
-    '対戦いただいたチームの皆様、運営スタッフの方々、そしていつも支えてくださる保護者の皆様、コーチの皆様、ありがとうございました。',
-    '朝早くからの送迎・応援、本当にありがとうございました。コーチの皆様の熱い指導のおかげで、子どもたちも成長を見せてくれました。'
-  ];
-  const customPreamble = templatesData?.match_report_preamble;
-  const gratIdx = Math.floor(Math.random() * defaultGratitudes.length);
-
-  let text = `お疲れ様です。\n\n${dateStr}、${t.name || '大会'}に参加してきました⚽️\n\n`;
-  text += '【試合結果】\n';
+  // Build {results} string
+  let resultsStr = '';
   scores.forEach(s => {
     const mark = s.result === 'win' ? '○' : s.result === 'lose' ? '●' : '△';
-    text += `${mark} VS ${s.opponent || '?'}　${s.score || ''}`;
-    if (s.scorers) text += `（得点: ${s.scorers}）`;
-    text += '\n';
+    resultsStr += `${mark} VS ${s.opponent || '?'}　${s.score || ''}`;
+    if (s.scorers) resultsStr += `（得点: ${s.scorers}）`;
+    resultsStr += '\n';
   });
+  if (!resultsStr) resultsStr = '（試合結果なし）\n';
 
-  if (t.memo) {
-    text += `\n${t.memo}\n`;
-  } else {
-    text += '\n（試合の詳細をここに記入）\n';
-    text += '\n（今後の展望をここに記入）\n';
-  }
+  // Build {memo} string
+  const memoStr = t.memo ? t.memo : '（試合の詳細をここに記入）\n\n（今後の展望をここに記入）';
 
-  text += `\n${customPreamble || defaultGratitudes[gratIdx]}`;
+  const tpl = (templatesData?.match_report_template) || TEMPLATE_DEFAULTS.match_report_template;
+  const text = tpl
+    .replace(/\{date\}/g, dateStr)
+    .replace(/\{name\}/g, t.name || '大会')
+    .replace(/\{results\}/g, resultsStr.trimEnd())
+    .replace(/\{memo\}/g, memoStr);
 
   navigator.clipboard.writeText(text).then(() => {
     showToast('試合レポートをコピーしました');
