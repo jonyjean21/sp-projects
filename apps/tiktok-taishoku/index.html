@@ -1385,69 +1385,153 @@ GW明けから行かなくてOK
 <!-- ===== 5. 動画制作パイプライン ===== -->
 <section id="pipeline">
   <div class="section-header">
-    <div class="section-icon" style="background:linear-gradient(135deg, var(--purple), var(--tiktok-cyan));">🎬</div>
+    <div class="section-icon" style="background:linear-gradient(135deg, var(--purple), var(--tiktok-cyan));">🤖</div>
     <div>
-      <div class="section-title">動画制作パイプライン</div>
-      <div class="section-desc">Vrewメインの3段階アプローチ</div>
+      <div class="section-title">完全自動化パイプライン</div>
+      <div class="section-desc">月額$0で動画量産。SPの作業は投稿のみ（1日2分）</div>
     </div>
   </div>
 
-  <div class="timeline">
-    <div class="timeline-item active">
-      <div class="timeline-phase">PHASE 1 — 今すぐ開始</div>
-      <div class="timeline-title">Vrew + CapCut（5-10分/本）</div>
-      <div class="timeline-desc">
-        Vrewにテキストを貼るだけでAI音声+テロップ+背景動画が全自動生成。<br>
-        顔出し不要に最適。CapCutはデザイン微調整のサブツール。<br>
-        まず10本作って反応を見る。
-      </div>
-      <div class="timeline-tools">
-        <span class="tool-tag">Vrew（メイン）</span>
-        <span class="tool-tag">CapCut（サブ）</span>
-        <span class="tool-tag">無料</span>
-      </div>
-    </div>
-
-    <div class="timeline-item">
-      <div class="timeline-phase">PHASE 2 — 反応確認後</div>
-      <div class="timeline-title">Vrew量産体制（4-5分/本）</div>
-      <div class="timeline-desc">
-        ChatGPT/Geminiで台本5-10本を一括生成 → Vrewで動画自動生成。<br>
-        週10-15本、毎日2本投稿（12:00 + 19:00）体制。
-      </div>
-      <div class="timeline-tools">
-        <span class="tool-tag">ChatGPT/Gemini</span>
-        <span class="tool-tag">Vrew</span>
-        <span class="tool-tag">週10-15本</span>
-      </div>
-    </div>
-
-    <div class="timeline-item">
-      <div class="timeline-phase">PHASE 3 — 将来（オプション）</div>
-      <div class="timeline-title">Python完全自動化（1分以下/本）</div>
-      <div class="timeline-desc">
-        MoviePy + FFmpeg + Gemini + Pexels APIで完全自動生成。<br>
-        1日10本以上の大量生産が必要になった場合のみ。
-      </div>
-      <div class="timeline-tools">
-        <span class="tool-tag">Python</span>
-        <span class="tool-tag">MoviePy</span>
-        <span class="tool-tag">FFmpeg</span>
-        <span class="tool-tag">Gemini API</span>
-      </div>
+  <div class="warning-box">
+    <div class="warning-title">⚠ Vrewは不採用（APIなし = 自動化不可）</div>
+    <div class="warning-body" style="font-size:13px;">
+      調査の結果、VrewにはAPIが存在せず、パイプラインに組み込めないことが判明。<br>
+      代わりに<strong>Python自作パイプライン（全て無料）</strong>で完全自動化する。
     </div>
   </div>
 
+  <!-- Architecture -->
   <div class="card">
-    <div class="card-title">🎵 BGM戦略</div>
+    <div class="card-title">🏗️ アーキテクチャ</div>
+    <div class="card-body">
+      <div style="background:#0a0a0a;border-radius:12px;padding:20px;font-size:13px;font-family:monospace;line-height:2;">
+        <div style="text-align:center;">
+          <span style="background:var(--tiktok-card2);padding:6px 16px;border-radius:8px;border:1px solid var(--purple);">📋 コンテンツ戦略エンジン</span><br>
+          <span style="color:var(--muted);">ペルソナ×テーマ マトリクスからテーマ選定</span><br>
+          <span style="color:var(--purple);">↓</span><br>
+          <span style="background:var(--tiktok-card2);padding:6px 16px;border-radius:8px;border:1px solid var(--tiktok-cyan);">🧠 Gemini 2.5 Flash（台本JSON生成）</span><br>
+          <span style="color:var(--muted);">無料枠: 250本/日</span><br>
+          <span style="color:var(--tiktok-cyan);">↓</span><br>
+          <span style="background:var(--tiktok-card2);padding:6px 16px;border-radius:8px;border:1px solid var(--green);">🔊 AivisSpeech（AI音声合成）</span><br>
+          <span style="color:var(--muted);">ローカル実行・無料・商用OK</span><br>
+          <span style="color:var(--green);">↓</span><br>
+          <span style="background:var(--tiktok-card2);padding:6px 16px;border-radius:8px;border:1px solid var(--orange);">🎬 MoviePy + Pillow + Pexels</span><br>
+          <span style="color:var(--muted);">テロップ描画+背景動画+BGM合成</span><br>
+          <span style="color:var(--orange);">↓</span><br>
+          <span style="background:var(--tiktok-card2);padding:6px 16px;border-radius:8px;border:1px solid var(--tiktok-red);">📱 手動投稿（1日2分）</span><br>
+          <span style="color:var(--muted);">TikTok APIは個人botで審査通らず</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tech Stack Cost -->
+  <div class="card">
+    <div class="card-title">💸 技術スタック & コスト</div>
     <div class="card-body">
       <table style="width:100%;font-size:13px;border-collapse:collapse;">
-        <tr style="border-bottom:1px solid #333;"><td style="padding:8px;color:var(--tiktok-cyan);">体験談系</td><td style="padding:8px;">エモ系ピアノ</td><td style="padding:8px;color:var(--muted);">切なさ+希望</td></tr>
-        <tr style="border-bottom:1px solid #333;"><td style="padding:8px;color:var(--tiktok-cyan);">情報系</td><td style="padding:8px;">ポップ/アップテンポ</td><td style="padding:8px;color:var(--muted);">明るく分かりやすく</td></tr>
-        <tr style="border-bottom:1px solid #333;"><td style="padding:8px;color:var(--tiktok-cyan);">共感系</td><td style="padding:8px;">Lo-Fi/チル系</td><td style="padding:8px;color:var(--muted);">落ち着いた共感</td></tr>
-        <tr><td style="padding:8px;color:var(--tiktok-cyan);">煽り系</td><td style="padding:8px;">トレンドBGM</td><td style="padding:8px;color:var(--muted);">TikTokの流行に乗る</td></tr>
+        <tr style="border-bottom:1px solid #444;color:var(--muted);font-size:11px;">
+          <td style="padding:8px;">レイヤー</td><td style="padding:8px;">ツール</td><td style="padding:8px;">月額</td>
+        </tr>
+        <tr style="border-bottom:1px solid #333;">
+          <td style="padding:8px;">台本生成</td><td style="padding:8px;">Gemini 2.5 Flash</td><td style="padding:8px;color:var(--green);font-weight:700;">$0</td>
+        </tr>
+        <tr style="border-bottom:1px solid #333;">
+          <td style="padding:8px;">音声合成</td><td style="padding:8px;">AivisSpeech</td><td style="padding:8px;color:var(--green);font-weight:700;">$0</td>
+        </tr>
+        <tr style="border-bottom:1px solid #333;">
+          <td style="padding:8px;">テロップ描画</td><td style="padding:8px;">Pillow + NotoSansJP</td><td style="padding:8px;color:var(--green);font-weight:700;">$0</td>
+        </tr>
+        <tr style="border-bottom:1px solid #333;">
+          <td style="padding:8px;">動画合成</td><td style="padding:8px;">MoviePy + FFmpeg</td><td style="padding:8px;color:var(--green);font-weight:700;">$0</td>
+        </tr>
+        <tr style="border-bottom:1px solid #333;">
+          <td style="padding:8px;">背景素材</td><td style="padding:8px;">Pexels API</td><td style="padding:8px;color:var(--green);font-weight:700;">$0</td>
+        </tr>
+        <tr style="border-bottom:1px solid #333;">
+          <td style="padding:8px;">BGM</td><td style="padding:8px;">DOVA-SYNDROME等</td><td style="padding:8px;color:var(--green);font-weight:700;">$0</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;">投稿</td><td style="padding:8px;">手動 or Later</td><td style="padding:8px;">$0〜$25</td>
+        </tr>
       </table>
-      <p style="margin-top:12px;font-size:12px;color:var(--muted);">素材: DOVA-SYNDROME / 甘茶の音楽工房 / MusMus（全て商用利用OK）</p>
+      <div style="text-align:center;margin-top:12px;font-size:16px;">
+        月額合計: <strong style="color:var(--green);font-size:24px;">$0〜$25</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Strategy -->
+  <div class="card">
+    <div class="card-title">🎯 コンテンツ戦略: バズる動画6パターン</div>
+    <div class="card-body">
+      <table style="width:100%;font-size:13px;border-collapse:collapse;">
+        <tr style="border-bottom:1px solid #444;color:var(--muted);font-size:11px;">
+          <td style="padding:6px;">パターン</td><td style="padding:6px;">例</td><td style="padding:6px;">期待値</td><td style="padding:6px;">配分</td>
+        </tr>
+        <tr style="border-bottom:1px solid #333;">
+          <td style="padding:6px;font-weight:700;">体験談型</td><td style="padding:6px;">「退職代行使ってみた」</td><td style="padding:6px;color:var(--gold);">★★★★★</td><td style="padding:6px;">30%</td>
+        </tr>
+        <tr style="border-bottom:1px solid #333;">
+          <td style="padding:6px;font-weight:700;">共感煽り型</td><td style="padding:6px;">「月曜の朝が地獄な人」</td><td style="padding:6px;color:var(--gold);">★★★★☆</td><td style="padding:6px;">25%</td>
+        </tr>
+        <tr style="border-bottom:1px solid #333;">
+          <td style="padding:6px;font-weight:700;">業種特化型</td><td style="padding:6px;">「看護師の退職代行」</td><td style="padding:6px;color:var(--tiktok-cyan);">★★★☆☆</td><td style="padding:6px;">20%</td>
+        </tr>
+        <tr style="border-bottom:1px solid #333;">
+          <td style="padding:6px;font-weight:700;">情報・比較型</td><td style="padding:6px;">「退職代行の料金相場」</td><td style="padding:6px;color:var(--tiktok-cyan);">★★★☆☆</td><td style="padding:6px;">10%</td>
+        </tr>
+        <tr style="border-bottom:1px solid #333;">
+          <td style="padding:6px;font-weight:700;">FAQ型</td><td style="padding:6px;">「退職代行って違法？」</td><td style="padding:6px;">★★☆☆☆</td><td style="padding:6px;">10%</td>
+        </tr>
+        <tr>
+          <td style="padding:6px;font-weight:700;">季節型</td><td style="padding:6px;">「GW明けに辞める」</td><td style="padding:6px;color:var(--gold);">★★★★★</td><td style="padding:6px;">5%</td>
+        </tr>
+      </table>
+      <div style="margin-top:12px;font-size:12px;color:var(--muted);">
+        7ペルソナ × 5パターン = <strong style="color:var(--white);">35テーマの組み合わせ</strong>（これを回すだけで1ヶ月以上持つ）
+      </div>
+    </div>
+  </div>
+
+  <!-- Video Spec -->
+  <div class="card">
+    <div class="card-title">📐 動画スペック</div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;">
+        <div style="background:#161616;padding:8px 12px;border-radius:8px;">
+          <span style="color:var(--tiktok-cyan);">尺</span> 15-25秒
+        </div>
+        <div style="background:#161616;padding:8px 12px;border-radius:8px;">
+          <span style="color:var(--tiktok-cyan);">解像度</span> 1080×1920 (9:16)
+        </div>
+        <div style="background:#161616;padding:8px 12px;border-radius:8px;">
+          <span style="color:var(--tiktok-cyan);">テロップ</span> 白文字+黒縁取り 68px
+        </div>
+        <div style="background:#161616;padding:8px 12px;border-radius:8px;">
+          <span style="color:var(--tiktok-cyan);">フォント</span> Noto Sans JP Bold
+        </div>
+        <div style="background:#161616;padding:8px 12px;border-radius:8px;">
+          <span style="color:var(--tiktok-cyan);">音声</span> AivisSpeech（自然な日本語）
+        </div>
+        <div style="background:#161616;padding:8px 12px;border-radius:8px;">
+          <span style="color:var(--tiktok-cyan);">BGM</span> フリー素材 音量20-30%
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SP Work -->
+  <div class="info-box">
+    <div class="info-title">👤 SPの作業は「投稿だけ」</div>
+    <div class="info-body" style="font-size:13px;">
+      <strong>AI-SPが毎週自動でやること:</strong><br>
+      ・台本10本を自動生成（Gemini）<br>
+      ・音声+テロップ+背景+BGMを合成して動画10本生成<br>
+      ・Google Driveに動画を同期<br><br>
+      <strong>SPが毎日やること:</strong><br>
+      ・スマホでTikTokアプリを開いて動画を投稿（<strong style="color:var(--gold);">1日2分</strong>）<br>
+      ・週1回、再生数TOP3の動画を確認（日曜5分）
     </div>
   </div>
 </section>
