@@ -1011,13 +1011,6 @@ select.form-input { appearance: auto; }
   <div class="pane on" id="p-overview">
 
     <div class="sec">
-      <div class="sec-head">要確認 <span id="alert-count" style="font-size:0.65rem;color:var(--red);"></span></div>
-      <div class="alerts" id="overview-alerts">
-        <div style="color:var(--dim);font-size:0.78rem;">読み込み中...</div>
-      </div>
-    </div>
-
-    <div class="sec">
       <div id="overview-task-summary" onclick="switchTab('schedule')" style="cursor:pointer;">
         <div style="color:var(--dim);font-size:0.78rem;">読み込み中...</div>
       </div>
@@ -1879,36 +1872,9 @@ function daysUntil(dl) {
 async function loadConfirmations() {
   const data = await fbGet('tbd');
   allConfirmations = data || {};
-  renderOverviewAlerts();
+
   renderBudgetAlerts();
   // renderSchedule() is called by loadSchedule() after tasks are loaded
-}
-
-function renderOverviewAlerts() {
-  const el = document.getElementById('overview-alerts');
-  const items = Object.entries(allConfirmations).filter(([,t]) => t.status !== 'resolved');
-
-  // Sort by priority and deadline
-  const prioOrder = { high: 0, medium: 1, low: 2 };
-  items.sort((a, b) => {
-    const pa = prioOrder[a[1].priority] || 1;
-    const pb = prioOrder[b[1].priority] || 1;
-    if (pa !== pb) return pa - pb;
-    return (a[1].deadline || '9999').localeCompare(b[1].deadline || '9999');
-  });
-
-  const top = items.slice(0, 5);
-  document.getElementById('alert-count').textContent = items.length > 0 ? `（${items.length}件）` : '';
-
-  if (!top.length) { el.innerHTML = '<div style="color:var(--green);font-size:0.78rem;">未解決の確認事項なし</div>'; return; }
-
-  let html = '';
-  for (const [, t] of top) {
-    const cls = t.priority === 'high' ? 'al-c' : t.priority === 'low' ? 'al-i' : 'al-w';
-    const dl = t.deadline ? `〜${deadlineLabel(t.deadline)}（${daysUntil(t.deadline)}）` : '';
-    html += `<div class="al ${cls}"><div><div class="al-t">${t.title}</div><div class="al-d">${t.who||''} ${dl}</div></div></div>`;
-  }
-  el.innerHTML = html;
 }
 
 function renderBudgetAlerts() {
@@ -1926,7 +1892,7 @@ async function setConfStatus(id, status) {
   await fbSet(`tbd/${id}/status`, status);
   allConfirmations[id] = { ...allConfirmations[id], status };
   renderSchedule();
-  renderOverviewAlerts();
+
 }
 
 async function resolveConf(id) {
@@ -1936,7 +1902,7 @@ async function resolveConf(id) {
   allConfirmations[id] = { ...allConfirmations[id], status: 'resolved', resolvedNote: note };
   toast('解決済みにしました');
   renderSchedule();
-  renderOverviewAlerts();
+
 }
 
 async function delConf(id) {
@@ -1945,7 +1911,7 @@ async function delConf(id) {
   delete allConfirmations[id];
   toast('削除');
   renderSchedule();
-  renderOverviewAlerts();
+
 }
 
 async function addConfirmation() {
@@ -1966,7 +1932,7 @@ async function addConfirmation() {
   document.getElementById('tbd-deadline').value = '';
   toast('決定事項を追加');
   renderSchedule();
-  renderOverviewAlerts();
+
 }
 
 // ==================== AUTO SEED ====================
