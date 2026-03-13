@@ -25,13 +25,21 @@
 - 自動化: GAS autopilot(月曜5時トピック選定) → Firebase queue → ConoHa PHP(水・土8時記事生成+WP公開)
 - 次: 3/15初回自動公開確認、承認ASPテキストリンク埋め込み
 
-## ニッチ特化サイト群（本命 - 高単価アフィリエイト）
-- 状態: **戦略策定完了、Week 1着手開始**
-- 方針: 1ジャンル1サイト×30-50記事×AI量産×高速PDCA
-- 攻め順: ①退職代行(S) → ②バーチャルオフィス(A) → ③探偵(A) → ④VPN(B+)
+## TikTok退職代行アフィリエイト（ニッチ特化 第1弾）
+- 状態: **戦略・事業計画・パイプライン設計完了 → Python実装フェーズ**
+- 攻め方: TikTok短尺動画（15-30秒）→ lit.link → ASP（退職代行案件）
+- ペルソナ: A:新卒逃走(35%) B:パワハラ限界(25%) C:業種特化(20%) D:バイト(15%)
+- 自動化: Gemini Flash（台本）→ AivisSpeech（音声）→ MoviePy（動画）= **月額$0**
+- 収益見込: Month 1 ¥0-5K → Month 3 ¥5-15K → Month 6 ¥15-50K（承認率込み）
+- ポータル: https://jonyjean21.github.io/sp-projects/apps/tiktok-taishoku/
+- 詳細: sp-brain/content/tiktok-taishoku/ (business-plan.md, video-pipeline.md, scripts.md, asp-strategy.md)
+- 次: **Pythonスクリプト実装** → AivisSpeechセットアップ → テスト動画10本 → TikTok投稿開始
+
+## ニッチ特化サイト群（第2弾以降）
+- 状態: 戦略策定完了、退職代行の成果を見て横展開
+- 攻め順: ②バーチャルオフィス(A) → ③探偵(A) → ④VPN(B+)
 - 収益目標: 3ヶ月後 月7万 / 6ヶ月後 月27万
 - 詳細: sp-brain/knowledge/niche-affiliate-execution-plan.md
-- 次: Week 1で退職代行サイト立ち上げ（ドメイン・WP・初期記事20本・ASP申請）
 
 ## BuildHub（収益化 - ニュースレター）
 - 状態: 運用中（全自動パイプライン稼働）
