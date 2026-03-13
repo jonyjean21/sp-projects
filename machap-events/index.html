@@ -854,6 +854,12 @@ select.form-input { appearance: auto; }
 .sch-tbd-title.resolved { color: var(--dim); text-decoration: line-through; }
 .sch-tbd-meta { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; margin-bottom: 4px; }
 .sch-sep { height: 1px; background: var(--border-light); margin: 8px 0; }
+.who-ext { background: var(--blue-light); color: var(--blue); border-radius: 6px; font-size: 0.68rem; padding: 1px 7px; font-weight: 500; white-space: nowrap; }
+.who-int { background: var(--accent-light); color: var(--accent); border-radius: 6px; font-size: 0.68rem; padding: 1px 7px; font-weight: 500; white-space: nowrap; }
+.tbd-opts { margin: 5px 0 4px; display: flex; flex-direction: column; gap: 3px; }
+.tbd-opt { font-size: 0.76rem; padding: 4px 8px; background: var(--card-alt); border-radius: 6px; display: flex; align-items: center; gap: 6px; }
+.tbd-opt::before { content:''; width:5px; height:5px; border-radius:50%; background:var(--accent-soft); flex-shrink:0; }
+.tbd-resolved-note { font-size: 0.76rem; padding: 5px 8px; background: var(--green-light); border-radius: 6px; color: var(--green); margin-bottom: 4px; }
 
 /* ---- Bottom Nav ---- */
 .bottom-nav {
@@ -1651,14 +1657,25 @@ function renderSchedule() {
       for (const t of tbds) {
         const dlClass = deadlineClass(t.deadline);
         const isResolved = t.status === 'resolved';
+        const whoIsExt = t.who && (t.who.includes('主催者') || t.who.includes('→主催者'));
+        const whoClass = whoIsExt ? 'who-ext' : 'who-int';
+        const whoLabel = whoIsExt ? `📞 ${t.who}` : `🤝 ${t.who}`;
+        const optsHtml = (!isResolved && t.options && t.options.length)
+          ? `<div class="tbd-opts">${t.options.map(o=>`<div class="tbd-opt">${o}</div>`).join('')}</div>`
+          : '';
+        const resolvedNoteHtml = (isResolved && t.resolvedNote)
+          ? `<div class="tbd-resolved-note">✓ ${t.resolvedNote}</div>`
+          : '';
         rmHtml += `<div class="sch-tbd">
           <span class="sch-tbd-icon">${isResolved ? '✓' : '⚡'}</span>
           <div class="sch-tbd-body">
             <div class="sch-tbd-title ${isResolved?'resolved':''}">${t.title}</div>
             <div class="sch-tbd-meta">
-              ${t.who ? `<span class="who" style="margin-left:0;">${t.who}</span>` : ''}
+              ${t.who ? `<span class="${whoClass}">${whoLabel}</span>` : ''}
               ${t.deadline ? `<span class="conf-deadline ${dlClass}" style="padding:1px 6px;">${deadlineLabel(t.deadline)}まで</span>` : ''}
             </div>
+            ${optsHtml}
+            ${resolvedNoteHtml}
             <div class="status-btns" style="margin-top:4px;">
               <button class="status-btn ${t.status==='open'||!t.status?'active-open':''}" onclick="setConfStatus('${t.id}','open')">未解決</button>
               <button class="status-btn ${t.status==='in_progress'?'active-in_progress':''}" onclick="setConfStatus('${t.id}','in_progress')">対応中</button>
@@ -1976,16 +1993,16 @@ async function autoSeed() {
 
   // TBD (確認事項)
   await fbSet('tbd', {
-    tbd01: { title:'主催者との打ち合わせ日程確定', who:'ナカに確認', category:'運営', priority:'high', deadline:'2026-03-17', deadlineReason:'多くの確認事項がこの打ち合わせに依存している', why:'PTA予算、収支、当日オペレーションなど重要事項の確認が必要。日程が決まらないと他が全部止まる', options:['ナカが主催者に日程調整して確定'], dependency:'なし（最優先で日程確定）', status:'open' },
-    tbd02: { title:'予約管理の方法', who:'ナカに確認', category:'運営', priority:'high', deadline:'2026-03-16', deadlineReason:'スタッフ募集開始前に方針を固める必要', why:'搭乗200枠の管理方法が未定。主催者が回覧板で管理しているが、追加集客時にWeb予約フォームが必要になる可能性', options:['主催者が回覧板で全管理（フォーム不要）','回覧板＋追加集客用Webフォーム（SP構築）','全てWeb予約に移行'], dependency:'追加集客をするかどうかの判断', status:'open' },
-    tbd03: { title:'スタッフ参加費の金額', who:'ナカ＋スタッフと相談', category:'スタッフ', priority:'high', deadline:'2026-03-17', deadlineReason:'募集開始時に金額を提示する必要がある', why:'¥10,000と¥5,000で収入に10万円の差。金額が高いと募集ハードルが上がる', options:['¥10,000（理想・収入最大化）','¥5,000（ハードル低め・集めやすい）','段階制（早期¥5,000 / 通常¥10,000）'], dependency:'スタッフ募集開始', status:'open' },
-    tbd04: { title:'大人乗船料の正確な金額', who:'ナカに確認', category:'収支', priority:'high', deadline:'2026-03-20', deadlineReason:'収支計画を精緻化して赤字リスクを正確に把握するため', why:'現在「約3,500円」で仮計算。正確な金額で収支が大きく変動する。150名×差額 = 大きなインパクト', options:['ナカが主催者/業者に確認して回答'], dependency:'主催者または業者との連絡', status:'open' },
-    tbd05: { title:'追加集客の方法・応募フォーム要否', who:'ナカに確認', category:'集客', priority:'medium', deadline:'2026-03-20', deadlineReason:'回覧板以外の集客をするなら早めに準備が必要', why:'回覧板で予約を募っているが、追加でSNS等で集客する場合の受け皿が必要かもしれない', options:['回覧板のみで十分（フォーム不要）','SNS告知＋Web応募フォーム（SP構築）','SNS告知のみ（DM/電話で予約受付）'], dependency:'現在の予約状況の把握', status:'open' },
-    tbd06: { title:'Tシャツ作成の最終判断', who:'ナカ＋スタッフと相談', category:'スタッフ', priority:'medium', deadline:'2026-03-22', deadlineReason:'発注から納品まで2〜3週間のリードタイム。3/22に決めないと4/12に間に合わない', why:'ナカは作りたい派。スタッフの一体感・記念になる。ただしコストとスタッフ人数の見通しが必要', options:['作る（モルックドームでデザイン・発注）','作らない（私服＋ビブスやネームプレート）','簡易ビブスのみ（低コスト）'], dependency:'スタッフ人数の目処が立ってから（3/25中間確認）', status:'open' },
-    tbd07: { title:'PTA予算の金額と使い道', who:'主催者に確認', category:'収支', priority:'high', deadline:'2026-03-27', deadlineReason:'主催者打ち合わせ時に直接確認する', why:'現在-35万円の赤字見込み。PTA予算で小学生の乗船料が補填されれば収支が大きく改善する可能性がある', options:['打ち合わせで直接確認'], dependency:'主催者との次回打ち合わせ日程の確定', status:'open' },
-    tbd08: { title:'気球代110万円の精算方法・タイミング', who:'ナカに確認', category:'収支', priority:'medium', deadline:'2026-03-27', deadlineReason:'ナカの立替負担が大きいため、早期に方針を明確にしておく', why:'ナカが110万円を立替中。精算タイミングと方法を明確にし、キャッシュフローを管理する', options:['イベント当日に現金で精算','イベント後1週間以内に振込','収益から差し引いて精算'], dependency:'収支の全体像が確定してから', status:'open' },
-    tbd09: { title:'プロカメラマン撮影の判断', who:'ナカに確認', category:'コンテンツ', priority:'low', deadline:'2026-04-01', deadlineReason:'カメラマンの予約に余裕を持たせる（1週間前）', why:'費用10万円。次回告知素材として非常に価値が高い。ナカも「できれば楽しそう」とのこと', options:['依頼する（編集込み10万円）','スタッフが撮影（コスト0）','予算確定後に判断（3/27以降）'], dependency:'収支の確定（赤字幅が縮まるかどうか）', status:'open' },
-    tbd10: { title:'SPとの収益按分', who:'ナカに確認', category:'収支', priority:'low', deadline:'2026-04-05', deadlineReason:'最終打ち合わせまでに方針を決めておく', why:'MACHAP初プロジェクトとしての事業性。今後のイベントの基準にもなる', options:['利益折半','SP固定報酬（金額要相談）','成果報酬型','今回はボランティア（実績優先）'], dependency:'収支の全体像が確定してから', status:'open' },
+    tbd01: { title:'主催者との打ち合わせ日程確定', who:'ナカ→主催者確認', category:'運営', priority:'high', deadline:'2026-03-17', why:'PTA予算、収支、当日オペレーションなど重要事項の確認が必要。日程が決まらないと他が全部止まる', options:['ナカから主催者に連絡して日程確定'], status:'open' },
+    tbd02: { title:'予約管理の方法', who:'ナカ→主催者確認', category:'運営', priority:'high', deadline:'2026-03-16', why:'搭乗200枠の管理方法が未定。主催者が回覧板で管理しているが、追加集客時にWeb予約フォームが必要になる可能性', options:['主催者が回覧板で全管理（フォーム不要）','回覧板＋追加集客用Webフォーム（SP構築）','全てWeb予約に移行'], status:'open' },
+    tbd03: { title:'スタッフ参加費の金額', who:'SP×ナカで決定', category:'スタッフ', priority:'high', deadline:'2026-03-17', why:'¥10,000と¥5,000で収入に10万円の差。募集開始時に金額を提示する必要がある', options:['¥10,000（理想・収入最大化）','¥5,000（ハードル低め・集めやすい）','段階制（早期¥5,000 / 通常¥10,000）'], status:'open' },
+    tbd04: { title:'大人乗船料の正確な金額', who:'ナカ→主催者確認', category:'収支', priority:'high', deadline:'2026-03-20', why:'現在「約3,500円」で仮計算。正確な金額で収支が大きく変動する。150名×差額 = 大きなインパクト', options:['ナカが主催者または業者に確認'], status:'open' },
+    tbd05: { title:'追加集客するか・応募フォーム要否', who:'ナカ→主催者確認', category:'集客', priority:'medium', deadline:'2026-03-20', why:'回覧板で予約を募っているが、追加でSNS等で集客する場合の受け皿が必要かもしれない', options:['回覧板のみで十分（フォーム不要）','SNS告知＋Web応募フォーム（SP構築）','SNS告知のみ（DM/電話で予約受付）'], status:'open' },
+    tbd06: { title:'Tシャツ作成の最終判断', who:'SP×ナカで決定', category:'スタッフ', priority:'medium', deadline:'2026-03-22', why:'ナカは作りたい派。発注から納品まで2〜3週間のリードタイム。3/22に決めないと4/12に間に合わない', options:['作る（モルックドームでデザイン・発注）','作らない（私服＋ビブスやネームプレート）','簡易ビブスのみ（低コスト）'], status:'open' },
+    tbd07: { title:'PTA予算の金額と使い道', who:'ナカ→主催者確認', category:'収支', priority:'high', deadline:'2026-03-27', why:'現在-35万円の赤字見込み。PTA予算で小学生の乗船料が補填されれば収支が大きく改善する可能性がある', options:['打ち合わせで直接確認'], status:'open' },
+    tbd08: { title:'気球代110万円の精算方法・タイミング', who:'SP×ナカで決定', category:'収支', priority:'medium', deadline:'2026-03-27', why:'ナカが110万円を立替中。精算タイミングと方法を明確にしておく', options:['イベント当日に現金で精算','イベント後1週間以内に振込','収益から差し引いて精算'], status:'open' },
+    tbd09: { title:'プロカメラマン撮影の判断', who:'SP×ナカで決定', category:'コンテンツ', priority:'low', deadline:'2026-04-01', why:'費用10万円。次回告知素材として非常に価値が高い。ナカも「できれば楽しそう」とのこと', options:['依頼する（編集込み10万円）','スタッフが撮影（コスト0）','予算確定後に判断（3/27以降）'], status:'open' },
+    tbd10: { title:'SPとの収益按分', who:'SP×ナカで決定', category:'収支', priority:'low', deadline:'2026-04-05', why:'MACHAP初プロジェクトとしての事業性。今後のイベントの基準にもなる', options:['利益折半','SP固定報酬（金額要相談）','成果報酬型','今回はボランティア（実績優先）'], status:'open' },
   });
 
   // Staff
@@ -2012,6 +2029,28 @@ async function autoSeed() {
 
 // ==================== MIGRATION ====================
 async function migrateData() {
+  // Migrate TBD who fields to new category labels
+  const tbd = await fbGet('tbd');
+  if (tbd) {
+    const whoMap = {
+      'ナカに確認': null, // determined per-item below
+      'ナカ＋スタッフと相談': 'SP×ナカで決定',
+      '主催者に確認': 'ナカ→主催者確認',
+    };
+    // Per-item mapping for 'ナカに確認' items
+    const extIds = ['tbd01','tbd02','tbd04','tbd05','tbd07'];
+    const intIds = ['tbd03','tbd06','tbd08','tbd09','tbd10'];
+    for (const [id, t] of Object.entries(tbd)) {
+      let newWho = null;
+      if (t.who === 'ナカ＋スタッフと相談') newWho = 'SP×ナカで決定';
+      else if (t.who === '主催者に確認') newWho = 'ナカ→主催者確認';
+      else if (t.who === 'ナカに確認') {
+        newWho = extIds.includes(id) ? 'ナカ→主催者確認' : 'SP×ナカで決定';
+      }
+      if (newWho && t.who !== newWho) await fbSet(`tbd/${id}/who`, newWho);
+    }
+  }
+
   const tasks = await fbGet('tasks');
   if (!tasks) return;
   // Remove legacy duplicate tasks (tbd-duplicates added as tasks)
