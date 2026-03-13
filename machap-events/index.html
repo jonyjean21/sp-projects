@@ -856,10 +856,17 @@ select.form-input { appearance: auto; }
 .sch-sep { height: 1px; background: var(--border-light); margin: 8px 0; }
 .who-ext { background: var(--blue-light); color: var(--blue); border-radius: 6px; font-size: 0.68rem; padding: 1px 7px; font-weight: 500; white-space: nowrap; }
 .who-int { background: var(--accent-light); color: var(--accent); border-radius: 6px; font-size: 0.68rem; padding: 1px 7px; font-weight: 500; white-space: nowrap; }
-.tbd-opts { margin: 5px 0 4px; display: flex; flex-direction: column; gap: 3px; }
-.tbd-opt { font-size: 0.76rem; padding: 4px 8px; background: var(--card-alt); border-radius: 6px; display: flex; align-items: center; gap: 6px; }
-.tbd-opt::before { content:''; width:5px; height:5px; border-radius:50%; background:var(--accent-soft); flex-shrink:0; }
-.tbd-resolved-note { font-size: 0.76rem; padding: 5px 8px; background: var(--green-light); border-radius: 6px; color: var(--green); margin-bottom: 4px; }
+.tbd-opts { margin: 5px 0 4px; display: flex; flex-direction: column; gap: 4px; }
+.tbd-opt {
+  font-size: 0.78rem; padding: 8px 12px; background: var(--card-alt); border-radius: 8px;
+  display: flex; align-items: center; gap: 8px; cursor: pointer; border: 1px solid transparent;
+  font-family: inherit; text-align: left; width: 100%; transition: all 0.15s;
+}
+.tbd-opt::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--border); flex-shrink:0; transition: background 0.15s; }
+.tbd-opt:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+.tbd-opt:hover::before { background: var(--accent); }
+.tbd-opt.other { color: var(--dim); font-style: italic; }
+.tbd-resolved-note { font-size: 0.78rem; padding: 6px 10px; background: var(--green-light); border-radius: 8px; color: var(--green); margin-bottom: 4px; font-weight: 500; }
 
 /* ---- Bottom Nav ---- */
 .bottom-nav {
@@ -1661,7 +1668,10 @@ function renderSchedule() {
         const whoClass = whoIsExt ? 'who-ext' : 'who-int';
         const whoLabel = whoIsExt ? `📞 ${t.who}` : `🤝 ${t.who}`;
         const optsHtml = (!isResolved && t.options && t.options.length)
-          ? `<div class="tbd-opts">${t.options.map(o=>`<div class="tbd-opt">${o}</div>`).join('')}</div>`
+          ? `<div class="tbd-opts">
+              ${t.options.map(o=>`<button class="tbd-opt" onclick="selectTbdOption('${t.id}',${JSON.stringify(o)})">${o}</button>`).join('')}
+              <button class="tbd-opt other" onclick="selectTbdOption('${t.id}',null)">その他（自由入力）</button>
+            </div>`
           : '';
         const resolvedNoteHtml = (isResolved && t.resolvedNote)
           ? `<div class="tbd-resolved-note">✓ ${t.resolvedNote}</div>`
@@ -1912,6 +1922,16 @@ async function setConfStatus(id, status) {
 
 }
 
+async function selectTbdOption(id, option) {
+  const note = option ?? (prompt('決定内容を入力') || '');
+  if (!note) return;
+  await fbSet(`tbd/${id}/status`, 'resolved');
+  await fbSet(`tbd/${id}/resolvedNote`, note);
+  allConfirmations[id] = { ...allConfirmations[id], status: 'resolved', resolvedNote: note };
+  toast('決定しました！');
+  renderSchedule();
+}
+
 async function resolveConf(id) {
   const note = prompt('解決内容（任意・Enterでスキップ）') || '';
   await fbSet(`tbd/${id}/status`, 'resolved');
@@ -1919,7 +1939,6 @@ async function resolveConf(id) {
   allConfirmations[id] = { ...allConfirmations[id], status: 'resolved', resolvedNote: note };
   toast('解決済みにしました');
   renderSchedule();
-
 }
 
 async function delConf(id) {
