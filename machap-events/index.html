@@ -829,6 +829,75 @@ select.form-input { appearance: auto; }
   background: var(--accent-light); margin-top: 10px; font-weight: 500;
 }
 .staff-link:hover { background: var(--accent); color: #fff; }
+
+/* ---- Blocked badge ---- */
+.blocked-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 0.6rem; padding: 2px 7px; border-radius: 8px;
+  background: var(--yellow-light); color: var(--yellow);
+  border: 1px solid var(--yellow); cursor: pointer;
+  flex-shrink: 0; white-space: nowrap; transition: all 0.15s;
+  font-weight: 500;
+}
+.blocked-badge:hover { background: var(--yellow); color: #fff; }
+.rm-t.blocked { opacity: 0.5; }
+
+/* ---- Bottom Nav ---- */
+.bottom-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(253,252,249,0.97);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border-light);
+  padding: 2px 0 env(safe-area-inset-bottom, 4px);
+}
+.bottom-nav-inner { display: flex; max-width: 720px; margin: 0 auto; }
+.bn-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  gap: 2px; padding: 6px 2px; border: none; background: none;
+  font-family: inherit; cursor: pointer; color: var(--dim);
+  transition: color 0.15s; min-height: 50px; justify-content: center;
+}
+.bn-btn.on { color: var(--accent); }
+.bn-icon { font-size: 1.1rem; line-height: 1; }
+.bn-label { font-size: 0.55rem; font-weight: 500; }
+
+/* ---- Bottom Sheet ---- */
+.bn-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.25); z-index: 150;
+}
+.bn-overlay.open { display: block; }
+.bn-sheet {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 160;
+  background: var(--card); border-radius: 18px 18px 0 0;
+  border-top: 1px solid var(--border);
+  padding: 16px 20px calc(env(safe-area-inset-bottom, 8px) + 60px);
+  transform: translateY(100%); transition: transform 0.25s ease;
+}
+.bn-sheet.open { transform: translateY(0); }
+.bn-sheet-head {
+  text-align: center; font-size: 0.7rem; color: var(--dim);
+  font-weight: 600; margin-bottom: 12px; letter-spacing: 0.06em;
+}
+.bn-sheet-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.bn-sheet-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding: 14px 6px; border-radius: 12px; background: var(--card-alt);
+  border: 1px solid var(--border); cursor: pointer; font-family: inherit;
+  font-size: 0.76rem; font-weight: 500; color: var(--text); transition: all 0.15s;
+}
+.bn-sheet-btn:active { background: var(--accent-light); color: var(--accent); }
+.bn-sheet-icon { font-size: 1.3rem; }
+
+@media (max-width: 700px) {
+  .nav { display: none; }
+  .bottom-nav { display: block; }
+  .wrap { padding-bottom: 80px; }
+  body { font-size: 15px; }
+  .card { padding: 14px 16px; }
+  .rm-t { padding: 5px 0; font-size: 0.84rem; }
+}
 </style>
 </head>
 <body>
@@ -1403,6 +1472,38 @@ select.form-input { appearance: auto; }
   </div>
 
 </div>
+
+<!-- Bottom sheet overlay -->
+<div class="bn-overlay" id="bn-overlay" onclick="closeBnSheet()"></div>
+
+<!-- Bottom sheet: その他 -->
+<div class="bn-sheet" id="bn-sheet">
+  <div class="bn-sheet-head">その他</div>
+  <div class="bn-sheet-grid">
+    <button class="bn-sheet-btn" onclick="switchTab('daytime');closeBnSheet()">
+      <span class="bn-sheet-icon">🕐</span>当日
+    </button>
+    <button class="bn-sheet-btn" onclick="switchTab('risks');closeBnSheet()">
+      <span class="bn-sheet-icon">⚠️</span>リスク
+    </button>
+    <button class="bn-sheet-btn" onclick="switchTab('qa');closeBnSheet()">
+      <span class="bn-sheet-icon">💬</span>質問回答
+    </button>
+  </div>
+</div>
+
+<!-- Bottom Nav -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="bn-btn on" data-tab="overview"><span class="bn-icon">🏠</span><span class="bn-label">概要</span></button>
+    <button class="bn-btn" data-tab="confirm"><span class="bn-icon">⚡</span><span class="bn-label">確認事項</span></button>
+    <button class="bn-btn" data-tab="roadmap"><span class="bn-icon">📋</span><span class="bn-label">タスク</span></button>
+    <button class="bn-btn" data-tab="staff"><span class="bn-icon">👥</span><span class="bn-label">スタッフ</span></button>
+    <button class="bn-btn" data-tab="budget"><span class="bn-icon">💴</span><span class="bn-label">収支</span></button>
+    <button class="bn-btn" id="bn-more" onclick="openBnSheet()"><span class="bn-icon">···</span><span class="bn-label">その他</span></button>
+  </div>
+</nav>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1462,13 +1563,30 @@ function switchTab(tab) {
   if (btn) btn.classList.add('on');
   const pane = document.getElementById('p-' + tab);
   if (pane) pane.classList.add('on');
+  // ボトムナビ同期
+  document.querySelectorAll('.bn-btn[data-tab]').forEach(b => b.classList.remove('on'));
+  const bnBtn = document.querySelector(`.bn-btn[data-tab="${tab}"]`);
+  if (bnBtn) bnBtn.classList.add('on');
+  else document.getElementById('bn-more')?.classList.add('on');
+  window.scrollTo(0, 0);
 }
 
 document.querySelectorAll('.nav-btn').forEach(btn => {
-  btn.addEventListener('click', function() {
-    switchTab(this.dataset.tab);
-  });
+  btn.addEventListener('click', function() { switchTab(this.dataset.tab); });
 });
+
+document.querySelectorAll('.bn-btn[data-tab]').forEach(btn => {
+  btn.addEventListener('click', function() { switchTab(this.dataset.tab); });
+});
+
+function openBnSheet() {
+  document.getElementById('bn-sheet').classList.add('open');
+  document.getElementById('bn-overlay').classList.add('open');
+}
+function closeBnSheet() {
+  document.getElementById('bn-sheet').classList.remove('open');
+  document.getElementById('bn-overlay').classList.remove('open');
+}
 
 // ==================== ROADMAP (Firebase) ====================
 const phaseNames = { '0':'基盤整備', '1':'仕込み', '2':'直前準備', '3':'当日', '4':'振り返り' };
@@ -1535,11 +1653,14 @@ async function loadRoadmap() {
     rmHtml += `<div class="rm-top"><span class="rm-name">${phaseNames[p]}</span><span class="rm-date">${phaseDates[p]}</span></div>`;
     rmHtml += '<div class="rm-tasks">';
     for (const t of tasks) {
+      const isBlocked = t.blockedBy && allConfirmations[t.blockedBy] && allConfirmations[t.blockedBy].status !== 'resolved';
+      const blockedTitle = isBlocked ? allConfirmations[t.blockedBy].title : '';
       rmHtml += `<div style="display:flex;align-items:center;gap:4px;">
-        <label class="rm-t ${t.done?'done':''}" style="flex:1;">
+        <label class="rm-t ${t.done?'done':''} ${isBlocked&&!t.done?'blocked':''}" style="flex:1;">
           <input type="checkbox" ${t.done?'checked':''} onchange="toggleRmTask('${t.id}',this.checked)">
           ${t.name} <span class="who">${t.owner||''}</span>
         </label>
+        ${isBlocked && !t.done ? `<span class="blocked-badge" onclick="switchTab('confirm')" title="${blockedTitle}">⚡ 要確認</span>` : ''}
         <button class="btn-del" onclick="delTask('${t.id}')" title="削除">×</button>
       </div>`;
     }
@@ -1932,14 +2053,12 @@ async function autoSeed() {
     { name:'中さんから回答取得', owner:'中さん', phase:'0', done:true },
     { name:'計画書を確定版に更新', owner:'SP', phase:'0', done:true },
     { name:'収支の全体像を確認', owner:'SP+中', phase:'0', done:false },
-    { name:'予約システム方針決定', owner:'SP+中', phase:'0', done:false },
     { name:'スタッフ募集開始', owner:'SP+中', phase:'1', done:false },
     { name:'募集用テキスト・画像作成', owner:'SP', phase:'1', done:false },
-    { name:'予約システム構築', owner:'SP', phase:'1', done:false },
-    { name:'Tシャツデザイン・発注', owner:'中さん', phase:'1', done:false },
+    { name:'予約システム構築', owner:'SP', phase:'1', done:false, blockedBy:'tbd02' },
+    { name:'Tシャツデザイン・発注', owner:'中さん', phase:'1', done:false, blockedBy:'tbd06' },
     { name:'スタッフ5名以上確保の確認', owner:'SP+中', phase:'1', done:false },
-    { name:'主催者打ち合わせ（~3/27）', owner:'SP+中', phase:'1', done:false },
-    { name:'スタッフ参加費の使い道決定', owner:'全員', phase:'1', done:false },
+    { name:'主催者打ち合わせ（~3/27）', owner:'SP+中', phase:'1', done:false, blockedBy:'tbd01' },
     { name:'備品リスト確定・買い出し', owner:'SP', phase:'2', done:false },
     { name:'最終打ち合わせ', owner:'全員', phase:'2', done:false },
     { name:'天気予報チェック開始', owner:'SP', phase:'2', done:false },
@@ -1996,17 +2115,39 @@ async function autoSeed() {
   console.log('Auto-seed complete');
 }
 
+// ==================== MIGRATION ====================
+async function migrateData() {
+  const tasks = await fbGet('tasks');
+  if (!tasks) return;
+  // Remove legacy duplicate tasks (tbd-duplicates added as tasks)
+  const dupNames = ['予約システム方針決定', 'スタッフ参加費の使い道決定'];
+  // Add blockedBy to known tasks by name if missing
+  const blockedByMap = {
+    '予約システム構築': 'tbd02',
+    'Tシャツデザイン・発注': 'tbd06',
+    '主催者打ち合わせ（~3/27）': 'tbd01',
+  };
+  for (const [id, t] of Object.entries(tasks)) {
+    if (dupNames.includes(t.name)) {
+      await fbDel(`tasks/${id}`);
+    } else if (blockedByMap[t.name] && !t.blockedBy) {
+      await fbSet(`tasks/${id}/blockedBy`, blockedByMap[t.name]);
+    }
+  }
+}
+
 // ==================== INIT ====================
 async function loadAll() {
   try {
     await autoSeed();
+    await migrateData();
   } catch(e) {
-    console.error('Auto-seed error:', e);
+    console.error('Init error:', e);
   }
+  await loadConfirmations(); // must run before loadRoadmap so allConfirmations is populated
   loadRoadmap();
   loadStaffDisplay();
   loadBudgetDisplay();
-  loadConfirmations();
 }
 loadAll();
 </script>
