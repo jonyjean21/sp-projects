@@ -1169,7 +1169,7 @@ body {
 </div>
 
 <script>
-const FB = 'https://viisi-master-app-default-rtdb.firebaseio.com/machap-events/20260412-balloon';
+const FB = 'https://viisi-master-app-default-rtdb.firebaseio.com/machap/events/20260412-balloon';
 const EVT = new Date('2026-04-12T06:00:00+09:00');
 
 // --- Firebase helpers ---
@@ -1178,7 +1178,8 @@ async function fbGet(path) {
   return r.json();
 }
 async function fbSet(path, data) {
-  await fetch(`${FB}/${path}.json`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) });
+  const r = await fetch(`${FB}/${path}.json`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) });
+  if (!r.ok) throw new Error(`fbSet(${path}) failed: ${r.status}`);
 }
 
 // --- Countdown ---
@@ -1599,7 +1600,11 @@ async function autoSeed() {
 
 // ==================== INIT ====================
 async function loadAll() {
-  await autoSeed();
+  try {
+    await autoSeed();
+  } catch(e) {
+    console.error('Auto-seed error:', e);
+  }
   loadRoadmap();
   loadStaffDisplay();
   loadBudgetDisplay();
