@@ -3,1137 +3,874 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>多田東気球フェス - イベント管理</title>
+<title>多田東気球フェス - 運営管理</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-/* ============================================
-   MACHAP Events Dashboard - Reusable Template
-   テラコッタ配色 / 白ベース / 繊細線画イラスト
-   ============================================ */
 :root {
-  --bg: #FAFAF8;
-  --card: #FFFFFF;
-  --card-alt: #F8F6F2;
-  --border: #E4E0D8;
-  --border-light: #EDEBE6;
-  --text: #2C2C2C;
-  --dim: #9B9590;
-  --accent: #C4704B;
-  --accent-light: #FDF5F1;
-  --accent-hover: #B35F3C;
-  --green: #6B9E78;
-  --green-light: #F0F7F2;
-  --blue: #7B9EB8;
-  --blue-light: #F0F5FA;
-  --yellow: #C49B3E;
-  --yellow-light: #FDF8EC;
-  --red: #C75050;
-  --red-light: #FDF0F0;
-  --purple: #8B7BB8;
-  --warm-gray: #F5F3EF;
-  --shadow: 0 1px 4px rgba(0,0,0,0.05);
-  --shadow-md: 0 3px 12px rgba(0,0,0,0.08);
-  --radius: 14px;
+  --bg: #F6F4EF;
+  --card: #FFFEF9;
+  --card-alt: #F9F7F2;
+  --border: #DDD8CE;
+  --border-light: #E8E4DC;
+  --text: #3A3630;
+  --dim: #968E82;
+  --accent: #B8643F;
+  --accent-soft: #D4845C;
+  --accent-light: #FAF0EA;
+  --green: #5E8E6A;
+  --green-light: #EFF6F0;
+  --blue: #6A8EA0;
+  --blue-light: #EDF4F7;
+  --yellow: #B89440;
+  --yellow-light: #FAF5E8;
+  --red: #B85454;
+  --red-light: #FAF0F0;
+  --warm: #F0ECE4;
+  --shadow: 0 1px 3px rgba(58,54,48,0.04);
+  --shadow-md: 0 2px 8px rgba(58,54,48,0.06);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Noto Sans JP', sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
-  line-height: 1.6;
+  line-height: 1.75;
   -webkit-font-smoothing: antialiased;
+  font-size: 14px;
 }
 
-.container {
-  max-width: 800px;
+.wrap {
+  max-width: 720px;
   margin: 0 auto;
-  padding: 0 20px 60px;
+  padding: 0 20px 80px;
 }
 
-/* ---- Hero ---- */
-.hero {
+/* ---- Header ---- */
+.header {
+  padding: 32px 0 24px;
   text-align: center;
-  padding: 36px 0 28px;
 }
 
-.hero-illust svg {
-  width: 240px;
-  height: 140px;
+.header-illust {
+  margin-bottom: 8px;
 }
 
-.hero h1 {
-  font-size: 1.3rem;
+.header h1 {
+  font-family: 'Zen Maru Gothic', 'Noto Sans JP', sans-serif;
+  font-size: 1.4rem;
   font-weight: 700;
-  margin: 12px 0 4px;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.06em;
+  color: var(--text);
 }
 
-.hero-sub {
-  font-size: 0.82rem;
+.header-place {
+  font-size: 0.78rem;
   color: var(--dim);
   font-weight: 300;
+  margin-top: 2px;
 }
 
-.hero-badges {
+.header-tags {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   justify-content: center;
-  margin-top: 12px;
+  margin-top: 10px;
   flex-wrap: wrap;
 }
 
-.hero-badge {
-  display: inline-block;
-  padding: 4px 14px;
-  border-radius: 20px;
-  font-size: 0.72rem;
+.htag {
+  padding: 3px 12px;
+  border-radius: 16px;
+  font-size: 0.68rem;
   font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
-.badge-status {
-  background: var(--green-light);
-  color: var(--green);
-  border: 1px solid rgba(107,158,120,0.2);
-}
-
-.badge-date {
-  background: var(--warm-gray);
-  color: var(--dim);
-}
+.htag-date { background: var(--warm); color: var(--dim); }
+.htag-ok { background: var(--green-light); color: var(--green); }
 
 /* ---- Countdown ---- */
-.countdown-wrap {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: var(--shadow);
-}
-
-.countdown {
+.cd-row {
   display: flex;
-  gap: 16px;
+  gap: 8px;
   justify-content: center;
-  align-items: center;
+  padding: 16px 0 20px;
 }
 
-.cd-item {
+.cd-box {
   text-align: center;
+  min-width: 52px;
 }
 
-.cd-val {
-  font-size: 2rem;
+.cd-num {
+  font-family: 'Zen Maru Gothic', sans-serif;
+  font-size: 1.7rem;
   font-weight: 700;
   color: var(--accent);
   line-height: 1;
 }
 
-.cd-label {
-  font-size: 0.65rem;
+.cd-unit {
+  font-size: 0.58rem;
   color: var(--dim);
-  margin-top: 4px;
+  margin-top: 3px;
+  letter-spacing: 0.1em;
+}
+
+/* ---- Nav ---- */
+.nav {
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(246,244,239,0.94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 8px 0;
+  margin-bottom: 16px;
+}
+
+.nav::-webkit-scrollbar { display: none; }
+
+.nav-btn {
+  padding: 6px 13px;
+  border-radius: 18px;
+  font-size: 0.72rem;
   font-weight: 400;
-  letter-spacing: 0.08em;
-}
-
-.cd-sep {
-  font-size: 1.4rem;
-  color: var(--border);
-  margin-top: -8px;
-}
-
-/* ---- Stats Grid ---- */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.stat-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 10px;
-  text-align: center;
-  box-shadow: var(--shadow);
-}
-
-.stat-val {
-  font-size: 1.5rem;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.stat-unit {
-  font-size: 0.7rem;
-  font-weight: 400;
-}
-
-.stat-label {
-  font-size: 0.68rem;
   color: var(--dim);
-  margin-top: 4px;
-  font-weight: 400;
+  cursor: pointer;
+  white-space: nowrap;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.nav-btn:hover {
+  color: var(--text);
+  background: var(--warm);
+}
+
+.nav-btn.on {
+  color: var(--accent);
+  background: var(--accent-light);
+  font-weight: 500;
 }
 
 /* ---- Section ---- */
-.section {
-  margin-bottom: 24px;
+.sec {
+  margin-bottom: 20px;
 }
 
-.section-title {
-  font-size: 0.82rem;
-  font-weight: 600;
+.sec-head {
+  font-size: 0.76rem;
+  font-weight: 500;
   color: var(--dim);
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+  letter-spacing: 0.04em;
   display: flex;
   align-items: center;
-  gap: 8px;
-  letter-spacing: 0.03em;
-}
-
-.section-title svg {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
+  gap: 6px;
 }
 
 /* ---- Card ---- */
 .card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px;
+  border-radius: 12px;
+  padding: 16px 18px;
   box-shadow: var(--shadow);
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
-/* ---- Info Grid ---- */
-.info-grid {
+/* ---- Stats ---- */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.st {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 6px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.st-v {
+  font-family: 'Zen Maru Gothic', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.st-u {
+  font-size: 0.6rem;
+  font-weight: 400;
+}
+
+.st-l {
+  font-size: 0.62rem;
+  color: var(--dim);
+  margin-top: 2px;
+}
+
+/* ---- Info list ---- */
+.info-list {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 12px 16px;
 }
 
-.info-item {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
+.il-item { display: flex; flex-direction: column; gap: 1px; }
 
-.info-label {
-  font-size: 0.7rem;
+.il-k {
+  font-size: 0.66rem;
   color: var(--dim);
   font-weight: 400;
 }
 
-.info-val {
-  font-size: 0.88rem;
+.il-v {
+  font-size: 0.82rem;
   font-weight: 500;
 }
 
-.info-val.confirmed {
-  color: var(--green);
+.il-v.ok { color: var(--green); }
+.il-v.ng { color: var(--red); }
+.il-v.tbd { color: var(--yellow); }
+
+.il-full { grid-column: 1 / -1; }
+
+/* ---- Alerts ---- */
+.alerts { display: flex; flex-direction: column; gap: 6px; }
+
+.al {
+  display: flex;
+  gap: 10px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  align-items: flex-start;
 }
 
-.info-val.tbd {
-  color: var(--yellow);
-}
+.al-w { background: var(--yellow-light); border-left: 3px solid var(--yellow); }
+.al-c { background: var(--red-light); border-left: 3px solid var(--red); }
+.al-i { background: var(--blue-light); border-left: 3px solid var(--blue); }
 
-.info-val.alert {
-  color: var(--red);
-}
+.al-t { font-weight: 600; margin-bottom: 1px; }
+.al-d { font-size: 0.72rem; color: var(--dim); }
 
-.info-full {
-  grid-column: 1 / -1;
-}
+/* ---- Roadmap ---- */
+.rm { position: relative; }
 
-/* ---- Roadmap / Timeline ---- */
-.roadmap {
+.rm-ph {
   position: relative;
+  padding-left: 24px;
+  padding-bottom: 16px;
 }
 
-.rm-phase {
-  position: relative;
-  padding-left: 28px;
-  padding-bottom: 20px;
-}
+.rm-ph:last-child { padding-bottom: 0; }
 
-.rm-phase:last-child {
-  padding-bottom: 0;
-}
-
-.rm-phase::before {
+.rm-ph::before {
   content: '';
   position: absolute;
-  left: 7px;
-  top: 24px;
+  left: 5px;
+  top: 20px;
   bottom: 0;
   width: 1px;
   background: var(--border);
 }
 
-.rm-phase:last-child::before {
-  display: none;
-}
+.rm-ph:last-child::before { display: none; }
 
 .rm-dot {
   position: absolute;
   left: 0;
-  top: 6px;
-  width: 16px;
-  height: 16px;
+  top: 5px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   border: 2px solid var(--border);
   background: var(--card);
 }
 
-.rm-phase.done .rm-dot {
+.rm-ph.done .rm-dot {
   border-color: var(--green);
   background: var(--green);
 }
 
-.rm-phase.done .rm-dot::after {
-  content: '✓';
-  color: #fff;
-  font-size: 0.6rem;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.rm-phase.current .rm-dot {
+.rm-ph.now .rm-dot {
   border-color: var(--accent);
   background: var(--accent-light);
-  box-shadow: 0 0 0 4px rgba(196,112,75,0.12);
+  box-shadow: 0 0 0 3px rgba(184,100,63,0.1);
 }
 
-.rm-phase.current .rm-dot::after {
+.rm-ph.now .rm-dot::after {
   content: '';
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
   background: var(--accent);
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 2px;
+  left: 2px;
 }
 
-.rm-header {
+.rm-top {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-bottom: 6px;
+  align-items: center;
+  margin-bottom: 4px;
 }
 
-.rm-title {
-  font-size: 0.88rem;
+.rm-name {
+  font-size: 0.84rem;
   font-weight: 600;
 }
 
 .rm-date {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: var(--dim);
-  font-weight: 400;
 }
 
-.rm-tasks {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
+.rm-tasks { display: flex; flex-direction: column; gap: 2px; }
 
-.rm-task {
+.rm-t {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.8rem;
-  padding: 4px 0;
+  gap: 7px;
+  font-size: 0.76rem;
+  padding: 3px 0;
   cursor: pointer;
 }
 
-.rm-task input[type="checkbox"] {
+.rm-t input[type="checkbox"] {
   accent-color: var(--accent);
-  width: 15px;
-  height: 15px;
+  width: 14px;
+  height: 14px;
   flex-shrink: 0;
 }
 
-.rm-task.done {
-  color: var(--dim);
-  text-decoration: line-through;
-}
+.rm-t.done { color: var(--dim); text-decoration: line-through; }
 
-.rm-task .task-owner {
-  font-size: 0.65rem;
-  padding: 1px 6px;
-  border-radius: 8px;
-  background: var(--warm-gray);
+.rm-t .who {
+  font-size: 0.58rem;
+  padding: 1px 5px;
+  border-radius: 6px;
+  background: var(--warm);
   color: var(--dim);
   white-space: nowrap;
+  margin-left: auto;
 }
 
 /* ---- Budget ---- */
-.budget-summary {
+.bud-row {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 16px;
+  gap: 8px;
+  margin-bottom: 14px;
 }
 
-.budget-box {
+.bud-box {
   text-align: center;
-  padding: 12px 8px;
-  border-radius: 10px;
+  padding: 10px 6px;
+  border-radius: 8px;
 }
 
-.budget-box.income {
-  background: var(--green-light);
-}
+.bud-box.inc { background: var(--green-light); }
+.bud-box.exp { background: var(--red-light); }
+.bud-box.bal { background: var(--yellow-light); }
 
-.budget-box.expense {
-  background: var(--red-light);
-}
-
-.budget-box.balance {
-  background: var(--yellow-light);
-}
-
-.budget-box .bv {
-  font-size: 1.2rem;
+.bud-v {
+  font-family: 'Zen Maru Gothic', sans-serif;
+  font-size: 1.1rem;
   font-weight: 700;
 }
 
-.budget-box.income .bv { color: var(--green); }
-.budget-box.expense .bv { color: var(--red); }
-.budget-box.balance .bv { color: var(--yellow); }
+.bud-box.inc .bud-v { color: var(--green); }
+.bud-box.exp .bud-v { color: var(--red); }
+.bud-box.bal .bud-v { color: var(--yellow); }
 
-.budget-box .bl {
-  font-size: 0.68rem;
-  color: var(--dim);
-  margin-top: 2px;
-}
+.bud-l { font-size: 0.62rem; color: var(--dim); margin-top: 1px; }
 
-.budget-detail {
-  font-size: 0.8rem;
-}
+.bud-detail { font-size: 0.78rem; }
 
-.budget-row {
+.bud-line {
   display: flex;
   justify-content: space-between;
-  padding: 6px 0;
+  padding: 5px 0;
   border-bottom: 1px solid var(--border-light);
 }
 
-.budget-row:last-child {
-  border-bottom: none;
-}
+.bud-line:last-child { border-bottom: none; }
 
-.budget-row .br-label {
-  color: var(--dim);
-}
-
-.budget-row .br-note {
-  font-size: 0.7rem;
-  color: var(--dim);
-  margin-left: 4px;
-}
-
-/* ---- Capacity ---- */
-.capacity-bar-wrap {
-  margin-top: 12px;
-}
-
-.cap-label-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.75rem;
-  margin-bottom: 4px;
-}
-
-.cap-bar {
-  height: 20px;
-  background: var(--warm-gray);
-  border-radius: 10px;
-  overflow: hidden;
-  position: relative;
-}
-
-.cap-fill {
-  height: 100%;
-  border-radius: 10px;
-  transition: width 0.5s;
-}
-
-.cap-marker {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  width: 2px;
-  background: var(--red);
-}
-
-.cap-marker-label {
-  position: absolute;
-  top: -16px;
-  font-size: 0.6rem;
-  color: var(--red);
-  transform: translateX(-50%);
-  white-space: nowrap;
-}
+.bud-note { font-size: 0.66rem; color: var(--dim); margin-left: 4px; }
 
 /* ---- Staff ---- */
-.staff-bar {
+.staff-gauge-wrap {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .staff-gauge {
   flex: 1;
-  height: 8px;
-  background: var(--warm-gray);
-  border-radius: 4px;
+  height: 6px;
+  background: var(--warm);
+  border-radius: 3px;
   overflow: hidden;
   position: relative;
 }
 
 .staff-fill {
   height: 100%;
-  background: var(--accent);
-  border-radius: 4px;
+  background: var(--accent-soft);
+  border-radius: 3px;
 }
 
 .staff-min {
   position: absolute;
   left: 25%;
-  top: 0;
-  height: 100%;
-  width: 2px;
+  top: -2px;
+  height: 10px;
+  width: 1.5px;
   background: var(--red);
 }
 
-.staff-nums {
+.staff-n {
   font-size: 0.8rem;
   font-weight: 600;
   white-space: nowrap;
 }
 
-/* ---- Role Table ---- */
-.role-grid {
-  display: grid;
-  gap: 6px;
-}
+.role-list { display: flex; flex-direction: column; gap: 4px; }
 
-.role-row {
+.role-r {
   display: grid;
   grid-template-columns: auto 1fr auto;
-  gap: 8px;
-  padding: 8px 10px;
+  gap: 6px;
+  padding: 6px 8px;
   background: var(--card-alt);
   border-radius: 8px;
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   align-items: center;
 }
 
-.role-name {
-  font-weight: 600;
-  white-space: nowrap;
-}
+.role-nm { font-weight: 600; white-space: nowrap; }
+.role-d { font-size: 0.7rem; color: var(--dim); }
+.role-c { font-size: 0.65rem; color: var(--dim); white-space: nowrap; }
 
-.role-desc {
-  color: var(--dim);
-  font-size: 0.75rem;
-}
+/* ---- Day Timeline ---- */
+.dt { display: flex; flex-direction: column; gap: 0; }
 
-.role-count {
-  background: var(--warm-gray);
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 0.7rem;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-/* ---- Timeline (当日) ---- */
-.day-timeline {
-  position: relative;
-}
-
-.dt-item {
+.dt-row {
   display: flex;
-  gap: 12px;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.dt-row:last-child { border-bottom: none; }
+
+.dt-t {
+  min-width: 40px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.dt-c { flex: 1; }
+.dt-c-t { font-size: 0.82rem; font-weight: 500; }
+.dt-c-n { font-size: 0.7rem; color: var(--dim); }
+
+/* ---- Flow ---- */
+.flow-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  align-items: center;
+  font-size: 0.72rem;
+}
+
+.flow-s {
+  padding: 3px 10px;
+  border-radius: 14px;
+}
+
+.flow-arr { color: var(--dim); font-size: 0.65rem; }
+
+/* ---- Risk ---- */
+.risk-list { display: flex; flex-direction: column; gap: 4px; }
+
+.risk-r {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 8px;
+  background: var(--card-alt);
+  border-radius: 8px;
+  font-size: 0.76rem;
+  flex-wrap: wrap;
+}
+
+.risk-r > span:first-child { flex: 1; min-width: 120px; }
+
+.risk-tag {
+  padding: 1px 7px;
+  border-radius: 6px;
+  font-size: 0.6rem;
+  font-weight: 500;
+}
+
+.rh { background: var(--red-light); color: var(--red); }
+.rm-tag { background: var(--yellow-light); color: var(--yellow); }
+.rl { background: var(--green-light); color: var(--green); }
+
+.risk-note { font-size: 0.66rem; color: var(--dim); width: 100%; margin-top: 2px; padding-left: 2px; }
+
+/* ---- Q&A ---- */
+.qa-cat {
+  margin-bottom: 16px;
+}
+
+.qa-cat-head {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--accent);
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 8px;
+  letter-spacing: 0.04em;
+}
+
+.qa-item {
   padding: 8px 0;
   border-bottom: 1px solid var(--border-light);
 }
 
-.dt-item:last-child {
-  border-bottom: none;
-}
+.qa-item:last-child { border-bottom: none; }
 
-.dt-time {
-  min-width: 44px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--accent);
-}
-
-.dt-content {
-  flex: 1;
-}
-
-.dt-title {
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-
-.dt-note {
+.qa-q {
   font-size: 0.72rem;
   color: var(--dim);
-}
-
-/* ---- Alerts / TBD ---- */
-.alert-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.alert-item {
-  display: flex;
-  gap: 10px;
-  padding: 12px 14px;
-  border-radius: 10px;
-  font-size: 0.82rem;
-  align-items: flex-start;
-}
-
-.alert-item.warn {
-  background: var(--yellow-light);
-  border: 1px solid rgba(196,155,62,0.15);
-}
-
-.alert-item.critical {
-  background: var(--red-light);
-  border: 1px solid rgba(199,80,80,0.15);
-}
-
-.alert-item.info {
-  background: var(--blue-light);
-  border: 1px solid rgba(123,158,184,0.15);
-}
-
-.alert-icon {
-  font-size: 1rem;
-  flex-shrink: 0;
-  line-height: 1.4;
-}
-
-.alert-text {
-  flex: 1;
-}
-
-.alert-title {
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-
-.alert-desc {
-  font-size: 0.75rem;
-  color: var(--dim);
-}
-
-/* ---- Risk Table ---- */
-.risk-grid {
-  display: grid;
-  gap: 6px;
-}
-
-.risk-row {
-  display: grid;
-  grid-template-columns: 1fr auto auto auto;
-  gap: 8px;
-  padding: 8px 10px;
-  background: var(--card-alt);
-  border-radius: 8px;
-  font-size: 0.78rem;
-  align-items: center;
-}
-
-.risk-tag {
-  padding: 2px 8px;
-  border-radius: 8px;
-  font-size: 0.65rem;
-  font-weight: 500;
-  text-align: center;
-}
-
-.risk-high { background: var(--red-light); color: var(--red); }
-.risk-mid { background: var(--yellow-light); color: var(--yellow); }
-.risk-low { background: var(--green-light); color: var(--green); }
-
-/* ---- Tabs ---- */
-.nav-tabs {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 20px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background: rgba(250,250,248,0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  padding: 10px 0;
-}
-
-.nav-tabs::-webkit-scrollbar { display: none; }
-
-.nav-tab {
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 0.75rem;
   font-weight: 400;
-  color: var(--dim);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s;
-  background: transparent;
-  border: 1px solid transparent;
+  margin-bottom: 1px;
 }
 
-.nav-tab:hover {
-  color: var(--text);
-  background: var(--warm-gray);
-}
-
-.nav-tab.active {
-  color: var(--accent);
-  background: var(--accent-light);
-  border-color: rgba(196,112,75,0.15);
+.qa-a {
+  font-size: 0.82rem;
   font-weight: 500;
+  line-height: 1.6;
 }
 
-/* ---- Tabs content ---- */
-.tab-content {
-  display: none;
-}
-
-.tab-content.active {
-  display: block;
-}
-
-/* ---- Footer ---- */
-.footer {
-  text-align: center;
-  padding: 24px 0;
-  font-size: 0.65rem;
+.qa-a.empty {
   color: var(--dim);
   font-weight: 300;
-  letter-spacing: 0.04em;
+  font-style: italic;
+}
+
+/* ---- Tab Content ---- */
+.pane { display: none; }
+.pane.on { display: block; }
+
+/* ---- Footer ---- */
+.foot {
+  text-align: center;
+  padding: 20px 0;
+  font-size: 0.6rem;
+  color: var(--dim);
   border-top: 1px solid var(--border-light);
   margin-top: 20px;
+  letter-spacing: 0.06em;
 }
 
 /* ---- Responsive ---- */
-@media (max-width: 640px) {
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
-  .info-grid { grid-template-columns: 1fr; }
-  .budget-summary { grid-template-columns: 1fr; }
-  .countdown { gap: 10px; }
-  .cd-val { font-size: 1.5rem; }
-  .risk-row { grid-template-columns: 1fr; gap: 4px; }
-  .risk-row .risk-tag { width: fit-content; }
+@media (max-width: 600px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .info-list { grid-template-columns: 1fr; }
+  .bud-row { grid-template-columns: 1fr; }
+  .cd-num { font-size: 1.4rem; }
+  .risk-r { font-size: 0.72rem; }
 }
 
-/* ---- Print ---- */
 @media print {
-  .nav-tabs, .countdown-wrap { display: none; }
-  .tab-content { display: block !important; }
+  .nav { display: none; }
+  .pane { display: block !important; }
   .card { break-inside: avoid; }
 }
 </style>
 </head>
 <body>
 
-<div class="container">
+<div class="wrap">
 
-  <!-- ===== Hero ===== -->
-  <div class="hero">
-    <div class="hero-illust">
-      <svg viewBox="0 0 240 140" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- Balloon 1 -->
-        <ellipse cx="90" cy="48" rx="28" ry="34" stroke="#C4704B" stroke-width="0.8" fill="none"/>
-        <path d="M62 48 C62 48 72 82 76 86 L104 86 C108 82 118 48 118 48" stroke="#C4704B" stroke-width="0.6" fill="none"/>
-        <line x1="76" y1="86" x2="78" y2="98" stroke="#C4704B" stroke-width="0.5"/>
-        <line x1="104" y1="86" x2="102" y2="98" stroke="#C4704B" stroke-width="0.5"/>
-        <rect x="77" y="98" width="26" height="10" rx="2" stroke="#C4704B" stroke-width="0.6" fill="none"/>
-        <path d="M90 14 L90 82" stroke="#C4704B" stroke-width="0.3" opacity="0.3"/>
-        <path d="M76 20 C76 20 80 54 76 82" stroke="#C4704B" stroke-width="0.3" opacity="0.3"/>
-        <path d="M104 20 C104 20 100 54 104 82" stroke="#C4704B" stroke-width="0.3" opacity="0.3"/>
-        <!-- Balloon 2 (smaller, behind) -->
-        <ellipse cx="160" cy="38" rx="20" ry="25" stroke="#D0CBC5" stroke-width="0.6" fill="none"/>
-        <path d="M140 38 C140 38 148 62 150 65 L170 65 C172 62 180 38 180 38" stroke="#D0CBC5" stroke-width="0.5" fill="none"/>
-        <line x1="150" y1="65" x2="152" y2="74" stroke="#D0CBC5" stroke-width="0.4"/>
-        <line x1="170" y1="65" x2="168" y2="74" stroke="#D0CBC5" stroke-width="0.4"/>
-        <rect x="151" y="74" width="18" height="7" rx="1.5" stroke="#D0CBC5" stroke-width="0.5" fill="none"/>
-        <path d="M160 13 L160 62" stroke="#D0CBC5" stroke-width="0.2" opacity="0.3"/>
-        <!-- Clouds -->
-        <ellipse cx="32" cy="36" rx="14" ry="6" stroke="#E4E0D8" stroke-width="0.5" fill="none"/>
-        <ellipse cx="26" cy="34" rx="7" ry="4" stroke="#E4E0D8" stroke-width="0.5" fill="none"/>
-        <ellipse cx="210" cy="50" rx="12" ry="5" stroke="#E4E0D8" stroke-width="0.5" fill="none"/>
-        <!-- Birds -->
-        <path d="M42 22 C44 20 46 22 48 20" stroke="#D0CBC5" stroke-width="0.4" fill="none"/>
-        <path d="M46 18 C48 16 50 18 52 16" stroke="#D0CBC5" stroke-width="0.3" fill="none"/>
-        <!-- Ground -->
-        <path d="M0 128 C40 124 80 126 120 124 C160 122 200 125 240 128" stroke="#E8E5DE" stroke-width="0.5" fill="none"/>
-        <!-- School building -->
-        <rect x="95" y="112" width="50" height="16" rx="1" stroke="#D0CBC5" stroke-width="0.5" fill="none"/>
-        <rect x="100" y="116" width="6" height="5" rx="0.5" stroke="#D0CBC5" stroke-width="0.4" fill="none"/>
-        <rect x="110" y="116" width="6" height="5" rx="0.5" stroke="#D0CBC5" stroke-width="0.4" fill="none"/>
-        <rect x="120" y="116" width="6" height="5" rx="0.5" stroke="#D0CBC5" stroke-width="0.4" fill="none"/>
-        <rect x="130" y="116" width="6" height="5" rx="0.5" stroke="#D0CBC5" stroke-width="0.4" fill="none"/>
-        <line x1="118" y1="122" x2="118" y2="128" stroke="#D0CBC5" stroke-width="0.4"/>
-        <line x1="122" y1="122" x2="122" y2="128" stroke="#D0CBC5" stroke-width="0.4"/>
-        <!-- People -->
-        <circle cx="72" cy="124" r="1.5" stroke="#C5C0BA" stroke-width="0.4" fill="none"/>
-        <line x1="72" y1="125.5" x2="72" y2="129" stroke="#C5C0BA" stroke-width="0.4"/>
-        <circle cx="80" cy="123" r="1.5" stroke="#C5C0BA" stroke-width="0.4" fill="none"/>
-        <line x1="80" y1="124.5" x2="80" y2="128" stroke="#C5C0BA" stroke-width="0.4"/>
-        <circle cx="155" cy="123" r="1.5" stroke="#C5C0BA" stroke-width="0.4" fill="none"/>
-        <line x1="155" y1="124.5" x2="155" y2="128" stroke="#C5C0BA" stroke-width="0.4"/>
-        <!-- Trees -->
-        <line x1="30" y1="128" x2="30" y2="122" stroke="#D0CBC5" stroke-width="0.5"/>
-        <circle cx="30" cy="120" r="3" stroke="#D0CBC5" stroke-width="0.4" fill="none"/>
-        <line x1="200" y1="127" x2="200" y2="121" stroke="#D0CBC5" stroke-width="0.5"/>
-        <circle cx="200" cy="119" r="3" stroke="#D0CBC5" stroke-width="0.4" fill="none"/>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-illust">
+      <svg viewBox="0 0 280 120" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:260px;height:110px;">
+        <!-- 山並み -->
+        <path d="M0 95 L30 72 L55 85 L80 60 L105 78 L130 55 L160 75 L185 62 L210 80 L240 65 L265 82 L280 70 L280 120 L0 120Z" fill="#EFECE5" stroke="none"/>
+        <path d="M0 95 L30 72 L55 85 L80 60 L105 78 L130 55 L160 75 L185 62 L210 80 L240 65 L265 82 L280 70" stroke="#D4CFC6" stroke-width="0.6" fill="none"/>
+        <!-- 校舎（シンプル） -->
+        <rect x="108" y="82" width="44" height="18" rx="1" fill="#FFFEF9" stroke="#C4B8A8" stroke-width="0.6"/>
+        <rect x="113" y="86" width="5" height="4" rx="0.5" fill="none" stroke="#C4B8A8" stroke-width="0.5"/>
+        <rect x="121" y="86" width="5" height="4" rx="0.5" fill="none" stroke="#C4B8A8" stroke-width="0.5"/>
+        <rect x="129" y="86" width="5" height="4" rx="0.5" fill="none" stroke="#C4B8A8" stroke-width="0.5"/>
+        <rect x="137" y="86" width="5" height="4" rx="0.5" fill="none" stroke="#C4B8A8" stroke-width="0.5"/>
+        <rect x="126" y="92" width="8" height="8" rx="0.5" fill="none" stroke="#C4B8A8" stroke-width="0.5"/>
+        <!-- 旗 -->
+        <line x1="152" y1="74" x2="152" y2="82" stroke="#C4B8A8" stroke-width="0.5"/>
+        <path d="M152 74 L160 76 L152 78" fill="#D4845C" fill-opacity="0.25" stroke="#D4845C" stroke-width="0.4"/>
+        <!-- 気球1 -->
+        <ellipse cx="80" cy="28" rx="18" ry="22" fill="#FAF0EA" stroke="#B8643F" stroke-width="0.7"/>
+        <path d="M62 28 C62 28 68 50 70 53 L90 53 C92 50 98 28 98 28" stroke="#B8643F" stroke-width="0.5" fill="none"/>
+        <line x1="70" y1="53" x2="72" y2="60" stroke="#B8643F" stroke-width="0.4"/>
+        <line x1="90" y1="53" x2="88" y2="60" stroke="#B8643F" stroke-width="0.4"/>
+        <rect x="71" y="60" width="18" height="7" rx="1.5" fill="none" stroke="#B8643F" stroke-width="0.5"/>
+        <!-- 気球1 模様 -->
+        <path d="M80 6 L80 50" stroke="#B8643F" stroke-width="0.2" opacity="0.3"/>
+        <path d="M70 12 C70 12 72 34 70 50" stroke="#B8643F" stroke-width="0.2" opacity="0.25"/>
+        <path d="M90 12 C90 12 88 34 90 50" stroke="#B8643F" stroke-width="0.2" opacity="0.25"/>
+        <!-- 気球2（奥） -->
+        <ellipse cx="195" cy="22" rx="13" ry="16" fill="#F0F5FA" stroke="#96AAB8" stroke-width="0.5"/>
+        <path d="M182 22 C182 22 186 38 188 40 L202 40 C204 38 208 22 208 22" stroke="#96AAB8" stroke-width="0.4" fill="none"/>
+        <line x1="188" y1="40" x2="189" y2="46" stroke="#96AAB8" stroke-width="0.3"/>
+        <line x1="202" y1="40" x2="201" y2="46" stroke="#96AAB8" stroke-width="0.3"/>
+        <rect x="188" y="46" width="14" height="5" rx="1" fill="none" stroke="#96AAB8" stroke-width="0.4"/>
+        <!-- 雲 -->
+        <ellipse cx="40" cy="18" rx="12" ry="4.5" fill="none" stroke="#DDD8CE" stroke-width="0.4"/>
+        <ellipse cx="35" cy="16" rx="6" ry="3" fill="none" stroke="#DDD8CE" stroke-width="0.4"/>
+        <ellipse cx="230" cy="30" rx="10" ry="3.5" fill="none" stroke="#DDD8CE" stroke-width="0.4"/>
+        <!-- 鳥 -->
+        <path d="M140 16 C141.5 14.5 143 16 144.5 14.5" stroke="#C4B8A8" stroke-width="0.4" fill="none"/>
+        <path d="M145 12 C146.5 10.5 148 12 149.5 10.5" stroke="#C4B8A8" stroke-width="0.3" fill="none"/>
+        <!-- 木 -->
+        <line x1="38" y1="100" x2="38" y2="92" stroke="#C4B8A8" stroke-width="0.5"/>
+        <circle cx="38" cy="90" r="3.5" fill="#EFF6F0" stroke="#A8C4A8" stroke-width="0.4"/>
+        <line x1="228" y1="98" x2="228" y2="90" stroke="#C4B8A8" stroke-width="0.5"/>
+        <circle cx="228" cy="88" r="3" fill="#EFF6F0" stroke="#A8C4A8" stroke-width="0.4"/>
+        <!-- 人 -->
+        <circle cx="95" cy="96" r="1.2" stroke="#C4B8A8" stroke-width="0.4" fill="none"/>
+        <line x1="95" y1="97.2" x2="95" y2="101" stroke="#C4B8A8" stroke-width="0.4"/>
+        <circle cx="165" cy="95" r="1.2" stroke="#C4B8A8" stroke-width="0.4" fill="none"/>
+        <line x1="165" y1="96.2" x2="165" y2="100" stroke="#C4B8A8" stroke-width="0.4"/>
+        <circle cx="170" cy="96" r="1" stroke="#C4B8A8" stroke-width="0.3" fill="none"/>
+        <line x1="170" y1="97" x2="170" y2="100" stroke="#C4B8A8" stroke-width="0.3"/>
       </svg>
     </div>
     <h1>多田東気球フェス</h1>
-    <div class="hero-sub">2026.4.12 SAT ― 兵庫県川西市 多田東小学校</div>
-    <div class="hero-badges">
-      <span class="hero-badge badge-status">Phase 0 完了</span>
-      <span class="hero-badge badge-date">開催まで <span id="days-left">--</span> 日</span>
+    <div class="header-place">兵庫県川西市 多田東小学校</div>
+    <div class="header-tags">
+      <span class="htag htag-date">2026年4月12日（土）</span>
+      <span class="htag htag-ok">会場・気球 確定済み</span>
     </div>
   </div>
 
-  <!-- ===== Countdown ===== -->
-  <div class="countdown-wrap">
-    <div class="countdown" id="countdown">
-      <div class="cd-item"><div class="cd-val" id="cd-d">--</div><div class="cd-label">DAYS</div></div>
-      <div class="cd-sep">:</div>
-      <div class="cd-item"><div class="cd-val" id="cd-h">--</div><div class="cd-label">HOURS</div></div>
-      <div class="cd-sep">:</div>
-      <div class="cd-item"><div class="cd-val" id="cd-m">--</div><div class="cd-label">MINS</div></div>
-      <div class="cd-sep">:</div>
-      <div class="cd-item"><div class="cd-val" id="cd-s">--</div><div class="cd-label">SECS</div></div>
-    </div>
+  <!-- Countdown -->
+  <div class="cd-row">
+    <div class="cd-box"><div class="cd-num" id="cd-d">--</div><div class="cd-unit">日</div></div>
+    <div class="cd-box"><div class="cd-num" id="cd-h">--</div><div class="cd-unit">時間</div></div>
+    <div class="cd-box"><div class="cd-num" id="cd-m">--</div><div class="cd-unit">分</div></div>
+    <div class="cd-box"><div class="cd-num" id="cd-s">--</div><div class="cd-unit">秒</div></div>
   </div>
 
-  <!-- ===== Stats ===== -->
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-val" style="color:var(--accent)">2<span class="stat-unit">機</span></div>
-      <div class="stat-label">気球</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-val" style="color:var(--blue)">500<span class="stat-unit">人</span></div>
-      <div class="stat-label">想定来場者</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-val" style="color:var(--green)">200<span class="stat-unit">枠</span></div>
-      <div class="stat-label">搭乗キャパ</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-val" style="color:var(--purple)">20<span class="stat-unit">名+</span></div>
-      <div class="stat-label">目標スタッフ</div>
-    </div>
+  <!-- Stats -->
+  <div class="stats">
+    <div class="st"><div class="st-v" style="color:var(--accent)">2<span class="st-u">機</span></div><div class="st-l">気球</div></div>
+    <div class="st"><div class="st-v" style="color:var(--blue)">500<span class="st-u">人</span></div><div class="st-l">想定来場</div></div>
+    <div class="st"><div class="st-v" style="color:var(--green)">200<span class="st-u">枠</span></div><div class="st-l">搭乗キャパ</div></div>
+    <div class="st"><div class="st-v" style="color:var(--yellow)">20<span class="st-u">名+</span></div><div class="st-l">目標スタッフ</div></div>
   </div>
 
-  <!-- ===== Navigation Tabs ===== -->
-  <div class="nav-tabs">
-    <div class="nav-tab active" onclick="switchTab('overview')">概要</div>
-    <div class="nav-tab" onclick="switchTab('roadmap')">ロードマップ</div>
-    <div class="nav-tab" onclick="switchTab('budget')">収支</div>
-    <div class="nav-tab" onclick="switchTab('staff')">スタッフ</div>
-    <div class="nav-tab" onclick="switchTab('daytime')">当日</div>
-    <div class="nav-tab" onclick="switchTab('risks')">リスク</div>
+  <!-- Nav -->
+  <div class="nav" id="nav">
+    <button class="nav-btn on" data-tab="overview">概要</button>
+    <button class="nav-btn" data-tab="roadmap">ロードマップ</button>
+    <button class="nav-btn" data-tab="budget">収支</button>
+    <button class="nav-btn" data-tab="staff">スタッフ</button>
+    <button class="nav-btn" data-tab="daytime">当日</button>
+    <button class="nav-btn" data-tab="risks">リスク</button>
+    <button class="nav-btn" data-tab="qa">質問回答</button>
   </div>
 
-  <!-- ==================== TAB: 概要 ==================== -->
-  <div class="tab-content active" id="tab-overview">
+  <!-- ========== 概要 ========== -->
+  <div class="pane on" id="p-overview">
 
-    <!-- Alerts -->
-    <div class="section">
-      <div class="section-title">
-        <svg viewBox="0 0 18 18" fill="none"><path d="M9 2L2 16h14L9 2z" stroke="#C49B3E" stroke-width="1.2"/><line x1="9" y1="7" x2="9" y2="11" stroke="#C49B3E" stroke-width="1.2"/><circle cx="9" cy="13" r="0.6" fill="#C49B3E"/></svg>
-        確認が必要な項目
-      </div>
-      <div class="alert-list">
-        <div class="alert-item critical">
-          <div class="alert-icon">!</div>
-          <div class="alert-text">
-            <div class="alert-title">収支が約35万円の赤字見込み</div>
-            <div class="alert-desc">PTA予算の補填額、正確な乗船料が未確定。次回打ち合わせ（~3/27）で確認必須</div>
-          </div>
+    <div class="sec">
+      <div class="sec-head">要確認</div>
+      <div class="alerts">
+        <div class="al al-c">
+          <div><div class="al-t">収支が約35万円の赤字見込み</div><div class="al-d">PTA予算の補填額と正確な乗船料が未確定。~3/27の打ち合わせで確認</div></div>
         </div>
-        <div class="alert-item warn">
-          <div class="alert-icon">?</div>
-          <div class="alert-text">
-            <div class="alert-title">大人乗船料の正確な金額が不明</div>
-            <div class="alert-desc">中さんがまだ把握できていない。収支に直結するため早期確認</div>
-          </div>
+        <div class="al al-w">
+          <div><div class="al-t">大人乗船料の正確な金額が不明</div><div class="al-d">中さんがまだ把握できていない</div></div>
         </div>
-        <div class="alert-item warn">
-          <div class="alert-icon">?</div>
-          <div class="alert-text">
-            <div class="alert-title">搭乗キャパ200 vs 来場者500のギャップ</div>
-            <div class="alert-desc">予約制で搭乗枠を管理し、見学は無料にする設計が必要</div>
-          </div>
+        <div class="al al-w">
+          <div><div class="al-t">搭乗キャパ200 vs 来場者500のギャップ</div><div class="al-d">予約制で搭乗枠を管理し、見学は無料にする設計が必要</div></div>
         </div>
-        <div class="alert-item info">
-          <div class="alert-icon">i</div>
-          <div class="alert-text">
-            <div class="alert-title">予約システムの方針未定</div>
-            <div class="alert-desc">SPが構築可能。主催者側でやるか要確認</div>
-          </div>
+        <div class="al al-i">
+          <div><div class="al-t">予約システムの方針未定</div><div class="al-d">SPが構築可能。主催者側でやるか要確認</div></div>
         </div>
       </div>
     </div>
 
-    <!-- Event Info -->
-    <div class="section">
-      <div class="section-title">
-        <svg viewBox="0 0 18 18" fill="none"><circle cx="9" cy="8" r="3" stroke="#C4704B" stroke-width="1"/><path d="M9 2C5.7 2 3 4.5 3 7.5 3 11.5 9 16 9 16S15 11.5 15 7.5C15 4.5 12.3 2 9 2Z" stroke="#C4704B" stroke-width="1"/></svg>
-        イベント情報
-      </div>
+    <div class="sec">
+      <div class="sec-head">イベント情報</div>
       <div class="card">
-        <div class="info-grid">
-          <div class="info-item">
-            <span class="info-label">会場</span>
-            <span class="info-val confirmed">多田東小学校（確定済み）</span>
+        <div class="info-list">
+          <div class="il-item"><span class="il-k">会場</span><span class="il-v ok">多田東小学校（確定）</span></div>
+          <div class="il-item"><span class="il-k">所在地</span><span class="il-v">兵庫県川西市</span></div>
+          <div class="il-item"><span class="il-k">主催</span><span class="il-v">多田東コミュニティ</span></div>
+          <div class="il-item"><span class="il-k">共催</span><span class="il-v">PTA（小学生料金補填）</span></div>
+          <div class="il-item"><span class="il-k">気球業者</span><span class="il-v ok">株式会社気球屋（発注済）</span></div>
+          <div class="il-item"><span class="il-k">気球</span><span class="il-v ok">2機（1機55万円）</span></div>
+          <div class="il-item"><span class="il-k">駐車場</span><span class="il-v ng">なし（スタッフのみ可）</span></div>
+          <div class="il-item"><span class="il-k">決済</span><span class="il-v">当日現金のみ</span></div>
+          <div class="il-item"><span class="il-k">雨天</span><span class="il-v">中止（予備日なし）</span></div>
+          <div class="il-item"><span class="il-k">中止判断</span><span class="il-v">前日の夜</span></div>
+          <div class="il-item"><span class="il-k">キッチンカー</span><span class="il-v ok">3台（主催者手配済）</span></div>
+          <div class="il-item"><span class="il-k">保険</span><span class="il-v ok">主催者手配済み</span></div>
+          <div class="il-item il-full"><span class="il-k">キャンセル料</span><span class="il-v">予約後すぐ発生。天候キャンセルは無料（前日でもOK）</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-head">役割分担</div>
+      <div class="card">
+        <div class="role-list">
+          <div class="role-r" style="border-left:3px solid var(--blue);padding-left:10px;">
+            <div class="role-nm">主催者</div>
+            <div class="role-d">集客・会場確保・地域連携・スタッフ募集・保険・キッチンカー</div>
+            <div class="role-c">60代の方・電話連絡</div>
           </div>
-          <div class="info-item">
-            <span class="info-label">所在地</span>
-            <span class="info-val">兵庫県川西市</span>
+          <div class="role-r" style="border-left:3px solid var(--accent);padding-left:10px;">
+            <div class="role-nm">中さん</div>
+            <div class="role-d">主催者サポート・業者手配・相談対応・気球代立替</div>
+            <div class="role-c">電話+対面</div>
           </div>
-          <div class="info-item">
-            <span class="info-label">主催</span>
-            <span class="info-val">多田東コミュニティ</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">共催</span>
-            <span class="info-val">PTA（小学生料金補填）</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">気球業者</span>
-            <span class="info-val confirmed">株式会社気球屋（発注済み）</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">気球台数</span>
-            <span class="info-val confirmed">2機（1機55万円）</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">駐車場</span>
-            <span class="info-val alert">なし（スタッフのみ可）</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">決済方法</span>
-            <span class="info-val">当日現金のみ</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">雨天</span>
-            <span class="info-val">中止（予備日なし）</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">中止判断</span>
-            <span class="info-val">前日の夜</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">キッチンカー</span>
-            <span class="info-val confirmed">3台（主催者手配済み）</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">保険</span>
-            <span class="info-val confirmed">主催者が手配済み</span>
-          </div>
-          <div class="info-item info-full">
-            <span class="info-label">キャンセルポリシー</span>
-            <span class="info-val">予約後すぐに発生。ただし天候キャンセルは無料（前日でもOK）</span>
+          <div class="role-r" style="border-left:3px solid var(--green);padding-left:10px;">
+            <div class="role-nm">SP</div>
+            <div class="role-d">当日スタッフ手配・現地仕切り・物品持込・運営管理全般</div>
+            <div class="role-c">MACHAP</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Role Split -->
-    <div class="section">
-      <div class="section-title">
-        <svg viewBox="0 0 18 18" fill="none"><circle cx="9" cy="7" r="3" stroke="#C4704B" stroke-width="1"/><path d="M3 16c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#C4704B" stroke-width="1"/></svg>
-        役割分担
-      </div>
+    <div class="sec">
+      <div class="sec-head">キャパシティ</div>
       <div class="card">
-        <div class="role-grid">
-          <div class="role-row" style="border-left: 3px solid var(--blue); padding-left: 12px;">
-            <div class="role-name">主催者</div>
-            <div class="role-desc">集客・会場確保・地域連携・地域スタッフ募集・保険・キッチンカー</div>
-            <div class="role-count">60代の方</div>
-          </div>
-          <div class="role-row" style="border-left: 3px solid var(--accent); padding-left: 12px;">
-            <div class="role-name">中さん</div>
-            <div class="role-desc">主催者サポート・業者手配・相談対応・気球代立替</div>
-            <div class="role-count">電話連絡</div>
-          </div>
-          <div class="role-row" style="border-left: 3px solid var(--green); padding-left: 12px;">
-            <div class="role-name">SP</div>
-            <div class="role-desc">当日スタッフ手配・現地仕切り・物品持込・運営管理全般</div>
-            <div class="role-count">MACHAP</div>
-          </div>
+        <div style="font-size:0.78rem;margin-bottom:10px;">
+          2機 × 7人/回 × 6回/時間 × 3時間 = <strong>最大252人</strong>（実稼働80% ≒ 200人）
         </div>
-      </div>
-    </div>
-
-    <!-- Capacity -->
-    <div class="section">
-      <div class="section-title">
-        <svg viewBox="0 0 18 18" fill="none"><rect x="2" y="4" width="14" height="10" rx="2" stroke="#C4704B" stroke-width="1"/><path d="M5 9h8M5 12h5" stroke="#C4704B" stroke-width="0.8"/></svg>
-        キャパシティ分析
-      </div>
-      <div class="card">
-        <div style="font-size:0.82rem;margin-bottom:12px;">
-          2機 × 7人/回 × 6回/時間 × 3時間 = <strong>最大252人</strong>（実稼働80% = 約200人）
+        <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:var(--dim);margin-bottom:3px;">
+          <span>搭乗可能 200人</span><span>来場想定 500人</span>
         </div>
-        <div class="capacity-bar-wrap">
-          <div class="cap-label-row">
-            <span>搭乗可能 200人</span>
-            <span>来場想定 500人</span>
-          </div>
-          <div class="cap-bar">
-            <div class="cap-fill" style="width:40%;background:linear-gradient(90deg,var(--green),var(--blue));"></div>
-            <div class="cap-marker" style="left:40%;">
-              <div class="cap-marker-label">搭乗上限 200</div>
-            </div>
-          </div>
+        <div style="height:14px;background:var(--warm);border-radius:7px;overflow:hidden;position:relative;">
+          <div style="height:100%;width:40%;background:linear-gradient(90deg,var(--green),var(--blue));border-radius:7px;"></div>
+          <div style="position:absolute;top:0;left:40%;height:100%;width:1.5px;background:var(--red);"></div>
         </div>
-        <div style="margin-top:14px;font-size:0.78rem;color:var(--dim);">
-          搭乗できない約300人 → 見学（無料）+ キッチンカー + イベント参加で満足度を確保
+        <div style="font-size:0.7rem;color:var(--dim);margin-top:6px;">
+          搭乗できない約300人 → 見学（無料）+ キッチンカー + イベント参加
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ==================== TAB: ロードマップ ==================== -->
-  <div class="tab-content" id="tab-roadmap">
-    <div class="section">
-      <div class="section-title">
-        <svg viewBox="0 0 18 18" fill="none"><path d="M3 3v12h12" stroke="#C4704B" stroke-width="1"/><polyline points="6,12 9,8 12,10 15,5" stroke="#C4704B" stroke-width="1" fill="none"/></svg>
-        進捗ロードマップ
-      </div>
-
+  <!-- ========== ロードマップ ========== -->
+  <div class="pane" id="p-roadmap">
+    <div class="sec">
+      <div class="sec-head">進捗</div>
       <div class="card">
-        <!-- Phase progress overview -->
-        <div style="display:flex;gap:4px;margin-bottom:16px;">
-          <div style="flex:1;height:6px;border-radius:3px;background:var(--green);"></div>
-          <div style="flex:1;height:6px;border-radius:3px;background:var(--accent);opacity:0.3;"></div>
-          <div style="flex:2;height:6px;border-radius:3px;background:var(--border-light);"></div>
-          <div style="flex:0.5;height:6px;border-radius:3px;background:var(--border-light);"></div>
-          <div style="flex:0.5;height:6px;border-radius:3px;background:var(--border-light);"></div>
+        <div style="display:flex;gap:3px;margin-bottom:10px;">
+          <div style="flex:1;height:4px;border-radius:2px;background:var(--green);"></div>
+          <div style="flex:1;height:4px;border-radius:2px;background:var(--accent-soft);opacity:0.35;"></div>
+          <div style="flex:2;height:4px;border-radius:2px;background:var(--border-light);"></div>
+          <div style="flex:0.5;height:4px;border-radius:2px;background:var(--border-light);"></div>
+          <div style="flex:0.5;height:4px;border-radius:2px;background:var(--border-light);"></div>
         </div>
-        <div style="display:flex;justify-content:space-between;font-size:0.65rem;color:var(--dim);margin-bottom:8px;">
-          <span>P0 ✓</span><span>P1 ← now</span><span>P2</span><span>P3</span><span>P4</span>
+        <div style="display:flex;justify-content:space-between;font-size:0.6rem;color:var(--dim);">
+          <span>P0 済</span><span>P1 ← いま</span><span>P2</span><span>P3</span><span>P4</span>
         </div>
+      </div>
+    </div>
 
-        <div class="roadmap">
+    <div class="sec">
+      <div class="card">
+        <div class="rm">
 
-          <!-- Phase 0 -->
-          <div class="rm-phase done">
+          <div class="rm-ph done">
             <div class="rm-dot"></div>
-            <div class="rm-header">
-              <span class="rm-title">Phase 0: 基盤整備</span>
-              <span class="rm-date">3/13 - 3/16</span>
-            </div>
+            <div class="rm-top"><span class="rm-name">基盤整備</span><span class="rm-date">3/13 - 3/16</span></div>
             <div class="rm-tasks">
-              <label class="rm-task done"><input type="checkbox" checked data-phase="0"> 計画書作成 <span class="task-owner">SP</span></label>
-              <label class="rm-task done"><input type="checkbox" checked data-phase="0"> 確認事項リスト作成 <span class="task-owner">SP</span></label>
-              <label class="rm-task done"><input type="checkbox" checked data-phase="0"> 中さんから回答取得 <span class="task-owner">中さん</span></label>
-              <label class="rm-task done"><input type="checkbox" checked data-phase="0"> 計画書を確定版に更新 <span class="task-owner">SP</span></label>
-              <label class="rm-task"><input type="checkbox" data-phase="0"> 収支の全体像を確認 <span class="task-owner">SP+中さん</span></label>
-              <label class="rm-task"><input type="checkbox" data-phase="0"> 予約システムの方針決定 <span class="task-owner">SP+中さん</span></label>
+              <label class="rm-t done"><input type="checkbox" checked> 計画書作成 <span class="who">SP</span></label>
+              <label class="rm-t done"><input type="checkbox" checked> 確認事項リスト作成 <span class="who">SP</span></label>
+              <label class="rm-t done"><input type="checkbox" checked> 中さんから回答取得 <span class="who">中さん</span></label>
+              <label class="rm-t done"><input type="checkbox" checked> 計画書を確定版に更新 <span class="who">SP</span></label>
+              <label class="rm-t"><input type="checkbox"> 収支の全体像を確認 <span class="who">SP+中</span></label>
+              <label class="rm-t"><input type="checkbox"> 予約システム方針決定 <span class="who">SP+中</span></label>
             </div>
           </div>
 
-          <!-- Phase 1 -->
-          <div class="rm-phase current">
+          <div class="rm-ph now">
             <div class="rm-dot"></div>
-            <div class="rm-header">
-              <span class="rm-title">Phase 1: 仕込み</span>
-              <span class="rm-date">3/17 - 3/30</span>
-            </div>
+            <div class="rm-top"><span class="rm-name">仕込み</span><span class="rm-date">3/17 - 3/30</span></div>
             <div class="rm-tasks">
-              <label class="rm-task"><input type="checkbox" data-phase="1"> スタッフ募集開始 <span class="task-owner">中さん+SP</span></label>
-              <label class="rm-task"><input type="checkbox" data-phase="1"> 募集用テキスト・画像作成 <span class="task-owner">SP</span></label>
-              <label class="rm-task"><input type="checkbox" data-phase="1"> 予約システム構築 <span class="task-owner">SP</span></label>
-              <label class="rm-task"><input type="checkbox" data-phase="1"> Tシャツデザイン決定・発注 <span class="task-owner">中さん</span></label>
-              <label class="rm-task"><input type="checkbox" data-phase="1"> スタッフ5名以上確保の中間確認 <span class="task-owner">SP+中さん</span></label>
-              <label class="rm-task"><input type="checkbox" data-phase="1"> 主催者打ち合わせ（~3/27） <span class="task-owner">中さん+SP</span></label>
-              <label class="rm-task"><input type="checkbox" data-phase="1"> スタッフ参加費の使い道決定 <span class="task-owner">全スタッフ</span></label>
+              <label class="rm-t"><input type="checkbox"> スタッフ募集開始 <span class="who">中+SP</span></label>
+              <label class="rm-t"><input type="checkbox"> 募集用テキスト・画像作成 <span class="who">SP</span></label>
+              <label class="rm-t"><input type="checkbox"> 予約システム構築 <span class="who">SP</span></label>
+              <label class="rm-t"><input type="checkbox"> Tシャツデザイン・発注 <span class="who">中さん</span></label>
+              <label class="rm-t"><input type="checkbox"> スタッフ5名以上確保の確認 <span class="who">SP+中</span></label>
+              <label class="rm-t"><input type="checkbox"> 主催者打ち合わせ（~3/27） <span class="who">中+SP</span></label>
+              <label class="rm-t"><input type="checkbox"> スタッフ参加費の使い道決定 <span class="who">全員</span></label>
             </div>
           </div>
 
-          <!-- Phase 2 -->
-          <div class="rm-phase">
+          <div class="rm-ph">
             <div class="rm-dot"></div>
-            <div class="rm-header">
-              <span class="rm-title">Phase 2: 直前準備</span>
-              <span class="rm-date">3/31 - 4/11</span>
-            </div>
+            <div class="rm-top"><span class="rm-name">直前準備</span><span class="rm-date">3/31 - 4/11</span></div>
             <div class="rm-tasks">
-              <label class="rm-task"><input type="checkbox" data-phase="2"> 備品リスト確定・買い出し <span class="task-owner">SP</span></label>
-              <label class="rm-task"><input type="checkbox" data-phase="2"> 最終打ち合わせ <span class="task-owner">全員</span></label>
-              <label class="rm-task"><input type="checkbox" data-phase="2"> 天気予報チェック開始 <span class="task-owner">SP</span></label>
-              <label class="rm-task"><input type="checkbox" data-phase="2"> スタッフ向け最終案内 <span class="task-owner">SP</span></label>
-              <label class="rm-task"><input type="checkbox" data-phase="2"> 前日夜: 中止/決行の最終判断 <span class="task-owner">主催者+中さん</span></label>
-              <label class="rm-task"><input type="checkbox" data-phase="2"> 備品積み込み・ルート確認 <span class="task-owner">SP+中さん</span></label>
+              <label class="rm-t"><input type="checkbox"> 備品リスト確定・買い出し <span class="who">SP</span></label>
+              <label class="rm-t"><input type="checkbox"> 最終打ち合わせ <span class="who">全員</span></label>
+              <label class="rm-t"><input type="checkbox"> 天気予報チェック開始 <span class="who">SP</span></label>
+              <label class="rm-t"><input type="checkbox"> スタッフ向け最終案内 <span class="who">SP</span></label>
+              <label class="rm-t"><input type="checkbox"> 前日夜: 中止/決行判断 <span class="who">主催+中</span></label>
+              <label class="rm-t"><input type="checkbox"> 備品積み込み・ルート確認 <span class="who">SP+中</span></label>
             </div>
           </div>
 
-          <!-- Phase 3 -->
-          <div class="rm-phase">
+          <div class="rm-ph">
             <div class="rm-dot"></div>
-            <div class="rm-header">
-              <span class="rm-title">Phase 3: 当日</span>
-              <span class="rm-date">4/12</span>
-            </div>
+            <div class="rm-top"><span class="rm-name">当日</span><span class="rm-date">4/12</span></div>
             <div class="rm-tasks">
-              <label class="rm-task"><input type="checkbox" data-phase="3"> 会場設営 <span class="task-owner">全スタッフ</span></label>
-              <label class="rm-task"><input type="checkbox" data-phase="3"> ブリーフィング <span class="task-owner">SP</span></label>
-              <label class="rm-task"><input type="checkbox" data-phase="3"> フライト実施 <span class="task-owner">全員</span></label>
-              <label class="rm-task"><input type="checkbox" data-phase="3"> 片付け・撤収 <span class="task-owner">全スタッフ</span></label>
-              <label class="rm-task"><input type="checkbox" data-phase="3"> 打ち上げ <span class="task-owner">全員</span></label>
+              <label class="rm-t"><input type="checkbox"> 会場設営 <span class="who">全員</span></label>
+              <label class="rm-t"><input type="checkbox"> ブリーフィング <span class="who">SP</span></label>
+              <label class="rm-t"><input type="checkbox"> フライト実施 <span class="who">全員</span></label>
+              <label class="rm-t"><input type="checkbox"> 片付け・撤収 <span class="who">全員</span></label>
+              <label class="rm-t"><input type="checkbox"> 打ち上げ <span class="who">全員</span></label>
             </div>
           </div>
 
-          <!-- Phase 4 -->
-          <div class="rm-phase">
+          <div class="rm-ph">
             <div class="rm-dot"></div>
-            <div class="rm-header">
-              <span class="rm-title">Phase 4: 振り返り</span>
-              <span class="rm-date">4/12 - 4/19</span>
-            </div>
+            <div class="rm-top"><span class="rm-name">振り返り</span><span class="rm-date">4/12 - 4/19</span></div>
             <div class="rm-tasks">
-              <label class="rm-task"><input type="checkbox" data-phase="4"> 写真・動画整理 <span class="task-owner">SP</span></label>
-              <label class="rm-task"><input type="checkbox" data-phase="4"> 収支報告作成 <span class="task-owner">SP</span></label>
-              <label class="rm-task"><input type="checkbox" data-phase="4"> KPT振り返り <span class="task-owner">SP+中さん</span></label>
-              <label class="rm-task"><input type="checkbox" data-phase="4"> テンプレートに反映 <span class="task-owner">SP</span></label>
+              <label class="rm-t"><input type="checkbox"> 写真・動画整理 <span class="who">SP</span></label>
+              <label class="rm-t"><input type="checkbox"> 収支報告作成 <span class="who">SP</span></label>
+              <label class="rm-t"><input type="checkbox"> KPT振り返り <span class="who">SP+中</span></label>
+              <label class="rm-t"><input type="checkbox"> テンプレートに反映 <span class="who">SP</span></label>
             </div>
           </div>
 
@@ -1141,438 +878,311 @@ body {
       </div>
     </div>
 
-    <!-- Key Dates -->
-    <div class="section">
-      <div class="section-title">
-        <svg viewBox="0 0 18 18" fill="none"><rect x="2" y="3" width="14" height="13" rx="2" stroke="#C4704B" stroke-width="1"/><line x1="2" y1="7" x2="16" y2="7" stroke="#C4704B" stroke-width="0.8"/><line x1="6" y1="1" x2="6" y2="5" stroke="#C4704B" stroke-width="1"/><line x1="12" y1="1" x2="12" y2="5" stroke="#C4704B" stroke-width="1"/></svg>
-        重要日程
-      </div>
+    <div class="sec">
+      <div class="sec-head">重要日程</div>
       <div class="card">
-        <div style="display:flex;flex-direction:column;gap:8px;font-size:0.82rem;">
-          <div style="display:flex;gap:12px;"><span style="min-width:60px;color:var(--accent);font-weight:600;">~3/16</span><span>スタッフ募集開始準備</span></div>
-          <div style="display:flex;gap:12px;"><span style="min-width:60px;color:var(--accent);font-weight:600;">3/17</span><span>スタッフ募集開始</span></div>
-          <div style="display:flex;gap:12px;"><span style="min-width:60px;color:var(--accent);font-weight:600;">3/22</span><span>Tシャツデザイン決定・発注</span></div>
-          <div style="display:flex;gap:12px;"><span style="min-width:60px;color:var(--accent);font-weight:600;">~3/27</span><span>主催者との打ち合わせ（収支確認）</span></div>
-          <div style="display:flex;gap:12px;"><span style="min-width:60px;color:var(--accent);font-weight:600;">4/5</span><span>最終打ち合わせ</span></div>
-          <div style="display:flex;gap:12px;"><span style="min-width:60px;color:var(--red);font-weight:600;">4/11</span><span>前日夜 中止/決行判断</span></div>
-          <div style="display:flex;gap:12px;"><span style="min-width:60px;font-weight:700;color:var(--accent);">4/12</span><span style="font-weight:600;">本番</span></div>
+        <div style="display:flex;flex-direction:column;gap:6px;font-size:0.78rem;">
+          <div style="display:flex;gap:10px;"><span style="min-width:50px;color:var(--accent);font-weight:600;">~3/16</span><span>スタッフ募集準備</span></div>
+          <div style="display:flex;gap:10px;"><span style="min-width:50px;color:var(--accent);font-weight:600;">3/17</span><span>スタッフ募集開始</span></div>
+          <div style="display:flex;gap:10px;"><span style="min-width:50px;color:var(--accent);font-weight:600;">3/22</span><span>Tシャツデザイン・発注</span></div>
+          <div style="display:flex;gap:10px;"><span style="min-width:50px;color:var(--accent);font-weight:600;">~3/27</span><span>主催者打ち合わせ（収支確認）</span></div>
+          <div style="display:flex;gap:10px;"><span style="min-width:50px;color:var(--accent);font-weight:600;">4/5</span><span>最終打ち合わせ</span></div>
+          <div style="display:flex;gap:10px;"><span style="min-width:50px;color:var(--red);font-weight:600;">4/11</span><span>前日夜 中止/決行判断</span></div>
+          <div style="display:flex;gap:10px;"><span style="min-width:50px;font-weight:700;color:var(--accent);">4/12</span><span style="font-weight:600;">本番</span></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ==================== TAB: 収支 ==================== -->
-  <div class="tab-content" id="tab-budget">
-    <div class="section">
-      <div class="section-title">
-        <svg viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="#C4704B" stroke-width="1"/><text x="9" y="12.5" text-anchor="middle" font-size="9" fill="#C4704B" font-weight="300">¥</text></svg>
-        収支シミュレーション
-      </div>
-
+  <!-- ========== 収支 ========== -->
+  <div class="pane" id="p-budget">
+    <div class="sec">
+      <div class="sec-head">収支シミュレーション</div>
       <div class="card">
-        <div class="budget-summary">
-          <div class="budget-box income">
-            <div class="bv">¥770K</div>
-            <div class="bl">想定収入</div>
-          </div>
-          <div class="budget-box expense">
-            <div class="bv">¥1,120K</div>
-            <div class="bl">想定支出</div>
-          </div>
-          <div class="budget-box balance">
-            <div class="bv">-¥350K</div>
-            <div class="bl">差額（PTA予算未反映）</div>
-          </div>
+        <div class="bud-row">
+          <div class="bud-box inc"><div class="bud-v">¥770K</div><div class="bud-l">想定収入</div></div>
+          <div class="bud-box exp"><div class="bud-v">¥1,120K</div><div class="bud-l">想定支出</div></div>
+          <div class="bud-box bal"><div class="bud-v">-¥350K</div><div class="bud-l">差額（PTA未反映）</div></div>
         </div>
 
-        <div style="font-size:0.78rem;padding:10px 12px;background:var(--yellow-light);border-radius:8px;margin-bottom:16px;">
-          PTA予算の補填額が不明のため仮の数字です。正確な乗船料も未確定。次回打ち合わせで全体像を確認。
+        <div style="font-size:0.74rem;padding:8px 12px;background:var(--yellow-light);border-radius:8px;margin-bottom:14px;color:var(--text);">
+          PTA予算の補填額が不明のため仮の数字。正確な乗船料も未確定
         </div>
 
-        <div style="font-weight:600;font-size:0.82rem;margin-bottom:8px;color:var(--green);">収入内訳</div>
-        <div class="budget-detail">
-          <div class="budget-row"><span>大人乗船料</span><span>¥525,000<span class="br-note">（¥3,500 × 150名）</span></span></div>
-          <div class="budget-row"><span>子供乗船料（一般）</span><span>¥45,000<span class="br-note">（¥1,500 × 30名）</span></span></div>
-          <div class="budget-row"><span>小学生（PTA関連）</span><span style="color:var(--yellow)">¥0〜?<span class="br-note">（PTA予算補填）</span></span></div>
-          <div class="budget-row"><span>スタッフ参加費</span><span>¥200,000<span class="br-note">（¥10,000 × 20名）</span></span></div>
+        <div style="font-weight:600;font-size:0.78rem;margin-bottom:6px;color:var(--green);">収入</div>
+        <div class="bud-detail">
+          <div class="bud-line"><span>大人乗船料</span><span>¥525,000<span class="bud-note">3,500×150名</span></span></div>
+          <div class="bud-line"><span>子供乗船料（一般）</span><span>¥45,000<span class="bud-note">1,500×30名</span></span></div>
+          <div class="bud-line"><span>小学生（PTA関連）</span><span style="color:var(--yellow)">未定</span></div>
+          <div class="bud-line"><span>スタッフ参加費</span><span>¥200,000<span class="bud-note">10,000×20名</span></span></div>
         </div>
 
-        <div style="font-weight:600;font-size:0.82rem;margin:16px 0 8px;color:var(--red);">支出内訳</div>
-        <div class="budget-detail">
-          <div class="budget-row"><span>気球外注（2機）</span><span>¥1,100,000<span class="br-note">（中さん立替）</span></span></div>
-          <div class="budget-row"><span>備品・消耗品</span><span>¥20,000</span></div>
-          <div class="budget-row"><span>会場費</span><span style="color:var(--green)">主催者負担</span></div>
-          <div class="budget-row"><span>保険</span><span style="color:var(--green)">主催者負担</span></div>
-          <div class="budget-row"><span>キッチンカー</span><span style="color:var(--green)">主催者負担</span></div>
-        </div>
-
-        <div style="margin-top:16px;padding:10px 12px;background:var(--card-alt);border-radius:8px;font-size:0.78rem;">
-          <div style="font-weight:600;margin-bottom:4px;">スタッフ参加費（¥10,000 or ¥5,000）の使い道</div>
-          <div style="color:var(--dim);">スタッフ全員の合議で決定予定。Tシャツ、スタッフ搭乗料、打ち上げ費用など</div>
+        <div style="font-weight:600;font-size:0.78rem;margin:14px 0 6px;color:var(--red);">支出</div>
+        <div class="bud-detail">
+          <div class="bud-line"><span>気球2機</span><span>¥1,100,000<span class="bud-note">中さん立替</span></span></div>
+          <div class="bud-line"><span>備品・消耗品</span><span>¥20,000</span></div>
+          <div class="bud-line"><span>会場費</span><span style="color:var(--green)">主催者負担</span></div>
+          <div class="bud-line"><span>保険</span><span style="color:var(--green)">主催者負担</span></div>
+          <div class="bud-line"><span>キッチンカー</span><span style="color:var(--green)">主催者負担</span></div>
         </div>
       </div>
     </div>
 
-    <!-- TBD Items -->
-    <div class="section">
-      <div class="section-title">
-        <svg viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="#C49B3E" stroke-width="1"/><text x="9" y="12.5" text-anchor="middle" font-size="10" fill="#C49B3E" font-weight="300">?</text></svg>
-        未確定事項（収支に影響）
+    <div class="sec">
+      <div class="sec-head">未確定（収支に影響）</div>
+      <div class="alerts">
+        <div class="al al-w"><div><div class="al-t">大人乗船料の正確な金額</div><div class="al-d">中さんに確認</div></div></div>
+        <div class="al al-w"><div><div class="al-t">PTA予算の金額と使い道</div><div class="al-d">主催者打ち合わせで確認</div></div></div>
+        <div class="al al-w"><div><div class="al-t">気球代110万の精算方法</div><div class="al-d">中さん立替→イベント後精算</div></div></div>
+        <div class="al al-w"><div><div class="al-t">SPとの収益按分</div><div class="al-d">「後で決める。まず飛ばしたい」</div></div></div>
       </div>
+    </div>
+  </div>
+
+  <!-- ========== スタッフ ========== -->
+  <div class="pane" id="p-staff">
+    <div class="sec">
+      <div class="sec-head">スタッフ管理</div>
       <div class="card">
-        <div class="alert-list">
-          <div class="alert-item warn">
-            <div class="alert-icon">1</div>
-            <div class="alert-text">
-              <div class="alert-title">大人乗船料の正確な金額</div>
-              <div class="alert-desc">中さんがまだ把握できていない → 中さんに確認</div>
-            </div>
-          </div>
-          <div class="alert-item warn">
-            <div class="alert-icon">2</div>
-            <div class="alert-text">
-              <div class="alert-title">PTA予算の具体的な金額と使い道</div>
-              <div class="alert-desc">小学生が無料or割引になる分をPTAが補填 → 主催者打ち合わせで確認</div>
-            </div>
-          </div>
-          <div class="alert-item warn">
-            <div class="alert-icon">3</div>
-            <div class="alert-text">
-              <div class="alert-title">気球代110万円の精算方法</div>
-              <div class="alert-desc">中さんが立替、イベント後精算 → 具体的な精算方法を確認</div>
-            </div>
-          </div>
-          <div class="alert-item warn">
-            <div class="alert-icon">4</div>
-            <div class="alert-text">
-              <div class="alert-title">SPとの収益按分</div>
-              <div class="alert-desc">中さん「後で決める。まず飛ばしたい」</div>
-            </div>
-          </div>
+        <div style="font-size:0.78rem;margin-bottom:8px;">
+          <strong>目標: 20名以上</strong> <span style="color:var(--dim);margin-left:6px;">最低ライン: 5名</span>
+        </div>
+
+        <div class="staff-gauge-wrap">
+          <div class="staff-gauge"><div class="staff-fill" style="width:10%;"></div><div class="staff-min"></div></div>
+          <div class="staff-n" style="color:var(--dim)">2/20</div>
+        </div>
+
+        <div style="font-size:0.74rem;color:var(--dim);margin-bottom:10px;">
+          確定: <strong style="color:var(--text);">SP</strong>、<strong style="color:var(--text);">中さん</strong>
+        </div>
+
+        <div style="padding:8px 12px;background:var(--accent-light);border-radius:8px;font-size:0.74rem;margin-bottom:12px;">
+          <span style="font-weight:600;color:var(--accent);">募集方法:</span> 個人LINE・SNS・口コミ<br>
+          <span style="font-weight:600;color:var(--accent);">開始予定:</span> 来週月〜火
+        </div>
+
+        <div style="font-size:0.74rem;margin-bottom:4px;font-weight:600;">参加費</div>
+        <div style="font-size:0.74rem;color:var(--dim);margin-bottom:10px;">
+          理想 ¥10,000（スムーズなら） / 調整 ¥5,000（直前募集の場合）
+        </div>
+
+        <div style="font-size:0.74rem;margin-bottom:4px;font-weight:600;">Tシャツ</div>
+        <div style="font-size:0.74rem;color:var(--dim);">
+          作成する方向（スタッフ次第）。中さんは作りたい派
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-head">当日の配置（20名+体制）</div>
+      <div class="card">
+        <div class="role-list">
+          <div class="role-r"><div class="role-nm">総合管理</div><div class="role-d">全体統括・タイムキープ</div><div class="role-c">1名 SP</div></div>
+          <div class="role-r"><div class="role-nm">業者連携</div><div class="role-d">気球屋との連携</div><div class="role-c">1名 中さん</div></div>
+          <div class="role-r"><div class="role-nm">受付</div><div class="role-d">予約確認・現金受領</div><div class="role-c">3名</div></div>
+          <div class="role-r"><div class="role-nm">誘導A</div><div class="role-d">1号機 列整理・乗降</div><div class="role-c">3名</div></div>
+          <div class="role-r"><div class="role-nm">誘導B</div><div class="role-d">2号機 列整理・乗降</div><div class="role-c">3名</div></div>
+          <div class="role-r"><div class="role-nm">安全管理</div><div class="role-d">搭乗エリア安全確保</div><div class="role-c">2名</div></div>
+          <div class="role-r"><div class="role-nm">案内</div><div class="role-d">来場者誘導・トイレ</div><div class="role-c">2名</div></div>
+          <div class="role-r"><div class="role-nm">記録</div><div class="role-d">写真・動画</div><div class="role-c">1名</div></div>
+          <div class="role-r"><div class="role-nm">遊軍</div><div class="role-d">交代・急な対応</div><div class="role-c">4名+</div></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ==================== TAB: スタッフ ==================== -->
-  <div class="tab-content" id="tab-staff">
-    <div class="section">
-      <div class="section-title">
-        <svg viewBox="0 0 18 18" fill="none"><circle cx="6" cy="7" r="2.5" stroke="#C4704B" stroke-width="0.8"/><circle cx="12" cy="7" r="2.5" stroke="#C4704B" stroke-width="0.8"/><path d="M1 16c0-2.8 2.2-5 5-5s5 2.2 5 5" stroke="#C4704B" stroke-width="0.8"/><path d="M7 16c0-2.8 2.2-5 5-5s5 2.2 5 5" stroke="#C4704B" stroke-width="0.8"/></svg>
-        スタッフ管理
-      </div>
-
+  <!-- ========== 当日 ========== -->
+  <div class="pane" id="p-daytime">
+    <div class="sec">
+      <div class="sec-head">当日タイムライン</div>
       <div class="card">
-        <div style="font-size:0.82rem;margin-bottom:12px;">
-          <span style="font-weight:600;">目標: 20名以上</span>
-          <span style="color:var(--dim);margin-left:8px;">最低: 5名必須</span>
-        </div>
-
-        <div class="staff-bar">
-          <div class="staff-gauge">
-            <div class="staff-fill" style="width:10%;"></div>
-            <div class="staff-min" title="最低5名ライン"></div>
-          </div>
-          <div class="staff-nums" style="color:var(--dim)">2/20</div>
-        </div>
-
-        <div style="display:flex;justify-content:space-between;font-size:0.65rem;color:var(--dim);margin-top:-4px;margin-bottom:16px;">
-          <span>0</span>
-          <span style="color:var(--red);margin-left:calc(25% - 10px);">最低5名</span>
-          <span style="margin-left:auto;">目標20名</span>
-        </div>
-
-        <div style="font-size:0.78rem;color:var(--dim);margin-bottom:12px;">
-          確定スタッフ: <strong style="color:var(--text);">SP</strong>、<strong style="color:var(--text);">中さん</strong>
-        </div>
-
-        <div style="padding:10px 12px;background:var(--accent-light);border-radius:8px;font-size:0.78rem;margin-bottom:16px;">
-          <div style="font-weight:600;color:var(--accent);margin-bottom:2px;">募集方法</div>
-          個人LINE・SNS・口コミ / 来週月〜火に募集開始予定
-        </div>
-
-        <div style="font-weight:600;font-size:0.82rem;margin-bottom:4px;">参加費</div>
-        <div style="font-size:0.78rem;color:var(--dim);margin-bottom:16px;">
-          理想: ¥10,000（スムーズに進む場合）/ 調整: ¥5,000（募集が直前になる場合）
-        </div>
-
-        <div style="font-weight:600;font-size:0.82rem;margin-bottom:4px;">Tシャツ</div>
-        <div style="font-size:0.78rem;color:var(--dim);">
-          作成する方向（スタッフの意向次第）/ 中さん個人的には作りたい
+        <div class="dt">
+          <div class="dt-row"><div class="dt-t">03:00</div><div class="dt-c"><div class="dt-c-t">集合・会場設営</div><div class="dt-c-n">全スタッフ集合。ブース設営</div></div></div>
+          <div class="dt-row"><div class="dt-t">03:00</div><div class="dt-c"><div class="dt-c-t">気球準備</div><div class="dt-c-n">気球屋が2機準備（業者主導）</div></div></div>
+          <div class="dt-row"><div class="dt-t">05:30</div><div class="dt-c"><div class="dt-c-t">ブリーフィング</div><div class="dt-c-n">最終確認・安全注意・役割確認</div></div></div>
+          <div class="dt-row"><div class="dt-t" style="color:var(--green);font-size:0.88rem;">06:00</div><div class="dt-c"><div class="dt-c-t" style="font-weight:700;">フライト開始</div><div class="dt-c-n">来場者の搭乗スタート</div></div></div>
+          <div class="dt-row"><div class="dt-t"><span>06:00</span><br><span style="font-size:0.6rem;color:var(--dim);">~09:00</span></div><div class="dt-c"><div class="dt-c-t">イベント進行</div><div class="dt-c-n">受付・誘導・安全管理・記録・キッチンカー</div></div></div>
+          <div class="dt-row"><div class="dt-t" style="color:var(--yellow);">09:00</div><div class="dt-c"><div class="dt-c-t">フライト終了</div><div class="dt-c-n">最終搭乗→気球撤収</div></div></div>
+          <div class="dt-row"><div class="dt-t" style="color:var(--dim);">10:00</div><div class="dt-c"><div class="dt-c-t">片付け完了</div><div class="dt-c-n">原状復帰</div></div></div>
+          <div class="dt-row"><div class="dt-t" style="color:var(--accent-soft);">11:30</div><div class="dt-c"><div class="dt-c-t">打ち上げ</div><div class="dt-c-n">全スタッフで昼食</div></div></div>
+          <div class="dt-row"><div class="dt-t" style="color:var(--dim);">13:00</div><div class="dt-c"><div class="dt-c-t">解散</div></div></div>
         </div>
       </div>
     </div>
 
-    <!-- Role Assignment -->
-    <div class="section">
-      <div class="section-title">
-        <svg viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="14" height="14" rx="2" stroke="#C4704B" stroke-width="1"/><path d="M5 9h8M5 12h5M5 6h8" stroke="#C4704B" stroke-width="0.8"/></svg>
-        当日の役割配置（20名+体制）
-      </div>
+    <div class="sec">
+      <div class="sec-head">来場者フロー</div>
       <div class="card">
-        <div class="role-grid">
-          <div class="role-row"><div class="role-name">総合管理</div><div class="role-desc">全体統括・タイムキープ・トラブル対応</div><div class="role-count">1名 SP</div></div>
-          <div class="role-row"><div class="role-name">業者連携</div><div class="role-desc">気球屋との連携・技術判断</div><div class="role-count">1名 中さん</div></div>
-          <div class="role-row"><div class="role-name">受付</div><div class="role-desc">予約確認・現金受領・整理券配布</div><div class="role-count">3名</div></div>
-          <div class="role-row"><div class="role-name">気球誘導A</div><div class="role-desc">1号機の列整理・乗降案内</div><div class="role-count">3名</div></div>
-          <div class="role-row"><div class="role-name">気球誘導B</div><div class="role-desc">2号機の列整理・乗降案内</div><div class="role-count">3名</div></div>
-          <div class="role-row"><div class="role-name">安全管理</div><div class="role-desc">搭乗エリア安全確保・子供の安全</div><div class="role-count">2名</div></div>
-          <div class="role-row"><div class="role-name">会場案内</div><div class="role-desc">来場者誘導・トイレ案内</div><div class="role-count">2名</div></div>
-          <div class="role-row"><div class="role-name">記録</div><div class="role-desc">写真・動画撮影</div><div class="role-count">1名</div></div>
-          <div class="role-row"><div class="role-name">遊軍</div><div class="role-desc">交代・キッチンカー連携・急な対応</div><div class="role-count">4名+</div></div>
+        <div style="font-size:0.76rem;font-weight:600;margin-bottom:6px;">予約者（搭乗あり）</div>
+        <div class="flow-steps" style="margin-bottom:14px;">
+          <span class="flow-s" style="background:var(--accent-light);">来場</span><span class="flow-arr">→</span>
+          <span class="flow-s" style="background:var(--accent-light);">受付（予約確認+現金）</span><span class="flow-arr">→</span>
+          <span class="flow-s" style="background:var(--accent-light);">整理券</span><span class="flow-arr">→</span>
+          <span class="flow-s" style="background:var(--green-light);">自由時間</span><span class="flow-arr">→</span>
+          <span class="flow-s" style="background:var(--accent-light);">搭乗</span>
+        </div>
+        <div style="font-size:0.76rem;font-weight:600;margin-bottom:6px;">見学者（搭乗なし）</div>
+        <div class="flow-steps">
+          <span class="flow-s" style="background:var(--blue-light);">来場</span><span class="flow-arr">→</span>
+          <span class="flow-s" style="background:var(--blue-light);">案内</span><span class="flow-arr">→</span>
+          <span class="flow-s" style="background:var(--green-light);">自由に見学・飲食</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ==================== TAB: 当日 ==================== -->
-  <div class="tab-content" id="tab-daytime">
-    <div class="section">
-      <div class="section-title">
-        <svg viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="#C4704B" stroke-width="1"/><path d="M9 5v4l3 3" stroke="#C4704B" stroke-width="1"/></svg>
-        当日タイムライン
-      </div>
+  <!-- ========== リスク ========== -->
+  <div class="pane" id="p-risks">
+    <div class="sec">
+      <div class="sec-head">リスク管理</div>
       <div class="card">
-        <div class="day-timeline">
-          <div class="dt-item">
-            <div class="dt-time">03:00</div>
-            <div class="dt-content">
-              <div class="dt-title">集合・会場設営開始</div>
-              <div class="dt-note">全スタッフ集合。受付・案内ブース設営</div>
-            </div>
-          </div>
-          <div class="dt-item">
-            <div class="dt-time">03:00</div>
-            <div class="dt-content">
-              <div class="dt-title">気球準備（業者主導）</div>
-              <div class="dt-note">株式会社気球屋が2機の準備</div>
-            </div>
-          </div>
-          <div class="dt-item">
-            <div class="dt-time">05:30</div>
-            <div class="dt-content">
-              <div class="dt-title">スタッフブリーフィング</div>
-              <div class="dt-note">最終確認・安全注意事項・役割確認</div>
-            </div>
-          </div>
-          <div class="dt-item">
-            <div class="dt-time" style="color:var(--green);font-size:0.9rem;">06:00</div>
-            <div class="dt-content">
-              <div class="dt-title" style="font-weight:700;">フライト開始</div>
-              <div class="dt-note">一般来場者の搭乗スタート</div>
-            </div>
-          </div>
-          <div class="dt-item">
-            <div class="dt-time">06:00<br><span style="font-size:0.65rem;color:var(--dim);">~09:00</span></div>
-            <div class="dt-content">
-              <div class="dt-title">イベント進行</div>
-              <div class="dt-note">受付・誘導・安全管理・記録撮影・キッチンカー営業</div>
-            </div>
-          </div>
-          <div class="dt-item">
-            <div class="dt-time" style="color:var(--yellow);">09:00</div>
-            <div class="dt-content">
-              <div class="dt-title">フライト終了</div>
-              <div class="dt-note">最終搭乗→気球撤収開始</div>
-            </div>
-          </div>
-          <div class="dt-item">
-            <div class="dt-time">10:00</div>
-            <div class="dt-content">
-              <div class="dt-title">片付け・撤収完了</div>
-              <div class="dt-note">会場原状復帰</div>
-            </div>
-          </div>
-          <div class="dt-item">
-            <div class="dt-time" style="color:var(--purple);">11:30</div>
-            <div class="dt-content">
-              <div class="dt-title">打ち上げ</div>
-              <div class="dt-note">全スタッフで昼食</div>
-            </div>
-          </div>
-          <div class="dt-item">
-            <div class="dt-time" style="color:var(--dim);">13:00</div>
-            <div class="dt-content">
-              <div class="dt-title">解散</div>
-              <div class="dt-note"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Operational Flow -->
-    <div class="section">
-      <div class="section-title">
-        <svg viewBox="0 0 18 18" fill="none"><path d="M2 9h14M12 5l4 4-4 4" stroke="#C4704B" stroke-width="1"/></svg>
-        来場者フロー
-      </div>
-      <div class="card">
-        <div style="font-size:0.82rem;">
-          <div style="font-weight:600;margin-bottom:8px;">予約者（搭乗あり）</div>
-          <div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:0.75rem;margin-bottom:16px;">
-            <span style="padding:4px 10px;background:var(--accent-light);border-radius:16px;">来場</span>
-            <span style="color:var(--dim);">→</span>
-            <span style="padding:4px 10px;background:var(--accent-light);border-radius:16px;">受付（予約確認+現金）</span>
-            <span style="color:var(--dim);">→</span>
-            <span style="padding:4px 10px;background:var(--accent-light);border-radius:16px;">整理券受取</span>
-            <span style="color:var(--dim);">→</span>
-            <span style="padding:4px 10px;background:var(--green-light);border-radius:16px;">自由時間</span>
-            <span style="color:var(--dim);">→</span>
-            <span style="padding:4px 10px;background:var(--accent-light);border-radius:16px;">搭乗</span>
-            <span style="color:var(--dim);">→</span>
-            <span style="padding:4px 10px;background:var(--accent-light);border-radius:16px;">降機</span>
-          </div>
-          <div style="font-weight:600;margin-bottom:8px;">見学者（搭乗なし）</div>
-          <div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:0.75rem;">
-            <span style="padding:4px 10px;background:var(--blue-light);border-radius:16px;">来場</span>
-            <span style="color:var(--dim);">→</span>
-            <span style="padding:4px 10px;background:var(--blue-light);border-radius:16px;">案内（搭乗は予約者のみ）</span>
-            <span style="color:var(--dim);">→</span>
-            <span style="padding:4px 10px;background:var(--green-light);border-radius:16px;">自由に見学・飲食</span>
-          </div>
+        <div class="risk-list">
+          <div class="risk-r"><span>搭乗希望 > キャパ</span><span class="risk-tag rh">確率高</span><span class="risk-tag rm-tag">影響中</span><div class="risk-note">予約制で200枠を管理</div></div>
+          <div class="risk-r"><span>荒天中止</span><span class="risk-tag rm-tag">確率中</span><span class="risk-tag rh">影響高</span><div class="risk-note">前日夜判断。天候なら業者費用なし</div></div>
+          <div class="risk-r"><span>収支赤字</span><span class="risk-tag rm-tag">確率中</span><span class="risk-tag rm-tag">影響中</span><div class="risk-note">PTA予算・正確な乗船料を確認</div></div>
+          <div class="risk-r"><span>スタッフ不足（5名以下）</span><span class="risk-tag rl">確率低</span><span class="risk-tag rh">影響極高</span><div class="risk-note">早期募集・中さんのチャネル活用</div></div>
+          <div class="risk-r"><span>駐車場問題</span><span class="risk-tag rm-tag">確率中</span><span class="risk-tag rm-tag">影響中</span><div class="risk-note">「駐車場なし」を事前周知</div></div>
+          <div class="risk-r"><span>主催者との認識齟齬</span><span class="risk-tag rm-tag">確率中</span><span class="risk-tag rh">影響高</span><div class="risk-note">3/27打ち合わせですり合わせ</div></div>
+          <div class="risk-r"><span>早朝の騒音</span><span class="risk-tag rl">確率低</span><span class="risk-tag rm-tag">影響中</span><div class="risk-note">主催者が地域連携済み</div></div>
+          <div class="risk-r"><span>機材トラブル</span><span class="risk-tag rl">確率低</span><span class="risk-tag rh">影響高</span><div class="risk-note">業者と事前確認・代替プログラム</div></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ==================== TAB: リスク ==================== -->
-  <div class="tab-content" id="tab-risks">
-    <div class="section">
-      <div class="section-title">
-        <svg viewBox="0 0 18 18" fill="none"><path d="M9 2L2 16h14L9 2z" stroke="#C4704B" stroke-width="1"/><line x1="9" y1="7" x2="9" y2="11" stroke="#C4704B" stroke-width="1"/><circle cx="9" cy="13" r="0.6" fill="#C4704B"/></svg>
-        リスク管理
+  <!-- ========== 質問回答 ========== -->
+  <div class="pane" id="p-qa">
+    <div class="sec">
+      <div class="sec-head">中さんへの確認事項と回答（全35問）</div>
+    </div>
+
+    <div class="card">
+      <div class="qa-cat">
+        <div class="qa-cat-head">会場</div>
+        <div class="qa-item"><div class="qa-q">会場はどこ？</div><div class="qa-a">兵庫県川西市の多田東小学校</div></div>
+        <div class="qa-item"><div class="qa-q">駐車場はある？</div><div class="qa-a">ない。スタッフのみ駐車可能。一般はコインパーキング利用。地域の方は徒歩推奨</div></div>
+        <div class="qa-item"><div class="qa-q">会場は確定済み？</div><div class="qa-a">確定済み</div></div>
       </div>
-      <div class="card">
-        <div class="risk-grid">
-          <div class="risk-row">
-            <span>搭乗希望者 > キャパ（200枠）</span>
-            <span class="risk-tag risk-high">確率 高</span>
-            <span class="risk-tag risk-mid">影響 中</span>
-            <span style="font-size:0.72rem;color:var(--dim);">予約制で枠管理</span>
-          </div>
-          <div class="risk-row">
-            <span>荒天中止</span>
-            <span class="risk-tag risk-mid">確率 中</span>
-            <span class="risk-tag risk-high">影響 高</span>
-            <span style="font-size:0.72rem;color:var(--dim);">前日夜判断 / 天候なら業者費用なし</span>
-          </div>
-          <div class="risk-row">
-            <span>収支赤字</span>
-            <span class="risk-tag risk-mid">確率 中</span>
-            <span class="risk-tag risk-mid">影響 中</span>
-            <span style="font-size:0.72rem;color:var(--dim);">PTA予算・正確な乗船料を早期確認</span>
-          </div>
-          <div class="risk-row">
-            <span>スタッフ不足（5名以下）</span>
-            <span class="risk-tag risk-low">確率 低</span>
-            <span class="risk-tag risk-high">影響 極高</span>
-            <span style="font-size:0.72rem;color:var(--dim);">早期募集 / 中さんのチャネル活用</span>
-          </div>
-          <div class="risk-row">
-            <span>駐車場トラブル</span>
-            <span class="risk-tag risk-mid">確率 中</span>
-            <span class="risk-tag risk-mid">影響 中</span>
-            <span style="font-size:0.72rem;color:var(--dim);">「駐車場なし」を事前周知</span>
-          </div>
-          <div class="risk-row">
-            <span>主催者との認識齟齬</span>
-            <span class="risk-tag risk-mid">確率 中</span>
-            <span class="risk-tag risk-high">影響 高</span>
-            <span style="font-size:0.72rem;color:var(--dim);">3/27打ち合わせで全体像すり合わせ</span>
-          </div>
-          <div class="risk-row">
-            <span>早朝の騒音問題</span>
-            <span class="risk-tag risk-low">確率 低</span>
-            <span class="risk-tag risk-mid">影響 中</span>
-            <span style="font-size:0.72rem;color:var(--dim);">主催者が地域連携済み</span>
-          </div>
-          <div class="risk-row">
-            <span>機材トラブル</span>
-            <span class="risk-tag risk-low">確率 低</span>
-            <span class="risk-tag risk-high">影響 高</span>
-            <span style="font-size:0.72rem;color:var(--dim);">業者との事前確認 / 代替プログラム</span>
-          </div>
-        </div>
+
+      <div class="qa-cat">
+        <div class="qa-cat-head">主催者</div>
+        <div class="qa-item"><div class="qa-q">主催者は？</div><div class="qa-a">多田東（ただひがし）コミュニティ</div></div>
+        <div class="qa-item"><div class="qa-q">主催者とこちらの役割分担は？</div><div class="qa-a">主催者: 集客、会場確保、地域連携、地域スタッフ募集。こちら: 主催者の心理的サポート、当日のスタッフ手配と現地の仕切り、必要物品の持ち込み、提携業者の手配、事前の相談対応</div></div>
+        <div class="qa-item"><div class="qa-q">主催者との連絡手段は？</div><div class="qa-a">電話と対面での打ち合わせ・調整</div></div>
+      </div>
+
+      <div class="qa-cat">
+        <div class="qa-cat-head">気球</div>
+        <div class="qa-item"><div class="qa-q">今回は何機飛ばす？</div><div class="qa-a">2機</div></div>
+        <div class="qa-item"><div class="qa-q">気球業者はどこ？手配済み？</div><div class="qa-a">株式会社気球屋。発注済み</div></div>
+        <div class="qa-item"><div class="qa-q">業者への発注期限は？</div><div class="qa-a">発注済み</div></div>
+        <div class="qa-item"><div class="qa-q">キャンセル料が発生するタイミングは？</div><div class="qa-a">予約後すぐに発生。ただし天候キャンセルは無料（前日でもOK）</div></div>
+      </div>
+
+      <div class="qa-cat">
+        <div class="qa-cat-head">お金</div>
+        <div class="qa-item"><div class="qa-q">初期費用は誰が立て替える？</div><div class="qa-a">中が立て替え。業者への支払いもイベント後でOKと相談済みで、タイムラグは少ない</div></div>
+        <div class="qa-item"><div class="qa-q">乗船料は大人3,500円 / 子供1,500円で確定？</div><div class="qa-a">大人分は決まっているが、中がまだ正確な金額を把握していない</div></div>
+        <div class="qa-item"><div class="qa-q">スタッフ参加費は1万円で確定？</div><div class="qa-a">理想は¥10,000（スムーズに進む場合）。調整案は¥5,000（募集が直前の場合）</div></div>
+        <div class="qa-item"><div class="qa-q">乗船料の決済方法は？</div><div class="qa-a">当日現金のみ。受付で支払い</div></div>
+        <div class="qa-item"><div class="qa-q">SPとの収益按分は？</div><div class="qa-a">後ほど考える。まずは一旦飛ばして進めたい</div></div>
+      </div>
+
+      <div class="qa-cat">
+        <div class="qa-cat-head">集客</div>
+        <div class="qa-item"><div class="qa-q">来場者は何人くらい想定？</div><div class="qa-a">500人程度</div></div>
+        <div class="qa-item"><div class="qa-q">メインターゲットは？</div><div class="qa-a">地域住民全般、小学校に通う生徒とその親（ファミリー層）</div></div>
+        <div class="qa-item"><div class="qa-q">集客チャネルは？</div><div class="qa-a">小学校の連絡網、地域の連絡網、地域掲示板や地域チャンネル全般。主催者10名グループが動く</div></div>
+        <div class="qa-item"><div class="qa-q">予約制？当日先着？</div><div class="qa-a">予約制</div></div>
+      </div>
+
+      <div class="qa-cat">
+        <div class="qa-cat-head">スタッフ</div>
+        <div class="qa-item"><div class="qa-q">スタッフは何人集めたい？</div><div class="qa-a">20名以上が理想。最低5名は必須（5名以下だと困る）</div></div>
+        <div class="qa-item"><div class="qa-q">スタッフの募集方法は？</div><div class="qa-a">個人のLINEやSNS、口コミ</div></div>
+        <div class="qa-item"><div class="qa-q">スタッフ募集はいつから？</div><div class="qa-a">担当との打ち合わせがスムーズにいけば来週の月曜か火曜。週明け開始予定</div></div>
+        <div class="qa-item"><div class="qa-q">スタッフTシャツは作る？</div><div class="qa-a">作成する方向で検討（スタッフの意向次第）。個人的には作った方がいいと思っている</div></div>
+      </div>
+
+      <div class="qa-cat">
+        <div class="qa-cat-head">天候・安全</div>
+        <div class="qa-item"><div class="qa-q">雨天の場合は？</div><div class="qa-a">中止。予備日は設けていない</div></div>
+        <div class="qa-item"><div class="qa-q">予備日は？</div><div class="qa-a">なし。中止になってから改めて検討する方針</div></div>
+        <div class="qa-item"><div class="qa-q">イベント保険は？</div><div class="qa-a">主催者が手配</div></div>
+        <div class="qa-item"><div class="qa-q">中止判断はいつ？</div><div class="qa-a">前日の夜</div></div>
+      </div>
+
+      <div class="qa-cat">
+        <div class="qa-cat-head">コンテンツ</div>
+        <div class="qa-item"><div class="qa-q">気球以外にやりたいことは？</div><div class="qa-a">引き出しはいっぱいあるが、今回は特に「絶対やりたい」はない。集まったスタッフと相談して、盛り上がった内容ならやりたい</div></div>
+        <div class="qa-item"><div class="qa-q">キッチンカーは？</div><div class="qa-a">主催者が呼んでいる（3台）。弁当名は決まっていると思うが把握できていない</div></div>
+        <div class="qa-item"><div class="qa-q">イベント名は？</div><div class="qa-a">多田東気球フェス（仮）</div></div>
+      </div>
+
+      <div class="qa-cat">
+        <div class="qa-cat-head">その他</div>
+        <div class="qa-item"><div class="qa-q">関係者のLINEグループは？</div><div class="qa-a">ない。連絡は個別の電話</div></div>
+        <div class="qa-item"><div class="qa-q">過去の気球イベント来場者数は？</div><div class="qa-a">通常500人くらい。見学者を多く募集する企画では1,000人くらい</div></div>
+        <div class="qa-item"><div class="qa-q">過去の改善したい点は？</div><div class="qa-a">プレミアムスタッフの募集開始が遅くなる点。理想は3ヶ月前に募集開始</div></div>
+        <div class="qa-item"><div class="qa-q">次の打ち合わせは？</div><div class="qa-a">主催者と2週間後。SPとは随時</div></div>
+        <div class="qa-item"><div class="qa-q">その他伝えたいこと</div><div class="qa-a">PTAも共催協力で小学生は無料or安くなる見込み。主催者は60代の方。プロカメラマン撮影（編集込み10万円）は予算に余力があれば検討したいが、今回は見送り方向。ただし実施できれば非常に楽しそう</div></div>
       </div>
     </div>
   </div>
 
-  <div class="footer">
-    MACHAP Events &copy; 2026 ― SP &times; 中さん
-  </div>
+  <div class="foot">MACHAP Events ― SP × 中さん</div>
 
 </div>
 
 <script>
-/* ============================
-   MACHAP Events Dashboard JS
-   ============================ */
+const EVT = new Date('2026-04-12T06:00:00+09:00');
+const LS_KEY = 'machap-0412-rm';
 
-// --- Config (change for each event) ---
-const EVENT_DATE = new Date('2026-04-12T06:00:00+09:00');
-const STORAGE_KEY = 'machap-balloon-0412-roadmap';
-
-// --- Countdown ---
-function updateCountdown() {
-  const now = new Date();
-  const diff = EVENT_DATE - now;
-  if (diff <= 0) {
-    ['cd-d','cd-h','cd-m','cd-s'].forEach(id => {
-      document.getElementById(id).textContent = '0';
-    });
-    return;
-  }
-  const d = Math.floor(diff / 864e5);
-  const h = Math.floor((diff % 864e5) / 36e5);
-  const m = Math.floor((diff % 36e5) / 6e4);
-  const s = Math.floor((diff % 6e4) / 1e3);
-  document.getElementById('cd-d').textContent = d;
-  document.getElementById('cd-h').textContent = String(h).padStart(2,'0');
-  document.getElementById('cd-m').textContent = String(m).padStart(2,'0');
-  document.getElementById('cd-s').textContent = String(s).padStart(2,'0');
-  document.getElementById('days-left').textContent = d;
+// Countdown
+function tick() {
+  const d = EVT - new Date();
+  if (d <= 0) return;
+  document.getElementById('cd-d').textContent = Math.floor(d/864e5);
+  document.getElementById('cd-h').textContent = String(Math.floor(d%864e5/36e5)).padStart(2,'0');
+  document.getElementById('cd-m').textContent = String(Math.floor(d%36e5/6e4)).padStart(2,'0');
+  document.getElementById('cd-s').textContent = String(Math.floor(d%6e4/1e3)).padStart(2,'0');
 }
-updateCountdown();
-setInterval(updateCountdown, 1000);
+tick(); setInterval(tick, 1000);
 
-// --- Tab switching ---
-function switchTab(tabId) {
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
-  document.getElementById('tab-' + tabId).classList.add('active');
-  event.target.classList.add('active');
-}
-
-// --- Roadmap checklist persistence ---
-function saveRoadmap() {
-  const checks = document.querySelectorAll('.rm-task input[type="checkbox"]');
-  const state = [...checks].map(c => c.checked);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
-
-function loadRoadmap() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (!saved) return;
-  const state = JSON.parse(saved);
-  const checks = document.querySelectorAll('.rm-task input[type="checkbox"]');
-  checks.forEach((c, i) => {
-    if (state[i] !== undefined) {
-      c.checked = state[i];
-      c.parentElement.classList.toggle('done', state[i]);
-    }
-  });
-}
-
-document.querySelectorAll('.rm-task input[type="checkbox"]').forEach(cb => {
-  cb.addEventListener('change', function() {
-    this.parentElement.classList.toggle('done', this.checked);
-    saveRoadmap();
+// Tabs
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('on'));
+    document.querySelectorAll('.pane').forEach(p => p.classList.remove('on'));
+    this.classList.add('on');
+    document.getElementById('p-' + this.dataset.tab).classList.add('on');
   });
 });
 
-loadRoadmap();
-</script>
+// Roadmap persistence
+function saveRM() {
+  const s = [...document.querySelectorAll('.rm-t input')].map(c => c.checked);
+  localStorage.setItem(LS_KEY, JSON.stringify(s));
+}
 
+function loadRM() {
+  const s = localStorage.getItem(LS_KEY);
+  if (!s) return;
+  const st = JSON.parse(s);
+  document.querySelectorAll('.rm-t input').forEach((c,i) => {
+    if (st[i] !== undefined) { c.checked = st[i]; c.parentElement.classList.toggle('done', st[i]); }
+  });
+}
+
+document.querySelectorAll('.rm-t input').forEach(cb => {
+  cb.addEventListener('change', function() {
+    this.parentElement.classList.toggle('done', this.checked);
+    saveRM();
+  });
+});
+
+loadRM();
+</script>
 </body>
 </html>
