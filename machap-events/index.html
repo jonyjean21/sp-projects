@@ -1005,7 +1005,7 @@ select.form-input { appearance: auto; }
   <div class="stats">
     <div class="st"><div class="st-v" style="color:var(--accent)">2<span class="st-u">機</span></div><div class="st-l">気球</div></div>
     <div class="st"><div class="st-v" style="color:var(--blue)">500<span class="st-u">人</span></div><div class="st-l">想定来場</div></div>
-    <div class="st"><div class="st-v" style="color:var(--green)">200<span class="st-u">枠</span></div><div class="st-l">搭乗キャパ</div></div>
+    <div class="st"><div class="st-v" style="color:var(--green)">450<span class="st-u">名</span></div><div class="st-l">搭乗キャパ</div></div>
     <div class="st"><div class="st-v" style="color:var(--yellow)">20<span class="st-u">名+</span></div><div class="st-l">目標スタッフ</div></div>
   </div>
 
@@ -1076,18 +1076,22 @@ select.form-input { appearance: auto; }
     <div class="sec">
       <div class="sec-head">キャパシティ</div>
       <div class="card">
-        <div style="font-size:0.78rem;margin-bottom:10px;">
-          2機 × 7人/回 × 6回/時間 × 3時間 = <strong>最大252人</strong>（実稼働80% ≒ 200人）
+        <div style="font-size:0.78rem;margin-bottom:6px;">
+          6名 × 11回転/時間 × 3時間 × 2基 = <strong>理論値 396名</strong>
+        </div>
+        <div style="font-size:0.76rem;color:var(--dim);margin-bottom:10px;line-height:1.6;">
+          子供は2名を大人1名換算 → <strong style="color:var(--green);">搭乗キャパ 約450名</strong>
+          <span style="color:var(--dim);font-size:0.68rem;">（風・乗降スムーズさにより±30名の誤差あり）</span>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:var(--dim);margin-bottom:3px;">
-          <span>搭乗可能 200人</span><span>来場想定 500人</span>
+          <span>搭乗可能 450名</span><span>来場想定 500人</span>
         </div>
         <div style="height:14px;background:var(--warm);border-radius:7px;overflow:hidden;position:relative;">
-          <div style="height:100%;width:40%;background:linear-gradient(90deg,var(--green),var(--blue));border-radius:7px;"></div>
-          <div style="position:absolute;top:0;left:40%;height:100%;width:1.5px;background:var(--red);"></div>
+          <div style="height:100%;width:90%;background:linear-gradient(90deg,var(--green),var(--blue));border-radius:7px;"></div>
+          <div style="position:absolute;top:0;left:90%;height:100%;width:1.5px;background:var(--red);"></div>
         </div>
         <div style="font-size:0.7rem;color:var(--dim);margin-top:6px;">
-          搭乗できない約300人 → 見学（無料）+ キッチンカー + イベント参加
+          搭乗できない約50人 → 見学（無料）+ キッチンカー + イベント参加
         </div>
       </div>
     </div>
@@ -1348,7 +1352,7 @@ select.form-input { appearance: auto; }
       <div class="sec-head">リスク管理</div>
       <div class="card">
         <div class="risk-list">
-          <div class="risk-r"><span>搭乗希望 > キャパ</span><span class="risk-tag rh">確率高</span><span class="risk-tag rm-tag">影響中</span><div class="risk-note">予約制で200枠を管理</div></div>
+          <div class="risk-r"><span>搭乗希望 > キャパ</span><span class="risk-tag rh">確率低</span><span class="risk-tag rm-tag">影響小</span><div class="risk-note">キャパ450名・来場想定500名なので大半は搭乗可能</div></div>
           <div class="risk-r"><span>荒天中止</span><span class="risk-tag rm-tag">確率中</span><span class="risk-tag rh">影響高</span><div class="risk-note">前日夜判断。天候なら業者費用なし</div></div>
           <div class="risk-r"><span>収支赤字</span><span class="risk-tag rm-tag">確率中</span><span class="risk-tag rm-tag">影響中</span><div class="risk-note">PTA予算・正確な乗船料を確認</div></div>
           <div class="risk-r"><span>スタッフ不足（5名以下）</span><span class="risk-tag rl">確率低</span><span class="risk-tag rh">影響極高</span><div class="risk-note">早期募集・ナカのチャネル活用</div></div>
@@ -2013,7 +2017,7 @@ async function autoSeed() {
   // TBD (確認事項)
   await fbSet('tbd', {
     tbd01: { title:'主催者との打ち合わせ日程確定', who:'ナカ→主催者確認', category:'運営', priority:'high', deadline:'2026-03-17', why:'PTA予算、収支、当日オペレーションなど重要事項の確認が必要。日程が決まらないと他が全部止まる', options:['ナカから主催者に連絡して日程確定'], status:'open' },
-    tbd02: { title:'予約管理の方法', who:'ナカ→主催者確認', category:'運営', priority:'high', deadline:'2026-03-16', why:'搭乗200枠の管理方法が未定。主催者が回覧板で管理しているが、追加集客時にWeb予約フォームが必要になる可能性', options:['主催者が回覧板で全管理（フォーム不要）','回覧板＋追加集客用Webフォーム（SP構築）','全てWeb予約に移行'], status:'open' },
+    tbd02: { title:'予約管理の方法', who:'ナカ→主催者確認', category:'運営', priority:'high', deadline:'2026-03-16', why:'搭乗キャパ450名・来場想定500名なのでほぼ全員乗れる。主催者が回覧板で管理しているが、追加集客時にWeb予約フォームが必要になる可能性', options:['主催者が回覧板で全管理（フォーム不要）','回覧板＋追加集客用Webフォーム（SP構築）','全てWeb予約に移行'], status:'open' },
     tbd03: { title:'スタッフ参加費の金額', who:'SP×ナカで決定', category:'スタッフ', priority:'high', deadline:'2026-03-17', why:'¥10,000と¥5,000で収入に10万円の差。募集開始時に金額を提示する必要がある', options:['¥10,000（理想・収入最大化）','¥5,000（ハードル低め・集めやすい）','段階制（早期¥5,000 / 通常¥10,000）'], status:'open' },
     tbd04: { title:'大人乗船料の正確な金額', who:'ナカ→主催者確認', category:'収支', priority:'high', deadline:'2026-03-20', why:'現在「約3,500円」で仮計算。正確な金額で収支が大きく変動する。150名×差額 = 大きなインパクト', options:['ナカが主催者または業者に確認'], status:'open' },
     tbd05: { title:'追加集客するか・応募フォーム要否', who:'ナカ→主催者確認', category:'集客', priority:'medium', deadline:'2026-03-20', why:'回覧板で予約を募っているが、追加でSNS等で集客する場合の受け皿が必要かもしれない', options:['回覧板のみで十分（フォーム不要）','SNS告知＋Web応募フォーム（SP構築）','SNS告知のみ（DM/電話で予約受付）'], status:'open' },
