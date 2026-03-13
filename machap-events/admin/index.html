@@ -158,7 +158,7 @@ textarea.form-input { resize: vertical; min-height: 60px; line-height: 1.5; }
 
   <div class="nav">
     <button class="nav-btn on" data-tab="tasks">タスク</button>
-    <button class="nav-btn" data-tab="tbd">未決事項</button>
+    <button class="nav-btn" data-tab="tbd">確認事項</button>
     <button class="nav-btn" data-tab="staffmgr">スタッフ</button>
     <button class="nav-btn" data-tab="budgetmgr">収支</button>
     <button class="nav-btn" data-tab="settings">設定</button>
@@ -205,7 +205,7 @@ textarea.form-input { resize: vertical; min-height: 60px; line-height: 1.5; }
   <!-- ========== 未決事項 ========== -->
   <div class="pane" id="p-tbd">
     <div class="sec">
-      <div class="sec-head">未決事項を追加</div>
+      <div class="sec-head">確認事項を追加</div>
       <div class="card">
         <div class="form-row">
           <div class="form-group">
@@ -217,9 +217,55 @@ textarea.form-input { resize: vertical; min-height: 60px; line-height: 1.5; }
             <select class="form-input" id="tbd-who">
               <option value="中さんに確認">中さんに確認</option>
               <option value="主催者に確認">主催者に確認</option>
-              <option value="スタッフと相談">スタッフと相談</option>
+              <option value="中さん＋スタッフと相談">中+スタッフ</option>
               <option value="SP判断">SP判断</option>
             </select>
+          </div>
+          <div class="form-group" style="max-width:100px;">
+            <span class="form-label">カテゴリ</span>
+            <select class="form-input" id="tbd-category">
+              <option value="収支">収支</option>
+              <option value="運営">運営</option>
+              <option value="スタッフ">スタッフ</option>
+              <option value="集客">集客</option>
+              <option value="コンテンツ">コンテンツ</option>
+            </select>
+          </div>
+          <div class="form-group" style="max-width:80px;">
+            <span class="form-label">優先度</span>
+            <select class="form-input" id="tbd-priority">
+              <option value="high">高</option>
+              <option value="medium" selected>中</option>
+              <option value="low">低</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="max-width:130px;">
+            <span class="form-label">期限</span>
+            <input class="form-input" id="tbd-deadline" type="date">
+          </div>
+          <div class="form-group">
+            <span class="form-label">期限理由</span>
+            <input class="form-input" id="tbd-dlreason" placeholder="募集開始前に決める必要">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <span class="form-label">なぜ決める必要があるか</span>
+            <input class="form-input" id="tbd-why" placeholder="収支計画が立たない">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <span class="form-label">選択肢（カンマ区切り）</span>
+            <input class="form-input" id="tbd-options" placeholder="案A, 案B, 案C">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <span class="form-label">前提条件・依存</span>
+            <input class="form-input" id="tbd-dep" placeholder="主催者との打ち合わせ後">
           </div>
           <button class="btn btn-primary" onclick="addTbd()">追加</button>
         </div>
@@ -227,7 +273,7 @@ textarea.form-input { resize: vertical; min-height: 60px; line-height: 1.5; }
     </div>
 
     <div class="sec">
-      <div class="sec-head">未決事項一覧</div>
+      <div class="sec-head">確認事項一覧</div>
       <div class="card" id="tbd-container">
         <div style="color:var(--dim);font-size:0.78rem;">読み込み中...</div>
       </div>
@@ -473,14 +519,39 @@ async function delTask(id) {
 async function loadTbd() {
   const data = await fbGet('tbd');
   const container = document.getElementById('tbd-container');
-  if (!data) { container.innerHTML = '<div style="color:var(--dim);font-size:0.78rem;">未決事項なし</div>'; return; }
+  if (!data) { container.innerHTML = '<div style="color:var(--dim);font-size:0.78rem;">確認事項なし</div>'; return; }
+
+  // Sort: open first, then by priority, then by deadline
+  const prioOrder = { high: 0, medium: 1, low: 2 };
+  const items = Object.entries(data).sort((a, b) => {
+    const sa = a[1].status === 'resolved' ? 1 : 0;
+    const sb = b[1].status === 'resolved' ? 1 : 0;
+    if (sa !== sb) return sa - sb;
+    const pa = prioOrder[a[1].priority] || 1;
+    const pb = prioOrder[b[1].priority] || 1;
+    if (pa !== pb) return pa - pb;
+    return (a[1].deadline || '9999').localeCompare(b[1].deadline || '9999');
+  });
 
   let html = '';
-  Object.entries(data).forEach(([id, t]) => {
-    const statusColor = t.status === 'resolved' ? 'var(--green)' : t.status === 'in_progress' ? 'var(--yellow)' : 'var(--red)';
-    html += `<div class="tbd-item">
+  items.forEach(([id, t]) => {
+    const prioColor = t.priority === 'high' ? 'var(--red)' : t.priority === 'low' ? 'var(--blue)' : 'var(--yellow)';
+    const prioLabel = t.priority === 'high' ? '高' : t.priority === 'low' ? '低' : '中';
+    const dlStr = t.deadline ? new Date(t.deadline).toLocaleDateString('ja-JP',{month:'short',day:'numeric'}) : '';
+    const resolved = t.status === 'resolved';
+
+    html += `<div class="tbd-item" style="${resolved?'opacity:0.5;':''}border-left:3px solid ${prioColor};padding-left:10px;">
       <div class="tbd-title">${t.title}</div>
-      <div style="font-size:0.7rem;color:var(--dim);">${t.who||''} ${t.resolvedNote ? '→ ' + t.resolvedNote : ''}</div>
+      <div style="font-size:0.66rem;color:var(--dim);display:flex;gap:6px;flex-wrap:wrap;margin:2px 0;">
+        <span>${t.who||''}</span>
+        ${t.category ? '<span>| '+t.category+'</span>' : ''}
+        ${dlStr ? '<span>| 〆'+dlStr+'</span>' : ''}
+        <span style="color:${prioColor};">[${prioLabel}]</span>
+      </div>
+      ${t.why ? '<div style="font-size:0.68rem;color:var(--dim);margin:2px 0;">理由: '+t.why+'</div>' : ''}
+      ${t.options && t.options.length ? '<div style="font-size:0.68rem;color:var(--dim);margin:2px 0;">選択肢: '+t.options.join(' / ')+'</div>' : ''}
+      ${t.dependency ? '<div style="font-size:0.68rem;color:var(--dim);margin:2px 0;">前提: '+t.dependency+'</div>' : ''}
+      ${t.resolvedNote ? '<div style="font-size:0.72rem;color:var(--green);margin:3px 0;">→ '+t.resolvedNote+'</div>' : ''}
       <div class="tbd-status">
         <button class="btn btn-sm ${t.status==='open'?'btn-primary':''}" onclick="setTbdStatus('${id}','open')">未解決</button>
         <button class="btn btn-sm ${t.status==='in_progress'?'btn-primary':''}" onclick="setTbdStatus('${id}','in_progress')">対応中</button>
@@ -496,8 +567,21 @@ async function addTbd() {
   const title = document.getElementById('tbd-title').value.trim();
   if (!title) return;
   const who = document.getElementById('tbd-who').value;
-  await fbPush('tbd', { title, who, status: 'open', createdAt: new Date().toISOString() });
+  const category = document.getElementById('tbd-category').value;
+  const priority = document.getElementById('tbd-priority').value;
+  const deadline = document.getElementById('tbd-deadline').value || null;
+  const deadlineReason = document.getElementById('tbd-dlreason').value.trim() || null;
+  const why = document.getElementById('tbd-why').value.trim() || null;
+  const optStr = document.getElementById('tbd-options').value.trim();
+  const options = optStr ? optStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+  const dependency = document.getElementById('tbd-dep').value.trim() || null;
+
+  await fbPush('tbd', { title, who, category, priority, deadline, deadlineReason, why, options, dependency, status: 'open', createdAt: new Date().toISOString() });
   document.getElementById('tbd-title').value = '';
+  document.getElementById('tbd-dlreason').value = '';
+  document.getElementById('tbd-why').value = '';
+  document.getElementById('tbd-options').value = '';
+  document.getElementById('tbd-dep').value = '';
   toast('追加');
   loadTbd();
 }
@@ -660,20 +744,110 @@ async function seedData() {
   tasks.forEach((t,i) => { tasksObj['t' + String(i).padStart(3,'0')] = t; });
   await fbSet('tasks', tasksObj);
 
-  // TBD
-  const tbds = [
-    { title:'大人乗船料の正確な金額', who:'中さんに確認', status:'open' },
-    { title:'PTA予算の金額と使い道', who:'主催者に確認', status:'open' },
-    { title:'気球代110万の精算方法', who:'中さんに確認', status:'open' },
-    { title:'SPとの収益按分', who:'中さんに確認', status:'open' },
-    { title:'予約システムの方針', who:'SP判断', status:'open' },
-    { title:'スタッフ参加費 ¥10,000 or ¥5,000', who:'スタッフと相談', status:'open' },
-    { title:'Tシャツ作成の最終判断', who:'スタッフと相談', status:'open' },
-    { title:'プロカメラマン撮影の判断', who:'中さんに確認', status:'open' },
-  ];
-  const tbdObj = {};
-  tbds.forEach((t,i) => { tbdObj['tbd' + String(i).padStart(2,'0')] = t; });
-  await fbSet('tbd', tbdObj);
+  // TBD (確認事項 - 深掘り版)
+  const tbds = {
+    tbd01: {
+      title: '主催者との打ち合わせ日程確定',
+      who: '中さんに確認', category: '運営', priority: 'high',
+      deadline: '2026-03-17',
+      deadlineReason: '多くの確認事項がこの打ち合わせに依存している',
+      why: 'PTA予算、収支、当日オペレーションなど重要事項の確認が必要。日程が決まらないと他が全部止まる',
+      options: ['中さんが主催者に日程調整して確定'],
+      dependency: 'なし（最優先で日程確定）',
+      status: 'open'
+    },
+    tbd02: {
+      title: '予約管理の方法',
+      who: '中さんに確認', category: '運営', priority: 'high',
+      deadline: '2026-03-16',
+      deadlineReason: 'スタッフ募集開始前に方針を固める必要',
+      why: '搭乗200枠の管理方法が未定。主催者が回覧板で管理しているが、追加集客時にWeb予約フォームが必要になる可能性',
+      options: ['主催者が回覧板で全管理（フォーム不要）', '回覧板＋追加集客用Webフォーム（SP構築）', '全てWeb予約に移行'],
+      dependency: '追加集客をするかどうかの判断',
+      status: 'open'
+    },
+    tbd03: {
+      title: 'スタッフ参加費の金額',
+      who: '中さん＋スタッフと相談', category: 'スタッフ', priority: 'high',
+      deadline: '2026-03-17',
+      deadlineReason: '募集開始時に金額を提示する必要がある',
+      why: '¥10,000と¥5,000で収入に10万円の差。金額が高いと募集ハードルが上がる',
+      options: ['¥10,000（理想・収入最大化）', '¥5,000（ハードル低め・集めやすい）', '段階制（早期¥5,000 / 通常¥10,000）'],
+      dependency: 'スタッフ募集開始',
+      status: 'open'
+    },
+    tbd04: {
+      title: '大人乗船料の正確な金額',
+      who: '中さんに確認', category: '収支', priority: 'high',
+      deadline: '2026-03-20',
+      deadlineReason: '収支計画を精緻化して赤字リスクを正確に把握するため',
+      why: '現在「約3,500円」で仮計算。正確な金額で収支が大きく変動する。150名×差額 = 大きなインパクト',
+      options: ['中さんが主催者/業者に確認して回答'],
+      dependency: '主催者または業者との連絡',
+      status: 'open'
+    },
+    tbd05: {
+      title: '追加集客の方法・応募フォーム要否',
+      who: '中さんに確認', category: '集客', priority: 'medium',
+      deadline: '2026-03-20',
+      deadlineReason: '回覧板以外の集客をするなら早めに準備が必要',
+      why: '回覧板で予約を募っているが、追加でSNS等で集客する場合の受け皿（応募フォーム）が必要かもしれない',
+      options: ['回覧板のみで十分（フォーム不要）', 'SNS告知＋Web応募フォーム（SP構築）', 'SNS告知のみ（DM/電話で予約受付）'],
+      dependency: '現在の予約状況の把握',
+      status: 'open'
+    },
+    tbd06: {
+      title: 'Tシャツ作成の最終判断',
+      who: '中さん＋スタッフと相談', category: 'スタッフ', priority: 'medium',
+      deadline: '2026-03-22',
+      deadlineReason: '発注から納品まで2〜3週間のリードタイム。3/22に決めないと4/12に間に合わない',
+      why: '中さんは作りたい派。スタッフの一体感・記念になる。ただしコストとスタッフ人数の見通しが必要',
+      options: ['作る（モルックドームでデザイン・発注）', '作らない（私服＋ビブスやネームプレート）', '簡易ビブスのみ（低コスト）'],
+      dependency: 'スタッフ人数の目処が立ってから（3/25中間確認）',
+      status: 'open'
+    },
+    tbd07: {
+      title: 'PTA予算の金額と使い道',
+      who: '主催者に確認', category: '収支', priority: 'high',
+      deadline: '2026-03-27',
+      deadlineReason: '主催者打ち合わせ時に直接確認する',
+      why: '現在-35万円の赤字見込み。PTA予算で小学生の乗船料が補填されれば収支が大きく改善する可能性がある',
+      options: ['打ち合わせで直接確認'],
+      dependency: '主催者との次回打ち合わせ日程の確定',
+      status: 'open'
+    },
+    tbd08: {
+      title: '気球代110万円の精算方法・タイミング',
+      who: '中さんに確認', category: '収支', priority: 'medium',
+      deadline: '2026-03-27',
+      deadlineReason: '中さんの立替負担が大きいため、早期に方針を明確にしておく',
+      why: '中さんが110万円を立替中。精算タイミングと方法を明確にし、キャッシュフローを管理する',
+      options: ['イベント当日に現金で精算', 'イベント後1週間以内に振込', '収益から差し引いて精算'],
+      dependency: '収支の全体像が確定してから',
+      status: 'open'
+    },
+    tbd09: {
+      title: 'プロカメラマン撮影の判断',
+      who: '中さんに確認', category: 'コンテンツ', priority: 'low',
+      deadline: '2026-04-01',
+      deadlineReason: 'カメラマンの予約に余裕を持たせる（1週間前）',
+      why: '費用10万円。次回告知素材として非常に価値が高い。中さんも「できれば楽しそう」とのこと',
+      options: ['依頼する（編集込み10万円）', 'スタッフが撮影（コスト0）', '予算確定後に判断（3/27以降）'],
+      dependency: '収支の確定（赤字幅が縮まるかどうか）',
+      status: 'open'
+    },
+    tbd10: {
+      title: 'SPとの収益按分',
+      who: '中さんに確認', category: '収支', priority: 'low',
+      deadline: '2026-04-05',
+      deadlineReason: '最終打ち合わせまでに方針を決めておく',
+      why: 'MACHAP初プロジェクトとしての事業性。今後のイベントの基準にもなる',
+      options: ['利益折半', 'SP固定報酬（金額要相談）', '成果報酬型', '今回はボランティア（実績優先）'],
+      dependency: '収支の全体像が確定してから',
+      status: 'open'
+    }
+  };
+  await fbSet('tbd', tbds);
 
   // Staff
   await fbSet('staff', {

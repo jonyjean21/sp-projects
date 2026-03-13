@@ -580,6 +580,149 @@ body {
   font-style: italic;
 }
 
+/* ---- Confirmation Items ---- */
+.conf-item {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+
+.conf-item.priority-high { border-left: 3px solid var(--red); }
+.conf-item.priority-medium { border-left: 3px solid var(--yellow); }
+.conf-item.priority-low { border-left: 3px solid var(--blue); }
+.conf-item.resolved { opacity: 0.5; }
+
+.conf-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.conf-title {
+  font-size: 0.86rem;
+  font-weight: 600;
+  flex: 1;
+}
+
+.conf-deadline {
+  font-size: 0.65rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.conf-deadline.urgent { background: var(--red-light); color: var(--red); }
+.conf-deadline.soon { background: var(--yellow-light); color: var(--yellow); }
+.conf-deadline.ok { background: var(--green-light); color: var(--green); }
+
+.conf-why {
+  font-size: 0.74rem;
+  color: var(--dim);
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.conf-meta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.conf-tag {
+  font-size: 0.62rem;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: var(--warm);
+  color: var(--dim);
+}
+
+.conf-options {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 6px;
+}
+
+.conf-opt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.74rem;
+  padding: 4px 8px;
+  background: var(--card-alt);
+  border-radius: 6px;
+}
+
+.conf-opt::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  flex-shrink: 0;
+}
+
+.conf-dep {
+  font-size: 0.68rem;
+  color: var(--dim);
+  padding-top: 4px;
+  border-top: 1px solid var(--border-light);
+}
+
+.conf-filter {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.conf-filter-btn {
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 0.68rem;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--dim);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.conf-filter-btn.on {
+  background: var(--accent-light);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.conf-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.conf-sum-box {
+  text-align: center;
+  padding: 8px 4px;
+  border-radius: 8px;
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+
+.conf-sum-v {
+  font-family: 'Zen Maru Gothic', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.conf-sum-l { font-size: 0.6rem; color: var(--dim); }
+
 /* ---- Tab Content ---- */
 .pane { display: none; }
 .pane.on { display: block; }
@@ -700,6 +843,7 @@ body {
     <button class="nav-btn" data-tab="budget">収支</button>
     <button class="nav-btn" data-tab="staff">スタッフ</button>
     <button class="nav-btn" data-tab="daytime">当日</button>
+    <button class="nav-btn" data-tab="confirm">確認事項</button>
     <button class="nav-btn" data-tab="risks">リスク</button>
     <button class="nav-btn" data-tab="qa">質問回答</button>
   </div>
@@ -708,20 +852,9 @@ body {
   <div class="pane on" id="p-overview">
 
     <div class="sec">
-      <div class="sec-head">要確認</div>
-      <div class="alerts">
-        <div class="al al-c">
-          <div><div class="al-t">収支が約35万円の赤字見込み</div><div class="al-d">PTA予算の補填額と正確な乗船料が未確定。~3/27の打ち合わせで確認</div></div>
-        </div>
-        <div class="al al-w">
-          <div><div class="al-t">大人乗船料の正確な金額が不明</div><div class="al-d">中さんがまだ把握できていない</div></div>
-        </div>
-        <div class="al al-w">
-          <div><div class="al-t">搭乗キャパ200 vs 来場者500のギャップ</div><div class="al-d">予約制で搭乗枠を管理し、見学は無料にする設計が必要</div></div>
-        </div>
-        <div class="al al-i">
-          <div><div class="al-t">予約システムの方針未定</div><div class="al-d">SPが構築可能。主催者側でやるか要確認</div></div>
-        </div>
+      <div class="sec-head">要確認 <span id="alert-count" style="font-size:0.65rem;color:var(--red);"></span></div>
+      <div class="alerts" id="overview-alerts">
+        <div style="color:var(--dim);font-size:0.78rem;">読み込み中...</div>
       </div>
     </div>
 
@@ -793,87 +926,15 @@ body {
   <div class="pane" id="p-roadmap">
     <div class="sec">
       <div class="sec-head">進捗</div>
-      <div class="card">
-        <div style="display:flex;gap:3px;margin-bottom:10px;">
-          <div style="flex:1;height:4px;border-radius:2px;background:var(--green);"></div>
-          <div style="flex:1;height:4px;border-radius:2px;background:var(--accent-soft);opacity:0.35;"></div>
-          <div style="flex:2;height:4px;border-radius:2px;background:var(--border-light);"></div>
-          <div style="flex:0.5;height:4px;border-radius:2px;background:var(--border-light);"></div>
-          <div style="flex:0.5;height:4px;border-radius:2px;background:var(--border-light);"></div>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:0.6rem;color:var(--dim);">
-          <span>P0 済</span><span>P1 ← いま</span><span>P2</span><span>P3</span><span>P4</span>
-        </div>
+      <div class="card" id="roadmap-progress">
+        <div style="color:var(--dim);font-size:0.78rem;">読み込み中...</div>
       </div>
     </div>
 
     <div class="sec">
       <div class="card">
-        <div class="rm">
-
-          <div class="rm-ph done">
-            <div class="rm-dot"></div>
-            <div class="rm-top"><span class="rm-name">基盤整備</span><span class="rm-date">3/13 - 3/16</span></div>
-            <div class="rm-tasks">
-              <label class="rm-t done"><input type="checkbox" checked> 計画書作成 <span class="who">SP</span></label>
-              <label class="rm-t done"><input type="checkbox" checked> 確認事項リスト作成 <span class="who">SP</span></label>
-              <label class="rm-t done"><input type="checkbox" checked> 中さんから回答取得 <span class="who">中さん</span></label>
-              <label class="rm-t done"><input type="checkbox" checked> 計画書を確定版に更新 <span class="who">SP</span></label>
-              <label class="rm-t"><input type="checkbox"> 収支の全体像を確認 <span class="who">SP+中</span></label>
-              <label class="rm-t"><input type="checkbox"> 予約システム方針決定 <span class="who">SP+中</span></label>
-            </div>
-          </div>
-
-          <div class="rm-ph now">
-            <div class="rm-dot"></div>
-            <div class="rm-top"><span class="rm-name">仕込み</span><span class="rm-date">3/17 - 3/30</span></div>
-            <div class="rm-tasks">
-              <label class="rm-t"><input type="checkbox"> スタッフ募集開始 <span class="who">中+SP</span></label>
-              <label class="rm-t"><input type="checkbox"> 募集用テキスト・画像作成 <span class="who">SP</span></label>
-              <label class="rm-t"><input type="checkbox"> 予約システム構築 <span class="who">SP</span></label>
-              <label class="rm-t"><input type="checkbox"> Tシャツデザイン・発注 <span class="who">中さん</span></label>
-              <label class="rm-t"><input type="checkbox"> スタッフ5名以上確保の確認 <span class="who">SP+中</span></label>
-              <label class="rm-t"><input type="checkbox"> 主催者打ち合わせ（~3/27） <span class="who">中+SP</span></label>
-              <label class="rm-t"><input type="checkbox"> スタッフ参加費の使い道決定 <span class="who">全員</span></label>
-            </div>
-          </div>
-
-          <div class="rm-ph">
-            <div class="rm-dot"></div>
-            <div class="rm-top"><span class="rm-name">直前準備</span><span class="rm-date">3/31 - 4/11</span></div>
-            <div class="rm-tasks">
-              <label class="rm-t"><input type="checkbox"> 備品リスト確定・買い出し <span class="who">SP</span></label>
-              <label class="rm-t"><input type="checkbox"> 最終打ち合わせ <span class="who">全員</span></label>
-              <label class="rm-t"><input type="checkbox"> 天気予報チェック開始 <span class="who">SP</span></label>
-              <label class="rm-t"><input type="checkbox"> スタッフ向け最終案内 <span class="who">SP</span></label>
-              <label class="rm-t"><input type="checkbox"> 前日夜: 中止/決行判断 <span class="who">主催+中</span></label>
-              <label class="rm-t"><input type="checkbox"> 備品積み込み・ルート確認 <span class="who">SP+中</span></label>
-            </div>
-          </div>
-
-          <div class="rm-ph">
-            <div class="rm-dot"></div>
-            <div class="rm-top"><span class="rm-name">当日</span><span class="rm-date">4/12</span></div>
-            <div class="rm-tasks">
-              <label class="rm-t"><input type="checkbox"> 会場設営 <span class="who">全員</span></label>
-              <label class="rm-t"><input type="checkbox"> ブリーフィング <span class="who">SP</span></label>
-              <label class="rm-t"><input type="checkbox"> フライト実施 <span class="who">全員</span></label>
-              <label class="rm-t"><input type="checkbox"> 片付け・撤収 <span class="who">全員</span></label>
-              <label class="rm-t"><input type="checkbox"> 打ち上げ <span class="who">全員</span></label>
-            </div>
-          </div>
-
-          <div class="rm-ph">
-            <div class="rm-dot"></div>
-            <div class="rm-top"><span class="rm-name">振り返り</span><span class="rm-date">4/12 - 4/19</span></div>
-            <div class="rm-tasks">
-              <label class="rm-t"><input type="checkbox"> 写真・動画整理 <span class="who">SP</span></label>
-              <label class="rm-t"><input type="checkbox"> 収支報告作成 <span class="who">SP</span></label>
-              <label class="rm-t"><input type="checkbox"> KPT振り返り <span class="who">SP+中</span></label>
-              <label class="rm-t"><input type="checkbox"> テンプレートに反映 <span class="who">SP</span></label>
-            </div>
-          </div>
-
+        <div class="rm" id="roadmap-container">
+          <div style="color:var(--dim);font-size:0.78rem;">読み込み中...</div>
         </div>
       </div>
     </div>
@@ -898,43 +959,15 @@ body {
   <div class="pane" id="p-budget">
     <div class="sec">
       <div class="sec-head">収支シミュレーション</div>
-      <div class="card">
-        <div class="bud-row">
-          <div class="bud-box inc"><div class="bud-v">¥770K</div><div class="bud-l">想定収入</div></div>
-          <div class="bud-box exp"><div class="bud-v">¥1,120K</div><div class="bud-l">想定支出</div></div>
-          <div class="bud-box bal"><div class="bud-v">-¥350K</div><div class="bud-l">差額（PTA未反映）</div></div>
-        </div>
-
-        <div style="font-size:0.74rem;padding:8px 12px;background:var(--yellow-light);border-radius:8px;margin-bottom:14px;color:var(--text);">
-          PTA予算の補填額が不明のため仮の数字。正確な乗船料も未確定
-        </div>
-
-        <div style="font-weight:600;font-size:0.78rem;margin-bottom:6px;color:var(--green);">収入</div>
-        <div class="bud-detail">
-          <div class="bud-line"><span>大人乗船料</span><span>¥525,000<span class="bud-note">3,500×150名</span></span></div>
-          <div class="bud-line"><span>子供乗船料（一般）</span><span>¥45,000<span class="bud-note">1,500×30名</span></span></div>
-          <div class="bud-line"><span>小学生（PTA関連）</span><span style="color:var(--yellow)">未定</span></div>
-          <div class="bud-line"><span>スタッフ参加費</span><span>¥200,000<span class="bud-note">10,000×20名</span></span></div>
-        </div>
-
-        <div style="font-weight:600;font-size:0.78rem;margin:14px 0 6px;color:var(--red);">支出</div>
-        <div class="bud-detail">
-          <div class="bud-line"><span>気球2機</span><span>¥1,100,000<span class="bud-note">中さん立替</span></span></div>
-          <div class="bud-line"><span>備品・消耗品</span><span>¥20,000</span></div>
-          <div class="bud-line"><span>会場費</span><span style="color:var(--green)">主催者負担</span></div>
-          <div class="bud-line"><span>保険</span><span style="color:var(--green)">主催者負担</span></div>
-          <div class="bud-line"><span>キッチンカー</span><span style="color:var(--green)">主催者負担</span></div>
-        </div>
+      <div class="card" id="budget-display">
+        <div style="color:var(--dim);font-size:0.78rem;">読み込み中...</div>
       </div>
     </div>
 
     <div class="sec">
       <div class="sec-head">未確定（収支に影響）</div>
-      <div class="alerts">
-        <div class="al al-w"><div><div class="al-t">大人乗船料の正確な金額</div><div class="al-d">中さんに確認</div></div></div>
-        <div class="al al-w"><div><div class="al-t">PTA予算の金額と使い道</div><div class="al-d">主催者打ち合わせで確認</div></div></div>
-        <div class="al al-w"><div><div class="al-t">気球代110万の精算方法</div><div class="al-d">中さん立替→イベント後精算</div></div></div>
-        <div class="al al-w"><div><div class="al-t">SPとの収益按分</div><div class="al-d">「後で決める。まず飛ばしたい」</div></div></div>
+      <div class="alerts" id="budget-alerts">
+        <div style="color:var(--dim);font-size:0.78rem;">読み込み中...</div>
       </div>
     </div>
   </div>
@@ -943,34 +976,8 @@ body {
   <div class="pane" id="p-staff">
     <div class="sec">
       <div class="sec-head">スタッフ管理</div>
-      <div class="card">
-        <div style="font-size:0.78rem;margin-bottom:8px;">
-          <strong>目標: 20名以上</strong> <span style="color:var(--dim);margin-left:6px;">最低ライン: 5名</span>
-        </div>
-
-        <div class="staff-gauge-wrap">
-          <div class="staff-gauge"><div class="staff-fill" style="width:10%;"></div><div class="staff-min"></div></div>
-          <div class="staff-n" style="color:var(--dim)">2/20</div>
-        </div>
-
-        <div style="font-size:0.74rem;color:var(--dim);margin-bottom:10px;">
-          確定: <strong style="color:var(--text);">SP</strong>、<strong style="color:var(--text);">中さん</strong>
-        </div>
-
-        <div style="padding:8px 12px;background:var(--accent-light);border-radius:8px;font-size:0.74rem;margin-bottom:12px;">
-          <span style="font-weight:600;color:var(--accent);">募集方法:</span> 個人LINE・SNS・口コミ<br>
-          <span style="font-weight:600;color:var(--accent);">開始予定:</span> 来週月〜火
-        </div>
-
-        <div style="font-size:0.74rem;margin-bottom:4px;font-weight:600;">参加費</div>
-        <div style="font-size:0.74rem;color:var(--dim);margin-bottom:10px;">
-          理想 ¥10,000（スムーズなら） / 調整 ¥5,000（直前募集の場合）
-        </div>
-
-        <div style="font-size:0.74rem;margin-bottom:4px;font-weight:600;">Tシャツ</div>
-        <div style="font-size:0.74rem;color:var(--dim);">
-          作成する方向（スタッフ次第）。中さんは作りたい派
-        </div>
+      <div class="card" id="staff-display">
+        <div style="color:var(--dim);font-size:0.78rem;">読み込み中...</div>
       </div>
     </div>
 
@@ -1028,6 +1035,32 @@ body {
           <span class="flow-s" style="background:var(--blue-light);">案内</span><span class="flow-arr">→</span>
           <span class="flow-s" style="background:var(--green-light);">自由に見学・飲食</span>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 確認事項 ========== -->
+  <div class="pane" id="p-confirm">
+    <div class="sec">
+      <div class="sec-head">確認事項サマリー</div>
+      <div class="conf-summary" id="conf-summary">
+        <div class="conf-sum-box"><div class="conf-sum-v" style="color:var(--red)">-</div><div class="conf-sum-l">未解決</div></div>
+        <div class="conf-sum-box"><div class="conf-sum-v" style="color:var(--yellow)">-</div><div class="conf-sum-l">対応中</div></div>
+        <div class="conf-sum-box"><div class="conf-sum-v" style="color:var(--green)">-</div><div class="conf-sum-l">解決済</div></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="conf-filter" id="conf-filter">
+        <button class="conf-filter-btn on" data-filter="all">すべて</button>
+        <button class="conf-filter-btn" data-filter="high">緊急</button>
+        <button class="conf-filter-btn" data-filter="収支">収支</button>
+        <button class="conf-filter-btn" data-filter="スタッフ">スタッフ</button>
+        <button class="conf-filter-btn" data-filter="運営">運営</button>
+        <button class="conf-filter-btn" data-filter="集客">集客</button>
+      </div>
+      <div id="conf-container">
+        <div style="color:var(--dim);font-size:0.78rem;">読み込み中...</div>
       </div>
     </div>
   </div>
@@ -1136,10 +1169,19 @@ body {
 </div>
 
 <script>
+const FB = 'https://viisi-master-app-default-rtdb.firebaseio.com/machap-events/20260412-balloon';
 const EVT = new Date('2026-04-12T06:00:00+09:00');
-const LS_KEY = 'machap-0412-rm';
 
-// Countdown
+// --- Firebase helpers ---
+async function fbGet(path) {
+  const r = await fetch(`${FB}/${path}.json`);
+  return r.json();
+}
+async function fbSet(path, data) {
+  await fetch(`${FB}/${path}.json`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) });
+}
+
+// --- Countdown ---
 function tick() {
   const d = EVT - new Date();
   if (d <= 0) return;
@@ -1150,7 +1192,7 @@ function tick() {
 }
 tick(); setInterval(tick, 1000);
 
-// Tabs
+// --- Tabs ---
 document.querySelectorAll('.nav-btn').forEach(btn => {
   btn.addEventListener('click', function() {
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('on'));
@@ -1160,29 +1202,332 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
   });
 });
 
-// Roadmap persistence
-function saveRM() {
-  const s = [...document.querySelectorAll('.rm-t input')].map(c => c.checked);
-  localStorage.setItem(LS_KEY, JSON.stringify(s));
-}
+// ==================== ROADMAP (Firebase) ====================
+const phaseNames = { '0':'基盤整備', '1':'仕込み', '2':'直前準備', '3':'当日', '4':'振り返り' };
+const phaseDates = { '0':'3/13 - 3/16', '1':'3/17 - 3/30', '2':'3/31 - 4/11', '3':'4/12', '4':'4/12 - 4/19' };
 
-function loadRM() {
-  const s = localStorage.getItem(LS_KEY);
-  if (!s) return;
-  const st = JSON.parse(s);
-  document.querySelectorAll('.rm-t input').forEach((c,i) => {
-    if (st[i] !== undefined) { c.checked = st[i]; c.parentElement.classList.toggle('done', st[i]); }
+async function loadRoadmap() {
+  const data = await fbGet('tasks');
+  if (!data) { document.getElementById('roadmap-container').innerHTML = '<div style="color:var(--dim);font-size:0.78rem;">タスクデータなし</div>'; return; }
+
+  const phases = {};
+  let totalDone = 0, totalAll = 0;
+  Object.entries(data).forEach(([id, t]) => {
+    const p = t.phase || '0';
+    if (!phases[p]) phases[p] = [];
+    phases[p].push({ id, ...t });
+    totalAll++;
+    if (t.done) totalDone++;
   });
+
+  // Progress bar
+  const phaseCounts = {};
+  for (const p of ['0','1','2','3','4']) {
+    if (!phases[p]) { phaseCounts[p] = { total:0, done:0 }; continue; }
+    const done = phases[p].filter(t => t.done).length;
+    phaseCounts[p] = { total: phases[p].length, done };
+  }
+
+  // Determine current phase
+  let currentPhase = '0';
+  for (const p of ['0','1','2','3','4']) {
+    if (phaseCounts[p].total > 0 && phaseCounts[p].done < phaseCounts[p].total) { currentPhase = p; break; }
+    if (phaseCounts[p].total > 0 && phaseCounts[p].done === phaseCounts[p].total) continue;
+  }
+
+  let progHtml = '<div style="display:flex;gap:3px;margin-bottom:10px;">';
+  for (const p of ['0','1','2','3','4']) {
+    const c = phaseCounts[p];
+    const flex = Math.max(c.total, 1) * 0.3;
+    let bg = 'var(--border-light)';
+    if (c.total > 0 && c.done === c.total) bg = 'var(--green)';
+    else if (p === currentPhase) bg = 'var(--accent-soft);opacity:0.5';
+    progHtml += `<div style="flex:${flex};height:4px;border-radius:2px;background:${bg};"></div>`;
+  }
+  progHtml += '</div>';
+  progHtml += `<div style="display:flex;justify-content:space-between;font-size:0.6rem;color:var(--dim);">`;
+  for (const p of ['0','1','2','3','4']) {
+    const label = p === currentPhase ? `P${p} ← いま` : `P${p}`;
+    progHtml += `<span>${label}</span>`;
+  }
+  progHtml += '</div>';
+  progHtml += `<div style="font-size:0.65rem;color:var(--dim);margin-top:6px;text-align:right;">${totalDone}/${totalAll} 完了</div>`;
+  document.getElementById('roadmap-progress').innerHTML = progHtml;
+
+  // Roadmap phases
+  let rmHtml = '';
+  for (const p of ['0','1','2','3','4']) {
+    if (!phases[p]) continue;
+    const tasks = phases[p];
+    const allDone = tasks.every(t => t.done);
+    const isCurrent = p === currentPhase;
+    const cls = allDone ? 'done' : isCurrent ? 'now' : '';
+
+    rmHtml += `<div class="rm-ph ${cls}"><div class="rm-dot"></div>`;
+    rmHtml += `<div class="rm-top"><span class="rm-name">${phaseNames[p]}</span><span class="rm-date">${phaseDates[p]}</span></div>`;
+    rmHtml += '<div class="rm-tasks">';
+    for (const t of tasks) {
+      rmHtml += `<label class="rm-t ${t.done?'done':''}">
+        <input type="checkbox" ${t.done?'checked':''} onchange="toggleRmTask('${t.id}',this.checked)">
+        ${t.name} <span class="who">${t.owner||''}</span>
+      </label>`;
+    }
+    rmHtml += '</div></div>';
+  }
+  document.getElementById('roadmap-container').innerHTML = rmHtml;
 }
 
-document.querySelectorAll('.rm-t input').forEach(cb => {
-  cb.addEventListener('change', function() {
-    this.parentElement.classList.toggle('done', this.checked);
-    saveRM();
+async function toggleRmTask(id, done) {
+  await fbSet(`tasks/${id}/done`, done);
+  loadRoadmap();
+}
+
+// ==================== STAFF (Firebase) ====================
+async function loadStaffDisplay() {
+  const data = await fbGet('staff');
+  const el = document.getElementById('staff-display');
+  const list = data ? Object.entries(data) : [];
+  const count = list.length;
+  const pct = Math.min(100, Math.round(count / 20 * 100));
+  const gaugeColor = count >= 20 ? 'var(--green)' : count >= 5 ? 'var(--accent-soft)' : 'var(--red)';
+
+  let names = list.map(([,s]) => `<strong style="color:var(--text);">${s.name}</strong>`).join('、');
+
+  el.innerHTML = `
+    <div style="font-size:0.78rem;margin-bottom:8px;">
+      <strong>目標: 20名以上</strong> <span style="color:var(--dim);margin-left:6px;">最低ライン: 5名</span>
+    </div>
+    <div class="staff-gauge-wrap">
+      <div class="staff-gauge"><div class="staff-fill" style="width:${pct}%;background:${gaugeColor}"></div><div class="staff-min"></div></div>
+      <div class="staff-n" style="color:${count>=5?'var(--text)':'var(--red)'}">${count}/20</div>
+    </div>
+    <div style="font-size:0.74rem;color:var(--dim);margin-bottom:10px;">確定: ${names || 'なし'}</div>
+    <div style="padding:8px 12px;background:var(--accent-light);border-radius:8px;font-size:0.74rem;margin-bottom:12px;">
+      <span style="font-weight:600;color:var(--accent);">募集方法:</span> 個人LINE・SNS・口コミ<br>
+      <span style="font-weight:600;color:var(--accent);">開始予定:</span> 来週月〜火
+    </div>
+    <div style="font-size:0.74rem;margin-bottom:4px;font-weight:600;">参加費</div>
+    <div style="font-size:0.74rem;color:var(--dim);margin-bottom:10px;">理想 ¥10,000（スムーズなら） / 調整 ¥5,000（直前募集の場合）</div>
+    <div style="font-size:0.74rem;margin-bottom:4px;font-weight:600;">Tシャツ</div>
+    <div style="font-size:0.74rem;color:var(--dim);">作成する方向（スタッフ次第）。中さんは作りたい派</div>
+  `;
+}
+
+// ==================== BUDGET (Firebase) ====================
+async function loadBudgetDisplay() {
+  const data = await fbGet('budget');
+  const el = document.getElementById('budget-display');
+  if (!data) { el.innerHTML = '<div style="color:var(--dim);font-size:0.78rem;">収支データなし</div>'; return; }
+
+  let totalInc = 0, totalExp = 0;
+  let incHtml = '', expHtml = '';
+
+  if (data.income) {
+    Object.values(data.income).forEach(item => {
+      totalInc += item.amount || 0;
+      incHtml += `<div class="bud-line"><span>${item.name} <span class="bud-note">(${item.status||''})</span></span><span style="font-weight:500;">¥${(item.amount||0).toLocaleString()}</span></div>`;
+    });
+  }
+  if (data.expense) {
+    Object.values(data.expense).forEach(item => {
+      totalExp += item.amount || 0;
+      expHtml += `<div class="bud-line"><span>${item.name} <span class="bud-note">(${item.status||''})</span></span><span style="font-weight:500;">¥${(item.amount||0).toLocaleString()}</span></div>`;
+    });
+  }
+
+  const balance = totalInc - totalExp;
+  const fmtK = v => (v >= 0 ? '' : '-') + '¥' + Math.abs(Math.round(v/1000)).toLocaleString() + 'K';
+
+  el.innerHTML = `
+    <div class="bud-row">
+      <div class="bud-box inc"><div class="bud-v">${fmtK(totalInc)}</div><div class="bud-l">想定収入</div></div>
+      <div class="bud-box exp"><div class="bud-v">${fmtK(totalExp)}</div><div class="bud-l">想定支出</div></div>
+      <div class="bud-box bal"><div class="bud-v">${fmtK(balance)}</div><div class="bud-l">差額</div></div>
+    </div>
+    <div style="font-size:0.74rem;padding:8px 12px;background:var(--yellow-light);border-radius:8px;margin-bottom:14px;color:var(--text);">
+      PTA予算の補填額が不明のため仮の数字。正確な乗船料も未確定
+    </div>
+    <div style="font-weight:600;font-size:0.78rem;margin-bottom:6px;color:var(--green);">収入</div>
+    <div class="bud-detail">${incHtml}</div>
+    <div style="font-weight:600;font-size:0.78rem;margin:14px 0 6px;color:var(--red);">支出</div>
+    <div class="bud-detail">${expHtml}</div>
+  `;
+}
+
+// ==================== CONFIRMATIONS / TBD (Firebase) ====================
+let allConfirmations = {};
+let confFilter = 'all';
+
+function deadlineClass(dl) {
+  if (!dl) return 'ok';
+  const diff = (new Date(dl) - new Date()) / 864e5;
+  if (diff < 0) return 'urgent';
+  if (diff <= 5) return 'urgent';
+  if (diff <= 14) return 'soon';
+  return 'ok';
+}
+
+function deadlineLabel(dl) {
+  if (!dl) return '';
+  const d = new Date(dl);
+  return `${d.getMonth()+1}/${d.getDate()}`;
+}
+
+function daysUntil(dl) {
+  if (!dl) return '';
+  const diff = Math.ceil((new Date(dl) - new Date()) / 864e5);
+  if (diff < 0) return `${Math.abs(diff)}日超過`;
+  if (diff === 0) return '今日';
+  return `あと${diff}日`;
+}
+
+async function loadConfirmations() {
+  const data = await fbGet('tbd');
+  allConfirmations = data || {};
+  renderConfirmations();
+  renderOverviewAlerts();
+  renderBudgetAlerts();
+}
+
+function renderConfirmations() {
+  const container = document.getElementById('conf-container');
+  const items = Object.entries(allConfirmations);
+
+  if (!items.length) { container.innerHTML = '<div style="color:var(--dim);font-size:0.78rem;">確認事項なし</div>'; return; }
+
+  // Count by status
+  let open = 0, inProg = 0, resolved = 0;
+  items.forEach(([,t]) => {
+    if (t.status === 'resolved') resolved++;
+    else if (t.status === 'in_progress') inProg++;
+    else open++;
+  });
+
+  document.getElementById('conf-summary').innerHTML = `
+    <div class="conf-sum-box"><div class="conf-sum-v" style="color:var(--red)">${open}</div><div class="conf-sum-l">未解決</div></div>
+    <div class="conf-sum-box"><div class="conf-sum-v" style="color:var(--yellow)">${inProg}</div><div class="conf-sum-l">対応中</div></div>
+    <div class="conf-sum-box"><div class="conf-sum-v" style="color:var(--green)">${resolved}</div><div class="conf-sum-l">解決済</div></div>
+  `;
+
+  // Filter
+  let filtered = items;
+  if (confFilter === 'high') {
+    filtered = items.filter(([,t]) => t.priority === 'high');
+  } else if (confFilter !== 'all') {
+    filtered = items.filter(([,t]) => t.category === confFilter);
+  }
+
+  // Sort: open first, then by deadline, then by priority
+  const prioOrder = { high: 0, medium: 1, low: 2 };
+  filtered.sort((a, b) => {
+    const sa = a[1].status === 'resolved' ? 1 : 0;
+    const sb = b[1].status === 'resolved' ? 1 : 0;
+    if (sa !== sb) return sa - sb;
+    const pa = prioOrder[a[1].priority] || 1;
+    const pb = prioOrder[b[1].priority] || 1;
+    if (pa !== pb) return pa - pb;
+    const da = a[1].deadline || '9999';
+    const db = b[1].deadline || '9999';
+    return da.localeCompare(db);
+  });
+
+  let html = '';
+  for (const [id, t] of filtered) {
+    const dlClass = deadlineClass(t.deadline);
+    const isResolved = t.status === 'resolved';
+    const prioClass = t.priority || 'medium';
+
+    html += `<div class="conf-item priority-${prioClass} ${isResolved?'resolved':''}">`;
+    html += `<div class="conf-head">`;
+    html += `<div class="conf-title">${t.title}</div>`;
+    if (t.deadline) {
+      html += `<div class="conf-deadline ${dlClass}">${deadlineLabel(t.deadline)}まで（${daysUntil(t.deadline)}）</div>`;
+    }
+    html += `</div>`;
+
+    if (t.why) html += `<div class="conf-why">${t.why}</div>`;
+    if (t.deadlineReason) html += `<div class="conf-why" style="font-size:0.68rem;">期限理由: ${t.deadlineReason}</div>`;
+
+    html += `<div class="conf-meta">`;
+    if (t.who) html += `<span class="conf-tag">${t.who}</span>`;
+    if (t.category) html += `<span class="conf-tag">${t.category}</span>`;
+    if (t.priority) html += `<span class="conf-tag" style="background:${prioClass==='high'?'var(--red-light)':prioClass==='low'?'var(--blue-light)':'var(--yellow-light)'};color:${prioClass==='high'?'var(--red)':prioClass==='low'?'var(--blue)':'var(--yellow)'};">${prioClass==='high'?'緊急':prioClass==='low'?'低め':'通常'}</span>`;
+    if (isResolved) html += `<span class="conf-tag" style="background:var(--green-light);color:var(--green);">解決済</span>`;
+    html += `</div>`;
+
+    if (t.options && t.options.length) {
+      html += `<div class="conf-options">`;
+      for (const opt of t.options) {
+        html += `<div class="conf-opt">${opt}</div>`;
+      }
+      html += `</div>`;
+    }
+
+    if (t.resolvedNote) html += `<div style="font-size:0.74rem;padding:6px 8px;background:var(--green-light);border-radius:6px;margin-bottom:6px;">→ ${t.resolvedNote}</div>`;
+
+    if (t.dependency) html += `<div class="conf-dep">前提: ${t.dependency}</div>`;
+
+    html += `</div>`;
+  }
+  container.innerHTML = html;
+}
+
+function renderOverviewAlerts() {
+  const el = document.getElementById('overview-alerts');
+  const items = Object.entries(allConfirmations).filter(([,t]) => t.status !== 'resolved');
+
+  // Sort by priority and deadline
+  const prioOrder = { high: 0, medium: 1, low: 2 };
+  items.sort((a, b) => {
+    const pa = prioOrder[a[1].priority] || 1;
+    const pb = prioOrder[b[1].priority] || 1;
+    if (pa !== pb) return pa - pb;
+    return (a[1].deadline || '9999').localeCompare(b[1].deadline || '9999');
+  });
+
+  const top = items.slice(0, 5);
+  document.getElementById('alert-count').textContent = items.length > 0 ? `（${items.length}件）` : '';
+
+  if (!top.length) { el.innerHTML = '<div style="color:var(--green);font-size:0.78rem;">未解決の確認事項なし</div>'; return; }
+
+  let html = '';
+  for (const [, t] of top) {
+    const cls = t.priority === 'high' ? 'al-c' : t.priority === 'low' ? 'al-i' : 'al-w';
+    const dl = t.deadline ? `〜${deadlineLabel(t.deadline)}（${daysUntil(t.deadline)}）` : '';
+    html += `<div class="al ${cls}"><div><div class="al-t">${t.title}</div><div class="al-d">${t.who||''} ${dl}</div></div></div>`;
+  }
+  el.innerHTML = html;
+}
+
+function renderBudgetAlerts() {
+  const el = document.getElementById('budget-alerts');
+  const budgetItems = Object.entries(allConfirmations).filter(([,t]) => t.category === '収支' && t.status !== 'resolved');
+  if (!budgetItems.length) { el.innerHTML = '<div style="color:var(--green);font-size:0.78rem;">収支関連の未解決事項なし</div>'; return; }
+  let html = '';
+  for (const [, t] of budgetItems) {
+    html += `<div class="al al-w"><div><div class="al-t">${t.title}</div><div class="al-d">${t.who||''}</div></div></div>`;
+  }
+  el.innerHTML = html;
+}
+
+// Confirmation filter
+document.querySelectorAll('.conf-filter-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.conf-filter-btn').forEach(b => b.classList.remove('on'));
+    this.classList.add('on');
+    confFilter = this.dataset.filter;
+    renderConfirmations();
   });
 });
 
-loadRM();
+// ==================== INIT ====================
+async function loadAll() {
+  loadRoadmap();
+  loadStaffDisplay();
+  loadBudgetDisplay();
+  loadConfirmations();
+}
+loadAll();
 </script>
 </body>
 </html>
