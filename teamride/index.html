@@ -1724,25 +1724,25 @@ function renderSettings() {
 const TEMPLATE_DEFAULTS = {
   input_request: 'お疲れです。\n\n{grade}　{date} {title}の、参加・配車・帯同の入力をお願いします。\n{trial_info}{deadline_info}\n回答はこちらから:\n{url}\n\nよろしくお願いいたします。',
   line_assign_header: 'お疲れ様です。\n{date} {title}の配車案を作成しました。\nご確認をお願いいたします🙇\n{meet_time_line}何かありましたら、私までご連絡ください。',
+  line_assign_notes: '※学年荷物が割り当て車両に積めない場合は、ご連絡ください。\n※会場駐車場利用の同乗者の方も、各家庭でご相談のうえ、ご都合に合わせて各自で車を出し、周辺パーキングをご利用いただいても大丈夫です。\n※会場駐車場を利用する方は、駐車整理券を印刷のうえ、当日ご提示ください。印刷が難しい方は、ご連絡ください。',
   line_meetup: 'お疲れさまです。\n【{title}／{date}】についてご連絡です。\n\n当日は○時ごろにお迎え予定です。\nよろしくお願いします。\n\n--- または ---\n\n当日は、○時ごろにお迎えで大丈夫でしょうか。\nよろしくお願いします。\n\n--- または ---\n\n当日は、どのようにしましょうか。\nご自宅まで伺うこともできますし、\nローソン・小学校・私の自宅まで来ていただく形でも大丈夫です。\nご都合の良い方法を教えてください。\nよろしくお願いします。',
   line_parking: 'お疲れさまです。\n【{title}／{date}】ですが、うちも車を出して、周辺パーキングを利用しようと思います。\nよろしくお願いします。',
   line_accident: 'お疲れさまです。\n本日、【{title}／{date}】の移動中に事故がありましたので、ご連絡いたします。\n\n【発生時間】○時○分ごろ\n【場所】○○\n【状況】○○\n【けが人】あり／なし\n【現在の状況】○○\n\n取り急ぎのご連絡となります。\n詳細が分かり次第、改めてご連絡いたします。',
   equip_nudge: 'お疲れさまです。\n\n試合荷物の「{equip_list}」の所在が確認できていません。\n\nお持ち帰りいただいている方は、「{title}」の出欠回答で{equip_icons}ボタンを押していただけると助かります。\n\nよろしくお願いいたします。',
   unanswered_nudge: '【出欠未回答のお知らせ】\n⚽ {date} {title}\nまだ回答がありません:\n{unanswered_list}\nアプリから回答をお願いします\n{url}',
-  match_report_template: 'お疲れ様です。\n\n{date}、{name}に参加してきました⚽️\n\n【試合結果】\n{results}\n{memo}',
-  line_assign_notes: '※学年荷物が割り当て車両に積めない場合は、ご連絡ください。\n※会場駐車場利用の同乗者の方も、各家庭でご相談のうえ、ご都合に合わせて各自で車を出し、周辺パーキングをご利用いただいても大丈夫です。\n※会場駐車場を利用する方は、駐車整理券を印刷のうえ、当日ご提示ください。印刷が難しい方は、ご連絡ください。'
+  match_report_template: 'お疲れ様です。\n\n{date}、{name}に参加してきました⚽️\n\n【試合結果】\n{results}\n{memo}'
 };
 
 const TEMPLATE_LABELS = {
   input_request: '入力依頼文',
-  line_assign_header: '配車決定後のLINEテンプレ（配車決定後）',
+  line_assign_header: '配車決定後のLINEテンプレ（配車決定後　上部）',
+  line_assign_notes: '配車決定後のLINEテンプレ（配車決定後　下部）',
   line_meetup: '配車決定後のLINEテンプレ（担当→同乗者）',
   line_parking: '配車決定後のLINEテンプレ（同乗者→担当）',
   line_accident: '配車決定後のLINEテンプレ（事故連絡）',
   equip_nudge: '荷物所有者確認',
   unanswered_nudge: '未回答に催促',
-  match_report_template: '試合レポート（全体構成）',
-  line_assign_notes: '配車決定後のLINEテンプレ（注意事項）'
+  match_report_template: '試合レポート（全体構成）'
 };
 
 function openTemplateEditor() {
