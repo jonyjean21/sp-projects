@@ -752,6 +752,83 @@ body {
   .pane { display: block !important; }
   .card { break-inside: avoid; }
 }
+
+/* ---- Edit Forms ---- */
+.edit-panel {
+  margin-top: 12px;
+  padding: 14px 16px;
+  background: var(--card-alt);
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+}
+.edit-panel-head {
+  font-size: 0.7rem;
+  color: var(--dim);
+  font-weight: 500;
+  margin-bottom: 10px;
+  letter-spacing: 0.04em;
+}
+.form-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 6px; }
+.form-group { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 80px; }
+.form-label { font-size: 0.66rem; color: var(--dim); }
+.form-input {
+  padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px;
+  font-size: 0.8rem; font-family: inherit; background: var(--bg); color: var(--text);
+}
+.form-input:focus { outline: none; border-color: var(--accent); background: #fff; }
+select.form-input { appearance: auto; }
+.btn {
+  padding: 7px 14px; border-radius: 8px; font-size: 0.74rem;
+  font-weight: 500; border: 1px solid var(--border); background: var(--card);
+  color: var(--text); cursor: pointer; font-family: inherit;
+  transition: all 0.15s; white-space: nowrap;
+}
+.btn:hover { border-color: var(--accent); background: var(--accent-light); }
+.btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn-primary:hover { background: var(--accent-soft); }
+.btn-sm { padding: 4px 10px; font-size: 0.68rem; }
+.btn-ghost { padding: 3px 8px; font-size: 0.66rem; border-radius: 6px; border: 1px solid var(--border); background: none; color: var(--dim); cursor: pointer; font-family: inherit; transition: all 0.15s; }
+.btn-ghost:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-light); }
+.btn-del { font-size: 0.6rem; color: var(--dim); cursor: pointer; padding: 2px 5px; border: none; background: none; line-height: 1; }
+.btn-del:hover { color: var(--red); }
+.edit-toggle {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 0.68rem; color: var(--dim); cursor: pointer;
+  padding: 3px 8px; border-radius: 6px; border: 1px dashed var(--border);
+  background: none; font-family: inherit; transition: all 0.15s; margin-top: 8px;
+}
+.edit-toggle:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ---- Toast ---- */
+.toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(60px);
+  background: var(--green); color: #fff; padding: 8px 20px; border-radius: 20px;
+  font-size: 0.78rem; font-weight: 500; z-index: 200;
+  transition: transform 0.3s; box-shadow: 0 3px 12px rgba(94,142,106,0.3);
+  pointer-events: none;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ---- Status buttons ---- */
+.status-btns { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
+.status-btn {
+  padding: 3px 10px; border-radius: 12px; font-size: 0.64rem; font-weight: 500;
+  border: 1px solid var(--border); background: var(--card); color: var(--dim);
+  cursor: pointer; font-family: inherit; transition: all 0.15s;
+}
+.status-btn:hover { border-color: var(--accent); color: var(--accent); }
+.status-btn.active-open { background: var(--red-light); color: var(--red); border-color: var(--red); }
+.status-btn.active-in_progress { background: var(--yellow-light); color: var(--yellow); border-color: var(--yellow); }
+.status-btn.active-resolved { background: var(--green-light); color: var(--green); border-color: var(--green); }
+
+/* ---- Nav link ---- */
+.staff-link {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 0.72rem; color: var(--accent); text-decoration: none;
+  padding: 4px 12px; border-radius: 14px; border: 1px solid var(--accent-light);
+  background: var(--accent-light); margin-top: 10px; font-weight: 500;
+}
+.staff-link:hover { background: var(--accent); color: #fff; }
 </style>
 </head>
 <body>
@@ -818,6 +895,7 @@ body {
       <span class="htag htag-date">2026年4月12日（土）</span>
       <span class="htag htag-ok">会場・気球 確定済み</span>
     </div>
+    <a href="staff/" class="staff-link">スタッフ向けページ →</a>
   </div>
 
   <!-- Countdown -->
@@ -936,6 +1014,37 @@ body {
         <div class="rm" id="roadmap-container">
           <div style="color:var(--dim);font-size:0.78rem;">読み込み中...</div>
         </div>
+        <div class="edit-panel" id="task-add-panel" style="display:none;">
+          <div class="edit-panel-head">タスク追加</div>
+          <div class="form-row">
+            <div class="form-group">
+              <span class="form-label">タスク名</span>
+              <input class="form-input" id="task-name" placeholder="スタッフ向け連絡文作成">
+            </div>
+            <div class="form-group" style="max-width:90px;">
+              <span class="form-label">担当</span>
+              <select class="form-input" id="task-owner">
+                <option value="SP">SP</option>
+                <option value="中さん">中さん</option>
+                <option value="SP+中">SP+中</option>
+                <option value="全員">全員</option>
+                <option value="主催者">主催者</option>
+              </select>
+            </div>
+            <div class="form-group" style="max-width:70px;">
+              <span class="form-label">フェーズ</span>
+              <select class="form-input" id="task-phase">
+                <option value="0">P0</option>
+                <option value="1" selected>P1</option>
+                <option value="2">P2</option>
+                <option value="3">P3</option>
+                <option value="4">P4</option>
+              </select>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="addTask()">追加</button>
+          </div>
+        </div>
+        <button class="edit-toggle" onclick="togglePanel('task-add-panel',this)">＋ タスク追加</button>
       </div>
     </div>
 
@@ -959,8 +1068,53 @@ body {
   <div class="pane" id="p-budget">
     <div class="sec">
       <div class="sec-head">収支シミュレーション</div>
-      <div class="card" id="budget-display">
-        <div style="color:var(--dim);font-size:0.78rem;">読み込み中...</div>
+      <div class="card">
+        <div id="budget-display">
+          <div style="color:var(--dim);font-size:0.78rem;">読み込み中...</div>
+        </div>
+        <div class="edit-panel" id="budget-add-panel" style="display:none;">
+          <div class="edit-panel-head">収入項目を追加</div>
+          <div class="form-row">
+            <div class="form-group">
+              <span class="form-label">項目名</span>
+              <input class="form-input" id="inc-name" placeholder="大人乗船料">
+            </div>
+            <div class="form-group" style="max-width:100px;">
+              <span class="form-label">金額</span>
+              <input class="form-input" id="inc-amount" type="number" placeholder="525000">
+            </div>
+            <div class="form-group" style="max-width:80px;">
+              <span class="form-label">確度</span>
+              <select class="form-input" id="inc-status">
+                <option value="見込み" selected>見込み</option>
+                <option value="確定">確定</option>
+                <option value="未定">未定</option>
+              </select>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="addBudgetItem('income')">追加</button>
+          </div>
+          <div class="edit-panel-head" style="margin-top:10px;">支出項目を追加</div>
+          <div class="form-row">
+            <div class="form-group">
+              <span class="form-label">項目名</span>
+              <input class="form-input" id="exp-name" placeholder="備品">
+            </div>
+            <div class="form-group" style="max-width:100px;">
+              <span class="form-label">金額</span>
+              <input class="form-input" id="exp-amount" type="number" placeholder="30000">
+            </div>
+            <div class="form-group" style="max-width:80px;">
+              <span class="form-label">確度</span>
+              <select class="form-input" id="exp-status">
+                <option value="確定" selected>確定</option>
+                <option value="見込み">見込み</option>
+                <option value="未定">未定</option>
+              </select>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="addBudgetItem('expense')">追加</button>
+          </div>
+        </div>
+        <button class="edit-toggle" onclick="togglePanel('budget-add-panel',this)">＋ 収支項目を編集</button>
       </div>
     </div>
 
@@ -976,8 +1130,34 @@ body {
   <div class="pane" id="p-staff">
     <div class="sec">
       <div class="sec-head">スタッフ管理</div>
-      <div class="card" id="staff-display">
-        <div style="color:var(--dim);font-size:0.78rem;">読み込み中...</div>
+      <div class="card">
+        <div id="staff-display">
+          <div style="color:var(--dim);font-size:0.78rem;">読み込み中...</div>
+        </div>
+        <div class="edit-panel" id="staff-add-panel" style="display:none;">
+          <div class="edit-panel-head">スタッフを追加</div>
+          <div class="form-row">
+            <div class="form-group">
+              <span class="form-label">名前</span>
+              <input class="form-input" id="staff-name" placeholder="田中太郎">
+            </div>
+            <div class="form-group" style="max-width:100px;">
+              <span class="form-label">役割</span>
+              <select class="form-input" id="staff-role">
+                <option value="未定">未定</option>
+                <option value="受付">受付</option>
+                <option value="誘導A">誘導A</option>
+                <option value="誘導B">誘導B</option>
+                <option value="安全管理">安全管理</option>
+                <option value="案内">案内</option>
+                <option value="記録">記録</option>
+                <option value="遊軍">遊軍</option>
+              </select>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="addStaffMember()">追加</button>
+          </div>
+        </div>
+        <button class="edit-toggle" onclick="togglePanel('staff-add-panel',this)">＋ スタッフを追加</button>
       </div>
     </div>
 
@@ -1061,6 +1241,52 @@ body {
       </div>
       <div id="conf-container">
         <div style="color:var(--dim);font-size:0.78rem;">読み込み中...</div>
+      </div>
+      <div class="card" style="margin-top:12px;">
+        <div class="edit-panel" id="tbd-add-panel" style="display:none;">
+          <div class="edit-panel-head">確認事項を追加</div>
+          <div class="form-row">
+            <div class="form-group">
+              <span class="form-label">項目</span>
+              <input class="form-input" id="tbd-title" placeholder="大人乗船料の正確な金額">
+            </div>
+            <div class="form-group" style="max-width:110px;">
+              <span class="form-label">確認先</span>
+              <select class="form-input" id="tbd-who">
+                <option value="中さんに確認">中さんに確認</option>
+                <option value="主催者に確認">主催者に確認</option>
+                <option value="SP判断">SP判断</option>
+                <option value="中さん＋スタッフと相談">全員で相談</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="max-width:90px;">
+              <span class="form-label">カテゴリ</span>
+              <select class="form-input" id="tbd-category">
+                <option value="運営">運営</option>
+                <option value="収支">収支</option>
+                <option value="スタッフ">スタッフ</option>
+                <option value="集客">集客</option>
+                <option value="コンテンツ">コンテンツ</option>
+              </select>
+            </div>
+            <div class="form-group" style="max-width:70px;">
+              <span class="form-label">優先度</span>
+              <select class="form-input" id="tbd-priority">
+                <option value="high">高</option>
+                <option value="medium" selected>中</option>
+                <option value="low">低</option>
+              </select>
+            </div>
+            <div class="form-group" style="max-width:110px;">
+              <span class="form-label">期限</span>
+              <input class="form-input" id="tbd-deadline" type="date">
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="addConfirmation()">追加</button>
+          </div>
+        </div>
+        <button class="edit-toggle" onclick="togglePanel('tbd-add-panel',this)">＋ 確認事項を追加</button>
       </div>
     </div>
   </div>
@@ -1164,9 +1390,14 @@ body {
     </div>
   </div>
 
-  <div class="foot">MACHAP Events ― SP × 中さん</div>
+  <div class="foot">
+    MACHAP Events ― SP × 中さん
+    <br>
+    <span style="font-size:0.55rem;opacity:0.6;cursor:pointer;" onclick="if(confirm('初期データで上書きしますか？'))seedData()">データリセット</span>
+  </div>
 
 </div>
+<div class="toast" id="toast"></div>
 
 <script>
 const FB = 'https://viisi-master-app-default-rtdb.firebaseio.com/machap/events/20260412-balloon';
@@ -1180,6 +1411,30 @@ async function fbGet(path) {
 async function fbSet(path, data) {
   const r = await fetch(`${FB}/${path}.json`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) });
   if (!r.ok) throw new Error(`fbSet(${path}) failed: ${r.status}`);
+}
+async function fbPush(path, data) {
+  const r = await fetch(`${FB}/${path}.json`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) });
+  return r.json();
+}
+async function fbDel(path) {
+  await fetch(`${FB}/${path}.json`, { method:'DELETE' });
+}
+
+// --- Toast ---
+function toast(msg, isErr) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = isErr ? 'var(--red)' : 'var(--green)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// --- Panel toggle ---
+function togglePanel(id, btn) {
+  const el = document.getElementById(id);
+  const open = el.style.display !== 'none';
+  el.style.display = open ? 'none' : 'block';
+  btn.textContent = open ? btn.textContent.replace('－','＋') : btn.textContent.replace('＋','－');
 }
 
 // --- Countdown ---
@@ -1268,10 +1523,13 @@ async function loadRoadmap() {
     rmHtml += `<div class="rm-top"><span class="rm-name">${phaseNames[p]}</span><span class="rm-date">${phaseDates[p]}</span></div>`;
     rmHtml += '<div class="rm-tasks">';
     for (const t of tasks) {
-      rmHtml += `<label class="rm-t ${t.done?'done':''}">
-        <input type="checkbox" ${t.done?'checked':''} onchange="toggleRmTask('${t.id}',this.checked)">
-        ${t.name} <span class="who">${t.owner||''}</span>
-      </label>`;
+      rmHtml += `<div style="display:flex;align-items:center;gap:4px;">
+        <label class="rm-t ${t.done?'done':''}" style="flex:1;">
+          <input type="checkbox" ${t.done?'checked':''} onchange="toggleRmTask('${t.id}',this.checked)">
+          ${t.name} <span class="who">${t.owner||''}</span>
+        </label>
+        <button class="btn-del" onclick="delTask('${t.id}')" title="削除">×</button>
+      </div>`;
     }
     rmHtml += '</div></div>';
   }
@@ -1280,6 +1538,24 @@ async function loadRoadmap() {
 
 async function toggleRmTask(id, done) {
   await fbSet(`tasks/${id}/done`, done);
+  loadRoadmap();
+}
+
+async function addTask() {
+  const name = document.getElementById('task-name').value.trim();
+  if (!name) return;
+  const owner = document.getElementById('task-owner').value;
+  const phase = document.getElementById('task-phase').value;
+  await fbPush('tasks', { name, owner, phase, done: false, createdAt: new Date().toISOString() });
+  document.getElementById('task-name').value = '';
+  toast('タスク追加');
+  loadRoadmap();
+}
+
+async function delTask(id) {
+  if (!confirm('削除しますか？')) return;
+  await fbDel(`tasks/${id}`);
+  toast('削除');
   loadRoadmap();
 }
 
@@ -1292,7 +1568,7 @@ async function loadStaffDisplay() {
   const pct = Math.min(100, Math.round(count / 20 * 100));
   const gaugeColor = count >= 20 ? 'var(--green)' : count >= 5 ? 'var(--accent-soft)' : 'var(--red)';
 
-  let names = list.map(([,s]) => `<strong style="color:var(--text);">${s.name}</strong>`).join('、');
+  let names = list.map(([id,s]) => `<span style="display:inline-flex;align-items:center;gap:2px;"><strong style="color:var(--text);">${s.name}</strong><button class="btn-del" onclick="delStaffMember('${id}')" title="削除">×</button></span>`).join('　');
 
   el.innerHTML = `
     <div style="font-size:0.78rem;margin-bottom:8px;">
@@ -1314,6 +1590,23 @@ async function loadStaffDisplay() {
   `;
 }
 
+async function addStaffMember() {
+  const name = document.getElementById('staff-name').value.trim();
+  if (!name) return;
+  const role = document.getElementById('staff-role').value;
+  await fbPush('staff', { name, role, fee: '未払い', createdAt: new Date().toISOString() });
+  document.getElementById('staff-name').value = '';
+  toast('スタッフ追加！');
+  loadStaffDisplay();
+}
+
+async function delStaffMember(id) {
+  if (!confirm('削除しますか？')) return;
+  await fbDel(`staff/${id}`);
+  toast('削除');
+  loadStaffDisplay();
+}
+
 // ==================== BUDGET (Firebase) ====================
 async function loadBudgetDisplay() {
   const data = await fbGet('budget');
@@ -1324,15 +1617,15 @@ async function loadBudgetDisplay() {
   let incHtml = '', expHtml = '';
 
   if (data.income) {
-    Object.values(data.income).forEach(item => {
+    Object.entries(data.income).forEach(([id, item]) => {
       totalInc += item.amount || 0;
-      incHtml += `<div class="bud-line"><span>${item.name} <span class="bud-note">(${item.status||''})</span></span><span style="font-weight:500;">¥${(item.amount||0).toLocaleString()}</span></div>`;
+      incHtml += `<div class="bud-line"><span>${item.name} <span class="bud-note">(${item.status||''})</span></span><span style="display:flex;align-items:center;gap:4px;font-weight:500;">¥${(item.amount||0).toLocaleString()}<button class="btn-del" onclick="delBudgetItem('income','${id}')" title="削除">×</button></span></div>`;
     });
   }
   if (data.expense) {
-    Object.values(data.expense).forEach(item => {
+    Object.entries(data.expense).forEach(([id, item]) => {
       totalExp += item.amount || 0;
-      expHtml += `<div class="bud-line"><span>${item.name} <span class="bud-note">(${item.status||''})</span></span><span style="font-weight:500;">¥${(item.amount||0).toLocaleString()}</span></div>`;
+      expHtml += `<div class="bud-line"><span>${item.name} <span class="bud-note">(${item.status||''})</span></span><span style="display:flex;align-items:center;gap:4px;font-weight:500;">¥${(item.amount||0).toLocaleString()}<button class="btn-del" onclick="delBudgetItem('expense','${id}')" title="削除">×</button></span></div>`;
     });
   }
 
@@ -1353,6 +1646,26 @@ async function loadBudgetDisplay() {
     <div style="font-weight:600;font-size:0.78rem;margin:14px 0 6px;color:var(--red);">支出</div>
     <div class="bud-detail">${expHtml}</div>
   `;
+}
+
+async function addBudgetItem(type) {
+  const prefix = type === 'income' ? 'inc' : 'exp';
+  const name = document.getElementById(`${prefix}-name`).value.trim();
+  const amount = parseInt(document.getElementById(`${prefix}-amount`).value) || 0;
+  const status = document.getElementById(`${prefix}-status`).value;
+  if (!name) return;
+  await fbPush(`budget/${type}`, { name, amount, status });
+  document.getElementById(`${prefix}-name`).value = '';
+  document.getElementById(`${prefix}-amount`).value = '';
+  toast('追加');
+  loadBudgetDisplay();
+}
+
+async function delBudgetItem(type, id) {
+  if (!confirm('削除しますか？')) return;
+  await fbDel(`budget/${type}/${id}`);
+  toast('削除');
+  loadBudgetDisplay();
 }
 
 // ==================== CONFIRMATIONS / TBD (Firebase) ====================
@@ -1468,6 +1781,13 @@ function renderConfirmations() {
 
     if (t.dependency) html += `<div class="conf-dep">前提: ${t.dependency}</div>`;
 
+    html += `<div class="status-btns">
+      <button class="status-btn ${t.status==='open'||!t.status?'active-open':''}" onclick="setConfStatus('${id}','open')">未解決</button>
+      <button class="status-btn ${t.status==='in_progress'?'active-in_progress':''}" onclick="setConfStatus('${id}','in_progress')">対応中</button>
+      <button class="status-btn ${t.status==='resolved'?'active-resolved':''}" onclick="resolveConf('${id}')">解決済</button>
+      <button class="btn-del" style="margin-left:auto;" onclick="delConf('${id}')">削除</button>
+    </div>`;
+
     html += `</div>`;
   }
   container.innerHTML = html;
@@ -1509,6 +1829,53 @@ function renderBudgetAlerts() {
     html += `<div class="al al-w"><div><div class="al-t">${t.title}</div><div class="al-d">${t.who||''}</div></div></div>`;
   }
   el.innerHTML = html;
+}
+
+async function setConfStatus(id, status) {
+  await fbSet(`tbd/${id}/status`, status);
+  allConfirmations[id] = { ...allConfirmations[id], status };
+  renderConfirmations();
+  renderOverviewAlerts();
+}
+
+async function resolveConf(id) {
+  const note = prompt('解決内容（任意・Enterでスキップ）') || '';
+  await fbSet(`tbd/${id}/status`, 'resolved');
+  if (note) await fbSet(`tbd/${id}/resolvedNote`, note);
+  allConfirmations[id] = { ...allConfirmations[id], status: 'resolved', resolvedNote: note };
+  toast('解決済みにしました');
+  renderConfirmations();
+  renderOverviewAlerts();
+}
+
+async function delConf(id) {
+  if (!confirm('削除しますか？')) return;
+  await fbDel(`tbd/${id}`);
+  delete allConfirmations[id];
+  toast('削除');
+  renderConfirmations();
+  renderOverviewAlerts();
+}
+
+async function addConfirmation() {
+  const title = document.getElementById('tbd-title').value.trim();
+  if (!title) return;
+  const item = {
+    title,
+    who: document.getElementById('tbd-who').value,
+    category: document.getElementById('tbd-category').value,
+    priority: document.getElementById('tbd-priority').value,
+    deadline: document.getElementById('tbd-deadline').value || null,
+    status: 'open',
+    createdAt: new Date().toISOString()
+  };
+  const res = await fbPush('tbd', item);
+  allConfirmations[res.name] = item;
+  document.getElementById('tbd-title').value = '';
+  document.getElementById('tbd-deadline').value = '';
+  toast('確認事項を追加');
+  renderConfirmations();
+  renderOverviewAlerts();
 }
 
 // Confirmation filter
