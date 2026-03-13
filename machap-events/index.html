@@ -40,7 +40,7 @@ body {
   min-height: 100vh;
   line-height: 1.75;
   -webkit-font-smoothing: antialiased;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .wrap {
@@ -334,12 +334,12 @@ body {
 }
 
 .rm-name {
-  font-size: 0.84rem;
+  font-size: 0.88rem;
   font-weight: 600;
 }
 
 .rm-date {
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   color: var(--dim);
 }
 
@@ -349,8 +349,8 @@ body {
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 0.76rem;
-  padding: 3px 0;
+  font-size: 0.82rem;
+  padding: 4px 0;
   cursor: pointer;
 }
 
@@ -842,6 +842,19 @@ select.form-input { appearance: auto; }
 .blocked-badge:hover { background: var(--yellow); color: #fff; }
 .rm-t.blocked { opacity: 0.5; }
 
+/* ---- Schedule TBD rows ---- */
+.sch-tbd {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 7px 0; border-bottom: 1px solid var(--border-light);
+}
+.sch-tbd:last-child { border-bottom: none; }
+.sch-tbd-icon { font-size: 0.9rem; flex-shrink: 0; margin-top: 2px; color: var(--yellow); }
+.sch-tbd-body { flex: 1; min-width: 0; }
+.sch-tbd-title { font-size: 0.85rem; font-weight: 600; margin-bottom: 3px; }
+.sch-tbd-title.resolved { color: var(--dim); text-decoration: line-through; }
+.sch-tbd-meta { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; margin-bottom: 4px; }
+.sch-sep { height: 1px; background: var(--border-light); margin: 8px 0; }
+
 /* ---- Bottom Nav ---- */
 .bottom-nav {
   display: none;
@@ -894,9 +907,9 @@ select.form-input { appearance: auto; }
   .nav { display: none; }
   .bottom-nav { display: block; }
   .wrap { padding-bottom: 80px; }
-  body { font-size: 15px; }
+  body { font-size: 16px; }
   .card { padding: 14px 16px; }
-  .rm-t { padding: 5px 0; font-size: 0.84rem; }
+  .rm-t { padding: 5px 0; font-size: 0.86rem; }
 }
 </style>
 </head>
@@ -985,12 +998,11 @@ select.form-input { appearance: auto; }
 
   <!-- Nav -->
   <div class="nav" id="nav">
-    <button class="nav-btn on" data-tab="overview">概要</button>
-    <button class="nav-btn" data-tab="roadmap">ロードマップ</button>
+    <button class="nav-btn on" data-tab="overview">トップ</button>
+    <button class="nav-btn" data-tab="schedule">スケジュール</button>
     <button class="nav-btn" data-tab="budget">収支</button>
     <button class="nav-btn" data-tab="staff">スタッフ</button>
     <button class="nav-btn" data-tab="daytime">当日</button>
-    <button class="nav-btn" data-tab="confirm">確認事項</button>
     <button class="nav-btn" data-tab="risks">リスク</button>
     <button class="nav-btn" data-tab="qa">質問回答</button>
   </div>
@@ -1006,7 +1018,7 @@ select.form-input { appearance: auto; }
     </div>
 
     <div class="sec">
-      <div id="overview-task-summary" onclick="switchTab('roadmap')" style="cursor:pointer;">
+      <div id="overview-task-summary" onclick="switchTab('schedule')" style="cursor:pointer;">
         <div style="color:var(--dim);font-size:0.78rem;">読み込み中...</div>
       </div>
     </div>
@@ -1075,18 +1087,18 @@ select.form-input { appearance: auto; }
     </div>
   </div>
 
-  <!-- ========== ロードマップ ========== -->
-  <div class="pane" id="p-roadmap">
+  <!-- ========== スケジュール ========== -->
+  <div class="pane" id="p-schedule">
     <div class="sec">
-      <div class="sec-head">進捗</div>
-      <div class="card" id="roadmap-progress">
+      <div class="sec-head">全体進捗</div>
+      <div class="card" id="schedule-progress">
         <div style="color:var(--dim);font-size:0.78rem;">読み込み中...</div>
       </div>
     </div>
 
     <div class="sec">
       <div class="card">
-        <div class="rm" id="roadmap-container">
+        <div class="rm" id="schedule-container">
           <div style="color:var(--dim);font-size:0.78rem;">読み込み中...</div>
         </div>
         <div class="edit-panel" id="task-add-panel" style="display:none;">
@@ -1120,21 +1132,50 @@ select.form-input { appearance: auto; }
           </div>
         </div>
         <button class="edit-toggle" onclick="togglePanel('task-add-panel',this)">＋ タスク追加</button>
-      </div>
-    </div>
-
-    <div class="sec">
-      <div class="sec-head">重要日程</div>
-      <div class="card">
-        <div style="display:flex;flex-direction:column;gap:6px;font-size:0.78rem;">
-          <div style="display:flex;gap:10px;"><span style="min-width:50px;color:var(--accent);font-weight:600;">~3/16</span><span>スタッフ募集準備</span></div>
-          <div style="display:flex;gap:10px;"><span style="min-width:50px;color:var(--accent);font-weight:600;">3/17</span><span>スタッフ募集開始</span></div>
-          <div style="display:flex;gap:10px;"><span style="min-width:50px;color:var(--accent);font-weight:600;">3/22</span><span>Tシャツデザイン・発注</span></div>
-          <div style="display:flex;gap:10px;"><span style="min-width:50px;color:var(--accent);font-weight:600;">~3/27</span><span>主催者打ち合わせ（収支確認）</span></div>
-          <div style="display:flex;gap:10px;"><span style="min-width:50px;color:var(--accent);font-weight:600;">4/5</span><span>最終打ち合わせ</span></div>
-          <div style="display:flex;gap:10px;"><span style="min-width:50px;color:var(--red);font-weight:600;">4/11</span><span>前日夜 中止/決行判断</span></div>
-          <div style="display:flex;gap:10px;"><span style="min-width:50px;font-weight:700;color:var(--accent);">4/12</span><span style="font-weight:600;">本番</span></div>
+        <div class="edit-panel" id="tbd-add-panel" style="display:none;">
+          <div class="edit-panel-head">決定事項を追加</div>
+          <div class="form-row">
+            <div class="form-group">
+              <span class="form-label">項目</span>
+              <input class="form-input" id="tbd-title" placeholder="大人乗船料の正確な金額">
+            </div>
+            <div class="form-group" style="max-width:110px;">
+              <span class="form-label">確認先</span>
+              <select class="form-input" id="tbd-who">
+                <option value="中さんに確認">中さんに確認</option>
+                <option value="主催者に確認">主催者に確認</option>
+                <option value="SP判断">SP判断</option>
+                <option value="中さん＋スタッフと相談">全員で相談</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="max-width:90px;">
+              <span class="form-label">カテゴリ</span>
+              <select class="form-input" id="tbd-category">
+                <option value="運営">運営</option>
+                <option value="収支">収支</option>
+                <option value="スタッフ">スタッフ</option>
+                <option value="集客">集客</option>
+                <option value="コンテンツ">コンテンツ</option>
+              </select>
+            </div>
+            <div class="form-group" style="max-width:70px;">
+              <span class="form-label">優先度</span>
+              <select class="form-input" id="tbd-priority">
+                <option value="high">高</option>
+                <option value="medium" selected>中</option>
+                <option value="low">低</option>
+              </select>
+            </div>
+            <div class="form-group" style="max-width:110px;">
+              <span class="form-label">期限</span>
+              <input class="form-input" id="tbd-deadline" type="date">
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="addConfirmation()">追加</button>
+          </div>
         </div>
+        <button class="edit-toggle" onclick="togglePanel('tbd-add-panel',this)">⚡ 決定事項を追加</button>
       </div>
     </div>
   </div>
@@ -1294,77 +1335,6 @@ select.form-input { appearance: auto; }
     </div>
   </div>
 
-  <!-- ========== 確認事項 ========== -->
-  <div class="pane" id="p-confirm">
-    <div class="sec">
-      <div class="sec-head">確認事項サマリー</div>
-      <div class="conf-summary" id="conf-summary">
-        <div class="conf-sum-box"><div class="conf-sum-v" style="color:var(--red)">-</div><div class="conf-sum-l">未解決</div></div>
-        <div class="conf-sum-box"><div class="conf-sum-v" style="color:var(--yellow)">-</div><div class="conf-sum-l">対応中</div></div>
-        <div class="conf-sum-box"><div class="conf-sum-v" style="color:var(--green)">-</div><div class="conf-sum-l">解決済</div></div>
-      </div>
-    </div>
-
-    <div class="sec">
-      <div class="conf-filter" id="conf-filter">
-        <button class="conf-filter-btn on" data-filter="all">すべて</button>
-        <button class="conf-filter-btn" data-filter="high">緊急</button>
-        <button class="conf-filter-btn" data-filter="収支">収支</button>
-        <button class="conf-filter-btn" data-filter="スタッフ">スタッフ</button>
-        <button class="conf-filter-btn" data-filter="運営">運営</button>
-        <button class="conf-filter-btn" data-filter="集客">集客</button>
-      </div>
-      <div id="conf-container">
-        <div style="color:var(--dim);font-size:0.78rem;">読み込み中...</div>
-      </div>
-      <div class="card" style="margin-top:12px;">
-        <div class="edit-panel" id="tbd-add-panel" style="display:none;">
-          <div class="edit-panel-head">確認事項を追加</div>
-          <div class="form-row">
-            <div class="form-group">
-              <span class="form-label">項目</span>
-              <input class="form-input" id="tbd-title" placeholder="大人乗船料の正確な金額">
-            </div>
-            <div class="form-group" style="max-width:110px;">
-              <span class="form-label">確認先</span>
-              <select class="form-input" id="tbd-who">
-                <option value="中さんに確認">中さんに確認</option>
-                <option value="主催者に確認">主催者に確認</option>
-                <option value="SP判断">SP判断</option>
-                <option value="中さん＋スタッフと相談">全員で相談</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group" style="max-width:90px;">
-              <span class="form-label">カテゴリ</span>
-              <select class="form-input" id="tbd-category">
-                <option value="運営">運営</option>
-                <option value="収支">収支</option>
-                <option value="スタッフ">スタッフ</option>
-                <option value="集客">集客</option>
-                <option value="コンテンツ">コンテンツ</option>
-              </select>
-            </div>
-            <div class="form-group" style="max-width:70px;">
-              <span class="form-label">優先度</span>
-              <select class="form-input" id="tbd-priority">
-                <option value="high">高</option>
-                <option value="medium" selected>中</option>
-                <option value="low">低</option>
-              </select>
-            </div>
-            <div class="form-group" style="max-width:110px;">
-              <span class="form-label">期限</span>
-              <input class="form-input" id="tbd-deadline" type="date">
-            </div>
-            <button class="btn btn-primary btn-sm" onclick="addConfirmation()">追加</button>
-          </div>
-        </div>
-        <button class="edit-toggle" onclick="togglePanel('tbd-add-panel',this)">＋ 確認事項を追加</button>
-      </div>
-    </div>
-  </div>
 
   <!-- ========== リスク ========== -->
   <div class="pane" id="p-risks">
@@ -1495,9 +1465,8 @@ select.form-input { appearance: auto; }
 <!-- Bottom Nav -->
 <nav class="bottom-nav">
   <div class="bottom-nav-inner">
-    <button class="bn-btn on" data-tab="overview"><span class="bn-icon">🏠</span><span class="bn-label">概要</span></button>
-    <button class="bn-btn" data-tab="confirm"><span class="bn-icon">⚡</span><span class="bn-label">確認事項</span></button>
-    <button class="bn-btn" data-tab="roadmap"><span class="bn-icon">📋</span><span class="bn-label">タスク</span></button>
+    <button class="bn-btn on" data-tab="overview"><span class="bn-icon">🏠</span><span class="bn-label">トップ</span></button>
+    <button class="bn-btn" data-tab="schedule"><span class="bn-icon">📅</span><span class="bn-label">スケジュール</span></button>
     <button class="bn-btn" data-tab="staff"><span class="bn-icon">👥</span><span class="bn-label">スタッフ</span></button>
     <button class="bn-btn" data-tab="budget"><span class="bn-icon">💴</span><span class="bn-label">収支</span></button>
     <button class="bn-btn" id="bn-more" onclick="openBnSheet()"><span class="bn-icon">···</span><span class="bn-label">その他</span></button>
@@ -1588,14 +1557,35 @@ function closeBnSheet() {
   document.getElementById('bn-overlay').classList.remove('open');
 }
 
-// ==================== ROADMAP (Firebase) ====================
+// ==================== SCHEDULE (Firebase) ====================
 const phaseNames = { '0':'基盤整備', '1':'仕込み', '2':'直前準備', '3':'当日', '4':'振り返り' };
 const phaseDates = { '0':'3/13 - 3/16', '1':'3/17 - 3/30', '2':'3/31 - 4/11', '3':'4/12', '4':'4/12 - 4/19' };
 
-async function loadRoadmap() {
-  const data = await fbGet('tasks');
-  if (!data) { document.getElementById('roadmap-container').innerHTML = '<div style="color:var(--dim);font-size:0.78rem;">タスクデータなし</div>'; return; }
+let allTasks = {};
 
+function tbdPhaseFromDeadline(deadline) {
+  if (!deadline) return '1';
+  if (deadline <= '2026-03-16') return '0';
+  if (deadline <= '2026-03-30') return '1';
+  if (deadline <= '2026-04-11') return '2';
+  if (deadline <= '2026-04-12') return '3';
+  return '4';
+}
+
+async function loadSchedule() {
+  const data = await fbGet('tasks');
+  allTasks = data || {};
+  renderSchedule();
+}
+
+function renderSchedule() {
+  const data = allTasks;
+  if (!Object.keys(data).length) {
+    document.getElementById('schedule-container').innerHTML = '<div style="color:var(--dim);font-size:0.78rem;">タスクデータなし</div>';
+    return;
+  }
+
+  // Group tasks by phase
   const phases = {};
   let totalDone = 0, totalAll = 0;
   Object.entries(data).forEach(([id, t]) => {
@@ -1606,52 +1596,91 @@ async function loadRoadmap() {
     if (t.done) totalDone++;
   });
 
-  // Progress bar
+  // Group TBD by phase (by deadline)
+  const tbdByPhase = {'0':[], '1':[], '2':[], '3':[], '4':[]};
+  for (const [id, t] of Object.entries(allConfirmations)) {
+    const p = tbdPhaseFromDeadline(t.deadline);
+    tbdByPhase[p].push({ id, ...t });
+  }
+  for (const p of Object.keys(tbdByPhase)) {
+    tbdByPhase[p].sort((a,b) => (a.deadline||'9999').localeCompare(b.deadline||'9999'));
+  }
+
+  // Determine current phase (first phase with incomplete tasks)
   const phaseCounts = {};
   for (const p of ['0','1','2','3','4']) {
     if (!phases[p]) { phaseCounts[p] = { total:0, done:0 }; continue; }
     const done = phases[p].filter(t => t.done).length;
     phaseCounts[p] = { total: phases[p].length, done };
   }
-
-  // Determine current phase
   let currentPhase = '0';
   for (const p of ['0','1','2','3','4']) {
     if (phaseCounts[p].total > 0 && phaseCounts[p].done < phaseCounts[p].total) { currentPhase = p; break; }
-    if (phaseCounts[p].total > 0 && phaseCounts[p].done === phaseCounts[p].total) continue;
   }
 
+  // Progress bar
   let progHtml = '<div style="display:flex;gap:3px;margin-bottom:10px;">';
   for (const p of ['0','1','2','3','4']) {
     const c = phaseCounts[p];
     const flex = Math.max(c.total, 1) * 0.3;
     let bg = 'var(--border-light)';
     if (c.total > 0 && c.done === c.total) bg = 'var(--green)';
-    else if (p === currentPhase) bg = 'var(--accent-soft);opacity:0.5';
-    progHtml += `<div style="flex:${flex};height:4px;border-radius:2px;background:${bg};"></div>`;
+    else if (p === currentPhase) bg = 'var(--accent-soft)';
+    progHtml += `<div style="flex:${flex};height:5px;border-radius:2px;background:${bg};${p===currentPhase?'opacity:0.6':''}"></div>`;
   }
   progHtml += '</div>';
-  progHtml += `<div style="display:flex;justify-content:space-between;font-size:0.6rem;color:var(--dim);">`;
+  progHtml += `<div style="display:flex;justify-content:space-between;font-size:0.68rem;color:var(--dim);">`;
   for (const p of ['0','1','2','3','4']) {
     const label = p === currentPhase ? `P${p} ← いま` : `P${p}`;
     progHtml += `<span>${label}</span>`;
   }
   progHtml += '</div>';
-  progHtml += `<div style="font-size:0.65rem;color:var(--dim);margin-top:6px;text-align:right;">${totalDone}/${totalAll} 完了</div>`;
-  document.getElementById('roadmap-progress').innerHTML = progHtml;
+  progHtml += `<div style="font-size:0.7rem;color:var(--dim);margin-top:6px;text-align:right;">${totalDone}/${totalAll} 完了</div>`;
+  document.getElementById('schedule-progress').innerHTML = progHtml;
 
-  // Roadmap phases
+  // Combined schedule rendering
   let rmHtml = '';
   for (const p of ['0','1','2','3','4']) {
-    if (!phases[p]) continue;
-    const tasks = phases[p];
-    const allDone = tasks.every(t => t.done);
+    const tasks = phases[p] || [];
+    const tbds = tbdByPhase[p] || [];
+    if (!tasks.length && !tbds.length) continue;
+
+    const allTasksDone = tasks.length > 0 && tasks.every(t => t.done);
+    const allTbdsResolved = tbds.every(t => t.status === 'resolved');
     const isCurrent = p === currentPhase;
-    const cls = allDone ? 'done' : isCurrent ? 'now' : '';
+    const phaseAllDone = allTasksDone && allTbdsResolved && tasks.length > 0;
+    const cls = phaseAllDone ? 'done' : isCurrent ? 'now' : '';
 
     rmHtml += `<div class="rm-ph ${cls}"><div class="rm-dot"></div>`;
     rmHtml += `<div class="rm-top"><span class="rm-name">${phaseNames[p]}</span><span class="rm-date">${phaseDates[p]}</span></div>`;
     rmHtml += '<div class="rm-tasks">';
+
+    // TBD items (decisions needed) — shown first
+    if (tbds.length) {
+      for (const t of tbds) {
+        const dlClass = deadlineClass(t.deadline);
+        const isResolved = t.status === 'resolved';
+        rmHtml += `<div class="sch-tbd">
+          <span class="sch-tbd-icon">${isResolved ? '✓' : '⚡'}</span>
+          <div class="sch-tbd-body">
+            <div class="sch-tbd-title ${isResolved?'resolved':''}">${t.title}</div>
+            <div class="sch-tbd-meta">
+              ${t.who ? `<span class="who" style="margin-left:0;">${t.who}</span>` : ''}
+              ${t.deadline ? `<span class="conf-deadline ${dlClass}" style="padding:1px 6px;">${deadlineLabel(t.deadline)}まで</span>` : ''}
+            </div>
+            <div class="status-btns" style="margin-top:4px;">
+              <button class="status-btn ${t.status==='open'||!t.status?'active-open':''}" onclick="setConfStatus('${t.id}','open')">未解決</button>
+              <button class="status-btn ${t.status==='in_progress'?'active-in_progress':''}" onclick="setConfStatus('${t.id}','in_progress')">対応中</button>
+              <button class="status-btn ${t.status==='resolved'?'active-resolved':''}" onclick="resolveConf('${t.id}')">解決済</button>
+              <button class="btn-del" style="margin-left:auto;" onclick="delConf('${t.id}')">削除</button>
+            </div>
+          </div>
+        </div>`;
+      }
+      if (tasks.length) rmHtml += '<div class="sch-sep"></div>';
+    }
+
+    // Task items (actions)
     for (const t of tasks) {
       const isBlocked = t.blockedBy && allConfirmations[t.blockedBy] && allConfirmations[t.blockedBy].status !== 'resolved';
       const blockedTitle = isBlocked ? allConfirmations[t.blockedBy].title : '';
@@ -1660,13 +1689,13 @@ async function loadRoadmap() {
           <input type="checkbox" ${t.done?'checked':''} onchange="toggleRmTask('${t.id}',this.checked)">
           ${t.name} <span class="who">${t.owner||''}</span>
         </label>
-        ${isBlocked && !t.done ? `<span class="blocked-badge" onclick="switchTab('confirm')" title="${blockedTitle}">⚡ 要確認</span>` : ''}
+        ${isBlocked && !t.done ? `<span class="blocked-badge" title="${blockedTitle}">⚡ 要確認</span>` : ''}
         <button class="btn-del" onclick="delTask('${t.id}')" title="削除">×</button>
       </div>`;
     }
     rmHtml += '</div></div>';
   }
-  document.getElementById('roadmap-container').innerHTML = rmHtml;
+  document.getElementById('schedule-container').innerHTML = rmHtml;
 
   // 概要タブのサマリーも更新
   const pct = totalAll ? Math.round(totalDone / totalAll * 100) : 0;
@@ -1676,21 +1705,22 @@ async function loadRoadmap() {
     <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);">
       <div style="flex:1;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
-          <span style="font-size:0.72rem;font-weight:600;color:var(--text);">Phase ${currentPhase}: ${phaseName}</span>
-          <span style="font-size:0.68rem;color:var(--dim);">${totalDone}/${totalAll} 完了</span>
+          <span style="font-size:0.78rem;font-weight:600;color:var(--text);">Phase ${currentPhase}: ${phaseName}</span>
+          <span style="font-size:0.72rem;color:var(--dim);">${totalDone}/${totalAll} 完了</span>
         </div>
         <div style="height:4px;background:var(--warm);border-radius:2px;overflow:hidden;">
           <div style="width:${pct}%;height:100%;background:${barColor};border-radius:2px;transition:width 0.3s;"></div>
         </div>
       </div>
-      <span style="font-size:0.66rem;color:var(--accent);white-space:nowrap;">詳細 →</span>
+      <span style="font-size:0.72rem;color:var(--accent);white-space:nowrap;">詳細 →</span>
     </div>
   `;
 }
 
 async function toggleRmTask(id, done) {
   await fbSet(`tasks/${id}/done`, done);
-  loadRoadmap();
+  allTasks[id] = { ...allTasks[id], done };
+  renderSchedule();
 }
 
 async function addTask() {
@@ -1698,17 +1728,19 @@ async function addTask() {
   if (!name) return;
   const owner = document.getElementById('task-owner').value;
   const phase = document.getElementById('task-phase').value;
-  await fbPush('tasks', { name, owner, phase, done: false, createdAt: new Date().toISOString() });
+  const res = await fbPush('tasks', { name, owner, phase, done: false, createdAt: new Date().toISOString() });
+  allTasks[res.name] = { name, owner, phase, done: false };
   document.getElementById('task-name').value = '';
   toast('タスク追加');
-  loadRoadmap();
+  renderSchedule();
 }
 
 async function delTask(id) {
   if (!confirm('削除しますか？')) return;
   await fbDel(`tasks/${id}`);
+  delete allTasks[id];
   toast('削除');
-  loadRoadmap();
+  renderSchedule();
 }
 
 // ==================== STAFF (Firebase) ====================
@@ -1822,7 +1854,6 @@ async function delBudgetItem(type, id) {
 
 // ==================== CONFIRMATIONS / TBD (Firebase) ====================
 let allConfirmations = {};
-let confFilter = 'all';
 
 function deadlineClass(dl) {
   if (!dl) return 'ok';
@@ -1850,99 +1881,9 @@ function daysUntil(dl) {
 async function loadConfirmations() {
   const data = await fbGet('tbd');
   allConfirmations = data || {};
-  renderConfirmations();
   renderOverviewAlerts();
   renderBudgetAlerts();
-}
-
-function renderConfirmations() {
-  const container = document.getElementById('conf-container');
-  const items = Object.entries(allConfirmations);
-
-  if (!items.length) { container.innerHTML = '<div style="color:var(--dim);font-size:0.78rem;">確認事項なし</div>'; return; }
-
-  // Count by status
-  let open = 0, inProg = 0, resolved = 0;
-  items.forEach(([,t]) => {
-    if (t.status === 'resolved') resolved++;
-    else if (t.status === 'in_progress') inProg++;
-    else open++;
-  });
-
-  document.getElementById('conf-summary').innerHTML = `
-    <div class="conf-sum-box"><div class="conf-sum-v" style="color:var(--red)">${open}</div><div class="conf-sum-l">未解決</div></div>
-    <div class="conf-sum-box"><div class="conf-sum-v" style="color:var(--yellow)">${inProg}</div><div class="conf-sum-l">対応中</div></div>
-    <div class="conf-sum-box"><div class="conf-sum-v" style="color:var(--green)">${resolved}</div><div class="conf-sum-l">解決済</div></div>
-  `;
-
-  // Filter
-  let filtered = items;
-  if (confFilter === 'high') {
-    filtered = items.filter(([,t]) => t.priority === 'high');
-  } else if (confFilter !== 'all') {
-    filtered = items.filter(([,t]) => t.category === confFilter);
-  }
-
-  // Sort: open first, then by deadline, then by priority
-  const prioOrder = { high: 0, medium: 1, low: 2 };
-  filtered.sort((a, b) => {
-    const sa = a[1].status === 'resolved' ? 1 : 0;
-    const sb = b[1].status === 'resolved' ? 1 : 0;
-    if (sa !== sb) return sa - sb;
-    const pa = prioOrder[a[1].priority] || 1;
-    const pb = prioOrder[b[1].priority] || 1;
-    if (pa !== pb) return pa - pb;
-    const da = a[1].deadline || '9999';
-    const db = b[1].deadline || '9999';
-    return da.localeCompare(db);
-  });
-
-  let html = '';
-  for (const [id, t] of filtered) {
-    const dlClass = deadlineClass(t.deadline);
-    const isResolved = t.status === 'resolved';
-    const prioClass = t.priority || 'medium';
-
-    html += `<div class="conf-item priority-${prioClass} ${isResolved?'resolved':''}">`;
-    html += `<div class="conf-head">`;
-    html += `<div class="conf-title">${t.title}</div>`;
-    if (t.deadline) {
-      html += `<div class="conf-deadline ${dlClass}">${deadlineLabel(t.deadline)}まで（${daysUntil(t.deadline)}）</div>`;
-    }
-    html += `</div>`;
-
-    if (t.why) html += `<div class="conf-why">${t.why}</div>`;
-    if (t.deadlineReason) html += `<div class="conf-why" style="font-size:0.68rem;">期限理由: ${t.deadlineReason}</div>`;
-
-    html += `<div class="conf-meta">`;
-    if (t.who) html += `<span class="conf-tag">${t.who}</span>`;
-    if (t.category) html += `<span class="conf-tag">${t.category}</span>`;
-    if (t.priority) html += `<span class="conf-tag" style="background:${prioClass==='high'?'var(--red-light)':prioClass==='low'?'var(--blue-light)':'var(--yellow-light)'};color:${prioClass==='high'?'var(--red)':prioClass==='low'?'var(--blue)':'var(--yellow)'};">${prioClass==='high'?'緊急':prioClass==='low'?'低め':'通常'}</span>`;
-    if (isResolved) html += `<span class="conf-tag" style="background:var(--green-light);color:var(--green);">解決済</span>`;
-    html += `</div>`;
-
-    if (t.options && t.options.length) {
-      html += `<div class="conf-options">`;
-      for (const opt of t.options) {
-        html += `<div class="conf-opt">${opt}</div>`;
-      }
-      html += `</div>`;
-    }
-
-    if (t.resolvedNote) html += `<div style="font-size:0.74rem;padding:6px 8px;background:var(--green-light);border-radius:6px;margin-bottom:6px;">→ ${t.resolvedNote}</div>`;
-
-    if (t.dependency) html += `<div class="conf-dep">前提: ${t.dependency}</div>`;
-
-    html += `<div class="status-btns">
-      <button class="status-btn ${t.status==='open'||!t.status?'active-open':''}" onclick="setConfStatus('${id}','open')">未解決</button>
-      <button class="status-btn ${t.status==='in_progress'?'active-in_progress':''}" onclick="setConfStatus('${id}','in_progress')">対応中</button>
-      <button class="status-btn ${t.status==='resolved'?'active-resolved':''}" onclick="resolveConf('${id}')">解決済</button>
-      <button class="btn-del" style="margin-left:auto;" onclick="delConf('${id}')">削除</button>
-    </div>`;
-
-    html += `</div>`;
-  }
-  container.innerHTML = html;
+  // renderSchedule() is called by loadSchedule() after tasks are loaded
 }
 
 function renderOverviewAlerts() {
@@ -1986,7 +1927,7 @@ function renderBudgetAlerts() {
 async function setConfStatus(id, status) {
   await fbSet(`tbd/${id}/status`, status);
   allConfirmations[id] = { ...allConfirmations[id], status };
-  renderConfirmations();
+  renderSchedule();
   renderOverviewAlerts();
 }
 
@@ -1996,7 +1937,7 @@ async function resolveConf(id) {
   if (note) await fbSet(`tbd/${id}/resolvedNote`, note);
   allConfirmations[id] = { ...allConfirmations[id], status: 'resolved', resolvedNote: note };
   toast('解決済みにしました');
-  renderConfirmations();
+  renderSchedule();
   renderOverviewAlerts();
 }
 
@@ -2005,7 +1946,7 @@ async function delConf(id) {
   await fbDel(`tbd/${id}`);
   delete allConfirmations[id];
   toast('削除');
-  renderConfirmations();
+  renderSchedule();
   renderOverviewAlerts();
 }
 
@@ -2025,20 +1966,10 @@ async function addConfirmation() {
   allConfirmations[res.name] = item;
   document.getElementById('tbd-title').value = '';
   document.getElementById('tbd-deadline').value = '';
-  toast('確認事項を追加');
-  renderConfirmations();
+  toast('決定事項を追加');
+  renderSchedule();
   renderOverviewAlerts();
 }
-
-// Confirmation filter
-document.querySelectorAll('.conf-filter-btn').forEach(btn => {
-  btn.addEventListener('click', function() {
-    document.querySelectorAll('.conf-filter-btn').forEach(b => b.classList.remove('on'));
-    this.classList.add('on');
-    confFilter = this.dataset.filter;
-    renderConfirmations();
-  });
-});
 
 // ==================== AUTO SEED ====================
 async function autoSeed() {
@@ -2144,8 +2075,8 @@ async function loadAll() {
   } catch(e) {
     console.error('Init error:', e);
   }
-  await loadConfirmations(); // must run before loadRoadmap so allConfirmations is populated
-  loadRoadmap();
+  await loadConfirmations(); // must run before loadSchedule so allConfirmations is populated
+  loadSchedule();
   loadStaffDisplay();
   loadBudgetDisplay();
 }
