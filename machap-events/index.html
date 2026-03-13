@@ -1054,13 +1054,13 @@ select.form-input { appearance: auto; }
             <div class="role-c">60代の方・電話連絡</div>
           </div>
           <div class="role-r" style="border-left:3px solid var(--accent);padding-left:10px;">
-            <div class="role-nm">中さん</div>
-            <div class="role-d">主催者サポート・業者手配・相談対応・気球代立替</div>
+            <div class="role-nm">ナカ</div>
+            <div class="role-d">プロジェクト責任者・業者連携・主催者調整・気球代立替</div>
             <div class="role-c">電話+対面</div>
           </div>
           <div class="role-r" style="border-left:3px solid var(--green);padding-left:10px;">
             <div class="role-nm">SP</div>
-            <div class="role-d">当日スタッフ手配・現地仕切り・物品持込・運営管理全般</div>
+            <div class="role-d">運営サポート・スタッフ手配・物品持込・スタッフとして参加（参加費あり）</div>
             <div class="role-c">MACHAP</div>
           </div>
         </div>
@@ -1112,7 +1112,7 @@ select.form-input { appearance: auto; }
               <span class="form-label">担当</span>
               <select class="form-input" id="task-owner">
                 <option value="SP">SP</option>
-                <option value="中さん">中さん</option>
+                <option value="ナカ">ナカ</option>
                 <option value="SP+中">SP+中</option>
                 <option value="全員">全員</option>
                 <option value="主催者">主催者</option>
@@ -1142,10 +1142,10 @@ select.form-input { appearance: auto; }
             <div class="form-group" style="max-width:110px;">
               <span class="form-label">確認先</span>
               <select class="form-input" id="tbd-who">
-                <option value="中さんに確認">中さんに確認</option>
+                <option value="ナカに確認">ナカに確認</option>
                 <option value="主催者に確認">主催者に確認</option>
                 <option value="SP判断">SP判断</option>
-                <option value="中さん＋スタッフと相談">全員で相談</option>
+                <option value="ナカ＋スタッフと相談">全員で相談</option>
               </select>
             </div>
           </div>
@@ -1281,8 +1281,8 @@ select.form-input { appearance: auto; }
       <div class="sec-head">当日の配置（20名+体制）</div>
       <div class="card">
         <div class="role-list">
-          <div class="role-r"><div class="role-nm">総合管理</div><div class="role-d">全体統括・タイムキープ</div><div class="role-c">1名 SP</div></div>
-          <div class="role-r"><div class="role-nm">業者連携</div><div class="role-d">気球屋との連携</div><div class="role-c">1名 中さん</div></div>
+          <div class="role-r"><div class="role-nm">総合管理</div><div class="role-d">全体把握・タイムキープ・最終判断</div><div class="role-c">1名 ナカ</div></div>
+          <div class="role-r"><div class="role-nm">業者連携 / 現場サポート</div><div class="role-d">気球屋との連携・全体補佐</div><div class="role-c">1名 SP（スタッフ参加）</div></div>
           <div class="role-r"><div class="role-nm">受付</div><div class="role-d">予約確認・現金受領</div><div class="role-c">3名</div></div>
           <div class="role-r"><div class="role-nm">誘導A</div><div class="role-d">1号機 列整理・乗降</div><div class="role-c">3名</div></div>
           <div class="role-r"><div class="role-nm">誘導B</div><div class="role-d">2号機 列整理・乗降</div><div class="role-c">3名</div></div>
@@ -1345,7 +1345,7 @@ select.form-input { appearance: auto; }
           <div class="risk-r"><span>搭乗希望 > キャパ</span><span class="risk-tag rh">確率高</span><span class="risk-tag rm-tag">影響中</span><div class="risk-note">予約制で200枠を管理</div></div>
           <div class="risk-r"><span>荒天中止</span><span class="risk-tag rm-tag">確率中</span><span class="risk-tag rh">影響高</span><div class="risk-note">前日夜判断。天候なら業者費用なし</div></div>
           <div class="risk-r"><span>収支赤字</span><span class="risk-tag rm-tag">確率中</span><span class="risk-tag rm-tag">影響中</span><div class="risk-note">PTA予算・正確な乗船料を確認</div></div>
-          <div class="risk-r"><span>スタッフ不足（5名以下）</span><span class="risk-tag rl">確率低</span><span class="risk-tag rh">影響極高</span><div class="risk-note">早期募集・中さんのチャネル活用</div></div>
+          <div class="risk-r"><span>スタッフ不足（5名以下）</span><span class="risk-tag rl">確率低</span><span class="risk-tag rh">影響極高</span><div class="risk-note">早期募集・ナカのチャネル活用</div></div>
           <div class="risk-r"><span>駐車場問題</span><span class="risk-tag rm-tag">確率中</span><span class="risk-tag rm-tag">影響中</span><div class="risk-note">「駐車場なし」を事前周知</div></div>
           <div class="risk-r"><span>主催者との認識齟齬</span><span class="risk-tag rm-tag">確率中</span><span class="risk-tag rh">影響高</span><div class="risk-note">3/27打ち合わせですり合わせ</div></div>
           <div class="risk-r"><span>早朝の騒音</span><span class="risk-tag rl">確率低</span><span class="risk-tag rm-tag">影響中</span><div class="risk-note">主催者が地域連携済み</div></div>
@@ -1358,7 +1358,7 @@ select.form-input { appearance: auto; }
   <!-- ========== 質問回答 ========== -->
   <div class="pane" id="p-qa">
     <div class="sec">
-      <div class="sec-head">中さんへの確認事項と回答（全35問）</div>
+      <div class="sec-head">ナカへの確認事項と回答（全35問）</div>
     </div>
 
     <div class="card">
@@ -1436,9 +1436,7 @@ select.form-input { appearance: auto; }
   </div>
 
   <div class="foot">
-    MACHAP Events ― SP × 中さん
-    <br>
-    <span style="font-size:0.55rem;opacity:0.6;cursor:pointer;" onclick="if(confirm('初期データで上書きしますか？'))seedData()">データリセット</span>
+    MACHAP Events ― SP × ナカ
   </div>
 
 </div>
@@ -1770,7 +1768,7 @@ async function loadStaffDisplay() {
     <div style="font-size:0.74rem;margin-bottom:4px;font-weight:600;">参加費</div>
     <div style="font-size:0.74rem;color:var(--dim);margin-bottom:10px;">理想 ¥10,000（スムーズなら） / 調整 ¥5,000（直前募集の場合）</div>
     <div style="font-size:0.74rem;margin-bottom:4px;font-weight:600;">Tシャツ</div>
-    <div style="font-size:0.74rem;color:var(--dim);">作成する方向（スタッフ次第）。中さんは作りたい派</div>
+    <div style="font-size:0.74rem;color:var(--dim);">作成する方向（スタッフ次第）。ナカは作りたい派</div>
   `;
 }
 
@@ -1981,13 +1979,13 @@ async function autoSeed() {
   const tasks = [
     { name:'計画書作成', owner:'SP', phase:'0', done:true },
     { name:'確認事項リスト作成', owner:'SP', phase:'0', done:true },
-    { name:'中さんから回答取得', owner:'中さん', phase:'0', done:true },
+    { name:'ナカから回答取得', owner:'ナカ', phase:'0', done:true },
     { name:'計画書を確定版に更新', owner:'SP', phase:'0', done:true },
     { name:'収支の全体像を確認', owner:'SP+中', phase:'0', done:false },
     { name:'スタッフ募集開始', owner:'SP+中', phase:'1', done:false },
     { name:'募集用テキスト・画像作成', owner:'SP', phase:'1', done:false },
     { name:'予約システム構築', owner:'SP', phase:'1', done:false, blockedBy:'tbd02' },
-    { name:'Tシャツデザイン・発注', owner:'中さん', phase:'1', done:false, blockedBy:'tbd06' },
+    { name:'Tシャツデザイン・発注', owner:'ナカ', phase:'1', done:false, blockedBy:'tbd06' },
     { name:'スタッフ5名以上確保の確認', owner:'SP+中', phase:'1', done:false },
     { name:'主催者打ち合わせ（~3/27）', owner:'SP+中', phase:'1', done:false, blockedBy:'tbd01' },
     { name:'備品リスト確定・買い出し', owner:'SP', phase:'2', done:false },
@@ -2012,22 +2010,22 @@ async function autoSeed() {
 
   // TBD (確認事項)
   await fbSet('tbd', {
-    tbd01: { title:'主催者との打ち合わせ日程確定', who:'中さんに確認', category:'運営', priority:'high', deadline:'2026-03-17', deadlineReason:'多くの確認事項がこの打ち合わせに依存している', why:'PTA予算、収支、当日オペレーションなど重要事項の確認が必要。日程が決まらないと他が全部止まる', options:['中さんが主催者に日程調整して確定'], dependency:'なし（最優先で日程確定）', status:'open' },
-    tbd02: { title:'予約管理の方法', who:'中さんに確認', category:'運営', priority:'high', deadline:'2026-03-16', deadlineReason:'スタッフ募集開始前に方針を固める必要', why:'搭乗200枠の管理方法が未定。主催者が回覧板で管理しているが、追加集客時にWeb予約フォームが必要になる可能性', options:['主催者が回覧板で全管理（フォーム不要）','回覧板＋追加集客用Webフォーム（SP構築）','全てWeb予約に移行'], dependency:'追加集客をするかどうかの判断', status:'open' },
-    tbd03: { title:'スタッフ参加費の金額', who:'中さん＋スタッフと相談', category:'スタッフ', priority:'high', deadline:'2026-03-17', deadlineReason:'募集開始時に金額を提示する必要がある', why:'¥10,000と¥5,000で収入に10万円の差。金額が高いと募集ハードルが上がる', options:['¥10,000（理想・収入最大化）','¥5,000（ハードル低め・集めやすい）','段階制（早期¥5,000 / 通常¥10,000）'], dependency:'スタッフ募集開始', status:'open' },
-    tbd04: { title:'大人乗船料の正確な金額', who:'中さんに確認', category:'収支', priority:'high', deadline:'2026-03-20', deadlineReason:'収支計画を精緻化して赤字リスクを正確に把握するため', why:'現在「約3,500円」で仮計算。正確な金額で収支が大きく変動する。150名×差額 = 大きなインパクト', options:['中さんが主催者/業者に確認して回答'], dependency:'主催者または業者との連絡', status:'open' },
-    tbd05: { title:'追加集客の方法・応募フォーム要否', who:'中さんに確認', category:'集客', priority:'medium', deadline:'2026-03-20', deadlineReason:'回覧板以外の集客をするなら早めに準備が必要', why:'回覧板で予約を募っているが、追加でSNS等で集客する場合の受け皿が必要かもしれない', options:['回覧板のみで十分（フォーム不要）','SNS告知＋Web応募フォーム（SP構築）','SNS告知のみ（DM/電話で予約受付）'], dependency:'現在の予約状況の把握', status:'open' },
-    tbd06: { title:'Tシャツ作成の最終判断', who:'中さん＋スタッフと相談', category:'スタッフ', priority:'medium', deadline:'2026-03-22', deadlineReason:'発注から納品まで2〜3週間のリードタイム。3/22に決めないと4/12に間に合わない', why:'中さんは作りたい派。スタッフの一体感・記念になる。ただしコストとスタッフ人数の見通しが必要', options:['作る（モルックドームでデザイン・発注）','作らない（私服＋ビブスやネームプレート）','簡易ビブスのみ（低コスト）'], dependency:'スタッフ人数の目処が立ってから（3/25中間確認）', status:'open' },
+    tbd01: { title:'主催者との打ち合わせ日程確定', who:'ナカに確認', category:'運営', priority:'high', deadline:'2026-03-17', deadlineReason:'多くの確認事項がこの打ち合わせに依存している', why:'PTA予算、収支、当日オペレーションなど重要事項の確認が必要。日程が決まらないと他が全部止まる', options:['ナカが主催者に日程調整して確定'], dependency:'なし（最優先で日程確定）', status:'open' },
+    tbd02: { title:'予約管理の方法', who:'ナカに確認', category:'運営', priority:'high', deadline:'2026-03-16', deadlineReason:'スタッフ募集開始前に方針を固める必要', why:'搭乗200枠の管理方法が未定。主催者が回覧板で管理しているが、追加集客時にWeb予約フォームが必要になる可能性', options:['主催者が回覧板で全管理（フォーム不要）','回覧板＋追加集客用Webフォーム（SP構築）','全てWeb予約に移行'], dependency:'追加集客をするかどうかの判断', status:'open' },
+    tbd03: { title:'スタッフ参加費の金額', who:'ナカ＋スタッフと相談', category:'スタッフ', priority:'high', deadline:'2026-03-17', deadlineReason:'募集開始時に金額を提示する必要がある', why:'¥10,000と¥5,000で収入に10万円の差。金額が高いと募集ハードルが上がる', options:['¥10,000（理想・収入最大化）','¥5,000（ハードル低め・集めやすい）','段階制（早期¥5,000 / 通常¥10,000）'], dependency:'スタッフ募集開始', status:'open' },
+    tbd04: { title:'大人乗船料の正確な金額', who:'ナカに確認', category:'収支', priority:'high', deadline:'2026-03-20', deadlineReason:'収支計画を精緻化して赤字リスクを正確に把握するため', why:'現在「約3,500円」で仮計算。正確な金額で収支が大きく変動する。150名×差額 = 大きなインパクト', options:['ナカが主催者/業者に確認して回答'], dependency:'主催者または業者との連絡', status:'open' },
+    tbd05: { title:'追加集客の方法・応募フォーム要否', who:'ナカに確認', category:'集客', priority:'medium', deadline:'2026-03-20', deadlineReason:'回覧板以外の集客をするなら早めに準備が必要', why:'回覧板で予約を募っているが、追加でSNS等で集客する場合の受け皿が必要かもしれない', options:['回覧板のみで十分（フォーム不要）','SNS告知＋Web応募フォーム（SP構築）','SNS告知のみ（DM/電話で予約受付）'], dependency:'現在の予約状況の把握', status:'open' },
+    tbd06: { title:'Tシャツ作成の最終判断', who:'ナカ＋スタッフと相談', category:'スタッフ', priority:'medium', deadline:'2026-03-22', deadlineReason:'発注から納品まで2〜3週間のリードタイム。3/22に決めないと4/12に間に合わない', why:'ナカは作りたい派。スタッフの一体感・記念になる。ただしコストとスタッフ人数の見通しが必要', options:['作る（モルックドームでデザイン・発注）','作らない（私服＋ビブスやネームプレート）','簡易ビブスのみ（低コスト）'], dependency:'スタッフ人数の目処が立ってから（3/25中間確認）', status:'open' },
     tbd07: { title:'PTA予算の金額と使い道', who:'主催者に確認', category:'収支', priority:'high', deadline:'2026-03-27', deadlineReason:'主催者打ち合わせ時に直接確認する', why:'現在-35万円の赤字見込み。PTA予算で小学生の乗船料が補填されれば収支が大きく改善する可能性がある', options:['打ち合わせで直接確認'], dependency:'主催者との次回打ち合わせ日程の確定', status:'open' },
-    tbd08: { title:'気球代110万円の精算方法・タイミング', who:'中さんに確認', category:'収支', priority:'medium', deadline:'2026-03-27', deadlineReason:'中さんの立替負担が大きいため、早期に方針を明確にしておく', why:'中さんが110万円を立替中。精算タイミングと方法を明確にし、キャッシュフローを管理する', options:['イベント当日に現金で精算','イベント後1週間以内に振込','収益から差し引いて精算'], dependency:'収支の全体像が確定してから', status:'open' },
-    tbd09: { title:'プロカメラマン撮影の判断', who:'中さんに確認', category:'コンテンツ', priority:'low', deadline:'2026-04-01', deadlineReason:'カメラマンの予約に余裕を持たせる（1週間前）', why:'費用10万円。次回告知素材として非常に価値が高い。中さんも「できれば楽しそう」とのこと', options:['依頼する（編集込み10万円）','スタッフが撮影（コスト0）','予算確定後に判断（3/27以降）'], dependency:'収支の確定（赤字幅が縮まるかどうか）', status:'open' },
-    tbd10: { title:'SPとの収益按分', who:'中さんに確認', category:'収支', priority:'low', deadline:'2026-04-05', deadlineReason:'最終打ち合わせまでに方針を決めておく', why:'MACHAP初プロジェクトとしての事業性。今後のイベントの基準にもなる', options:['利益折半','SP固定報酬（金額要相談）','成果報酬型','今回はボランティア（実績優先）'], dependency:'収支の全体像が確定してから', status:'open' },
+    tbd08: { title:'気球代110万円の精算方法・タイミング', who:'ナカに確認', category:'収支', priority:'medium', deadline:'2026-03-27', deadlineReason:'ナカの立替負担が大きいため、早期に方針を明確にしておく', why:'ナカが110万円を立替中。精算タイミングと方法を明確にし、キャッシュフローを管理する', options:['イベント当日に現金で精算','イベント後1週間以内に振込','収益から差し引いて精算'], dependency:'収支の全体像が確定してから', status:'open' },
+    tbd09: { title:'プロカメラマン撮影の判断', who:'ナカに確認', category:'コンテンツ', priority:'low', deadline:'2026-04-01', deadlineReason:'カメラマンの予約に余裕を持たせる（1週間前）', why:'費用10万円。次回告知素材として非常に価値が高い。ナカも「できれば楽しそう」とのこと', options:['依頼する（編集込み10万円）','スタッフが撮影（コスト0）','予算確定後に判断（3/27以降）'], dependency:'収支の確定（赤字幅が縮まるかどうか）', status:'open' },
+    tbd10: { title:'SPとの収益按分', who:'ナカに確認', category:'収支', priority:'low', deadline:'2026-04-05', deadlineReason:'最終打ち合わせまでに方針を決めておく', why:'MACHAP初プロジェクトとしての事業性。今後のイベントの基準にもなる', options:['利益折半','SP固定報酬（金額要相談）','成果報酬型','今回はボランティア（実績優先）'], dependency:'収支の全体像が確定してから', status:'open' },
   });
 
   // Staff
   await fbSet('staff', {
-    s001: { name:'SP', role:'総合管理', fee:'N/A' },
-    s002: { name:'中さん', role:'業者連携', fee:'N/A' },
+    s001: { name:'ナカ', role:'メイン運営', fee:'N/A' },
+    s002: { name:'SP', role:'サポート（スタッフ参加）', fee:'参加費あり' },
   });
 
   // Budget
