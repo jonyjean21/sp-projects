@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -22,14 +22,19 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_FINEGRAINED }}
         run: |
+          set -e
           BRANCH="${GITHUB_REF#refs/heads/}"
           echo "Branch: $BRANCH"
+
+          # Verify token works
+          echo "Verifying token..."
+          gh auth status || { echo "ERROR: Token authentication failed"; exit 1; }
 
           # Check if PR already exists
           EXISTING_PR=$(gh pr list --head "$BRANCH" --base main --json number --jq '.[0].number // empty')
 
           if [ -z "$EXISTING_PR" ]; then
-            # Create PR
+            echo "Creating PR..."
             PR_URL=$(gh pr create \
               --title "Auto-merge: $BRANCH" \
               --body "Automated PR from Claude Code session.
@@ -45,6 +50,6 @@ jobs:
             PR_NUMBER=$EXISTING_PR
           fi
 
-          # Merge PR (--auto requires branch protection rules, so use direct merge)
+          echo "Merging PR #$PR_NUMBER..."
           gh pr merge "$PR_NUMBER" --merge --delete-branch
           echo "Merged PR #$PR_NUMBER"

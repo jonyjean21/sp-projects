@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>スタッフ案内 - 多田東気球フェス</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F6F4EF; --card: #FFFEF9; --card-alt: #F9F7F2;
+  --border: #DDD8CE; --border-light: #E8E4DC;
+  --text: #3A3630; --dim: #968E82;
+  --accent: #B8643F; --accent-soft: #D4845C; --accent-light: #FAF0EA;
+  --green: #5E8E6A; --green-light: #EFF6F0;
+  --blue: #6A8EA0; --blue-light: #EDF4F7;
+  --yellow: #B89440; --yellow-light: #FAF5E8;
+  --red: #B85454; --red-light: #FAF0F0;
+  --warm: #F0ECE4;
+  --shadow: 0 1px 3px rgba(58,54,48,0.04);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh; line-height: 1.75; font-size: 14px;
+}
+.wrap { max-width: 560px; margin: 0 auto; padding: 0 20px 60px; }
+
+.header {
+  text-align: center; padding: 32px 0 20px;
+}
+.header h1 {
+  font-family: 'Zen Maru Gothic', sans-serif;
+  font-size: 1.2rem; font-weight: 700;
+}
+.header-sub { font-size: 0.78rem; color: var(--dim); font-weight: 300; margin-top: 2px; }
+.header-date {
+  display: inline-block; margin-top: 8px;
+  padding: 4px 14px; background: var(--accent-light);
+  border-radius: 16px; font-size: 0.72rem; color: var(--accent); font-weight: 500;
+}
+
+.sec { margin-bottom: 20px; }
+.sec-head {
+  font-size: 0.76rem; font-weight: 500; color: var(--dim);
+  margin-bottom: 8px; letter-spacing: 0.04em;
+}
+
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px 18px;
+  box-shadow: var(--shadow); margin-bottom: 10px;
+}
+
+.info-row {
+  display: flex; justify-content: space-between;
+  padding: 6px 0; border-bottom: 1px solid var(--border-light);
+  font-size: 0.82rem;
+}
+.info-row:last-child { border-bottom: none; }
+.info-k { color: var(--dim); }
+.info-v { font-weight: 500; }
+
+.highlight {
+  padding: 12px 16px; background: var(--accent-light);
+  border-radius: 10px; border-left: 3px solid var(--accent);
+  font-size: 0.82rem; margin-bottom: 10px;
+}
+
+.highlight-title { font-weight: 600; color: var(--accent); margin-bottom: 2px; }
+
+.dt-row {
+  display: flex; gap: 10px; padding: 7px 0;
+  border-bottom: 1px solid var(--border-light); font-size: 0.82rem;
+}
+.dt-row:last-child { border-bottom: none; }
+.dt-time { min-width: 44px; font-weight: 600; color: var(--accent); }
+.dt-what { flex: 1; }
+.dt-note { font-size: 0.7rem; color: var(--dim); }
+
+.check-list { display: flex; flex-direction: column; gap: 4px; }
+.check-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 0; font-size: 0.82rem;
+}
+.check-box {
+  width: 18px; height: 18px; border: 1.5px solid var(--border);
+  border-radius: 4px; flex-shrink: 0;
+}
+
+.role-card {
+  padding: 8px 10px; background: var(--card-alt);
+  border-radius: 8px; margin-bottom: 6px; font-size: 0.78rem;
+}
+.role-name { font-weight: 600; }
+.role-desc { color: var(--dim); font-size: 0.72rem; }
+.role-count { font-size: 0.68rem; color: var(--accent); }
+
+.important {
+  padding: 12px 16px; background: var(--red-light);
+  border-radius: 10px; border-left: 3px solid var(--red);
+  font-size: 0.82rem; margin-bottom: 10px;
+}
+.important-title { font-weight: 600; color: var(--red); margin-bottom: 2px; }
+
+.foot {
+  text-align: center; padding: 20px 0;
+  font-size: 0.6rem; color: var(--dim);
+  border-top: 1px solid var(--border-light); margin-top: 20px;
+}
+
+@media (max-width: 480px) {
+  .wrap { padding: 0 16px 40px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <h1>スタッフのみなさんへ</h1>
+    <div class="header-sub">多田東気球フェス 当日のご案内</div>
+    <div class="header-date">2026年4月12日（土）</div>
+  </div>
+
+  <!-- 基本情報 -->
+  <div class="sec">
+    <div class="sec-head">基本情報</div>
+    <div class="card">
+      <div class="info-row"><span class="info-k">イベント名</span><span class="info-v">多田東気球フェス</span></div>
+      <div class="info-row"><span class="info-k">日付</span><span class="info-v">2026年4月12日（土）</span></div>
+      <div class="info-row"><span class="info-k">会場</span><span class="info-v">多田東小学校</span></div>
+      <div class="info-row"><span class="info-k">所在地</span><span class="info-v">兵庫県川西市</span></div>
+      <div class="info-row"><span class="info-k">集合時間</span><span class="info-v" style="color:var(--red);font-weight:700;">03:00</span></div>
+      <div class="info-row"><span class="info-k">終了予定</span><span class="info-v">10:00（片付け完了）</span></div>
+      <div class="info-row"><span class="info-k">打ち上げ</span><span class="info-v">11:30〜13:00</span></div>
+      <div class="info-row"><span class="info-k">駐車場</span><span class="info-v">スタッフ駐車可</span></div>
+    </div>
+  </div>
+
+  <!-- 大事なこと -->
+  <div class="sec">
+    <div class="highlight">
+      <div class="highlight-title">集合は朝3時です</div>
+      気球は早朝の風が穏やかな時間帯に飛ばします。<br>
+      前日は早めに休んでください。
+    </div>
+    <div class="important">
+      <div class="important-title">雨天中止</div>
+      前日の夜に中止/決行を判断します。<br>
+      中止の場合は連絡します。予備日はありません。
+    </div>
+  </div>
+
+  <!-- タイムライン -->
+  <div class="sec">
+    <div class="sec-head">当日の流れ</div>
+    <div class="card">
+      <div class="dt-row">
+        <div class="dt-time">03:00</div>
+        <div class="dt-what">集合・設営開始<div class="dt-note">受付ブース・案内看板の設営</div></div>
+      </div>
+      <div class="dt-row">
+        <div class="dt-time">05:30</div>
+        <div class="dt-what">ブリーフィング<div class="dt-note">役割確認・安全注意事項</div></div>
+      </div>
+      <div class="dt-row">
+        <div class="dt-time" style="color:var(--green);">06:00</div>
+        <div class="dt-what" style="font-weight:700;">フライト開始<div class="dt-note">来場者の搭乗スタート</div></div>
+      </div>
+      <div class="dt-row">
+        <div class="dt-time">06:00<br><span style="font-size:0.6rem;">~09:00</span></div>
+        <div class="dt-what">イベント進行<div class="dt-note">各担当ポジションで対応</div></div>
+      </div>
+      <div class="dt-row">
+        <div class="dt-time" style="color:var(--yellow);">09:00</div>
+        <div class="dt-what">フライト終了<div class="dt-note">気球撤収開始</div></div>
+      </div>
+      <div class="dt-row">
+        <div class="dt-time">10:00</div>
+        <div class="dt-what">片付け完了<div class="dt-note">会場を元に戻す</div></div>
+      </div>
+      <div class="dt-row">
+        <div class="dt-time" style="color:var(--accent-soft);">11:30</div>
+        <div class="dt-what">打ち上げ<div class="dt-note">みんなでご飯</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 役割 -->
+  <div class="sec">
+    <div class="sec-head">役割一覧</div>
+    <div class="card" id="roles-container">
+      <div class="role-card"><span class="role-name">総合管理</span> <span class="role-count">1名</span><div class="role-desc">全体の進行管理・トラブル対応</div></div>
+      <div class="role-card"><span class="role-name">業者連携</span> <span class="role-count">1名</span><div class="role-desc">気球業者との連携・技術判断</div></div>
+      <div class="role-card"><span class="role-name">受付</span> <span class="role-count">3名</span><div class="role-desc">予約確認・現金受領・整理券配布</div></div>
+      <div class="role-card"><span class="role-name">誘導A（1号機）</span> <span class="role-count">3名</span><div class="role-desc">1号機エリアの列整理・乗降案内</div></div>
+      <div class="role-card"><span class="role-name">誘導B（2号機）</span> <span class="role-count">3名</span><div class="role-desc">2号機エリアの列整理・乗降案内</div></div>
+      <div class="role-card"><span class="role-name">安全管理</span> <span class="role-count">2名</span><div class="role-desc">搭乗エリアの安全確保・子供の安全</div></div>
+      <div class="role-card"><span class="role-name">会場案内</span> <span class="role-count">2名</span><div class="role-desc">来場者の誘導・トイレ案内・駐車場案内</div></div>
+      <div class="role-card"><span class="role-name">記録</span> <span class="role-count">1名</span><div class="role-desc">写真・動画撮影</div></div>
+      <div class="role-card"><span class="role-name">遊軍</span> <span class="role-count">4名+</span><div class="role-desc">交代要員・キッチンカー連携・急な対応</div></div>
+    </div>
+  </div>
+
+  <!-- 持ち物チェック -->
+  <div class="sec">
+    <div class="sec-head">持ち物チェックリスト</div>
+    <div class="card">
+      <div class="check-list">
+        <div class="check-item"><div class="check-box"></div>スタッフTシャツ（配布済みの場合）</div>
+        <div class="check-item"><div class="check-box"></div>動きやすい服装・靴</div>
+        <div class="check-item"><div class="check-box"></div>防寒着（早朝は冷えます）</div>
+        <div class="check-item"><div class="check-box"></div>飲み物</div>
+        <div class="check-item"><div class="check-box"></div>スマホ（充電満タンで）</div>
+        <div class="check-item"><div class="check-box"></div>タオル</div>
+        <div class="check-item"><div class="check-box"></div>日焼け止め（日の出後は日差しあり）</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 注意事項 -->
+  <div class="sec">
+    <div class="sec-head">注意事項</div>
+    <div class="card">
+      <div style="font-size:0.82rem;display:flex;flex-direction:column;gap:8px;">
+        <div>
+          <div style="font-weight:600;">安全第一</div>
+          <div style="font-size:0.75rem;color:var(--dim);">来場者（特に子供）の安全を常に意識してください。危険を感じたらすぐ声を上げてください</div>
+        </div>
+        <div>
+          <div style="font-weight:600;">気球には業者の指示に従う</div>
+          <div style="font-size:0.75rem;color:var(--dim);">気球の操作は株式会社気球屋のプロが担当。勝手に触らないでください</div>
+        </div>
+        <div>
+          <div style="font-weight:600;">困ったら総合管理（SP）に連絡</div>
+          <div style="font-size:0.75rem;color:var(--dim);">判断に迷ったら自分で抱えず相談してください</div>
+        </div>
+        <div>
+          <div style="font-weight:600;">楽しむこと</div>
+          <div style="font-size:0.75rem;color:var(--dim);">スタッフが楽しんでいれば来場者も楽しくなります。無理せず楽しみましょう</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 来場者フロー（知っておくべき） -->
+  <div class="sec">
+    <div class="sec-head">来場者の流れ（全員把握しておいてください）</div>
+    <div class="card">
+      <div style="font-size:0.78rem;">
+        <div style="font-weight:600;margin-bottom:4px;">予約者（搭乗あり）</div>
+        <div style="color:var(--dim);margin-bottom:10px;">
+          来場 → 受付（予約確認+現金支払い） → 整理券もらう → 時間まで自由 → 搭乗 → 降機
+        </div>
+        <div style="font-weight:600;margin-bottom:4px;">見学者（搭乗なし）</div>
+        <div style="color:var(--dim);">
+          来場 → 案内（搭乗は予約者のみとお伝え） → 自由に見学・キッチンカー利用
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 数字 -->
+  <div class="sec">
+    <div class="sec-head">当日の数字（目安）</div>
+    <div class="card">
+      <div class="info-row"><span class="info-k">来場者想定</span><span class="info-v">500人</span></div>
+      <div class="info-row"><span class="info-k">搭乗予約者</span><span class="info-v">最大200人</span></div>
+      <div class="info-row"><span class="info-k">気球</span><span class="info-v">2機</span></div>
+      <div class="info-row"><span class="info-k">1回の搭乗</span><span class="info-v">約7人 / 約7分</span></div>
+      <div class="info-row"><span class="info-k">キッチンカー</span><span class="info-v">3台</span></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    多田東気球フェス スタッフ案内<br>
+    不明点があれば遠慮なく聞いてください
+  </div>
+
+</div>
+</body>
+</html>
